@@ -379,7 +379,7 @@ def main():
     ax_btn_curve = fig.add_axes([0.80, 0.03, 0.17, 0.035]); btn_curve = Button(ax_btn_curve, 'Plot Rotation Curve')
     ax_btn_save  = fig.add_axes([0.80, -0.02, 0.17, 0.035]); btn_save  = Button(ax_btn_save,  'Save Curve CSV')
     # Open vectors table window
-    ax_btn_vectors = fig.add_axes([0.80, 0.61, 0.17, 0.035]); btn_vectors = Button(ax_btn_vectors, 'Force Vectors')
+    ax_btn_vectors = fig.add_axes([0.80, 0.56, 0.17, 0.035]); btn_vectors = Button(ax_btn_vectors, 'Force Vectors')
     # Reset to defaults button
     ax_btn_reset = fig.add_axes([0.80, 0.28, 0.17, 0.035]); btn_reset = Button(ax_btn_reset, 'Reset Defaults')
     
@@ -408,6 +408,75 @@ def main():
         refresh_main()
 
     btn_reset.on_clicked(reset_defaults)
+
+    # ----- Simple controls (right column) -----
+    # Defaults for simple mode
+    simple_defaults = dict(Nstars=4000, Rdisk=20.0, BulgeA=0.6, Hz=0.3, BulgeFrac=0.2, Mtot1e10=8.0, DensK=0.0, DensR=2.0)
+    ax_sN  = fig.add_axes([0.80, 0.93, 0.17, 0.035]); tb_sN  = TextBox(ax_sN,  'N stars',        initial=str(simple_defaults['Nstars']))
+    ax_sR  = fig.add_axes([0.80, 0.89, 0.17, 0.035]); tb_sR  = TextBox(ax_sR,  'R disk (kpc)',   initial=str(simple_defaults['Rdisk']))
+    ax_sBa = fig.add_axes([0.80, 0.85, 0.17, 0.035]); tb_sBa = TextBox(ax_sBa, 'Bulge a (kpc)',  initial=str(simple_defaults['BulgeA']))
+    ax_sHz = fig.add_axes([0.80, 0.81, 0.17, 0.035]); tb_sHz = TextBox(ax_sHz, 'Thickness hz',   initial=str(simple_defaults['Hz']))
+    ax_sBf = fig.add_axes([0.80, 0.77, 0.17, 0.035]); tb_sBf = TextBox(ax_sBf, 'Bulge frac 0-1', initial=str(simple_defaults['BulgeFrac']))
+    ax_sMt = fig.add_axes([0.80, 0.73, 0.17, 0.035]); tb_sMt = TextBox(ax_sMt, 'Total mass (1e10)', initial=str(simple_defaults['Mtot1e10']))
+    ax_sDk = fig.add_axes([0.80, 0.69, 0.17, 0.035]); tb_sDk = TextBox(ax_sDk, 'Density k',      initial=str(simple_defaults['DensK']))
+    ax_sDr = fig.add_axes([0.80, 0.65, 0.17, 0.035]); tb_sDr = TextBox(ax_sDr, 'Density R (kpc)',initial=str(simple_defaults['DensR']))
+    ax_sBuild = fig.add_axes([0.80, 0.61, 0.17, 0.035]); btn_sBuild = Button(ax_sBuild, 'Build Simple Galaxy')
+
+    s_Nstars   = TBWrapper(tb_sN,  parse=int,   clamp=(8, 100000), default=simple_defaults['Nstars'])
+    s_Rdisk    = TBWrapper(tb_sR,  parse=float, clamp=(0.5, 100.0), default=simple_defaults['Rdisk'])
+    s_BulgeA   = TBWrapper(tb_sBa, parse=float, clamp=(0.02, 10.0), default=simple_defaults['BulgeA'])
+    s_Hz       = TBWrapper(tb_sHz, parse=float, clamp=(0.01, 3.0),  default=simple_defaults['Hz'])
+    s_BulgeFrac= TBWrapper(tb_sBf, parse=float, clamp=(0.0, 1.0),   default=simple_defaults['BulgeFrac'])
+    s_Mtot1e10 = TBWrapper(tb_sMt, parse=float, clamp=(0.01, 200.0),default=simple_defaults['Mtot1e10'])
+    s_DensK    = TBWrapper(tb_sDk, parse=float, clamp=(0.0, 5.0),   default=simple_defaults['DensK'])
+    s_DensR    = TBWrapper(tb_sDr, parse=float, clamp=(0.05, 10.0), default=simple_defaults['DensR'])
+
+    def build_simple_galaxy(_evt=None):
+        nonlocal pos, masses, COM, R_all, R_edge, test_point
+        N_total = int(s_Nstars.val)
+        R_disk = float(s_Rdisk.val)
+        a_bulge = float(s_BulgeA.val)
+        hz = float(s_Hz.val)
+        f_bulge = float(s_BulgeFrac.val)
+        N_bulge = max(0, min(N_total, int(round(N_total * f_bulge))))
+        N_disk  = max(0, N_total - N_bulge)
+        rng_seed = int(s_seed.val)
+        rng = np.random.default_rng(rng_seed)
+        pos_list = []; mass_list = []
+        if N_disk > 0:
+            N_base_d = max(1, N_disk // 8)
+            Rd = max(0.05, R_disk / 3.0)
+            pos_d = sample_exponential_disk_3d(N_base_d, Rd, R_disk, hz, rng)
+            if len(pos_d): pos_list.append(pos_d)
+        if N_bulge > 0:
+            N_base_b = max(1, N_bulge // 8)
+            Rmax_b = min(R_disk, max(2.0, 3.0*a_bulge))
+            pos_b = sample_plummer_bulge_3d(N_base_b, a_bulge, Rmax_b, hz, rng)
+            if len(pos_b): pos_list.append(pos_b)
+        if pos_list:
+            pos = np.vstack(pos_list)
+            Mtot = float(s_Mtot1e10.val) * 1e10
+            masses = np.full(len(pos), Mtot / len(pos))
+        else:
+            pos = np.zeros((0,3)); masses = np.zeros((0,))
+        if masses.sum() > 0 and len(masses) > 0:
+            COM = (pos * masses[:, None]).sum(axis=0) / masses.sum()
+            R_all = np.linalg.norm(pos - COM, axis=1)
+            test_point = pos[int(np.argmax(R_all))]
+            R_edge = float(np.max(R_all))
+        else:
+            COM = np.zeros(3); R_all = np.array([1.0]); test_point = np.zeros(3); R_edge = 1.0
+        # Update visuals without triggering advanced rebuild
+        if len(masses) > 0:
+            galaxy_scatter.set_offsets(pos[:, :2])
+            test_star_plot.set_data([test_point[0]], [test_point[1]])
+            com_plot.set_data([COM[0]], [COM[1]])
+            R_plot = np.max(np.linalg.norm(pos[:, :2] - COM[:2], axis=1)) * 1.15 + 1e-3
+            ax.set_xlim(COM[0] - R_plot, COM[0] + R_plot)
+            ax.set_ylim(COM[1] - R_plot, COM[1] + R_plot)
+        update_readout(); fig.canvas.draw_idle(); refresh_rotation_curve()
+
+    btn_sBuild.on_clicked(build_simple_galaxy)
 
     # ---- Finder logic to match Simulation to Actual (Observed v) ----
     def _eval_error_for(wrapper, candidate, is_structural):
@@ -532,17 +601,49 @@ def main():
             hz_disk=float(s_hzd.val), hz_bulge=float(s_hzb.val), hz_gas=float(s_hzg.val))
         pos, masses = make_galaxy_components(int(s_seed.val), float(s_spread.val), **params)
         if masses.sum() <= 0 or len(masses) == 0:
-            COM = np.zeros(3); R_all = np.array([1.0])
+            COM = np.zeros(3); R_all = np.array([1.0]); test_point = np.zeros(3)
         else:
             COM = (pos * masses[:, None]).sum(axis=0) / masses.sum()
-            R_all = np.linalg.norm(pos[:, :2] - COM[:2], axis=1)
-        R_edge = np.quantile(R_all, float(s_outer.val)) if len(R_all) else 1.0
-        test_point = COM + np.array([R_edge, 0.0, 0.0])
+            R_all = np.linalg.norm(pos - COM, axis=1)
+            test_point = pos[int(np.argmax(R_all))]
+        R_edge = np.max(R_all) if len(R_all) else 1.0
+
+    def compute_G_eff(p):
+        # Base G scale
+        G0 = G_AST * float(s_Gscale.val)
+        # Density-based boost: higher when local density is lower than a global reference
+        try:
+            k = float(s_DensK.val)
+            Rn = max(1e-6, float(s_DensR.val))
+        except Exception:
+            k = 0.0; Rn = 1.0
+        if k <= 0 or len(masses) == 0:
+            return G0
+        # Local density around point p
+        d2 = np.sum((pos - p)**2, axis=1)
+        mask = d2 <= (Rn*Rn)
+        m_local = float(masses[mask].sum())
+        vol = (4.0/3.0) * np.pi * (Rn**3)
+        rho_local = m_local / max(1e-30, vol)
+        # Global reference density using farthest-star radius as a characteristic scale
+        if len(masses) > 0:
+            # Use radius enclosing all points around COM
+            Rchar = float(np.max(np.linalg.norm(pos - COM, axis=1)))
+            Vchar = (4.0/3.0) * np.pi * max(1e-30, Rchar**3)
+            rho_ref = float(masses.sum()) / Vchar
+        else:
+            rho_ref = rho_local
+        boost = 0.0
+        if rho_ref > 0:
+            boost = k * max(0.0, (rho_ref / max(rho_local, 1e-30)) - 1.0)
+        # clamp effective G multiplier to a reasonable range
+        mult = max(0.1, min(10.0, 1.0 + boost))
+        return G0 * mult
 
     def compute_speeds_at_point():
-        G_eff_base = G_AST * float(s_Gscale.val)
+        G_eff_here = compute_G_eff(test_point)
         a_gr_vec, a_newton_vec = net_acceleration_at_point(
-            test_point, pos, masses, G_eff_base, k_GR=float(s_kGR.val), atten_extra=float(s_att.val), soften_kpc=float(s_soften.val))
+            test_point, pos, masses, G_eff_here, k_GR=float(s_kGR.val), atten_extra=float(s_att.val), soften_kpc=float(s_soften.val))
         a0 = np.linalg.norm(a_newton_vec); agr = np.linalg.norm(a_gr_vec)
         drop_frac = 0.0
         if a0 > 0:
@@ -557,7 +658,7 @@ def main():
         return v_newton, v_gr_noboost, v_final, drop_frac, boost_factor
 
     def compute_per_body_vectors():
-        G_eff_base = G_AST * float(s_Gscale.val)
+        G_eff_base = compute_G_eff(test_point)
         if len(masses) == 0:
             return {
                 'newton_vecs': np.zeros((0,3)),
@@ -601,11 +702,12 @@ def main():
     def rotation_curve(nR: int = 50):
         if len(masses) == 0:
             return np.array([0.0]), np.zeros(1), np.zeros(1), np.zeros(1)
-        Rmax = np.quantile(np.linalg.norm(pos[:, :2] - COM[:2], axis=1), float(s_outer.val))
+        Rmax = float(np.max(np.linalg.norm(pos - COM, axis=1)))
         R_vals = np.linspace(max(0.2, 0.02*Rmax), Rmax, nR)
-        G_eff_base = G_AST * float(s_Gscale.val)
+        p_edge = COM + np.array([Rmax, 0, 0])
+        G_eff_edge = compute_G_eff(p_edge)
         a_gr_edge, a_newt_edge = net_acceleration_at_point(
-            COM + np.array([Rmax, 0, 0]), pos, masses, G_eff_base, k_GR=float(s_kGR.val), atten_extra=float(s_att.val), soften_kpc=float(s_soften.val))
+            p_edge, pos, masses, G_eff_edge, k_GR=float(s_kGR.val), atten_extra=float(s_att.val), soften_kpc=float(s_soften.val))
         drop_edge = 0.0
         if np.linalg.norm(a_newt_edge) > 0:
             drop_edge = max(0.0, 1.0 - np.linalg.norm(a_gr_edge)/np.linalg.norm(a_newt_edge))
@@ -615,8 +717,9 @@ def main():
         vN, vGR, vF = [], [], []
         for R in R_vals:
             p = COM + np.array([R, 0, 0])
+            G_eff_p = compute_G_eff(p)
             a_gr_vec, a_newton_vec = net_acceleration_at_point(
-                p, pos, masses, G_eff_base, k_GR=float(s_kGR.val), atten_extra=float(s_att.val), soften_kpc=float(s_soften.val))
+                p, pos, masses, G_eff_p, k_GR=float(s_kGR.val), atten_extra=float(s_att.val), soften_kpc=float(s_soften.val))
             vN.append(circular_speed_from_accel(a_newton_vec, p - COM))
             vGR.append(circular_speed_from_accel(a_gr_vec, p - COM))
             vF.append(circular_speed_from_accel(a_gr_vec * boost_factor, p - COM))
@@ -632,9 +735,10 @@ def main():
         ax.set_xlim(COM[0] - R_plot, COM[0] + R_plot)
         ax.set_ylim(COM[1] - R_plot, COM[1] + R_plot)
         total_mass = masses.sum()
+        far_r = float(np.linalg.norm(test_point[:2] - COM[:2]))
         lines = [
             f"Preset: {radio.value_selected} | N lumps: {len(masses)} | Total luminous+gas mass: {total_mass:,.2e} Msun",
-            f"Outer-edge radius (pctl {s_outer.val:.3f}): R = {np.linalg.norm(test_point[:2] - COM[:2]):.2f} kpc",
+            f"Farthest-star radius: R = {far_r:.2f} kpc",
             f"G scale: {s_Gscale.val:.2f} | GR k (toy): {s_kGR.val:.0f} | Extra atten: {s_att.val:.2f} | Softening: {s_soften.val:.2f} kpc",
             f"Drop from attenuation at edge: {100*drop_frac:.4f}% | Auto-boost factor: ×{boost_factor:.5f}",
             f"Speeds (km/s): Newtonian={v_newton:.2f}  GR,no boost={v_gr_noboost:.2f}  Final (with boost)={v_final:.2f}",
