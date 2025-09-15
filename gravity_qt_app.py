@@ -26,6 +26,7 @@ matplotlib.use("QtAgg", force=True)
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as NavigationToolbar
+from matplotlib import colors as mcolors
 
 
 # Try PyQt6 first, fall back to PyQt5
@@ -279,6 +280,22 @@ class GravityModel:
         return vN, vG, vF
 
 
+def percent_closeness(v_sim: float, v_target: float) -> float:
+    if v_target <= 0:
+        return 100.0 if abs(v_sim) < 1e-9 else 0.0
+    return max(0.0, 100.0 * (1.0 - abs(v_sim - v_target) / v_target))
+
+
+def required_g_for_test(model: GravityModel, knobs: DensityKnobs, v_target: float) -> float:
+    # Compute the g_scale required to reach v_target at the test star, holding other knobs fixed.
+    # Since v ~ sqrt(g) for fixed density modifiers, g_req = g_curr * (v_target / v_curr)^2
+    if v_target <= 0:
+        return float('nan')
+    _, _, v_curr = model.speeds_at_test(knobs)
+    if v_curr <= 1e-12:
+        return float('inf')
+    return float(knobs.g_scale) * float(v_target / v_curr) ** 2
+
 # ===== Qt UI =====
 PRESET_OPTIONS = [
     "MW-like disk", "Central-dominated", "Dwarf disk", "LMC-like dwarf", "Ultra-diffuse disk", "Compact nuclear disk"
@@ -452,15 +469,21 @@ class CompareWorker(QThread):
         t1 = time.perf_counter()
         model = self._build_from_preset(name)
         err_fixed = self._err_for_knobs(model, self.knobs)
+        # Compute required G and closeness at test star for fixed knobs (test-star objective semantics)
+        _, _, vF_fixed = model.speeds_at_test(self.knobs)
+        g_req_fixed = required_g_for_test(model, self.knobs, self.vobs)
+        close_fixed = percent_closeness(vF_fixed, self.vobs)
         row = {
             "preset": name,
             "N": int(len(model.masses)),
             "err_fixed": float(err_fixed),
+            "close_fixed_pct": float(close_fixed),
             "g": float(self.knobs.g_scale),
             "dens_k": float(self.knobs.dens_k),
             "dens_R": float(self.knobs.dens_R),
             "well_k": float(self.knobs.well_k),
             "well_R": float(self.knobs.well_R),
+            "g_req_fixed": float(g_req_fixed),
         }
         if self.resolve:
             g_lo, g_hi = 0.5, 2.0
@@ -478,11 +501,17 @@ class CompareWorker(QThread):
                     f3 = lambda x: self._err_for_knobs(model, DensityKnobs(g_scale=g, dens_k=dk, dens_R=self.knobs.dens_R, well_k=max(wk_lo, min(wk_hi, x)), well_R=self.knobs.well_R))
                     wk, _ = self._golden_section(f3, wk_lo, wk_hi)
             solved_knobs = DensityKnobs(g_scale=float(g), dens_k=float(dk), dens_R=float(self.knobs.dens_R), well_k=float(wk), well_R=float(self.knobs.well_R))
+            err_solved = float(self._err_for_knobs(model, solved_knobs))
+            _, _, vF_solved = model.speeds_at_test(solved_knobs)
+            g_req_solved = required_g_for_test(model, solved_knobs, self.vobs)
+            close_solved = percent_closeness(vF_solved, self.vobs)
             row.update({
                 "g_solved": solved_knobs.g_scale,
                 "dens_k_solved": solved_knobs.dens_k,
                 "well_k_solved": solved_knobs.well_k,
-                "err_solved": float(self._err_for_knobs(model, solved_knobs)),
+                "err_solved": err_solved,
+                "g_req_solved": float(g_req_solved),
+                "close_solved_pct": float(close_solved),
             })
         t2 = time.perf_counter()
         row["time_s"] = float(t2 - t1)
@@ -526,8 +555,12 @@ class CompareAcrossPresetsDialog(QDialog):
         vbox.addLayout(ctrl)
 
         # Table
-        self.table = QTableWidget(0, 10)
-        self.table.setHorizontalHeaderLabels(["Preset","N","Err (fixed)","Err (solved)","G","dens_k","dens_R","well_k","well_R","time_s"])
+        headers = [
+            "Preset","N","Err (fixed)","Err (solved)","% close (fixed)","% close (solved)",
+            "G","dens_k","dens_R","well_k","well_R","g_req (fixed)","g_req (solved)","time_s"
+        ]
+        self.table = QTableWidget(0, len(headers))
+        self.table.setHorizontalHeaderLabels(headers)
         vbox.addWidget(self.table)
 
         # Progress + buttons
@@ -577,9 +610,16 @@ class CompareAcrossPresetsDialog(QDialog):
         r = self.table.rowCount(); self.table.insertRow(r)
         def get(k, default=""):
             return row[k] if k in row else default
-        values = [row["preset"], get("N", ""), f"{row['err_fixed']:.4g}",
-                  (f"{row['err_solved']:.4g}" if 'err_solved' in row else ""),
-                  f"{row['g']:.4f}", f"{row['dens_k']:.4f}", f"{row['dens_R']:.3f}", f"{row['well_k']:.4f}", f"{row['well_R']:.3f}", f"{row['time_s']:.2f}"]
+        values = [
+            row["preset"], get("N", ""), f"{row['err_fixed']:.4g}",
+            (f"{row['err_solved']:.4g}" if 'err_solved' in row else ""),
+            (f"{row['close_fixed_pct']:.1f}%" if 'close_fixed_pct' in row else ""),
+            (f"{row['close_solved_pct']:.1f}%" if 'close_solved_pct' in row else ""),
+            f"{row['g']:.4f}", f"{row['dens_k']:.4f}", f"{row['dens_R']:.3f}", f"{row['well_k']:.4f}", f"{row['well_R']:.3f}",
+            (f"{row['g_req_fixed']:.4f}" if 'g_req_fixed' in row and np.isfinite(row['g_req_fixed']) else "inf"),
+            (f"{row['g_req_solved']:.4f}" if 'g_req_solved' in row and np.isfinite(row.get('g_req_solved', float('nan'))) else ""),
+            f"{row['time_s']:.2f}"
+        ]
         for c, val in enumerate(values):
             self.table.setItem(r, c, QTableWidgetItem(str(val)))
 
@@ -598,7 +638,10 @@ class CompareAcrossPresetsDialog(QDialog):
             return
         with open(path, "w", newline="") as f:
             w = csv.writer(f)
-            keys = ["preset","N","err_fixed","err_solved","g","dens_k","dens_R","well_k","well_R","time_s"]
+            keys = [
+                "preset","N","err_fixed","err_solved","close_fixed_pct","close_solved_pct",
+                "g","dens_k","dens_R","well_k","well_R","g_req_fixed","g_req_solved","time_s"
+            ]
             w.writerow(keys)
             for row in self.rows:
                 w.writerow([row.get(k, "") for k in keys])
@@ -633,11 +676,10 @@ class MainWindow(QMainWindow):
         self.base_rxy = np.zeros(0)
         self.vf_stars = np.zeros(0)
         self.vg_stars = np.zeros(0)
-        self.vn_stars = np.zeros(0)
         self.curveR = np.zeros(0)
-        self.curveVN = np.zeros(0)
         self.curveVF = np.zeros(0)
         self.curveVG = np.zeros(0)
+        self.moving_mask = np.zeros(0, dtype=bool)
 
         # Central splitter
         splitter = QSplitter(Qt.Orientation.Horizontal)
@@ -803,8 +845,6 @@ class MainWindow(QMainWindow):
         self.spinAnim = QDoubleSpinBox(); self.spinAnim.setRange(0.0, 5.0); self.spinAnim.setDecimals(2); self.spinAnim.setValue(1.00)
         layA.addRow(self.chkAnimate)
         layA.addRow("Speed scale", self.spinAnim)
-        self.spinAnimMin = QDoubleSpinBox(); self.spinAnimMin.setRange(0.0, 1000.0); self.spinAnimMin.setDecimals(1); self.spinAnimMin.setValue(2.0)
-        layA.addRow("Min anim v (km/s)", self.spinAnimMin)
         # insert below solver
         rightLayout.insertWidget(rightLayout.indexOf(self.grpSolve)+1, self.grpAnim)
         self.chkAnimate.toggled.connect(self.toggle_animation)
@@ -1017,16 +1057,15 @@ class MainWindow(QMainWindow):
             self.vf_stars = np.zeros(0); self.vg_stars = np.zeros(0); return
         # Build triple curves for interpolation (Newtonian, GR-like, Final)
         R_vals, vN_arr, vG_arr, vF_arr = self.curve_vtriple(self.knobs, nR=60)
-        self.curveR = R_vals; self.curveVN = vN_arr; self.curveVF = vF_arr; self.curveVG = vG_arr
+        self.curveR = R_vals; self.curveVF = vF_arr; self.curveVG = vG_arr
         rxy = self.base_rxy
         if len(vF_arr)==0:
-            self.vf_stars = np.zeros_like(rxy); self.vg_stars = np.zeros_like(rxy); self.vn_stars = np.zeros_like(rxy); return
+            self.vf_stars = np.zeros_like(rxy); self.vg_stars = np.zeros_like(rxy); self.moving_mask = np.zeros_like(rxy, dtype=bool); return
         vf = np.interp(rxy, R_vals, vF_arr, left=float(vF_arr[0]), right=float(vF_arr[-1]))
         vg = np.interp(rxy, R_vals, vG_arr, left=float(vG_arr[0]), right=float(vG_arr[-1]))
-        vn = np.interp(rxy, R_vals, vN_arr, left=float(vN_arr[0]), right=float(vN_arr[-1]))
         self.vf_stars = vf
         self.vg_stars = vg
-        self.vn_stars = vn
+        self.moving_mask = vf > 0.0
         self.update_colors()
 
     def toggle_animation(self, on: bool):
@@ -1046,9 +1085,14 @@ class MainWindow(QMainWindow):
         vg = np.maximum(self.vg_stars, 1e-6)
         rel = np.abs(self.vf_stars - vg) / vg
         fit_mask = rel <= tol
-        colors = np.where(fit_mask, '#2ca02c', '#d62728')  # green fits (GR-like), red outliers
+        moving = (self.vf_stars > 0.0)
         try:
-            self.scatter.set_facecolors(colors)
+            green = mcolors.to_rgba('#2ca02c', 1.0)
+            red = mcolors.to_rgba('#d62728', 1.0)
+            color_arr = np.zeros((len(self.vf_stars), 4), dtype=float)  # default transparent (0,0,0,0)
+            color_arr[moving & fit_mask] = green
+            color_arr[moving & ~fit_mask] = red
+            self.scatter.set_facecolors(color_arr)
         except Exception:
             pass
         self.canvas.draw_idle()
@@ -1057,16 +1101,7 @@ class MainWindow(QMainWindow):
         if not self.chkAnimate.isChecked() or len(self.vf_stars)==0:
             return
         rxy = np.maximum(self.base_rxy, 1e-3)
-        vmin = float(self.spinAnimMin.value())
-        vF = np.maximum(self.vf_stars, 0.0)
-        # Fallback for animation only: if vF<=0 use max(vN, vmin)
-        if len(getattr(self, 'vn_stars', [])) == len(vF):
-            v_anim = vF.copy()
-            mask = v_anim <= 0.0
-            if np.any(mask):
-                v_anim[mask] = np.maximum(self.vn_stars[mask], vmin)
-        else:
-            v_anim = np.where(vF <= 0.0, vmin, vF)
+        v_anim = np.maximum(self.vf_stars, 0.0)
         dtheta = (v_anim / rxy) * (0.001 * float(self.spinAnim.value()))
         self.base_angles = (self.base_angles + dtheta) % (2*np.pi)
         x = self.model.COM[0] + self.base_rxy * np.cos(self.base_angles)
@@ -1087,6 +1122,7 @@ class MainWindow(QMainWindow):
         vN, vG, vF = self.model.speeds_at_test(self.knobs)
         vobs = float(self.spinVobs.value())
         dv = vF - vobs
+        match_pct = percent_closeness(vF, vobs)
         # update curve cache and star speeds (for percentile & animation)
         self.compute_star_speeds_vf()
         total_mass = float(self.model.masses.sum())
@@ -1101,6 +1137,7 @@ class MainWindow(QMainWindow):
             f"G={self.knobs.g_scale:.2f} | Density k={self.knobs.dens_k:.2f} @ R={self.knobs.dens_R:.2f} | "
             f"Well k={self.knobs.well_k:.2f} @ R={self.knobs.well_R:.2f}\n"
             f"Speeds (km/s): Newtonian={vN:.2f}  GR-like={vG:.2f}  Final={vF:.2f} | Observed={vobs:.1f}  Δ={dv:+.2f} km/s\n"
+            f"Match to observed at test star: {match_pct:.1f}%\n"
             f"Test star speed percentile among stars: {pct:.1f}% (green=GR fit, red=outliers, gold=test star)"
         )
 
