@@ -26,6 +26,7 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as NavigationToolbar
 
+
 # Try PyQt6 first, fall back to PyQt5
 try:
     from PyQt6.QtCore import Qt, QTimer
@@ -33,8 +34,7 @@ try:
         QApplication, QMainWindow, QWidget, QGridLayout, QHBoxLayout, QVBoxLayout,
         QSplitter, QLabel, QDoubleSpinBox, QSpinBox, QComboBox, QPushButton,
         QGroupBox, QFormLayout, QFileDialog, QTableWidget, QTableWidgetItem, QDialog,
-        QSizePolicy
-    )
+        QSizePolicy)
     QT_IS_6 = True
 except Exception:
     from PyQt5.QtCore import Qt, QTimer
@@ -45,6 +45,37 @@ except Exception:
         QSizePolicy
     )
     QT_IS_6 = False
+
+# ----- Small UI helpers (after Qt widgets are available) -----
+try:
+    from PyQt6.QtCore import pyqtSignal as Signal
+except Exception:
+    from PyQt5.QtCore import pyqtSignal as Signal
+
+class ClickLabel(QLabel):
+    clicked = Signal()
+    def __init__(self, text:str="", parent=None):
+        super().__init__(text, parent)
+        try:
+            self.setCursor(Qt.CursorShape.PointingHandCursor)
+        except Exception:
+            self.setCursor(Qt.PointingHandCursor)
+    def mousePressEvent(self, e):
+        try:
+            self.clicked.emit()
+        except Exception:
+            pass
+        return super().mousePressEvent(e)
+
+
+def make_tip(text: str) -> QLabel:
+    tip = QLabel(text)
+    tip.setWordWrap(True)
+    tip.setVisible(False)
+    tip.setStyleSheet(
+        "background:#f0f7ff;border:1px solid #c9e1ff;border-radius:4px;padding:6px;color:#234;"
+    )
+    return tip
 
 # ===== Core physics and sampling (from PLUS version, trimmed/adapted) =====
 G_AST = 4.30091e-6   # kpc * (km/s)^2 / Msun
@@ -341,9 +372,19 @@ class MainWindow(QMainWindow):
         rightLayout = QVBoxLayout(right)
         form = QFormLayout()
 
+        # Helper to add clickable rows with inline tips
+        def add_row_with_tip(layout: QFormLayout, label_text: str, widget: QWidget, tip_text: str):
+            lbl = ClickLabel(label_text + "  ⓘ")
+            layout.addRow(lbl, widget)
+            tip = make_tip(tip_text)
+            layout.addRow(QLabel(""), tip)
+            lbl.clicked.connect(lambda: tip.setVisible(not tip.isVisible()))
+            return lbl, tip
+
         # Preset
         self.preset = QComboBox(); self.preset.addItems(PRESET_OPTIONS)
-        form.addRow("Preset", self.preset)
+        add_row_with_tip(form, "Preset", self.preset,
+            "Selects a galaxy template. It sets N stars, disk size, bulge fraction/scale, and total mass. Changing presets rebuilds the galaxy.")
 
         # Core knobs
         self.spinG = QDoubleSpinBox(); self.spinG.setRange(0.1, 5.0); self.spinG.setDecimals(3); self.spinG.setValue(1.0)
@@ -352,12 +393,18 @@ class MainWindow(QMainWindow):
         self.spinWk = QDoubleSpinBox(); self.spinWk.setRange(0.0, 5.0); self.spinWk.setDecimals(3); self.spinWk.setValue(0.0)
         self.spinWr = QDoubleSpinBox(); self.spinWr.setRange(0.05, 20.0); self.spinWr.setDecimals(3); self.spinWr.setValue(2.0)
         self.spinVobs = QDoubleSpinBox(); self.spinVobs.setRange(0.0, 1000.0); self.spinVobs.setDecimals(1); self.spinVobs.setValue(220.0)
-        form.addRow("G scale", self.spinG)
-        form.addRow("Density k", self.spinDk)
-        form.addRow("Density R (kpc)", self.spinDr)
-        form.addRow("Well k", self.spinWk)
-        form.addRow("Well R (kpc)", self.spinWr)
-        form.addRow("Observed v (km/s)", self.spinVobs)
+        add_row_with_tip(form, "G scale", self.spinG,
+            "Global multiplier on Newton's constant G. Speeds scale roughly as sqrt(G). Increase to raise all speeds.")
+        add_row_with_tip(form, "Density k", self.spinDk,
+            "Point-based modifier: if local density at the test star is low versus global, G_eff increases by k*(rho_ref/rho_local - 1). Higher k flattens the outer curve.")
+        add_row_with_tip(form, "Density R (kpc)", self.spinDr,
+            "Neighborhood size for computing local density at the evaluation point. 1–5 kpc typical. Smaller R makes the effect more local.")
+        add_row_with_tip(form, "Well k", self.spinWk,
+            "Per-source modifier: stars in shallower local density get a >1× scale on their vector. Higher k boosts low-density contributors.")
+        add_row_with_tip(form, "Well R (kpc)", self.spinWr,
+            "Neighborhood size around each source to judge 'well' shallowness. 1–3 kpc typical.")
+        add_row_with_tip(form, "Observed v (km/s)", self.spinVobs,
+            "Target velocity for comparison only. It does not change physics; we show Final − Observed.")
 
         # Structure (collapsible)
         grpStruct = QGroupBox("Structure (preset-controlled)")
@@ -369,12 +416,12 @@ class MainWindow(QMainWindow):
         self.sHz = QDoubleSpinBox(); self.sHz.setRange(0.01, 3.0); self.sHz.setValue(0.3)
         self.sBf = QDoubleSpinBox(); self.sBf.setRange(0.0, 1.0); self.sBf.setSingleStep(0.05); self.sBf.setValue(0.2)
         self.sMt = QDoubleSpinBox(); self.sMt.setRange(0.01, 200.0); self.sMt.setValue(8.0)
-        f2.addRow("N stars", self.sN)
-        f2.addRow("R disk (kpc)", self.sR)
-        f2.addRow("Bulge a (kpc)", self.sBa)
-        f2.addRow("Thickness hz", self.sHz)
-        f2.addRow("Bulge frac", self.sBf)
-        f2.addRow("Total mass (1e10 Msun)", self.sMt)
+        add_row_with_tip(f2, "N stars", self.sN, "Number of particles. More = smoother but slower. 2k–10k is a good balance.")
+        add_row_with_tip(f2, "R disk (kpc)", self.sR, "Outer disk radius; sets how far luminous matter extends.")
+        add_row_with_tip(f2, "Bulge a (kpc)", self.sBa, "Bulge Plummer scale; smaller = more concentrated center.")
+        add_row_with_tip(f2, "Thickness hz", self.sHz, "Vertical thickness; larger spreads stars in z.")
+        add_row_with_tip(f2, "Bulge frac", self.sBf, "Fraction of stars in the bulge. 0 = pure disk; ~0.8 = bulge-dominated.")
+        add_row_with_tip(f2, "Total mass (1e10 Msun)", self.sMt, "Total luminous+gas mass distributed across all stars.")
         grpStruct.setLayout(f2)
 
         rightLayout.addLayout(form)
