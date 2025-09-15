@@ -294,13 +294,13 @@ def main():
         tbl.set_fontsize(10)
         tbl.scale(1.0, 1.5)
 
-    # Physics numeric inputs
-    ax_sG   = fig.add_axes([0.10, 0.27, 0.68, 0.03])
-    ax_kGR  = fig.add_axes([0.10, 0.24, 0.68, 0.03])
-    ax_att  = fig.add_axes([0.10, 0.21, 0.68, 0.03])
-    ax_boost= fig.add_axes([0.10, 0.18, 0.68, 0.03])
-    ax_vobs = fig.add_axes([0.10, 0.15, 0.68, 0.03])
-    ax_soft = fig.add_axes([0.10, 0.12, 0.68, 0.03])
+    # Physics numeric inputs (tightened layout)
+    ax_sG   = fig.add_axes([0.10, 0.27, 0.55, 0.024])
+    ax_kGR  = fig.add_axes([0.10, 0.24, 0.55, 0.024])
+    ax_att  = fig.add_axes([0.10, 0.21, 0.55, 0.024])
+    ax_boost= fig.add_axes([0.10, 0.18, 0.55, 0.024])
+    ax_vobs = fig.add_axes([0.10, 0.15, 0.55, 0.024])
+    ax_soft = fig.add_axes([0.10, 0.12, 0.55, 0.024])
 
     tb_Gscale = TextBox(ax_sG,   'G scale',                 initial=str(float(args.gscale)))
     tb_kGR    = TextBox(ax_kGR,  'GR k (toy)',              initial=str(float(args.grk)))
@@ -316,10 +316,10 @@ def main():
     s_vobs   = TBWrapper(tb_vobs,   parse=float, clamp=(0.0, 450.0), default=float(args.vobs))
     s_soften = TBWrapper(tb_soft,   parse=float, clamp=(0.01, 1.5),  default=float(args.soften))
 
-    # Structural numeric inputs
-    ax_spread = fig.add_axes([0.10, 0.09, 0.68, 0.03])
-    ax_outer  = fig.add_axes([0.10, 0.06, 0.68, 0.03])
-    ax_seed   = fig.add_axes([0.10, 0.03, 0.68, 0.03])
+    # Structural numeric inputs (tightened layout)
+    ax_spread = fig.add_axes([0.10, 0.09, 0.55, 0.024])
+    ax_outer  = fig.add_axes([0.10, 0.06, 0.55, 0.024])
+    ax_seed   = fig.add_axes([0.10, 0.03, 0.55, 0.024])
     tb_spread = TextBox(ax_spread, 'Spread ×',              initial=str(float(args.spread)))
     tb_outer  = TextBox(ax_outer,  'Outer percentile',      initial=str(float(args.outer)))
     tb_seed   = TextBox(ax_seed,   'Seed',                  initial=str(int(args.seed)))
@@ -331,18 +331,18 @@ def main():
     ax_radio = fig.add_axes([0.80, 0.08, 0.17, 0.20])
     radio = RadioButtons(ax_radio, config_names, active=config_names.index(args.config))
 
-    # Component editor numeric inputs
-    ax_dm  = fig.add_axes([0.10,  0.00, 0.68, 0.03])
-    ax_bm  = fig.add_axes([0.10, -0.03, 0.68, 0.03])
-    ax_gm  = fig.add_axes([0.10, -0.06, 0.68, 0.03])
-    ax_rd  = fig.add_axes([0.10, -0.09, 0.68, 0.03])
-    ax_rmax= fig.add_axes([0.10, -0.12, 0.68, 0.03])
-    ax_ab  = fig.add_axes([0.10, -0.15, 0.68, 0.03])
-    ax_rdg = fig.add_axes([0.10, -0.18, 0.68, 0.03])
-    ax_rmg = fig.add_axes([0.10, -0.21, 0.68, 0.03])
-    ax_hzd = fig.add_axes([0.10, -0.24, 0.68, 0.03])
-    ax_hzb = fig.add_axes([0.10, -0.27, 0.68, 0.03])
-    ax_hzg = fig.add_axes([0.10, -0.30, 0.68, 0.03])
+    # Component editor numeric inputs (tightened layout)
+    ax_dm  = fig.add_axes([0.10,  0.00, 0.55, 0.024])
+    ax_bm  = fig.add_axes([0.10, -0.03, 0.55, 0.024])
+    ax_gm  = fig.add_axes([0.10, -0.06, 0.55, 0.024])
+    ax_rd  = fig.add_axes([0.10, -0.09, 0.55, 0.024])
+    ax_rmax= fig.add_axes([0.10, -0.12, 0.55, 0.024])
+    ax_ab  = fig.add_axes([0.10, -0.15, 0.55, 0.024])
+    ax_rdg = fig.add_axes([0.10, -0.18, 0.55, 0.024])
+    ax_rmg = fig.add_axes([0.10, -0.21, 0.55, 0.024])
+    ax_hzd = fig.add_axes([0.10, -0.24, 0.55, 0.024])
+    ax_hzb = fig.add_axes([0.10, -0.27, 0.55, 0.024])
+    ax_hzg = fig.add_axes([0.10, -0.30, 0.55, 0.024])
 
     tb_Mdisk = TextBox(ax_dm,   'Disk mass (1e10 Msun)',   initial=str(pp['M_disk']/1e10))
     tb_Mbulge= TextBox(ax_bm,   'Bulge mass (1e10 Msun)',  initial=str(pp['M_bulge']/1e10))
@@ -404,6 +404,118 @@ def main():
         refresh_main()
 
     btn_reset.on_clicked(reset_defaults)
+
+    # ---- Finder logic to match Simulation to Actual (Observed v) ----
+    def _eval_error_for(wrapper, candidate, is_structural):
+        """Return v_final - v_obs at candidate value for the given parameter.
+        Does minimal recomputation; no drawing.
+        """
+        prev = wrapper.val
+        # set
+        wrapper.set_val(candidate)
+        if is_structural:
+            rebuild_galaxy()
+        # compute
+        v_newton, v_gr_noboost, v_final, drop_frac, boost_factor = compute_speeds_at_point()
+        err = float(v_final - float(s_vobs.val))
+        # restore
+        wrapper.set_val(prev)
+        if is_structural:
+            rebuild_galaxy()
+        return err
+
+    def _solve_1d(wrapper, is_structural):
+        clamp = wrapper.clamp if wrapper.clamp is not None else (None, None)
+        lo, hi = clamp
+        if lo is None or hi is None:
+            # If no clamp, try a reasonable numeric window
+            lo, hi = -1e3, 1e3
+        is_int = (wrapper.parse is int)
+        # helper to coerce to valid domain
+        def coerce(x):
+            if is_int:
+                x = int(round(x))
+            x = max(lo, min(hi, x))
+            return x
+        # Bisection if sign change exists, else coarse search and refine
+        e_lo = _eval_error_for(wrapper, coerce(lo), is_structural)
+        e_hi = _eval_error_for(wrapper, coerce(hi), is_structural)
+        if np.isfinite(e_lo) and np.isfinite(e_hi) and e_lo*e_hi < 0:
+            a, b = coerce(lo), coerce(hi)
+            for _ in range(40):
+                m = coerce(0.5*(a+b))
+                e_m = _eval_error_for(wrapper, m, is_structural)
+                if abs(e_m) < 0.05:  # within 0.05 km/s
+                    return m
+                if e_lo * e_m <= 0:
+                    b, e_hi = m, e_m
+                else:
+                    a, e_lo = m, e_m
+            return coerce(0.5*(a+b))
+        # Coarse grid search
+        best_x, best_e = None, float('inf')
+        N = 15
+        for i in range(N+1):
+            x = coerce(lo + (hi-lo)*i/N)
+            e = _eval_error_for(wrapper, x, is_structural)
+            if abs(e) < best_e:
+                best_x, best_e = x, abs(e)
+        # Local refine around best
+        span = max(1 if is_int else 0.0, 0.1*(hi-lo))
+        a, b = coerce(best_x - span), coerce(best_x + span)
+        e_lo = _eval_error_for(wrapper, a, is_structural)
+        e_hi = _eval_error_for(wrapper, b, is_structural)
+        if np.isfinite(e_lo) and np.isfinite(e_hi) and e_lo*e_hi < 0:
+            # refine by bisection
+            for _ in range(30):
+                m = coerce(0.5*(a+b))
+                e_m = _eval_error_for(wrapper, m, is_structural)
+                if abs(e_m) < 0.05:
+                    return m
+                if e_lo * e_m <= 0:
+                    b, e_hi = m, e_m
+                else:
+                    a, e_lo = m, e_m
+            return coerce(0.5*(a+b))
+        return best_x
+
+    def _add_finder(next_to_ax, wrapper, label, is_structural):
+        # place a small button to the right of the given TextBox axis
+        bb = next_to_ax.get_position()
+        btn_ax = fig.add_axes([bb.x1 + 0.01, bb.y0, 0.05, bb.height])
+        btn = Button(btn_ax, 'Find')
+        def _on_click(_event=None):
+            sol = _solve_1d(wrapper, is_structural)
+            if sol is not None:
+                wrapper.set_val(sol)
+                refresh_main()
+        btn.on_clicked(_on_click)
+        return btn
+
+    # Finder buttons for physics (skip Observed v; it's the target itself)
+    _add_finder(ax_sG,   s_Gscale, 'Find', False)
+    _add_finder(ax_kGR,  s_kGR,    'Find', False)
+    _add_finder(ax_att,  s_att,    'Find', False)
+    _add_finder(ax_boost,s_boost,  'Find', False)
+    _add_finder(ax_soft, s_soften, 'Find', False)
+
+    # Finder buttons for structural
+    _add_finder(ax_spread, s_spread, 'Find', True)
+    _add_finder(ax_outer,  s_outer,  'Find', True)
+    _add_finder(ax_seed,   s_seed,   'Find', True)
+
+    # Finder buttons for components
+    _add_finder(ax_dm,   s_Mdisk, 'Find', True)
+    _add_finder(ax_bm,   s_Mbulge,'Find', True)
+    _add_finder(ax_gm,   s_Mgas,  'Find', True)
+    _add_finder(ax_rd,   s_Rd,    'Find', True)
+    _add_finder(ax_rmax, s_Rmax,  'Find', True)
+    _add_finder(ax_ab,   s_ab,    'Find', True)
+    _add_finder(ax_rdg,  s_Rdg,   'Find', True)
+    _add_finder(ax_rmg,  s_Rmg,   'Find', True)
+    _add_finder(ax_hzd,  s_hzd,   'Find', True)
+    _add_finder(ax_hzb,  s_hzb,   'Find', True)
+    _add_finder(ax_hzg,  s_hzg,   'Find', True)
 
     fig_rot = None; rot_lines = {}
 
