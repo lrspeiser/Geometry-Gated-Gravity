@@ -587,16 +587,51 @@ def main():
         btn.on_clicked(_on_click)
         return btn
 
-    # Finder buttons: keep only for global G and density/well knobs
-    _add_finder(ax_sG,   s_Gscale, 'Find', False)
-    _add_finder(ax_sDk,  s_DensK,  'Find', False)
-    _add_finder(ax_sWk,  s_WellK,  'Find', False)
+    # Dedicated finder buttons (compact row)
+    def _bind_find_button(ax_btn, wrapper, is_structural=False):
+        btn = Button(ax_btn, 'Find')
+        def _on_click(_e=None):
+            sol = _solve_1d(wrapper, is_structural)
+            if sol is not None:
+                wrapper.set_val(sol)
+                update_readout(); fig.canvas.draw_idle(); refresh_rotation_curve()
+        btn.on_clicked(_on_click)
+        return btn
 
     # Wire simple control changes
     for ctl in [s_Nstars, s_Rdisk, s_BulgeA, s_Hz, s_BulgeFrac, s_Mtot1e10]:
         ctl.on_changed(lambda _v: build_simple_galaxy())
+
+    def physics_only(_v=None):
+        update_readout(); fig.canvas.draw_idle(); refresh_rotation_curve()
     for ctl in [s_DensK, s_DensR, s_WellK, s_WellR, s_Gscale, s_vobs]:
-        ctl.on_changed(lambda _v: refresh_main())
+        ctl.on_changed(physics_only)
+
+    # Reflow and compact the right-column UI to avoid overlap
+    def reflow_ui():
+        x = 0.78; w = 0.20; h = 0.03; pad = 0.004
+        y = 0.95
+        # Simple controls (top to bottom)
+        for ax_box in [ax_sN, ax_sR, ax_sBa, ax_sHz, ax_sBf, ax_sMt, ax_sDk, ax_sDr, ax_sWk, ax_sWr]:
+            ax_box.set_position([x, y - h, w, h]); y -= (h + pad)
+        # Finder buttons row under density/well knobs
+        ax_find_g   = fig.add_axes([x, y - h, (w-2*pad)/3, h]);
+        ax_find_dk  = fig.add_axes([x + (w-2*pad)/3 + pad, y - h, (w-2*pad)/3, h]);
+        ax_find_wk  = fig.add_axes([x + 2*((w-2*pad)/3) + 2*pad, y - h, (w-2*pad)/3, h]);
+        _bind_find_button(ax_find_g,  s_Gscale, False)
+        _bind_find_button(ax_find_dk, s_DensK,  False)
+        _bind_find_button(ax_find_wk, s_WellK,  False)
+        y -= (h + 2*pad)
+        # Presets radio
+        ax_radio.set_position([x, y - 0.20, w, 0.20]); y -= (0.20 + pad)
+        # Buttons stack
+        ax_btn_vectors.set_position([x, y - h, w, h]); y -= (h + pad)
+        ax_btn_reset.set_position([x, y - h, w, h]); y -= (h + pad)
+        ax_btn_curve.set_position([x, y - h, w, h]); y -= (h + pad)
+        ax_btn_save.set_position([x, y - h, w, h]); y -= (h + pad)
+        fig.canvas.draw_idle()
+
+    reflow_ui()
 
     fig_rot = None; rot_lines = {}; fig_vec = None; vec_state = {}
 
