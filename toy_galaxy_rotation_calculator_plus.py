@@ -280,8 +280,8 @@ def main():
     ax.set_title("Toy Galaxy Rotation Calculator — PLUS")
     text_box = ax.text(0.02, 0.98, "", transform=ax.transAxes, va='top')
 
-    # Table showing Actual | GR Predicted | Simulation | Sim - Actual
-    ax_table = fig.add_axes([0.70, 0.32, 0.25, 0.66])
+    # Table showing Actual | GR Predicted | Simulation | Sim - Actual (compact)
+    ax_table = fig.add_axes([0.70, 0.30, 0.25, 0.10])
     ax_table.axis('off')
 
     def update_table(v_obs, v_gr, v_final):
@@ -337,7 +337,7 @@ def main():
     s_outer  = TBWrapper(tb_outer,  parse=float, clamp=(0.80, 0.995),  default=float(args.outer))
     s_seed   = TBWrapper(tb_seed,   parse=int,   clamp=(0, 9999),      default=int(args.seed))
 
-    ax_radio = fig.add_axes([0.80, 0.08, 0.17, 0.20])
+    ax_radio = fig.add_axes([0.80, 0.47, 0.18, 0.20])
     radio = RadioButtons(ax_radio, config_names, active=config_names.index(args.config))
 
     # Component editor numeric inputs (tightened layout)
@@ -390,6 +390,9 @@ def main():
     ax_btn_reset = fig.add_axes([0.80, 0.28, 0.17, 0.035]); btn_reset = Button(ax_btn_reset, 'Reset Defaults')
     
     fig_rot = None; rot_lines = {}; fig_vec = None; vec_state = {}
+    # Caching for performance
+    galaxy_version = 0
+    cache = {'well': {'version': -1, 'k': None, 'R': None, 'scales': None}}
     def reset_defaults(_=None):
         s_Gscale.set_val(defaults['Gscale'])
         s_vobs.set_val(defaults['vobs'])
@@ -481,6 +484,10 @@ def main():
             R_edge = float(np.max(R_all))
         else:
             COM = np.zeros(3); R_all = np.array([1.0]); test_point = np.zeros(3); R_edge = 1.0
+        # invalidate cache due to new geometry
+        nonlocal galaxy_version
+        galaxy_version += 1
+        cache['well']['version'] = -1
         # Update visuals without triggering advanced rebuild
         if len(masses) > 0:
             galaxy_scatter.set_offsets(pos[:, :2])
@@ -585,6 +592,12 @@ def main():
     _add_finder(ax_sDk,  s_DensK,  'Find', False)
     _add_finder(ax_sWk,  s_WellK,  'Find', False)
 
+    # Wire simple control changes
+    for ctl in [s_Nstars, s_Rdisk, s_BulgeA, s_Hz, s_BulgeFrac, s_Mtot1e10]:
+        ctl.on_changed(lambda _v: build_simple_galaxy())
+    for ctl in [s_DensK, s_DensR, s_WellK, s_WellR, s_Gscale, s_vobs]:
+        ctl.on_changed(lambda _v: refresh_main())
+
     fig_rot = None; rot_lines = {}; fig_vec = None; vec_state = {}
 
     def rebuild_galaxy():
@@ -602,6 +615,10 @@ def main():
             R_all = np.linalg.norm(pos - COM, axis=1)
             test_point = pos[int(np.argmax(R_all))]
         R_edge = np.max(R_all) if len(R_all) else 1.0
+        # invalidate cache due to new geometry
+        nonlocal galaxy_version
+        galaxy_version += 1
+        cache['well']['version'] = -1
 
     def compute_G_eff(p):
         # Base G scale
@@ -634,14 +651,17 @@ def main():
         return G0 * mult
 
     def compute_well_scales():
-        # Per-source gravity well scaling based on local shallowness
+        # Per-source gravity well scaling with caching
         try:
             k = float(s_WellK.val)
             Rw = max(1e-6, float(s_WellR.val))
         except Exception:
             k = 0.0; Rw = 1.0
-        if k <= 0 or len(masses) == 0:
+        if len(masses) == 0 or k <= 0:
             return np.ones(len(masses))
+        # if cache valid, return
+        if cache['well']['scales'] is not None and cache['well']['version'] == galaxy_version and cache['well']['k'] == k and cache['well']['R'] == Rw:
+            return cache['well']['scales']
         # Reference density as before
         Rchar = float(np.max(np.linalg.norm(pos - COM, axis=1))) if len(masses) else 1.0
         Vchar = (4.0/3.0) * np.pi * max(1e-30, Rchar**3)
@@ -668,15 +688,17 @@ def main():
         else:
             # Approximate by sampling neighbors
             idx = np.arange(N)
+            rng_loc = np.random.default_rng(int(s_seed.val))
             for i in range(N):
-                # sample 300 random indices
-                samp = np.random.default_rng(int(s_seed.val)).choice(idx, size=min(300, N), replace=False)
+                samp = rng_loc.choice(idx, size=min(300, N), replace=False)
                 d2 = np.sum((pos[samp] - pos[i])**2, axis=1)
                 m_local = masses[samp][d2 <= (Rw*Rw)].sum() * (N / max(1, len(samp)))
                 vol = (4.0/3.0) * np.pi * (Rw**3)
                 rho_local = m_local / max(1e-30, vol)
                 boost = k * max(0.0, (rho_ref / max(rho_local, 1e-30)) - 1.0) if rho_ref > 0 else 0.0
                 scales[i] = max(0.1, min(10.0, 1.0 + boost))
+        # update cache
+        cache['well'].update({'version': galaxy_version, 'k': k, 'R': Rw, 'scales': scales})
         return scales
 
     def compute_speeds_at_point():
