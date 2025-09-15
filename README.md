@@ -35,6 +35,14 @@ python toy_galaxy_rotation_calculator_plus.py --backend Agg --save preview.png
 ls -l preview.png
 ```
 
+Qt desktop app (recommended UI)
+- Install PyQt (PyQt6 preferred, PyQt5 fallback), then run the Qt app:
+```bash
+pip install PyQt6 || pip install PyQt5
+python gravity_qt_app.py
+```
+- The Qt app embeds Matplotlib for the plot and uses native controls; it’s faster and less cluttered than Matplotlib widgets.
+
 Notes
-- Requires numpy and matplotlib.
+- Requires numpy and matplotlib. For the Qt app, install PyQt6 or PyQt5.
 - No API keys or web services are used.
