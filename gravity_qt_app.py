@@ -472,7 +472,7 @@ class MainWindow(QMainWindow):
 
         # Matplotlib artists
         self.scatter = self.ax.scatter([], [], s=5, alpha=0.6)
-        self.star, = self.ax.plot([], [], marker='*', ms=10)
+        self.star, = self.ax.plot([], [], marker='*', ms=10, color='gold')
         self.com, = self.ax.plot([], [], marker='x', ms=8)
         self.ax.set_xlabel("x (kpc)"); self.ax.set_ylabel("y (kpc)")
         self.ax.set_title("Gravity Calculator — Qt")
@@ -508,6 +508,10 @@ class MainWindow(QMainWindow):
         # insert below solver
         rightLayout.insertWidget(rightLayout.indexOf(self.grpSolve)+1, self.grpAnim)
         self.chkAnimate.toggled.connect(self.toggle_animation)
+        # GR tolerance for classification
+        self.spinTol = QDoubleSpinBox(); self.spinTol.setRange(0.1, 50.0); self.spinTol.setDecimals(1); self.spinTol.setValue(10.0)
+        layA.addRow("GR tol %", self.spinTol)
+        self.spinTol.valueChanged.connect(lambda _v: self.update_colors())
 
     # ----- Scheduling helpers -----
     def schedule_refresh(self):
@@ -529,6 +533,21 @@ class MainWindow(QMainWindow):
             self.show_tip(key, text)
 
     # ----- Solver -----
+    def curve_vtriple(self, knobs: DensityKnobs, nR: int = 60, R_vals=None):
+        if len(self.model.masses) == 0:
+            z = np.zeros(1); return np.array([0.0]), z, z, z
+        if R_vals is None:
+            Rmax = float(np.max(np.linalg.norm(self.model.pos - self.model.COM, axis=1)))
+            R_vals = np.linspace(max(0.2, 0.02*Rmax), Rmax, nR)
+        vN, vG, vF = [], [], []
+        for R in R_vals:
+            p = self.model.COM + np.array([R,0,0])
+            newton, gr_like, final = self.model.per_body_vectors(p, knobs)
+            vN.append(circular_speed_from_accel(newton.sum(axis=0), p - self.model.COM))
+            vG.append(circular_speed_from_accel(gr_like.sum(axis=0), p - self.model.COM))
+            vF.append(circular_speed_from_accel(final.sum(axis=0), p - self.model.COM))
+        return np.array(R_vals), np.array(vN), np.array(vG), np.array(vF)
+
     def load_obs_curve(self):
         path, _ = QFileDialog.getOpenFileName(self, "Load observed curve CSV", str(Path.cwd()))
         if not path:
@@ -694,20 +713,40 @@ class MainWindow(QMainWindow):
 
     def compute_star_speeds_vf(self):
         if len(self.model.masses) == 0:
-            self.vf_stars = np.zeros(0); return
-        R_vals, vF = self.curve_vfinal(self.knobs, nR=60)
-        self.curveR = R_vals; self.curveVF = vF
+            self.vf_stars = np.zeros(0); self.vg_stars = np.zeros(0); return
+        # Build triple curves for interpolation (Newtonian, GR-like, Final)
+        R_vals, vN_arr, vG_arr, vF_arr = self.curve_vtriple(self.knobs, nR=60)
+        self.curveR = R_vals; self.curveVF = vF_arr; self.curveVG = vG_arr
         rxy = self.base_rxy
-        if len(vF)==0:
-            self.vf_stars = np.zeros_like(rxy); return
-        vf = np.interp(rxy, R_vals, vF, left=float(vF[0]), right=float(vF[-1]))
+        if len(vF_arr)==0:
+            self.vf_stars = np.zeros_like(rxy); self.vg_stars = np.zeros_like(rxy); return
+        vf = np.interp(rxy, R_vals, vF_arr, left=float(vF_arr[0]), right=float(vF_arr[-1]))
+        vg = np.interp(rxy, R_vals, vG_arr, left=float(vG_arr[0]), right=float(vG_arr[-1]))
         self.vf_stars = vf
+        self.vg_stars = vg
+        self.update_colors()
 
     def toggle_animation(self, on: bool):
         if on and len(getattr(self, 'base_rxy', []))>0:
             self.animTimer.start()
         else:
             self.animTimer.stop()
+        # ensure colors are up-to-date
+        self.update_colors()
+
+    def update_colors(self):
+        if len(getattr(self, 'vf_stars', []))==0 or len(getattr(self, 'vg_stars', []))==0:
+            return
+        tol = float(self.spinTol.value()) / 100.0
+        vg = np.maximum(self.vg_stars, 1e-6)
+        rel = np.abs(self.vf_stars - vg) / vg
+        fit_mask = rel <= tol
+        colors = np.where(fit_mask, '#2ca02c', '#d62728')  # green fits (GR-like), red outliers
+        try:
+            self.scatter.set_facecolors(colors)
+        except Exception:
+            pass
+        self.canvas.draw_idle()
 
     def step_animation(self):
         if not self.chkAnimate.isChecked() or len(self.vf_stars)==0:
@@ -746,7 +785,7 @@ class MainWindow(QMainWindow):
             f"G={self.knobs.g_scale:.2f} | Density k={self.knobs.dens_k:.2f} @ R={self.knobs.dens_R:.2f} | "
             f"Well k={self.knobs.well_k:.2f} @ R={self.knobs.well_R:.2f}\n"
             f"Speeds (km/s): Newtonian={vN:.2f}  GR-like={vG:.2f}  Final={vF:.2f} | Observed={vobs:.1f}  Δ={dv:+.2f} km/s\n"
-            f"Test star speed percentile among stars: {pct:.1f}%"
+            f"Test star speed percentile among stars: {pct:.1f}% (green=GR fit, red=outliers, gold=test star)"
         )
 
     def open_vectors(self):
@@ -759,15 +798,10 @@ class MainWindow(QMainWindow):
             return
         if len(self.model.masses) == 0:
             return
-        R_vals, vF = self.curve_vfinal(self.knobs, nR=60)
+        R_vals, vN_arr, vG_arr, vF_arr = self.curve_vtriple(self.knobs, nR=60)
         rows = []
         for i, R in enumerate(R_vals):
-            # Recompute N and G for completeness (cheap to keep code clarity)
-            p = self.model.COM + np.array([R,0,0])
-            newton, gr_like, final = self.model.per_body_vectors(p, self.knobs)
-            vN = circular_speed_from_accel(newton.sum(axis=0), p - self.model.COM)
-            vG = circular_speed_from_accel(gr_like.sum(axis=0), p - self.model.COM)
-            rows.append([R, vN, vG, vF[i], self.knobs.g_scale, self.knobs.dens_k, self.knobs.dens_R, self.knobs.well_k, self.knobs.well_R])
+            rows.append([R, float(vN_arr[i]), float(vG_arr[i]), float(vF_arr[i]), self.knobs.g_scale, self.knobs.dens_k, self.knobs.dens_R, self.knobs.well_k, self.knobs.well_R])
         with open(path, "w", newline="") as f:
             w = csv.writer(f)
             w.writerow(["R_kpc","v_newton_kms","v_gr_like_kms","v_final_kms","G_scale","dens_k","dens_R","well_k","well_R"])
