@@ -182,6 +182,7 @@ class GravityModel:
         self.masses = np.zeros((0,))
         self.COM = np.zeros(3)
         self.test_point = np.zeros(3)
+        self.test_idx = None
         self.cache_well = {"version": -1, "k": None, "R": None, "scales": None}
         self.version = 0
 
@@ -190,10 +191,12 @@ class GravityModel:
         if len(masses) == 0 or masses.sum() <= 0:
             self.COM = np.zeros(3)
             self.test_point = np.zeros(3)
+            self.test_idx = None
         else:
             self.COM = (pos * masses[:, None]).sum(axis=0) / masses.sum()
             R_all = np.linalg.norm(pos - self.COM, axis=1)
-            self.test_point = pos[int(np.argmax(R_all))]
+            self.test_idx = int(np.argmax(R_all))
+            self.test_point = pos[self.test_idx]
         self.version += 1
         self.cache_well["version"] = -1
 
@@ -441,12 +444,15 @@ class MainWindow(QMainWindow):
         self.chkSolveG  = QCheckBox("Solve G scale"); self.chkSolveG.setChecked(False)
         self.chkSolveWk = QCheckBox("Solve Well k"); self.chkSolveWk.setChecked(False)
         self.btnSolve = QPushButton("Solve")
+        self.btnLoadObs = QPushButton("Load Obs Curve…")
         layS.addRow("Objective", self.solveObjective)
         layS.addRow(self.chkSolveDk)
         layS.addRow(self.chkSolveG)
         layS.addRow(self.chkSolveWk)
         layS.addRow(self.btnSolve)
+        layS.addRow(self.btnLoadObs)
         rightLayout.addWidget(self.grpSolve)
+        self.obsCurve = None  # (R_obs, v_obs)
 
         # Dedicated Tips panel
         self.tipsBox = QGroupBox("Tips")
@@ -480,6 +486,7 @@ class MainWindow(QMainWindow):
         self.btnVectors.clicked.connect(self.open_vectors)
         self.btnSaveCSV.clicked.connect(self.save_curve_csv)
         self.btnSolve.clicked.connect(self.solve_params)
+        self.btnLoadObs.clicked.connect(self.load_obs_curve)
         for w in [self.spinG, self.spinDk, self.spinDr, self.spinWk, self.spinWr, self.spinVobs]:
             w.valueChanged.connect(self.schedule_refresh)
         for w in [self.sN, self.sR, self.sBa, self.sHz, self.sBf, self.sMt]:
@@ -488,6 +495,19 @@ class MainWindow(QMainWindow):
 
         # Initialize
         self.on_preset(self.preset.currentText())
+
+        # Animation state
+        self.animTimer = QTimer(self); self.animTimer.setInterval(40)
+        self.animTimer.timeout.connect(self.step_animation)
+        self.grpAnim = QGroupBox("Animation")
+        layA = QFormLayout(self.grpAnim)
+        self.chkAnimate = QCheckBox("Animate stars in xy plane")
+        self.spinAnim = QDoubleSpinBox(); self.spinAnim.setRange(0.0, 5.0); self.spinAnim.setDecimals(2); self.spinAnim.setValue(1.00)
+        layA.addRow(self.chkAnimate)
+        layA.addRow("Speed scale", self.spinAnim)
+        # insert below solver
+        rightLayout.insertWidget(rightLayout.indexOf(self.grpSolve)+1, self.grpAnim)
+        self.chkAnimate.toggled.connect(self.toggle_animation)
 
     # ----- Scheduling helpers -----
     def schedule_refresh(self):
@@ -509,6 +529,30 @@ class MainWindow(QMainWindow):
             self.show_tip(key, text)
 
     # ----- Solver -----
+    def load_obs_curve(self):
+        path, _ = QFileDialog.getOpenFileName(self, "Load observed curve CSV", str(Path.cwd()))
+        if not path:
+            return
+        R_obs = []
+        v_obs = []
+        import csv as _csv
+        with open(path, 'r') as f:
+            rdr = _csv.reader(f)
+            head = next(rdr, None)
+            for row in rdr:
+                if not row or len(row) < 2:
+                    continue
+                try:
+                    R_obs.append(float(row[0])); v_obs.append(float(row[1]))
+                except Exception:
+                    continue
+        if len(R_obs) == 0:
+            self.show_tip("Solver", "Could not parse any (R, v) rows from the CSV. Expect two columns: R_kpc, v_kms.")
+            return
+        import numpy as _np
+        self.obsCurve = ( _np.array(R_obs, dtype=float), _np.array(v_obs, dtype=float) )
+        self.show_tip("Solver", f"Loaded observed curve with {len(R_obs)} points from {Path(path).name}.")
+
     def golden_section(self, f, lo, hi, iters=28, tol=1e-4):
         phi = (1 + 5 ** 0.5) / 2
         invphi = 1 / phi
@@ -548,10 +592,31 @@ class MainWindow(QMainWindow):
         dk_lo, dk_hi = 0.0, 3.0
         wk_lo, wk_hi = 0.0, 1.0
 
-        def obj(g, dk, wk):
+        mode = self.solveObjective.currentText()
+
+        def obj_point(g, dk, wk):
             knobs = DensityKnobs(g_scale=g, dens_k=dk, dens_R=float(self.spinDr.value()), well_k=wk, well_R=float(self.spinWr.value()))
             _, _, vF = self.model.speeds_at_test(knobs)
             return (vF - vobs) ** 2
+
+        def obj_curve(g, dk, wk):
+            knobs = DensityKnobs(g_scale=g, dens_k=dk, dens_R=float(self.spinDr.value()), well_k=wk, well_R=float(self.spinWr.value()))
+            R_vals, vF_arr = self.curve_vfinal(knobs, nR=60)
+            if self.obsCurve is not None and mode.endswith('CSV'):
+                R_obs, v_obs = self.obsCurve
+                # interpolate obs to our grid
+                import numpy as _np
+                v_obs_grid = _np.interp(R_vals, R_obs, v_obs, left=v_obs[0], right=v_obs[-1])
+            else:
+                v_obs_grid = np.full_like(vF_arr, vobs, dtype=float)
+            err = float(np.sum((vF_arr - v_obs_grid)**2))
+            return err
+
+        def obj(g,dk,wk):
+            if mode.startswith('Match test'):
+                return obj_point(g,dk,wk)
+            else:
+                return obj_curve(g,dk,wk)
 
         g, dk, wk = g0, dk0, wk0
         # Coordinate descent: a few passes
@@ -601,6 +666,7 @@ class MainWindow(QMainWindow):
         self.model.rebuild(pos, masses)
         self.refresh_scene()
         self.refresh_physics()
+        self.build_animation_state()
 
     def refresh_scene(self):
         if len(self.model.masses) == 0:
@@ -616,6 +682,47 @@ class MainWindow(QMainWindow):
         self.ax.set_ylim(self.model.COM[1] - R_plot, self.model.COM[1] + R_plot)
         self.canvas.draw_idle()
 
+    def build_animation_state(self):
+        if len(self.model.masses) == 0:
+            self.base_pos = np.zeros((0,3)); self.base_angles = np.zeros(0); self.base_rxy = np.zeros(0); self.vf_stars = np.zeros(0)
+            return
+        self.base_pos = self.model.pos.copy()
+        self.base_angles = np.arctan2(self.base_pos[:,1]-self.model.COM[1], self.base_pos[:,0]-self.model.COM[0])
+        self.base_rxy = np.linalg.norm(self.base_pos[:,:2]-self.model.COM[:2], axis=1)
+        # recompute speeds used for animation and percentile
+        self.compute_star_speeds_vf()
+
+    def compute_star_speeds_vf(self):
+        if len(self.model.masses) == 0:
+            self.vf_stars = np.zeros(0); return
+        R_vals, vF = self.curve_vfinal(self.knobs, nR=60)
+        self.curveR = R_vals; self.curveVF = vF
+        rxy = self.base_rxy
+        if len(vF)==0:
+            self.vf_stars = np.zeros_like(rxy); return
+        vf = np.interp(rxy, R_vals, vF, left=float(vF[0]), right=float(vF[-1]))
+        self.vf_stars = vf
+
+    def toggle_animation(self, on: bool):
+        if on and len(getattr(self, 'base_rxy', []))>0:
+            self.animTimer.start()
+        else:
+            self.animTimer.stop()
+
+    def step_animation(self):
+        if not self.chkAnimate.isChecked() or len(self.vf_stars)==0:
+            return
+        dtheta = (self.vf_stars / np.maximum(self.base_rxy, 1e-3)) * (0.001 * float(self.spinAnim.value()))
+        self.base_angles = (self.base_angles + dtheta) % (2*np.pi)
+        x = self.model.COM[0] + self.base_rxy * np.cos(self.base_angles)
+        y = self.model.COM[1] + self.base_rxy * np.sin(self.base_angles)
+        self.scatter.set_offsets(np.column_stack([x,y]))
+        # Move highlighted test star
+        idx = self.model.test_idx
+        if idx is not None and 0 <= idx < len(x):
+            self.star.set_data([x[idx]],[y[idx]])
+        self.canvas.draw_idle()
+
     def refresh_physics(self):
         self.knobs = DensityKnobs(
             g_scale=float(self.spinG.value()),
@@ -625,15 +732,21 @@ class MainWindow(QMainWindow):
         vN, vG, vF = self.model.speeds_at_test(self.knobs)
         vobs = float(self.spinVobs.value())
         dv = vF - vobs
+        # update curve cache and star speeds (for percentile & animation)
+        self.compute_star_speeds_vf()
         total_mass = float(self.model.masses.sum())
         far_R = float(np.linalg.norm(self.model.test_point[:2] - self.model.COM[:2])) if len(self.model.masses) else 0.0
+        pct = 0.0
+        if len(getattr(self, 'vf_stars', []))>0:
+            import numpy as _np
+            pct = 100.0 * (_np.sum(self.vf_stars <= vF) / max(1, len(self.vf_stars)))
         self.infoLabel.setText(
             f"Preset: {self.preset.currentText()} | N stars: {len(self.model.masses)} | Total mass: {total_mass:,.2e} Msun\n"
             f"Farthest-star radius: R = {far_R:.2f} kpc\n"
             f"G={self.knobs.g_scale:.2f} | Density k={self.knobs.dens_k:.2f} @ R={self.knobs.dens_R:.2f} | "
             f"Well k={self.knobs.well_k:.2f} @ R={self.knobs.well_R:.2f}\n"
-            f"Speeds (km/s): Newtonian={vN:.2f}  GR-like={vG:.2f}  Final={vF:.2f} | "
-            f"Observed={vobs:.1f}  Δ={dv:+.2f} km/s"
+            f"Speeds (km/s): Newtonian={vN:.2f}  GR-like={vG:.2f}  Final={vF:.2f} | Observed={vobs:.1f}  Δ={dv:+.2f} km/s\n"
+            f"Test star speed percentile among stars: {pct:.1f}%"
         )
 
     def open_vectors(self):
@@ -644,19 +757,17 @@ class MainWindow(QMainWindow):
         path, _ = QFileDialog.getSaveFileName(self, "Save rotation_curve.csv", str(Path.cwd()/"rotation_curve.csv"))
         if not path:
             return
-        # Build simple 1D curve out to edge
         if len(self.model.masses) == 0:
             return
-        Rmax = float(np.max(np.linalg.norm(self.model.pos - self.model.COM, axis=1)))
-        R_vals = np.linspace(max(0.2, 0.02*Rmax), Rmax, 60)
+        R_vals, vF = self.curve_vfinal(self.knobs, nR=60)
         rows = []
-        for R in R_vals:
+        for i, R in enumerate(R_vals):
+            # Recompute N and G for completeness (cheap to keep code clarity)
             p = self.model.COM + np.array([R,0,0])
             newton, gr_like, final = self.model.per_body_vectors(p, self.knobs)
             vN = circular_speed_from_accel(newton.sum(axis=0), p - self.model.COM)
             vG = circular_speed_from_accel(gr_like.sum(axis=0), p - self.model.COM)
-            vF = circular_speed_from_accel(final.sum(axis=0), p - self.model.COM)
-            rows.append([R, vN, vG, vF, self.knobs.g_scale, self.knobs.dens_k, self.knobs.dens_R, self.knobs.well_k, self.knobs.well_R])
+            rows.append([R, vN, vG, vF[i], self.knobs.g_scale, self.knobs.dens_k, self.knobs.dens_R, self.knobs.well_k, self.knobs.well_R])
         with open(path, "w", newline="") as f:
             w = csv.writer(f)
             w.writerow(["R_kpc","v_newton_kms","v_gr_like_kms","v_final_kms","G_scale","dens_k","dens_R","well_k","well_R"])
