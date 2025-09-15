@@ -372,14 +372,12 @@ class MainWindow(QMainWindow):
         rightLayout = QVBoxLayout(right)
         form = QFormLayout()
 
-        # Helper to add clickable rows with inline tips
+        # Helper: add clickable rows; tips appear in a dedicated panel below
         def add_row_with_tip(layout: QFormLayout, label_text: str, widget: QWidget, tip_text: str):
             lbl = ClickLabel(label_text + "  ⓘ")
             layout.addRow(lbl, widget)
-            tip = make_tip(tip_text)
-            layout.addRow(QLabel(""), tip)
-            lbl.clicked.connect(lambda: tip.setVisible(not tip.isVisible()))
-            return lbl, tip
+            lbl.clicked.connect(lambda _=None, k=label_text, t=tip_text: self.toggle_tip(k, t))
+            return lbl
 
         # Preset
         self.preset = QComboBox(); self.preset.addItems(PRESET_OPTIONS)
@@ -434,6 +432,21 @@ class MainWindow(QMainWindow):
         self.btnSaveCSV = QPushButton("Save Curve CSV")
         btnRow.addWidget(self.btnBuild); btnRow.addWidget(self.btnVectors); btnRow.addWidget(self.btnSaveCSV)
         rightLayout.addLayout(btnRow)
+
+        # Dedicated Tips panel
+        self.tipsBox = QGroupBox("Tips")
+        self.tipsBox.setVisible(False)
+        tipsLayout = QVBoxLayout(self.tipsBox)
+        try:
+            from PyQt6.QtWidgets import QTextEdit
+        except Exception:
+            from PyQt5.QtWidgets import QTextEdit
+        self.tipsText = QTextEdit()
+        self.tipsText.setReadOnly(True)
+        self.tipsText.setMinimumHeight(180)
+        self.tipsText.setStyleSheet("background:#f8fbff;border:1px solid #c9e1ff;border-radius:4px;padding:8px;color:#123;")
+        tipsLayout.addWidget(self.tipsText)
+        rightLayout.addWidget(self.tipsBox)
         rightLayout.addStretch(1)
 
         # Matplotlib artists
@@ -466,6 +479,18 @@ class MainWindow(QMainWindow):
 
     def schedule_rebuild(self):
         self.build_from_fields()
+
+    # ----- Tips helpers -----
+    def show_tip(self, key: str, text: str):
+        self.current_tip_key = key
+        self.tipsText.setPlainText(text)
+        self.tipsBox.setVisible(True)
+
+    def toggle_tip(self, key: str, text: str):
+        if getattr(self, 'current_tip_key', None) == key and self.tipsBox.isVisible():
+            self.tipsBox.setVisible(False)
+        else:
+            self.show_tip(key, text)
 
     # ----- Actions -----
     def on_preset(self, name: str):
