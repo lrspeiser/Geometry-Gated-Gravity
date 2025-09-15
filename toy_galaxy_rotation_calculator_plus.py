@@ -308,6 +308,11 @@ def main():
     tb_boost  = TextBox(ax_boost,'Boost fraction',          initial=str(float(args.boost)))
     tb_vobs   = TextBox(ax_vobs, 'Observed v (km/s)',       initial=str(float(args.vobs)))
     tb_soft   = TextBox(ax_soft, 'Softening (kpc)',         initial=str(float(args.soften)))
+    # Hide advanced physics controls for a simpler UI
+    ax_kGR.set_visible(False)
+    ax_att.set_visible(False)
+    ax_boost.set_visible(False)
+    ax_soft.set_visible(False)
 
     s_Gscale = TBWrapper(tb_Gscale, parse=float, clamp=(0.1, 5.0),   default=float(args.gscale))
     s_kGR    = TBWrapper(tb_kGR,    parse=float, clamp=(0.0, 20000), default=float(args.grk))
@@ -323,6 +328,10 @@ def main():
     tb_spread = TextBox(ax_spread, 'Spread ×',              initial=str(float(args.spread)))
     tb_outer  = TextBox(ax_outer,  'Outer percentile',      initial=str(float(args.outer)))
     tb_seed   = TextBox(ax_seed,   'Seed',                  initial=str(int(args.seed)))
+    # Hide structural inputs from the UI; presets will control structure
+    ax_spread.set_visible(False)
+    ax_outer.set_visible(False)
+    ax_seed.set_visible(False)
 
     s_spread = TBWrapper(tb_spread, parse=float, clamp=(0.5, 3.0),     default=float(args.spread))
     s_outer  = TBWrapper(tb_outer,  parse=float, clamp=(0.80, 0.995),  default=float(args.outer))
@@ -355,6 +364,9 @@ def main():
     tb_hzd   = TextBox(ax_hzd,  'Disk hz (kpc)',           initial=str(pp['hz_disk']))
     tb_hzb   = TextBox(ax_hzb,  'Bulge hz (kpc)',          initial=str(pp['hz_bulge']))
     tb_hzg   = TextBox(ax_hzg,  'Gas hz (kpc)',            initial=str(pp['hz_gas']))
+    # Hide component editor inputs; galaxy types will set these
+    for ax_comp in [ax_dm, ax_bm, ax_gm, ax_rd, ax_rmax, ax_ab, ax_rdg, ax_rmg, ax_hzd, ax_hzb, ax_hzg]:
+        ax_comp.set_visible(False)
 
     s_Mdisk = TBWrapper(tb_Mdisk, parse=float, clamp=(0.0, 8.0),   default=pp['M_disk']/1e10)
     s_Mbulge= TBWrapper(tb_Mbulge,parse=float, clamp=(0.0, 8.0),   default=pp['M_bulge']/1e10)
@@ -369,12 +381,6 @@ def main():
     s_hzg   = TBWrapper(tb_hzg,   parse=float, clamp=(0.01, 1.5),  default=pp['hz_gas'])
 
     # Defaults state for reset button (updated on preset change for component fields)
-    defaults = {
-        'Gscale': float(args.gscale), 'kGR': float(args.grk), 'atten': float(args.atten), 'boost': float(args.boost), 'vobs': float(args.vobs), 'soften': float(args.soften),
-        'spread': float(args.spread), 'outer': float(args.outer), 'seed': int(args.seed),
-        'Mdisk': pp['M_disk']/1e10, 'Mbulge': pp['M_bulge']/1e10, 'Mgas': pp['M_gas']/1e10,
-        'Rd': pp['Rd_disk'], 'Rmax': pp['Rmax_disk'], 'ab': pp['a_bulge'], 'Rdg': pp['Rd_gas'], 'Rmg': pp['Rmax_gas'], 'hzd': pp['hz_disk'], 'hzb': pp['hz_bulge'], 'hzg': pp['hz_gas'],
-    }
 
     ax_btn_curve = fig.add_axes([0.80, 0.03, 0.17, 0.035]); btn_curve = Button(ax_btn_curve, 'Plot Rotation Curve')
     ax_btn_save  = fig.add_axes([0.80, -0.02, 0.17, 0.035]); btn_save  = Button(ax_btn_save,  'Save Curve CSV')
@@ -386,32 +392,26 @@ def main():
     fig_rot = None; rot_lines = {}; fig_vec = None; vec_state = {}
     def reset_defaults(_=None):
         s_Gscale.set_val(defaults['Gscale'])
-        s_kGR.set_val(defaults['kGR'])
-        s_att.set_val(defaults['atten'])
-        s_boost.set_val(defaults['boost'])
         s_vobs.set_val(defaults['vobs'])
-        s_soften.set_val(defaults['soften'])
-        s_spread.set_val(defaults['spread'])
-        s_outer.set_val(defaults['outer'])
+        s_DensK.set_val(defaults['DensK'])
+        s_DensR.set_val(defaults['DensR'])
+        s_WellK.set_val(defaults['WellK'])
+        s_WellR.set_val(defaults['WellR'])
         s_seed.set_val(defaults['seed'])
-        s_Mdisk.set_val(defaults['Mdisk'])
-        s_Mbulge.set_val(defaults['Mbulge'])
-        s_Mgas.set_val(defaults['Mgas'])
-        s_Rd.set_val(defaults['Rd'])
-        s_Rmax.set_val(defaults['Rmax'])
-        s_ab.set_val(defaults['ab'])
-        s_Rdg.set_val(defaults['Rdg'])
-        s_Rmg.set_val(defaults['Rmg'])
-        s_hzd.set_val(defaults['hzd'])
-        s_hzb.set_val(defaults['hzb'])
-        s_hzg.set_val(defaults['hzg'])
+        s_Nstars.set_val(defaults['Nstars'])
+        s_Rdisk.set_val(defaults['Rdisk'])
+        s_BulgeA.set_val(defaults['BulgeA'])
+        s_Hz.set_val(defaults['Hz'])
+        s_BulgeFrac.set_val(defaults['BulgeFrac'])
+        s_Mtot1e10.set_val(defaults['Mtot1e10'])
+        build_simple_galaxy()
         refresh_main()
 
     btn_reset.on_clicked(reset_defaults)
 
     # ----- Simple controls (right column) -----
     # Defaults for simple mode
-    simple_defaults = dict(Nstars=4000, Rdisk=20.0, BulgeA=0.6, Hz=0.3, BulgeFrac=0.2, Mtot1e10=8.0, DensK=0.0, DensR=2.0)
+    simple_defaults = dict(Nstars=4000, Rdisk=20.0, BulgeA=0.6, Hz=0.3, BulgeFrac=0.2, Mtot1e10=8.0, DensK=0.0, DensR=2.0, WellK=0.0, WellR=2.0)
     ax_sN  = fig.add_axes([0.80, 0.93, 0.17, 0.035]); tb_sN  = TextBox(ax_sN,  'N stars',        initial=str(simple_defaults['Nstars']))
     ax_sR  = fig.add_axes([0.80, 0.89, 0.17, 0.035]); tb_sR  = TextBox(ax_sR,  'R disk (kpc)',   initial=str(simple_defaults['Rdisk']))
     ax_sBa = fig.add_axes([0.80, 0.85, 0.17, 0.035]); tb_sBa = TextBox(ax_sBa, 'Bulge a (kpc)',  initial=str(simple_defaults['BulgeA']))
@@ -420,7 +420,11 @@ def main():
     ax_sMt = fig.add_axes([0.80, 0.73, 0.17, 0.035]); tb_sMt = TextBox(ax_sMt, 'Total mass (1e10)', initial=str(simple_defaults['Mtot1e10']))
     ax_sDk = fig.add_axes([0.80, 0.69, 0.17, 0.035]); tb_sDk = TextBox(ax_sDk, 'Density k',      initial=str(simple_defaults['DensK']))
     ax_sDr = fig.add_axes([0.80, 0.65, 0.17, 0.035]); tb_sDr = TextBox(ax_sDr, 'Density R (kpc)',initial=str(simple_defaults['DensR']))
+    ax_sWk = fig.add_axes([0.80, 0.62, 0.17, 0.035]); tb_sWk = TextBox(ax_sWk, 'Well k',         initial=str(simple_defaults['WellK']))
+    ax_sWr = fig.add_axes([0.80, 0.58, 0.17, 0.035]); tb_sWr = TextBox(ax_sWr, 'Well R (kpc)',   initial=str(simple_defaults['WellR']))
     ax_sBuild = fig.add_axes([0.80, 0.61, 0.17, 0.035]); btn_sBuild = Button(ax_sBuild, 'Build Simple Galaxy')
+    # Hide the explicit build button; presets will rebuild automatically
+    ax_sBuild.set_visible(False)
 
     s_Nstars   = TBWrapper(tb_sN,  parse=int,   clamp=(8, 100000), default=simple_defaults['Nstars'])
     s_Rdisk    = TBWrapper(tb_sR,  parse=float, clamp=(0.5, 100.0), default=simple_defaults['Rdisk'])
@@ -430,6 +434,17 @@ def main():
     s_Mtot1e10 = TBWrapper(tb_sMt, parse=float, clamp=(0.01, 200.0),default=simple_defaults['Mtot1e10'])
     s_DensK    = TBWrapper(tb_sDk, parse=float, clamp=(0.0, 5.0),   default=simple_defaults['DensK'])
     s_DensR    = TBWrapper(tb_sDr, parse=float, clamp=(0.05, 10.0), default=simple_defaults['DensR'])
+    s_WellK    = TBWrapper(tb_sWk, parse=float, clamp=(0.0, 5.0),   default=simple_defaults['WellK'])
+    s_WellR    = TBWrapper(tb_sWr, parse=float, clamp=(0.05, 10.0), default=simple_defaults['WellR'])
+
+    # Defaults map used by Reset button
+    defaults = {
+        'Gscale': float(args.gscale), 'vobs': float(args.vobs),
+        'DensK': simple_defaults['DensK'], 'DensR': simple_defaults['DensR'],
+        'WellK': simple_defaults['WellK'], 'WellR': simple_defaults['WellR'],
+        'seed': int(args.seed),
+        'Nstars': simple_defaults['Nstars'], 'Rdisk': simple_defaults['Rdisk'], 'BulgeA': simple_defaults['BulgeA'], 'Hz': simple_defaults['Hz'], 'BulgeFrac': simple_defaults['BulgeFrac'], 'Mtot1e10': simple_defaults['Mtot1e10'],
+    }
 
     def build_simple_galaxy(_evt=None):
         nonlocal pos, masses, COM, R_all, R_edge, test_point
@@ -565,30 +580,10 @@ def main():
         btn.on_clicked(_on_click)
         return btn
 
-    # Finder buttons for physics (skip Observed v; it's the target itself)
+    # Finder buttons: keep only for global G and density/well knobs
     _add_finder(ax_sG,   s_Gscale, 'Find', False)
-    _add_finder(ax_kGR,  s_kGR,    'Find', False)
-    _add_finder(ax_att,  s_att,    'Find', False)
-    _add_finder(ax_boost,s_boost,  'Find', False)
-    _add_finder(ax_soft, s_soften, 'Find', False)
-
-    # Finder buttons for structural
-    _add_finder(ax_spread, s_spread, 'Find', True)
-    _add_finder(ax_outer,  s_outer,  'Find', True)
-    _add_finder(ax_seed,   s_seed,   'Find', True)
-
-    # Finder buttons for components
-    _add_finder(ax_dm,   s_Mdisk, 'Find', True)
-    _add_finder(ax_bm,   s_Mbulge,'Find', True)
-    _add_finder(ax_gm,   s_Mgas,  'Find', True)
-    _add_finder(ax_rd,   s_Rd,    'Find', True)
-    _add_finder(ax_rmax, s_Rmax,  'Find', True)
-    _add_finder(ax_ab,   s_ab,    'Find', True)
-    _add_finder(ax_rdg,  s_Rdg,   'Find', True)
-    _add_finder(ax_rmg,  s_Rmg,   'Find', True)
-    _add_finder(ax_hzd,  s_hzd,   'Find', True)
-    _add_finder(ax_hzb,  s_hzb,   'Find', True)
-    _add_finder(ax_hzg,  s_hzg,   'Find', True)
+    _add_finder(ax_sDk,  s_DensK,  'Find', False)
+    _add_finder(ax_sWk,  s_WellK,  'Find', False)
 
     fig_rot = None; rot_lines = {}; fig_vec = None; vec_state = {}
 
@@ -627,7 +622,6 @@ def main():
         rho_local = m_local / max(1e-30, vol)
         # Global reference density using farthest-star radius as a characteristic scale
         if len(masses) > 0:
-            # Use radius enclosing all points around COM
             Rchar = float(np.max(np.linalg.norm(pos - COM, axis=1)))
             Vchar = (4.0/3.0) * np.pi * max(1e-30, Rchar**3)
             rho_ref = float(masses.sum()) / Vchar
@@ -636,25 +630,85 @@ def main():
         boost = 0.0
         if rho_ref > 0:
             boost = k * max(0.0, (rho_ref / max(rho_local, 1e-30)) - 1.0)
-        # clamp effective G multiplier to a reasonable range
         mult = max(0.1, min(10.0, 1.0 + boost))
         return G0 * mult
 
+    def compute_well_scales():
+        # Per-source gravity well scaling based on local shallowness
+        try:
+            k = float(s_WellK.val)
+            Rw = max(1e-6, float(s_WellR.val))
+        except Exception:
+            k = 0.0; Rw = 1.0
+        if k <= 0 or len(masses) == 0:
+            return np.ones(len(masses))
+        # Reference density as before
+        Rchar = float(np.max(np.linalg.norm(pos - COM, axis=1))) if len(masses) else 1.0
+        Vchar = (4.0/3.0) * np.pi * max(1e-30, Rchar**3)
+        rho_ref = float(masses.sum()) / Vchar if Vchar > 0 else 0.0
+        scales = np.ones(len(masses))
+        # Compute local densities per source (approximate)
+        # If N is modest, do exact; else sample for speed
+        N = len(masses)
+        if N <= 4000:
+            # distance matrix may be large but acceptable
+            # Compute squared distances in chunks for memory safety
+            batch = 1000
+            for i0 in range(0, N, batch):
+                i1 = min(N, i0 + batch)
+                d2 = np.sum((pos[i0:i1, None, :] - pos[None, :, :])**2, axis=2)
+                mask = d2 <= (Rw*Rw)
+                m_local = mask @ masses
+                vol = (4.0/3.0) * np.pi * (Rw**3)
+                rho_local = m_local / max(1e-30, vol)
+                boost = np.zeros_like(rho_local)
+                if rho_ref > 0:
+                    boost = k * np.maximum(0.0, (rho_ref / np.maximum(rho_local, 1e-30)) - 1.0)
+                scales[i0:i1] = np.clip(1.0 + boost, 0.1, 10.0)
+        else:
+            # Approximate by sampling neighbors
+            idx = np.arange(N)
+            for i in range(N):
+                # sample 300 random indices
+                samp = np.random.default_rng(int(s_seed.val)).choice(idx, size=min(300, N), replace=False)
+                d2 = np.sum((pos[samp] - pos[i])**2, axis=1)
+                m_local = masses[samp][d2 <= (Rw*Rw)].sum() * (N / max(1, len(samp)))
+                vol = (4.0/3.0) * np.pi * (Rw**3)
+                rho_local = m_local / max(1e-30, vol)
+                boost = k * max(0.0, (rho_ref / max(rho_local, 1e-30)) - 1.0) if rho_ref > 0 else 0.0
+                scales[i] = max(0.1, min(10.0, 1.0 + boost))
+        return scales
+
     def compute_speeds_at_point():
-        G_eff_here = compute_G_eff(test_point)
-        a_gr_vec, a_newton_vec = net_acceleration_at_point(
-            test_point, pos, masses, G_eff_here, k_GR=float(s_kGR.val), atten_extra=float(s_att.val), soften_kpc=float(s_soften.val))
-        a0 = np.linalg.norm(a_newton_vec); agr = np.linalg.norm(a_gr_vec)
-        drop_frac = 0.0
-        if a0 > 0:
-            drop_frac = max(0.0, 1.0 - (agr/a0))
-        f_boost = float(s_boost.val); boost_factor = 1.0
-        if f_boost > 0 and drop_frac > 0 and (1.0 - f_boost*drop_frac) > 1e-9:
-            boost_factor = 1.0 / (1.0 - f_boost*drop_frac)
+        # Per-body vectors with density-at-point and well scaling
+        G_point = compute_G_eff(test_point)
+        # Base per-body construction (no GR attenuation or extra) computed directly
+        if len(masses) == 0:
+            return 0.0, 0.0, 0.0, 0.0, 1.0
+        r_vec = pos - test_point
+        r2 = np.sum(r_vec*r_vec, axis=1)
+        eps2 = (float(s_soften.val)**2)
+        inv_r3 = 1.0 / np.power(r2 + eps2, 1.5)
+        base = (masses * inv_r3)
+        well_sc = compute_well_scales()
+        # Newtonian and GR vectors (with any GR attenuation kept at zero by default)
+        newton_vecs = (G_point * well_sc)[:, None] * (r_vec * base[:, None])
+        # Keep GR k and extra atten at defaults (hidden UI), but compute path anyway for clarity
+        kGR = 0.0
+        atten = 0.0
+        r = np.sqrt(r2 + eps2)
+        per_body_scale = (1.0 - kGR * (G_point / max(1e-30, G_AST)) * G_AST * masses / (r * c_kms**2))
+        per_body_scale = np.clip(per_body_scale, 0.0, 1.0) * (1.0 - np.clip(atten, 0.0, 0.999))
+        gr_vecs = (G_point * well_sc)[:, None] * (r_vec * ((base * per_body_scale)[:, None]))
+        a_newton_vec = newton_vecs.sum(axis=0)
+        a_gr_vec = gr_vecs.sum(axis=0)
+        # No auto-boost by default
+        boost_factor = 1.0
         a_final_vec = a_gr_vec * boost_factor
         v_newton = circular_speed_from_accel(a_newton_vec, test_point - COM)
         v_gr_noboost = circular_speed_from_accel(a_gr_vec, test_point - COM)
         v_final = circular_speed_from_accel(a_final_vec, test_point - COM)
+        drop_frac = 0.0
         return v_newton, v_gr_noboost, v_final, drop_frac, boost_factor
 
     def compute_per_body_vectors():
@@ -674,12 +728,13 @@ def main():
         eps2 = (float(s_soften.val)**2)
         inv_r3 = 1.0 / np.power(r2 + eps2, 1.5)
         base = (masses * inv_r3)
-        newton_vecs = G_eff_base * (r_vec * base[:, None])
+        well_sc = compute_well_scales()
+        newton_vecs = (G_eff_base * well_sc)[:, None] * (r_vec * base[:, None])
         r = np.sqrt(r2 + eps2)
         per_body_scale = (1.0 - float(s_kGR.val) * (G_eff_base / max(1e-30, G_AST)) * G_AST * masses / (r * c_kms**2))
         per_body_scale = np.clip(per_body_scale, 0.0, 1.0)
         per_body_scale *= (1.0 - np.clip(float(s_att.val), 0.0, 0.999))
-        gr_vecs = G_eff_base * (r_vec * ((base * per_body_scale)[:, None]))
+        gr_vecs = (G_eff_base * well_sc)[:, None] * (r_vec * ((base * per_body_scale)[:, None]))
         a0 = np.linalg.norm(newton_vecs.sum(axis=0))
         agr = np.linalg.norm(gr_vecs.sum(axis=0))
         drop_frac = 0.0
@@ -707,7 +762,7 @@ def main():
         p_edge = COM + np.array([Rmax, 0, 0])
         G_eff_edge = compute_G_eff(p_edge)
         a_gr_edge, a_newt_edge = net_acceleration_at_point(
-            p_edge, pos, masses, G_eff_edge, k_GR=float(s_kGR.val), atten_extra=float(s_att.val), soften_kpc=float(s_soften.val))
+            p_edge, pos, masses, G_eff_edge, k_GR=0.0, atten_extra=0.0, soften_kpc=float(s_soften.val))
         drop_edge = 0.0
         if np.linalg.norm(a_newt_edge) > 0:
             drop_edge = max(0.0, 1.0 - np.linalg.norm(a_gr_edge)/np.linalg.norm(a_newt_edge))
@@ -718,8 +773,17 @@ def main():
         for R in R_vals:
             p = COM + np.array([R, 0, 0])
             G_eff_p = compute_G_eff(p)
-            a_gr_vec, a_newton_vec = net_acceleration_at_point(
-                p, pos, masses, G_eff_p, k_GR=float(s_kGR.val), atten_extra=float(s_att.val), soften_kpc=float(s_soften.val))
+            # Per-body with well scaling
+            r_vec = pos - p
+            r2 = np.sum(r_vec*r_vec, axis=1)
+            inv_r3 = 1.0 / np.power(r2 + float(s_soften.val)**2, 1.5)
+            base = (masses * inv_r3)
+            well_sc = compute_well_scales()
+            # Newtonian and GR-like (no extra attenuation)
+            newton_vecs = (G_eff_p * well_sc)[:, None] * (r_vec * base[:, None])
+            a_newton_vec = newton_vecs.sum(axis=0)
+            gr_vecs = (G_eff_p * well_sc)[:, None] * (r_vec * (base[:, None]))
+            a_gr_vec = gr_vecs.sum(axis=0)
             vN.append(circular_speed_from_accel(a_newton_vec, p - COM))
             vGR.append(circular_speed_from_accel(a_gr_vec, p - COM))
             vF.append(circular_speed_from_accel(a_gr_vec * boost_factor, p - COM))
@@ -737,11 +801,10 @@ def main():
         total_mass = masses.sum()
         far_r = float(np.linalg.norm(test_point[:2] - COM[:2]))
         lines = [
-            f"Preset: {radio.value_selected} | N lumps: {len(masses)} | Total luminous+gas mass: {total_mass:,.2e} Msun",
+            f"Preset: {radio.value_selected} | N stars: {len(masses)} | Total mass: {total_mass:,.2e} Msun",
             f"Farthest-star radius: R = {far_r:.2f} kpc",
-            f"G scale: {s_Gscale.val:.2f} | GR k (toy): {s_kGR.val:.0f} | Extra atten: {s_att.val:.2f} | Softening: {s_soften.val:.2f} kpc",
-            f"Drop from attenuation at edge: {100*drop_frac:.4f}% | Auto-boost factor: ×{boost_factor:.5f}",
-            f"Speeds (km/s): Newtonian={v_newton:.2f}  GR,no boost={v_gr_noboost:.2f}  Final (with boost)={v_final:.2f}",
+            f"G scale: {s_Gscale.val:.2f} | Density k: {s_DensK.val:.2f} @ R={s_DensR.val:.2f} kpc | Well k: {s_WellK.val:.2f} @ R={s_WellR.val:.2f} kpc",
+            f"Speeds (km/s): Newtonian={v_newton:.2f}  GR-like={v_gr_noboost:.2f}  Final={v_final:.2f}",
             f"Observed target: {v_obs:.1f} km/s | Final − Observed = {dv:+.2f} km/s"
         ]
         text_box.set_text('\n'.join(lines))
@@ -761,33 +824,30 @@ def main():
         refresh_rotation_curve()
 
     def apply_preset(name: str):
-        params = preset_params(name)
-        s_Mdisk.set_val(params['M_disk']/1e10)
-        s_Mbulge.set_val(params['M_bulge']/1e10)
-        s_Mgas.set_val(params['M_gas']/1e10)
-        s_Rd.set_val(params['Rd_disk'])
-        s_Rmax.set_val(params['Rmax_disk'])
-        s_ab.set_val(params['a_bulge'])
-        s_Rdg.set_val(params['Rd_gas'])
-        s_Rmg.set_val(params['Rmax_gas'])
-        s_hzd.set_val(params['hz_disk'])
-        s_hzb.set_val(params['hz_bulge'])
-        s_hzg.set_val(params['hz_gas'])
-        # Update defaults for component fields to align with current preset
-        defaults.update({
-            'Mdisk': params['M_disk']/1e10,
-            'Mbulge': params['M_bulge']/1e10,
-            'Mgas': params['M_gas']/1e10,
-            'Rd': params['Rd_disk'],
-            'Rmax': params['Rmax_disk'],
-            'ab': params['a_bulge'],
-            'Rdg': params['Rd_gas'],
-            'Rmg': params['Rmax_gas'],
-            'hzd': params['hz_disk'],
-            'hzb': params['hz_bulge'],
-            'hzg': params['hz_gas'],
-        })
-        refresh_main()
+        # Simple galaxy defaults per type
+        if name == "MW-like disk":
+            p = dict(Nstars=8000, Rdisk=20.0, BulgeA=0.6, Hz=0.3, BulgeFrac=0.2, Mtot1e10=8.0)
+        elif name == "Central-dominated":
+            p = dict(Nstars=6000, Rdisk=15.0, BulgeA=0.8, Hz=0.5, BulgeFrac=0.8, Mtot1e10=9.5)
+        elif name == "Dwarf disk":
+            p = dict(Nstars=3000, Rdisk=6.0,  BulgeA=0.3, Hz=0.2, BulgeFrac=0.0, Mtot1e10=0.45)
+        elif name == "LMC-like dwarf":
+            p = dict(Nstars=2500, Rdisk=9.0,  BulgeA=0.2, Hz=0.25, BulgeFrac=0.0, Mtot1e10=0.40)
+        elif name == "Ultra-diffuse disk":
+            p = dict(Nstars=2000, Rdisk=30.0, BulgeA=0.3, Hz=0.6, BulgeFrac=0.0, Mtot1e10=0.07)
+        elif name == "Compact nuclear disk":
+            p = dict(Nstars=5000, Rdisk=2.0,  BulgeA=0.2, Hz=0.3, BulgeFrac=0.9, Mtot1e10=2.2)
+        else:
+            p = dict(Nstars=s_Nstars.val, Rdisk=s_Rdisk.val, BulgeA=s_BulgeA.val, Hz=s_Hz.val, BulgeFrac=s_BulgeFrac.val, Mtot1e10=s_Mtot1e10.val)
+        s_Nstars.set_val(p['Nstars'])
+        s_Rdisk.set_val(p['Rdisk'])
+        s_BulgeA.set_val(p['BulgeA'])
+        s_Hz.set_val(p['Hz'])
+        s_BulgeFrac.set_val(p['BulgeFrac'])
+        s_Mtot1e10.set_val(p['Mtot1e10'])
+        # Update defaults
+        defaults.update(p)
+        build_simple_galaxy()
 
     def on_preset_clicked(label: str):
         apply_preset(label)
