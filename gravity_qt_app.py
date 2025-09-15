@@ -14,6 +14,7 @@ from __future__ import annotations
 import sys
 import math
 import csv
+import json
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Tuple
@@ -29,20 +30,22 @@ from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as Navigation
 
 # Try PyQt6 first, fall back to PyQt5
 try:
-    from PyQt6.QtCore import Qt, QTimer
+    from PyQt6.QtCore import Qt, QTimer, QThread
     from PyQt6.QtWidgets import (
         QApplication, QMainWindow, QWidget, QGridLayout, QHBoxLayout, QVBoxLayout,
         QSplitter, QLabel, QDoubleSpinBox, QSpinBox, QComboBox, QPushButton, QCheckBox,
         QGroupBox, QFormLayout, QFileDialog, QTableWidget, QTableWidgetItem, QDialog,
-        QSizePolicy)
+        QSizePolicy, QInputDialog, QListWidget, QListWidgetItem, QRadioButton,
+        QProgressBar, QDialogButtonBox, QAbstractItemView)
     QT_IS_6 = True
 except Exception:
-    from PyQt5.QtCore import Qt, QTimer
+    from PyQt5.QtCore import Qt, QTimer, QThread
     from PyQt5.QtWidgets import (
         QApplication, QMainWindow, QWidget, QGridLayout, QHBoxLayout, QVBoxLayout,
         QSplitter, QLabel, QDoubleSpinBox, QSpinBox, QComboBox, QPushButton, QCheckBox,
         QGroupBox, QFormLayout, QFileDialog, QTableWidget, QTableWidgetItem, QDialog,
-        QSizePolicy
+        QSizePolicy, QInputDialog, QListWidget, QListWidgetItem, QRadioButton,
+        QProgressBar, QDialogButtonBox, QAbstractItemView
     )
     QT_IS_6 = False
 
@@ -183,7 +186,7 @@ class GravityModel:
         self.COM = np.zeros(3)
         self.test_point = np.zeros(3)
         self.test_idx = None
-        self.cache_well = {"version": -1, "k": None, "R": None, "scales": None}
+        self.cache_well = {"version": -1, "k": None, "R": None, "scales": None, "base": None}
         self.version = 0
 
     def rebuild(self, pos: np.ndarray, masses: np.ndarray):
@@ -198,7 +201,7 @@ class GravityModel:
             self.test_idx = int(np.argmax(R_all))
             self.test_point = pos[self.test_idx]
         self.version += 1
-        self.cache_well["version"] = -1
+        self.cache_well.update({"version": -1, "base": None, "scales": None, "k": None, "R": None})
 
     def compute_G_eff(self, p: np.ndarray, knobs: DensityKnobs) -> float:
         G0 = G_AST * float(knobs.g_scale)
@@ -221,26 +224,32 @@ class GravityModel:
 
     def well_scales(self, knobs: DensityKnobs) -> np.ndarray:
         k = float(knobs.well_k); Rw = max(1e-6, float(knobs.well_R))
-        if len(self.masses) == 0 or k <= 0:
-            return np.ones(len(self.masses))
-        c = self.cache_well
-        if c["scales"] is not None and c["version"] == self.version and c["k"] == k and c["R"] == Rw:
-            return c["scales"]
-        Rchar = float(np.max(np.linalg.norm(self.pos - self.COM, axis=1))) if len(self.masses) else 1.0
-        Vchar = (4.0 / 3.0) * math.pi * max(1e-30, Rchar ** 3)
-        rho_ref = float(self.masses.sum()) / Vchar if Vchar > 0 else 0.0
         N = len(self.masses)
-        scales = np.ones(N)
-        batch = 1000
-        for i0 in range(0, N, batch):
-            i1 = min(N, i0 + batch)
-            d2 = np.sum((self.pos[i0:i1, None, :] - self.pos[None, :, :]) ** 2, axis=2)
-            m_local = (d2 <= (Rw * Rw)) @ self.masses
-            vol = (4.0 / 3.0) * math.pi * (Rw ** 3)
-            rho_local = m_local / max(1e-30, vol)
-            boost = k * np.maximum(0.0, (rho_ref / np.maximum(rho_local, 1e-30)) - 1.0)
-            scales[i0:i1] = np.clip(1.0 + boost, 0.1, 10.0)
-        self.cache_well.update({"version": self.version, "k": k, "R": Rw, "scales": scales})
+        if N == 0:
+            return np.ones(0)
+        c = self.cache_well
+        # Recompute k-independent base factor if cache invalid for current galaxy state or Rw
+        needs_base = (c.get("base") is None) or (c.get("version") != self.version) or (c.get("R") != Rw)
+        if needs_base:
+            Rchar = float(np.max(np.linalg.norm(self.pos - self.COM, axis=1))) if N else 1.0
+            Vchar = (4.0 / 3.0) * math.pi * max(1e-30, Rchar ** 3)
+            rho_ref = float(self.masses.sum()) / Vchar if Vchar > 0 else 0.0
+            base = np.zeros(N, dtype=float)
+            batch = 1000
+            for i0 in range(0, N, batch):
+                i1 = min(N, i0 + batch)
+                d2 = np.sum((self.pos[i0:i1, None, :] - self.pos[None, :, :]) ** 2, axis=2)
+                m_local = (d2 <= (Rw * Rw)) @ self.masses
+                vol = (4.0 / 3.0) * math.pi * (Rw ** 3)
+                rho_local = m_local / max(1e-30, vol)
+                base[i0:i1] = np.maximum(0.0, (rho_ref / np.maximum(rho_local, 1e-30)) - 1.0)
+            c.update({"version": self.version, "R": Rw, "base": base})
+        else:
+            base = c["base"]
+        if k <= 0:
+            return np.ones(N)
+        scales = np.clip(1.0 + k * base, 0.1, 10.0)
+        c.update({"k": k, "scales": scales})
         return scales
 
     def per_body_vectors(self, p: np.ndarray, knobs: DensityKnobs) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
@@ -341,6 +350,274 @@ class VectorsDialog(QDialog):
                             self.model.masses[i], fx, fy, fz, math.sqrt(fx*fx+fy*fy+fz*fz)])
 
 
+class CompareWorker(QThread):
+    rowReady = Signal(dict)
+    progress = Signal(int, int, str)  # done, total, preset name
+    finished = Signal(list)
+
+    def __init__(self, presets, knobs: DensityKnobs, objective: str, vobs: float, obs_curve=None, N_override: int = 0,
+                 resolve: bool = True, solve_dk: bool = True, solve_g: bool = True, solve_wk: bool = True, parent=None):
+        super().__init__(parent)
+        self.presets = presets
+        self.knobs = knobs
+        self.objective = objective
+        self.vobs = float(vobs)
+        self.obs_curve = obs_curve
+        self.N_override = int(N_override or 0)
+        self.resolve = bool(resolve)
+        self.solve_dk = bool(solve_dk)
+        self.solve_g = bool(solve_g)
+        self.solve_wk = bool(solve_wk)
+        self.rows = []
+
+    def run(self):
+        import time
+        t0 = time.perf_counter()
+        total = len(self.presets)
+        for i, name in enumerate(self.presets, 1):
+            row = self._process_one(name)
+            self.rows.append(row)
+            self.rowReady.emit(row)
+            self.progress.emit(i, total, name)
+        self.finished.emit(self.rows)
+
+    def _build_from_preset(self, name: str):
+        p = PRESET_SIMPLE.get(name, PRESET_SIMPLE[PRESET_OPTIONS[0]])
+        Nstars = self.N_override if self.N_override > 0 else int(p['Nstars'])
+        pos, masses = make_simple_galaxy(
+            seed=42,
+            N_total=Nstars,
+            R_disk=float(p['Rdisk']),
+            a_bulge=float(p['BulgeA']),
+            hz=float(p['Hz']),
+            f_bulge=float(p['BulgeFrac']),
+            Mtot=float(p['Mtot1e10'])*1e10,
+        )
+        m = GravityModel(); m.rebuild(pos, masses)
+        return m
+
+    def _curve_vtriple_for_model(self, model: GravityModel, knobs: DensityKnobs, nR: int = 60):
+        if len(model.masses) == 0:
+            z = np.zeros(1); return np.array([0.0]), z, z, z
+        Rmax = float(np.max(np.linalg.norm(model.pos - model.COM, axis=1)))
+        R_vals = np.linspace(max(0.2, 0.02*Rmax), Rmax, nR)
+        vN, vG, vF = [], [], []
+        for R in R_vals:
+            p = model.COM + np.array([R,0,0])
+            newton, gr_like, final = model.per_body_vectors(p, knobs)
+            vN.append(circular_speed_from_accel(newton.sum(axis=0), p - model.COM))
+            vG.append(circular_speed_from_accel(gr_like.sum(axis=0), p - model.COM))
+            vF.append(circular_speed_from_accel(final.sum(axis=0), p - model.COM))
+        return np.array(R_vals), np.array(vN), np.array(vG), np.array(vF)
+
+    def _golden_section(self, f, lo, hi, iters=28, tol=1e-4):
+        phi = (1 + 5 ** 0.5) / 2
+        invphi = 1 / phi
+        a, b = float(lo), float(hi)
+        c = b - invphi * (b - a)
+        d = a + invphi * (b - a)
+        fc = f(c)
+        fd = f(d)
+        for _ in range(iters):
+            if abs(b - a) < tol * (abs(c) + abs(d)) + 1e-12:
+                break
+            if fc < fd:
+                b, d, fd = d, c, fc
+                c = b - invphi * (b - a)
+                fc = f(c)
+            else:
+                a, c, fc = c, d, fd
+                d = a + invphi * (b - a)
+                fd = f(d)
+        x = (a + b) / 2
+        fx = f(x)
+        return x, fx
+
+    def _err_for_knobs(self, model: GravityModel, knobs: DensityKnobs):
+        if self.objective.startswith('curve'):
+            R_vals, vN_arr, vG_arr, vF_arr = self._curve_vtriple_for_model(model, knobs, nR=60)
+            if self.obs_curve is not None:
+                R_obs, v_obs = self.obs_curve
+                import numpy as _np
+                v_obs_grid = _np.interp(R_vals, R_obs, v_obs, left=v_obs[0], right=v_obs[-1])
+            else:
+                v_obs_grid = np.full_like(vF_arr, self.vobs, dtype=float)
+            return float(np.sum((vF_arr - v_obs_grid)**2))
+        else:
+            _, _, vF = model.speeds_at_test(knobs)
+            return float((vF - self.vobs) ** 2)
+
+    def _process_one(self, name: str):
+        import time
+        t1 = time.perf_counter()
+        model = self._build_from_preset(name)
+        err_fixed = self._err_for_knobs(model, self.knobs)
+        row = {
+            "preset": name,
+            "N": int(len(model.masses)),
+            "err_fixed": float(err_fixed),
+            "g": float(self.knobs.g_scale),
+            "dens_k": float(self.knobs.dens_k),
+            "dens_R": float(self.knobs.dens_R),
+            "well_k": float(self.knobs.well_k),
+            "well_R": float(self.knobs.well_R),
+        }
+        if self.resolve:
+            g_lo, g_hi = 0.5, 2.0
+            dk_lo, dk_hi = 0.0, 3.0
+            wk_lo, wk_hi = 0.0, 1.0
+            g = float(self.knobs.g_scale); dk = float(self.knobs.dens_k); wk = float(self.knobs.well_k)
+            for _ in range(2):
+                if self.solve_dk:
+                    f1 = lambda x: self._err_for_knobs(model, DensityKnobs(g_scale=g, dens_k=max(dk_lo, min(dk_hi, x)), dens_R=self.knobs.dens_R, well_k=wk, well_R=self.knobs.well_R))
+                    dk, _ = self._golden_section(f1, dk_lo, dk_hi)
+                if self.solve_g:
+                    f2 = lambda x: self._err_for_knobs(model, DensityKnobs(g_scale=max(g_lo, min(g_hi, x)), dens_k=dk, dens_R=self.knobs.dens_R, well_k=wk, well_R=self.knobs.well_R))
+                    g, _ = self._golden_section(f2, g_lo, g_hi)
+                if self.solve_wk:
+                    f3 = lambda x: self._err_for_knobs(model, DensityKnobs(g_scale=g, dens_k=dk, dens_R=self.knobs.dens_R, well_k=max(wk_lo, min(wk_hi, x)), well_R=self.knobs.well_R))
+                    wk, _ = self._golden_section(f3, wk_lo, wk_hi)
+            solved_knobs = DensityKnobs(g_scale=float(g), dens_k=float(dk), dens_R=float(self.knobs.dens_R), well_k=float(wk), well_R=float(self.knobs.well_R))
+            row.update({
+                "g_solved": solved_knobs.g_scale,
+                "dens_k_solved": solved_knobs.dens_k,
+                "well_k_solved": solved_knobs.well_k,
+                "err_solved": float(self._err_for_knobs(model, solved_knobs)),
+            })
+        t2 = time.perf_counter()
+        row["time_s"] = float(t2 - t1)
+        return row
+
+
+class CompareAcrossPresetsDialog(QDialog):
+    def __init__(self, parent: 'MainWindow'):
+        super().__init__(parent)
+        self.setWindowTitle("Compare Across Presets")
+        self.parent_ref = parent
+        self.resize(900, 600)
+        self.rows = []
+
+        vbox = QVBoxLayout(self)
+        ctrl = QGridLayout()
+
+        # Preset list
+        self.listPresets = QListWidget()
+        self.listPresets.setSelectionMode(QAbstractItemView.SelectionMode.MultiSelection)
+        for name in PRESET_OPTIONS:
+            item = QListWidgetItem(name)
+            self.listPresets.addItem(item)
+            item.setSelected(True)
+        ctrl.addWidget(QLabel("Presets"), 0, 0)
+        ctrl.addWidget(self.listPresets, 1, 0, 4, 1)
+
+        # Options panel
+        self.radioTest = QRadioButton("Objective: match test star")
+        self.radioCurve = QRadioButton("Objective: match curve")
+        self.radioTest.setChecked(True)
+        self.chkResolve = QCheckBox("Re-solve per preset starting from current knobs")
+        self.chkResolve.setChecked(True)
+        self.spinN = QSpinBox(); self.spinN.setRange(100, 200000); self.spinN.setValue(3000)
+        ctrl.addWidget(self.radioTest, 0, 1)
+        ctrl.addWidget(self.radioCurve, 1, 1)
+        ctrl.addWidget(self.chkResolve, 2, 1)
+        ctrl.addWidget(QLabel("N stars override"), 3, 1)
+        ctrl.addWidget(self.spinN, 3, 2)
+
+        vbox.addLayout(ctrl)
+
+        # Table
+        self.table = QTableWidget(0, 10)
+        self.table.setHorizontalHeaderLabels(["Preset","N","Err (fixed)","Err (solved)","G","dens_k","dens_R","well_k","well_R","time_s"])
+        vbox.addWidget(self.table)
+
+        # Progress + buttons
+        bot = QHBoxLayout()
+        self.progress = QProgressBar(); self.progress.setRange(0, 100)
+        self.btnRun = QPushButton("Run")
+        self.btnSaveCSV = QPushButton("Save CSV…")
+        self.btnApply = QPushButton("Apply knobs from selected")
+        self.btnClose = QPushButton("Close")
+        bot.addWidget(self.progress, 1)
+        bot.addWidget(self.btnRun)
+        bot.addWidget(self.btnSaveCSV)
+        bot.addWidget(self.btnApply)
+        bot.addWidget(self.btnClose)
+        vbox.addLayout(bot)
+
+        self.btnRun.clicked.connect(self.start_run)
+        self.btnSaveCSV.clicked.connect(self.save_csv)
+        self.btnApply.clicked.connect(self.apply_selected)
+        self.btnClose.clicked.connect(self.accept)
+
+    def start_run(self):
+        names = [i.text() for i in self.listPresets.selectedItems()]
+        if not names:
+            return
+        obj = 'test' if self.radioTest.isChecked() else 'curve'
+        N_override = int(self.spinN.value())
+        kn = DensityKnobs(
+            g_scale=float(self.parent_ref.spinG.value()),
+            dens_k=float(self.parent_ref.spinDk.value()), dens_R=float(self.parent_ref.spinDr.value()),
+            well_k=float(self.parent_ref.spinWk.value()), well_R=float(self.parent_ref.spinWr.value()),
+        )
+        obs_curve = self.parent_ref.obsCurve if (obj=='curve') else None
+        self.worker = CompareWorker(names, kn, obj, float(self.parent_ref.spinVobs.value()), obs_curve=obs_curve,
+                                    N_override=N_override, resolve=self.chkResolve.isChecked())
+        self.worker.rowReady.connect(self._on_row_ready)
+        self.worker.progress.connect(self._on_progress)
+        self.worker.finished.connect(self._on_finished)
+        self.rows = []
+        self.table.setRowCount(0)
+        self.progress.setValue(0)
+        self.btnRun.setEnabled(False)
+        self.worker.start()
+
+    def _on_row_ready(self, row: dict):
+        self.rows.append(row)
+        r = self.table.rowCount(); self.table.insertRow(r)
+        def get(k, default=""):
+            return row[k] if k in row else default
+        values = [row["preset"], get("N", ""), f"{row['err_fixed']:.4g}",
+                  (f"{row['err_solved']:.4g}" if 'err_solved' in row else ""),
+                  f"{row['g']:.4f}", f"{row['dens_k']:.4f}", f"{row['dens_R']:.3f}", f"{row['well_k']:.4f}", f"{row['well_R']:.3f}", f"{row['time_s']:.2f}"]
+        for c, val in enumerate(values):
+            self.table.setItem(r, c, QTableWidgetItem(str(val)))
+
+    def _on_progress(self, done: int, total: int, name: str):
+        pct = int(100 * done / max(1, total))
+        self.progress.setValue(pct)
+
+    def _on_finished(self, rows: list):
+        self.btnRun.setEnabled(True)
+
+    def save_csv(self):
+        if not self.rows:
+            return
+        path, _ = QFileDialog.getSaveFileName(self, "Save compare.csv", str(Path.cwd()/"compare_presets.csv"))
+        if not path:
+            return
+        with open(path, "w", newline="") as f:
+            w = csv.writer(f)
+            keys = ["preset","N","err_fixed","err_solved","g","dens_k","dens_R","well_k","well_R","time_s"]
+            w.writerow(keys)
+            for row in self.rows:
+                w.writerow([row.get(k, "") for k in keys])
+
+    def apply_selected(self):
+        r = self.table.currentRow()
+        if r < 0:
+            return
+        # Prefer solved knobs if present, else fixed
+        row = self.rows[r]
+        g = float(row.get('g_solved', row.get('g', 1.0)))
+        dk = float(row.get('dens_k_solved', row.get('dens_k', 0.0)))
+        wk = float(row.get('well_k_solved', row.get('well_k', 0.0)))
+        dens_R = float(row.get('dens_R', self.parent_ref.spinDr.value()))
+        well_R = float(row.get('well_R', self.parent_ref.spinWr.value()))
+        self.parent_ref.apply_knobs(DensityKnobs(g_scale=g, dens_k=dk, dens_R=dens_R, well_k=wk, well_R=well_R))
+        self.accept()
+
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -350,6 +627,15 @@ class MainWindow(QMainWindow):
         # Core state
         self.model = GravityModel()
         self.knobs = DensityKnobs()
+        # Initialize animation/curve-related placeholders early to avoid attribute errors during startup
+        self.base_pos = np.zeros((0,3))
+        self.base_angles = np.zeros(0)
+        self.base_rxy = np.zeros(0)
+        self.vf_stars = np.zeros(0)
+        self.vg_stars = np.zeros(0)
+        self.curveR = np.zeros(0)
+        self.curveVF = np.zeros(0)
+        self.curveVG = np.zeros(0)
 
         # Central splitter
         splitter = QSplitter(Qt.Orientation.Horizontal)
@@ -451,6 +737,13 @@ class MainWindow(QMainWindow):
         layS.addRow(self.chkSolveWk)
         layS.addRow(self.btnSolve)
         layS.addRow(self.btnLoadObs)
+        # Extra actions: save/load and compare
+        self.btnSaveSolution = QPushButton("Save Solution…")
+        self.btnLoadSolution = QPushButton("Load Solution…")
+        self.btnCompare = QPushButton("Compare Across Presets…")
+        layS.addRow(self.btnSaveSolution)
+        layS.addRow(self.btnLoadSolution)
+        layS.addRow(self.btnCompare)
         rightLayout.addWidget(self.grpSolve)
         self.obsCurve = None  # (R_obs, v_obs)
 
@@ -487,6 +780,9 @@ class MainWindow(QMainWindow):
         self.btnSaveCSV.clicked.connect(self.save_curve_csv)
         self.btnSolve.clicked.connect(self.solve_params)
         self.btnLoadObs.clicked.connect(self.load_obs_curve)
+        self.btnSaveSolution.clicked.connect(self.save_solution_profile)
+        self.btnLoadSolution.clicked.connect(self.load_solution_profile)
+        self.btnCompare.clicked.connect(self.open_compare_dialog)
         for w in [self.spinG, self.spinDk, self.spinDr, self.spinWk, self.spinWr, self.spinVobs]:
             w.valueChanged.connect(self.schedule_refresh)
         for w in [self.sN, self.sR, self.sBa, self.sHz, self.sBf, self.sMt]:
@@ -620,7 +916,7 @@ class MainWindow(QMainWindow):
 
         def obj_curve(g, dk, wk):
             knobs = DensityKnobs(g_scale=g, dens_k=dk, dens_R=float(self.spinDr.value()), well_k=wk, well_R=float(self.spinWr.value()))
-            R_vals, vF_arr = self.curve_vfinal(knobs, nR=60)
+            R_vals, vN_arr, vG_arr, vF_arr = self.curve_vtriple(knobs, nR=60)
             if self.obsCurve is not None and mode.endswith('CSV'):
                 R_obs, v_obs = self.obsCurve
                 # interpolate obs to our grid
@@ -684,8 +980,9 @@ class MainWindow(QMainWindow):
         )
         self.model.rebuild(pos, masses)
         self.refresh_scene()
-        self.refresh_physics()
+        # Build animation state first so base_rxy is defined before physics refresh uses it
         self.build_animation_state()
+        self.refresh_physics()
 
     def refresh_scene(self):
         if len(self.model.masses) == 0:
@@ -737,7 +1034,9 @@ class MainWindow(QMainWindow):
     def update_colors(self):
         if len(getattr(self, 'vf_stars', []))==0 or len(getattr(self, 'vg_stars', []))==0:
             return
-        tol = float(self.spinTol.value()) / 100.0
+        # spinTol may not be constructed yet during initial startup; default to 10%
+        spinTol_widget = getattr(self, 'spinTol', None)
+        tol = (float(spinTol_widget.value()) / 100.0) if (spinTol_widget is not None) else 0.10
         vg = np.maximum(self.vg_stars, 1e-6)
         rel = np.abs(self.vf_stars - vg) / vg
         fit_mask = rel <= tol
@@ -807,6 +1106,76 @@ class MainWindow(QMainWindow):
             w.writerow(["R_kpc","v_newton_kms","v_gr_like_kms","v_final_kms","G_scale","dens_k","dens_R","well_k","well_R"])
             for r in rows:
                 w.writerow([float(x) for x in r])
+
+    # ----- Solution profiles -----
+    def _solutions_path(self) -> Path:
+        return Path.cwd()/"solutions.json"
+
+    def save_solution_profile(self):
+        # Prompt for profile name
+        default_name = f"{self.preset.currentText()}"
+        name, ok = QInputDialog.getText(self, "Save Solution", "Profile name:", text=default_name)
+        if not ok or not str(name).strip():
+            return
+        name = str(name).strip()
+        entry = dict(
+            G=float(self.spinG.value()), Dk=float(self.spinDk.value()), Dr=float(self.spinDr.value()),
+            Wk=float(self.spinWk.value()), Wr=float(self.spinWr.value()), Vobs=float(self.spinVobs.value()),
+            Preset=str(self.preset.currentText())
+        )
+        path = self._solutions_path()
+        data = {}
+        if path.exists():
+            try:
+                data = json.load(open(path, 'r'))
+            except Exception:
+                data = {}
+        data[name] = entry
+        with open(path, 'w') as f:
+            json.dump(data, f, indent=2)
+        self.show_tip("Solutions", f"Saved solution '{name}' to {path.name}.")
+
+    def load_solution_profile(self):
+        path = self._solutions_path()
+        if not path.exists():
+            self.show_tip("Solutions", "No solutions.json found in current directory.")
+            return
+        try:
+            data = json.load(open(path, 'r'))
+        except Exception:
+            self.show_tip("Solutions", "Could not parse solutions.json")
+            return
+        if not data:
+            self.show_tip("Solutions", "solutions.json has no entries.")
+            return
+        names = list(data.keys())
+        name, ok = QInputDialog.getItem(self, "Load Solution", "Choose profile:", names, 0, False)
+        if not ok:
+            return
+        ent = data.get(name)
+        if not ent:
+            return
+        self.spinG.setValue(float(ent.get('G', self.spinG.value())))
+        self.spinDk.setValue(float(ent.get('Dk', self.spinDk.value())))
+        self.spinDr.setValue(float(ent.get('Dr', self.spinDr.value())))
+        self.spinWk.setValue(float(ent.get('Wk', self.spinWk.value())))
+        self.spinWr.setValue(float(ent.get('Wr', self.spinWr.value())))
+        vobs = float(ent.get('Vobs', self.spinVobs.value()))
+        self.spinVobs.setValue(vobs)
+        self.refresh_physics()
+        self.show_tip("Solutions", f"Loaded solution '{name}'.")
+
+    def open_compare_dialog(self):
+        dlg = CompareAcrossPresetsDialog(self)
+        dlg.exec()
+
+    def apply_knobs(self, knobs: DensityKnobs):
+        self.spinG.setValue(float(knobs.g_scale))
+        self.spinDk.setValue(float(knobs.dens_k))
+        self.spinDr.setValue(float(knobs.dens_R))
+        self.spinWk.setValue(float(knobs.well_k))
+        self.spinWr.setValue(float(knobs.well_R))
+        self.refresh_physics()
 
 
 def main():
