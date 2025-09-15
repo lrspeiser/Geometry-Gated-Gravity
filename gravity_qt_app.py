@@ -633,7 +633,9 @@ class MainWindow(QMainWindow):
         self.base_rxy = np.zeros(0)
         self.vf_stars = np.zeros(0)
         self.vg_stars = np.zeros(0)
+        self.vn_stars = np.zeros(0)
         self.curveR = np.zeros(0)
+        self.curveVN = np.zeros(0)
         self.curveVF = np.zeros(0)
         self.curveVG = np.zeros(0)
 
@@ -801,6 +803,8 @@ class MainWindow(QMainWindow):
         self.spinAnim = QDoubleSpinBox(); self.spinAnim.setRange(0.0, 5.0); self.spinAnim.setDecimals(2); self.spinAnim.setValue(1.00)
         layA.addRow(self.chkAnimate)
         layA.addRow("Speed scale", self.spinAnim)
+        self.spinAnimMin = QDoubleSpinBox(); self.spinAnimMin.setRange(0.0, 1000.0); self.spinAnimMin.setDecimals(1); self.spinAnimMin.setValue(2.0)
+        layA.addRow("Min anim v (km/s)", self.spinAnimMin)
         # insert below solver
         rightLayout.insertWidget(rightLayout.indexOf(self.grpSolve)+1, self.grpAnim)
         self.chkAnimate.toggled.connect(self.toggle_animation)
@@ -1013,14 +1017,16 @@ class MainWindow(QMainWindow):
             self.vf_stars = np.zeros(0); self.vg_stars = np.zeros(0); return
         # Build triple curves for interpolation (Newtonian, GR-like, Final)
         R_vals, vN_arr, vG_arr, vF_arr = self.curve_vtriple(self.knobs, nR=60)
-        self.curveR = R_vals; self.curveVF = vF_arr; self.curveVG = vG_arr
+        self.curveR = R_vals; self.curveVN = vN_arr; self.curveVF = vF_arr; self.curveVG = vG_arr
         rxy = self.base_rxy
         if len(vF_arr)==0:
-            self.vf_stars = np.zeros_like(rxy); self.vg_stars = np.zeros_like(rxy); return
+            self.vf_stars = np.zeros_like(rxy); self.vg_stars = np.zeros_like(rxy); self.vn_stars = np.zeros_like(rxy); return
         vf = np.interp(rxy, R_vals, vF_arr, left=float(vF_arr[0]), right=float(vF_arr[-1]))
         vg = np.interp(rxy, R_vals, vG_arr, left=float(vG_arr[0]), right=float(vG_arr[-1]))
+        vn = np.interp(rxy, R_vals, vN_arr, left=float(vN_arr[0]), right=float(vN_arr[-1]))
         self.vf_stars = vf
         self.vg_stars = vg
+        self.vn_stars = vn
         self.update_colors()
 
     def toggle_animation(self, on: bool):
@@ -1050,7 +1056,18 @@ class MainWindow(QMainWindow):
     def step_animation(self):
         if not self.chkAnimate.isChecked() or len(self.vf_stars)==0:
             return
-        dtheta = (self.vf_stars / np.maximum(self.base_rxy, 1e-3)) * (0.001 * float(self.spinAnim.value()))
+        rxy = np.maximum(self.base_rxy, 1e-3)
+        vmin = float(self.spinAnimMin.value())
+        vF = np.maximum(self.vf_stars, 0.0)
+        # Fallback for animation only: if vF<=0 use max(vN, vmin)
+        if len(getattr(self, 'vn_stars', [])) == len(vF):
+            v_anim = vF.copy()
+            mask = v_anim <= 0.0
+            if np.any(mask):
+                v_anim[mask] = np.maximum(self.vn_stars[mask], vmin)
+        else:
+            v_anim = np.where(vF <= 0.0, vmin, vF)
+        dtheta = (v_anim / rxy) * (0.001 * float(self.spinAnim.value()))
         self.base_angles = (self.base_angles + dtheta) % (2*np.pi)
         x = self.model.COM[0] + self.base_rxy * np.cos(self.base_angles)
         y = self.model.COM[1] + self.base_rxy * np.sin(self.base_angles)
