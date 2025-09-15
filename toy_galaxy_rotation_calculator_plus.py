@@ -378,8 +378,12 @@ def main():
 
     ax_btn_curve = fig.add_axes([0.80, 0.03, 0.17, 0.035]); btn_curve = Button(ax_btn_curve, 'Plot Rotation Curve')
     ax_btn_save  = fig.add_axes([0.80, -0.02, 0.17, 0.035]); btn_save  = Button(ax_btn_save,  'Save Curve CSV')
+    # Open vectors table window
+    ax_btn_vectors = fig.add_axes([0.80, 0.61, 0.17, 0.035]); btn_vectors = Button(ax_btn_vectors, 'Force Vectors')
+    # Reset to defaults button
     ax_btn_reset = fig.add_axes([0.80, 0.28, 0.17, 0.035]); btn_reset = Button(ax_btn_reset, 'Reset Defaults')
-
+    
+    fig_rot = None; rot_lines = {}; fig_vec = None; vec_state = {}
     def reset_defaults(_=None):
         s_Gscale.set_val(defaults['Gscale'])
         s_kGR.set_val(defaults['kGR'])
@@ -517,7 +521,7 @@ def main():
     _add_finder(ax_hzb,  s_hzb,   'Find', True)
     _add_finder(ax_hzg,  s_hzg,   'Find', True)
 
-    fig_rot = None; rot_lines = {}
+    fig_rot = None; rot_lines = {}; fig_vec = None; vec_state = {}
 
     def rebuild_galaxy():
         nonlocal pos, masses, COM, R_all, R_edge, test_point
@@ -551,6 +555,48 @@ def main():
         v_gr_noboost = circular_speed_from_accel(a_gr_vec, test_point - COM)
         v_final = circular_speed_from_accel(a_final_vec, test_point - COM)
         return v_newton, v_gr_noboost, v_final, drop_frac, boost_factor
+
+    def compute_per_body_vectors():
+        G_eff_base = G_AST * float(s_Gscale.val)
+        if len(masses) == 0:
+            return {
+                'newton_vecs': np.zeros((0,3)),
+                'gr_vecs': np.zeros((0,3)),
+                'final_vecs': np.zeros((0,3)),
+                'r_vec': np.zeros((0,3)),
+                'r': np.zeros((0,)),
+                'masses': np.zeros((0,)),
+                'boost_factor': 1.0,
+            }
+        r_vec = pos - test_point
+        r2 = np.sum(r_vec*r_vec, axis=1)
+        eps2 = (float(s_soften.val)**2)
+        inv_r3 = 1.0 / np.power(r2 + eps2, 1.5)
+        base = (masses * inv_r3)
+        newton_vecs = G_eff_base * (r_vec * base[:, None])
+        r = np.sqrt(r2 + eps2)
+        per_body_scale = (1.0 - float(s_kGR.val) * (G_eff_base / max(1e-30, G_AST)) * G_AST * masses / (r * c_kms**2))
+        per_body_scale = np.clip(per_body_scale, 0.0, 1.0)
+        per_body_scale *= (1.0 - np.clip(float(s_att.val), 0.0, 0.999))
+        gr_vecs = G_eff_base * (r_vec * ((base * per_body_scale)[:, None]))
+        a0 = np.linalg.norm(newton_vecs.sum(axis=0))
+        agr = np.linalg.norm(gr_vecs.sum(axis=0))
+        drop_frac = 0.0
+        if a0 > 0:
+            drop_frac = max(0.0, 1.0 - (agr/a0))
+        f_boost = float(s_boost.val); boost_factor = 1.0
+        if f_boost > 0 and drop_frac > 0 and (1.0 - f_boost*drop_frac) > 1e-9:
+            boost_factor = 1.0 / (1.0 - f_boost*drop_frac)
+        final_vecs = gr_vecs * boost_factor
+        return {
+            'newton_vecs': newton_vecs,
+            'gr_vecs': gr_vecs,
+            'final_vecs': final_vecs,
+            'r_vec': r_vec,
+            'r': r,
+            'masses': masses.copy(),
+            'boost_factor': boost_factor,
+        }
 
     def rotation_curve(nR: int = 50):
         if len(masses) == 0:
@@ -673,6 +719,96 @@ def main():
                 ax2.set_ylim(0.0, vmax*1.1)
             fig_rot.canvas.draw_idle()
 
+    # ----- Force vectors window -----
+    def show_vectors_table(_=None):
+        nonlocal fig_vec, vec_state
+        data = compute_per_body_vectors()
+        mags = np.linalg.norm(data['final_vecs'], axis=1)
+        order = np.argsort(mags)[::-1]
+        vec_state = {
+            'order': order,
+            'data': data,
+            'topN': 25,
+        }
+        def build_table(topN: int):
+            d = vec_state['data']; ordidx = vec_state['order']
+            topN = int(max(1, min(len(ordidx), topN)))
+            idx = ordidx[:topN]
+            # Build rows
+            rows = []
+            for j, i in enumerate(idx):
+                dx, dy, dz = d['r_vec'][i]
+                r = np.sqrt(dx*dx + dy*dy + dz*dz)
+                ax, ay, az = d['final_vecs'][i]
+                rows.append([
+                    str(int(i)), f"{dx:.3f}", f"{dy:.3f}", f"{dz:.3f}", f"{r:.3f}", f"{d['masses'][i]:.3e}",
+                    f"{ax:.3e}", f"{ay:.3e}", f"{az:.3e}", f"{np.sqrt(ax*ax+ay*ay+az*az):.3e}"
+                ])
+            # Summary (vector sum)
+            sum_vec = d['final_vecs'].sum(axis=0)
+            sum_mag = float(np.linalg.norm(sum_vec))
+            return rows, sum_vec, sum_mag
+        if fig_vec is None:
+            fig_vec = plt.figure(figsize=(11, 7))
+            axT = fig_vec.add_axes([0.05, 0.15, 0.90, 0.80])
+            axT.axis('off')
+            axN = fig_vec.add_axes([0.05, 0.05, 0.12, 0.06])
+            tb_top = TextBox(axN, 'Top N', initial=str(vec_state['topN']))
+            ax_save = fig_vec.add_axes([0.20, 0.05, 0.18, 0.06]); btn_save_vec = Button(ax_save, 'Save Vectors CSV')
+            ax_close= fig_vec.add_axes([0.40, 0.05, 0.12, 0.06]); btn_close = Button(ax_close, 'Close')
+            colLabels = ["i", "dx", "dy", "dz", "r_kpc", "mass_Msun", "ax", "ay", "az", "|a|"]
+            def render():
+                axT.clear(); axT.axis('off')
+                rows, sum_vec, sum_mag = build_table(vec_state['topN'])
+                tbl = axT.table(cellText=rows, colLabels=colLabels, loc='center')
+                tbl.auto_set_font_size(False); tbl.set_fontsize(8); tbl.scale(1.0, 1.2)
+                # Footer text with vector sum
+                axT.text(0.5, -0.08, f"Sum(final per-body) = ({sum_vec[0]:.3e}, {sum_vec[1]:.3e}, {sum_vec[2]:.3e}), |sum|={sum_mag:.3e}",
+                         transform=axT.transAxes, ha='center', va='top')
+                fig_vec.canvas.draw_idle()
+            def on_top_submit(_text):
+                try:
+                    vec_state['topN'] = int(max(1, min(len(vec_state['order']), float(tb_top.text))))
+                except Exception:
+                    vec_state['topN'] = 25
+                render()
+            def on_save(_evt=None):
+                out = Path('force_vectors.csv')
+                import csv
+                d = vec_state['data']
+                with out.open('w', newline='') as f:
+                    w = csv.writer(f)
+                    w.writerow(["i","pos_x","pos_y","pos_z","dx","dy","dz","r_kpc","mass_Msun",
+                                "newton_ax","newton_ay","newton_az","gr_ax","gr_ay","gr_az","final_ax","final_ay","final_az","final_mag"])
+                    for i in range(len(d['masses'])):
+                        dx, dy, dz = d['r_vec'][i]
+                        r = d['r'][i]
+                        nx, ny, nz = d['newton_vecs'][i]
+                        gx, gy, gz = d['gr_vecs'][i]
+                        fx, fy, fz = d['final_vecs'][i]
+                        w.writerow([int(i), float(pos[i,0]), float(pos[i,1]), float(pos[i,2]),
+                                    float(dx), float(dy), float(dz), float(r), float(d['masses'][i]),
+                                    float(nx), float(ny), float(nz), float(gx), float(gy), float(gz), float(fx), float(fy), float(fz),
+                                    float(np.sqrt(fx*fx+fy*fy+fz*fz))])
+                print(f"Saved force vectors to {out.resolve()}")
+            def on_close(_evt=None):
+                nonlocal fig_vec
+                plt.close(fig_vec)
+                # reset to allow reopening
+                fig_vec = None
+            tb_top.on_submit(on_top_submit)
+            btn_save_vec.on_clicked(on_save)
+            btn_close.on_clicked(on_close)
+            render()
+        else:
+            # If already open, just rerender with current state
+            fig_vec.canvas.manager.set_window_title('Force Vectors') if hasattr(fig_vec.canvas.manager, 'set_window_title') else None
+            vec_state['data'] = compute_per_body_vectors()
+            vec_state['order'] = np.argsort(np.linalg.norm(vec_state['data']['final_vecs'], axis=1))[::-1]
+            # Rebuild content by re-calling show
+            plt.figure(fig_vec.number)
+        plt.show()
+
     def save_curve_csv(_=None):
         R, vN, vGR, vF = rotation_curve()
         out = Path('rotation_curve.csv')
@@ -695,6 +831,7 @@ def main():
     radio.on_clicked(on_preset_clicked)
     btn_curve.on_clicked(show_rotation_curve)
     btn_save.on_clicked(save_curve_csv)
+    btn_vectors.on_clicked(show_vectors_table)
 
     # Initial draw
     refresh_main()
