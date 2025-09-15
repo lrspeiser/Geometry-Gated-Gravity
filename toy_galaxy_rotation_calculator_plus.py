@@ -223,7 +223,33 @@ def main():
             print(f"Warning: could not set backend {args.backend}: {e}")
 
     import matplotlib.pyplot as plt
-    from matplotlib.widgets import Slider, RadioButtons, Button
+    from matplotlib.widgets import TextBox, RadioButtons, Button
+
+    # Wrapper to provide a slider-like interface over TextBox
+    class TBWrapper:
+        def __init__(self, tb, parse=float, clamp=None, default=None):
+            self.tb = tb
+            self.parse = parse
+            self.clamp = clamp
+            self.default = default
+        @property
+        def val(self):
+            try:
+                v = self.parse(self.tb.text)
+            except Exception:
+                v = self.default
+            if self.clamp is not None and v is not None:
+                lo, hi = self.clamp
+                try:
+                    v = max(lo, min(hi, v))
+                except Exception:
+                    v = self.default
+            return v
+        def set_val(self, v):
+            self.tb.set_val(str(v))
+        def on_changed(self, cb):
+            # Mimic Slider.on_changed using TextBox.on_submit
+            self.tb.on_submit(lambda _text: cb(self.val))
 
     # ----- Initialize galaxy -----
     pp = preset_params(args.config)
@@ -243,8 +269,9 @@ def main():
     test_point = COM + np.array([R_edge, 0.0, 0.0])
 
     # ----- Figure and axes -----
-    fig = plt.figure(figsize=(10, 9))
-    ax = fig.add_axes([0.07, 0.32, 0.86, 0.66])
+    fig = plt.figure(figsize=(12, 9))
+    # Narrow the main axes to make room for a table on the right
+    ax = fig.add_axes([0.07, 0.32, 0.60, 0.66])
     ax.set_aspect('equal', 'box')
     galaxy_scatter = ax.scatter(pos[:, 0], pos[:, 1], s=5, alpha=0.6)
     test_star_plot, = ax.plot([test_point[0]], [test_point[1]], marker='*', markersize=10)
@@ -253,46 +280,130 @@ def main():
     ax.set_title("Toy Galaxy Rotation Calculator — PLUS")
     text_box = ax.text(0.02, 0.98, "", transform=ax.transAxes, va='top')
 
-    # Physics sliders
-    ax_sG   = fig.add_axes([0.10, 0.27, 0.68, 0.02])
-    ax_kGR  = fig.add_axes([0.10, 0.24, 0.68, 0.02])
-    ax_att  = fig.add_axes([0.10, 0.21, 0.68, 0.02])
-    ax_boost= fig.add_axes([0.10, 0.18, 0.68, 0.02])
-    ax_vobs = fig.add_axes([0.10, 0.15, 0.68, 0.02])
-    ax_soft = fig.add_axes([0.10, 0.12, 0.68, 0.02])
-    s_Gscale = Slider(ax_sG,   'G scale', 0.1, 5.0, valinit=float(args.gscale), valstep=0.01)
-    s_kGR    = Slider(ax_kGR,  'GR k (toy)', 0.0, 20000.0, valinit=float(args.grk), valstep=10.0)
-    s_att    = Slider(ax_att,  'Extra atten (0-1)', 0.0, 0.8, valinit=float(args.atten), valstep=0.01)
-    s_boost  = Slider(ax_boost,'Boost fraction', 0.0, 1.5, valinit=float(args.boost), valstep=0.01)
-    s_vobs   = Slider(ax_vobs, 'Observed v (km/s)', 0.0, 450.0, valinit=float(args.vobs), valstep=1.0)
-    s_soften = Slider(ax_soft, 'Softening (kpc)', 0.01, 1.5, valinit=float(args.soften), valstep=0.01)
+    # Table showing Actual | GR Predicted | Simulation | Sim - Actual
+    ax_table = fig.add_axes([0.70, 0.32, 0.25, 0.66])
+    ax_table.axis('off')
 
-    # Structural sliders and controls
-    ax_spread = fig.add_axes([0.10, 0.09, 0.68, 0.02])
-    ax_outer  = fig.add_axes([0.10, 0.06, 0.68, 0.02])
-    ax_seed   = fig.add_axes([0.10, 0.03, 0.68, 0.02])
-    s_spread = Slider(ax_spread, 'Spread ×', 0.5, 3.0, valinit=float(args.spread), valstep=0.01)
-    s_outer  = Slider(ax_outer, 'Outer percentile', 0.80, 0.995, valinit=float(args.outer), valstep=0.001)
-    s_seed   = Slider(ax_seed, 'Seed', 0, 9999, valinit=int(args.seed), valstep=1)
+    def update_table(v_obs, v_gr, v_final):
+        ax_table.clear()
+        ax_table.axis('off')
+        colLabels = ["Actual", "GR Predicted", "Simulation", "Sim - Actual"]
+        cellText = [[f"{v_obs:.2f}", f"{v_gr:.2f}", f"{v_final:.2f}", f"{(v_final - v_obs):+.2f}"]]
+        tbl = ax_table.table(cellText=cellText, colLabels=colLabels, loc='center')
+        tbl.auto_set_font_size(False)
+        tbl.set_fontsize(10)
+        tbl.scale(1.0, 1.5)
+
+    # Physics numeric inputs
+    ax_sG   = fig.add_axes([0.10, 0.27, 0.68, 0.03])
+    ax_kGR  = fig.add_axes([0.10, 0.24, 0.68, 0.03])
+    ax_att  = fig.add_axes([0.10, 0.21, 0.68, 0.03])
+    ax_boost= fig.add_axes([0.10, 0.18, 0.68, 0.03])
+    ax_vobs = fig.add_axes([0.10, 0.15, 0.68, 0.03])
+    ax_soft = fig.add_axes([0.10, 0.12, 0.68, 0.03])
+
+    tb_Gscale = TextBox(ax_sG,   'G scale',                 initial=str(float(args.gscale)))
+    tb_kGR    = TextBox(ax_kGR,  'GR k (toy)',              initial=str(float(args.grk)))
+    tb_att    = TextBox(ax_att,  'Extra atten (0-1)',       initial=str(float(args.atten)))
+    tb_boost  = TextBox(ax_boost,'Boost fraction',          initial=str(float(args.boost)))
+    tb_vobs   = TextBox(ax_vobs, 'Observed v (km/s)',       initial=str(float(args.vobs)))
+    tb_soft   = TextBox(ax_soft, 'Softening (kpc)',         initial=str(float(args.soften)))
+
+    s_Gscale = TBWrapper(tb_Gscale, parse=float, clamp=(0.1, 5.0),   default=float(args.gscale))
+    s_kGR    = TBWrapper(tb_kGR,    parse=float, clamp=(0.0, 20000), default=float(args.grk))
+    s_att    = TBWrapper(tb_att,    parse=float, clamp=(0.0, 0.8),   default=float(args.atten))
+    s_boost  = TBWrapper(tb_boost,  parse=float, clamp=(0.0, 1.5),   default=float(args.boost))
+    s_vobs   = TBWrapper(tb_vobs,   parse=float, clamp=(0.0, 450.0), default=float(args.vobs))
+    s_soften = TBWrapper(tb_soft,   parse=float, clamp=(0.01, 1.5),  default=float(args.soften))
+
+    # Structural numeric inputs
+    ax_spread = fig.add_axes([0.10, 0.09, 0.68, 0.03])
+    ax_outer  = fig.add_axes([0.10, 0.06, 0.68, 0.03])
+    ax_seed   = fig.add_axes([0.10, 0.03, 0.68, 0.03])
+    tb_spread = TextBox(ax_spread, 'Spread ×',              initial=str(float(args.spread)))
+    tb_outer  = TextBox(ax_outer,  'Outer percentile',      initial=str(float(args.outer)))
+    tb_seed   = TextBox(ax_seed,   'Seed',                  initial=str(int(args.seed)))
+
+    s_spread = TBWrapper(tb_spread, parse=float, clamp=(0.5, 3.0),     default=float(args.spread))
+    s_outer  = TBWrapper(tb_outer,  parse=float, clamp=(0.80, 0.995),  default=float(args.outer))
+    s_seed   = TBWrapper(tb_seed,   parse=int,   clamp=(0, 9999),      default=int(args.seed))
 
     ax_radio = fig.add_axes([0.80, 0.08, 0.17, 0.20])
     radio = RadioButtons(ax_radio, config_names, active=config_names.index(args.config))
 
-    # Component editor sliders
-    ax_dm  = fig.add_axes([0.10,  0.00, 0.68, 0.02]); s_Mdisk = Slider(ax_dm,  'Disk mass (1e10 Msun)', 0.00, 8.00, valinit=pp['M_disk']/1e10, valstep=0.01)
-    ax_bm  = fig.add_axes([0.10, -0.03, 0.68, 0.02]); s_Mbulge= Slider(ax_bm,  'Bulge mass (1e10 Msun)', 0.00, 8.00, valinit=pp['M_bulge']/1e10, valstep=0.01)
-    ax_gm  = fig.add_axes([0.10, -0.06, 0.68, 0.02]); s_Mgas  = Slider(ax_gm,  'Gas mass (1e10 Msun)',   0.00, 2.00, valinit=pp['M_gas']/1e10,   valstep=0.01)
-    ax_rd  = fig.add_axes([0.10, -0.09, 0.68, 0.02]); s_Rd    = Slider(ax_rd,  'Disk Rd (kpc)',          0.2,  10.0, valinit=pp['Rd_disk'],     valstep=0.01)
-    ax_rmax= fig.add_axes([0.10, -0.12, 0.68, 0.02]); s_Rmax  = Slider(ax_rmax,'Disk Rmax (kpc)',        2.0,  40.0, valinit=pp['Rmax_disk'],   valstep=0.1)
-    ax_ab  = fig.add_axes([0.10, -0.15, 0.68, 0.02]); s_ab    = Slider(ax_ab,  'Bulge a (kpc)',          0.05, 5.0,  valinit=pp['a_bulge'],     valstep=0.01)
-    ax_rdg = fig.add_axes([0.10, -0.18, 0.68, 0.02]); s_Rdg   = Slider(ax_rdg, 'Gas Rd (kpc)',           0.2,  12.0, valinit=pp['Rd_gas'],      valstep=0.01)
-    ax_rmg = fig.add_axes([0.10, -0.21, 0.68, 0.02]); s_Rmg   = Slider(ax_rmg, 'Gas Rmax (kpc)',         2.0,  45.0, valinit=pp['Rmax_gas'],    valstep=0.1)
-    ax_hzd = fig.add_axes([0.10, -0.24, 0.68, 0.02]); s_hzd   = Slider(ax_hzd, 'Disk hz (kpc)',          0.01, 1.5,  valinit=pp['hz_disk'],     valstep=0.01)
-    ax_hzb = fig.add_axes([0.10, -0.27, 0.68, 0.02]); s_hzb   = Slider(ax_hzb, 'Bulge hz (kpc)',         0.01, 1.5,  valinit=pp['hz_bulge'],    valstep=0.01)
-    ax_hzg = fig.add_axes([0.10, -0.30, 0.68, 0.02]); s_hzg   = Slider(ax_hzg, 'Gas hz (kpc)',           0.01, 1.5,  valinit=pp['hz_gas'],      valstep=0.01)
+    # Component editor numeric inputs
+    ax_dm  = fig.add_axes([0.10,  0.00, 0.68, 0.03])
+    ax_bm  = fig.add_axes([0.10, -0.03, 0.68, 0.03])
+    ax_gm  = fig.add_axes([0.10, -0.06, 0.68, 0.03])
+    ax_rd  = fig.add_axes([0.10, -0.09, 0.68, 0.03])
+    ax_rmax= fig.add_axes([0.10, -0.12, 0.68, 0.03])
+    ax_ab  = fig.add_axes([0.10, -0.15, 0.68, 0.03])
+    ax_rdg = fig.add_axes([0.10, -0.18, 0.68, 0.03])
+    ax_rmg = fig.add_axes([0.10, -0.21, 0.68, 0.03])
+    ax_hzd = fig.add_axes([0.10, -0.24, 0.68, 0.03])
+    ax_hzb = fig.add_axes([0.10, -0.27, 0.68, 0.03])
+    ax_hzg = fig.add_axes([0.10, -0.30, 0.68, 0.03])
+
+    tb_Mdisk = TextBox(ax_dm,   'Disk mass (1e10 Msun)',   initial=str(pp['M_disk']/1e10))
+    tb_Mbulge= TextBox(ax_bm,   'Bulge mass (1e10 Msun)',  initial=str(pp['M_bulge']/1e10))
+    tb_Mgas  = TextBox(ax_gm,   'Gas mass (1e10 Msun)',    initial=str(pp['M_gas']/1e10))
+    tb_Rd    = TextBox(ax_rd,   'Disk Rd (kpc)',           initial=str(pp['Rd_disk']))
+    tb_Rmax  = TextBox(ax_rmax, 'Disk Rmax (kpc)',         initial=str(pp['Rmax_disk']))
+    tb_ab    = TextBox(ax_ab,   'Bulge a (kpc)',           initial=str(pp['a_bulge']))
+    tb_Rdg   = TextBox(ax_rdg,  'Gas Rd (kpc)',            initial=str(pp['Rd_gas']))
+    tb_Rmg   = TextBox(ax_rmg,  'Gas Rmax (kpc)',          initial=str(pp['Rmax_gas']))
+    tb_hzd   = TextBox(ax_hzd,  'Disk hz (kpc)',           initial=str(pp['hz_disk']))
+    tb_hzb   = TextBox(ax_hzb,  'Bulge hz (kpc)',          initial=str(pp['hz_bulge']))
+    tb_hzg   = TextBox(ax_hzg,  'Gas hz (kpc)',            initial=str(pp['hz_gas']))
+
+    s_Mdisk = TBWrapper(tb_Mdisk, parse=float, clamp=(0.0, 8.0),   default=pp['M_disk']/1e10)
+    s_Mbulge= TBWrapper(tb_Mbulge,parse=float, clamp=(0.0, 8.0),   default=pp['M_bulge']/1e10)
+    s_Mgas  = TBWrapper(tb_Mgas,  parse=float, clamp=(0.0, 2.0),   default=pp['M_gas']/1e10)
+    s_Rd    = TBWrapper(tb_Rd,    parse=float, clamp=(0.2, 10.0),  default=pp['Rd_disk'])
+    s_Rmax  = TBWrapper(tb_Rmax,  parse=float, clamp=(2.0, 40.0),  default=pp['Rmax_disk'])
+    s_ab    = TBWrapper(tb_ab,    parse=float, clamp=(0.05, 5.0),  default=pp['a_bulge'])
+    s_Rdg   = TBWrapper(tb_Rdg,   parse=float, clamp=(0.2, 12.0),  default=pp['Rd_gas'])
+    s_Rmg   = TBWrapper(tb_Rmg,   parse=float, clamp=(2.0, 45.0),  default=pp['Rmax_gas'])
+    s_hzd   = TBWrapper(tb_hzd,   parse=float, clamp=(0.01, 1.5),  default=pp['hz_disk'])
+    s_hzb   = TBWrapper(tb_hzb,   parse=float, clamp=(0.01, 1.5),  default=pp['hz_bulge'])
+    s_hzg   = TBWrapper(tb_hzg,   parse=float, clamp=(0.01, 1.5),  default=pp['hz_gas'])
+
+    # Defaults state for reset button (updated on preset change for component fields)
+    defaults = {
+        'Gscale': float(args.gscale), 'kGR': float(args.grk), 'atten': float(args.atten), 'boost': float(args.boost), 'vobs': float(args.vobs), 'soften': float(args.soften),
+        'spread': float(args.spread), 'outer': float(args.outer), 'seed': int(args.seed),
+        'Mdisk': pp['M_disk']/1e10, 'Mbulge': pp['M_bulge']/1e10, 'Mgas': pp['M_gas']/1e10,
+        'Rd': pp['Rd_disk'], 'Rmax': pp['Rmax_disk'], 'ab': pp['a_bulge'], 'Rdg': pp['Rd_gas'], 'Rmg': pp['Rmax_gas'], 'hzd': pp['hz_disk'], 'hzb': pp['hz_bulge'], 'hzg': pp['hz_gas'],
+    }
 
     ax_btn_curve = fig.add_axes([0.80, 0.03, 0.17, 0.035]); btn_curve = Button(ax_btn_curve, 'Plot Rotation Curve')
     ax_btn_save  = fig.add_axes([0.80, -0.02, 0.17, 0.035]); btn_save  = Button(ax_btn_save,  'Save Curve CSV')
+    ax_btn_reset = fig.add_axes([0.80, 0.28, 0.17, 0.035]); btn_reset = Button(ax_btn_reset, 'Reset Defaults')
+
+    def reset_defaults(_=None):
+        s_Gscale.set_val(defaults['Gscale'])
+        s_kGR.set_val(defaults['kGR'])
+        s_att.set_val(defaults['atten'])
+        s_boost.set_val(defaults['boost'])
+        s_vobs.set_val(defaults['vobs'])
+        s_soften.set_val(defaults['soften'])
+        s_spread.set_val(defaults['spread'])
+        s_outer.set_val(defaults['outer'])
+        s_seed.set_val(defaults['seed'])
+        s_Mdisk.set_val(defaults['Mdisk'])
+        s_Mbulge.set_val(defaults['Mbulge'])
+        s_Mgas.set_val(defaults['Mgas'])
+        s_Rd.set_val(defaults['Rd'])
+        s_Rmax.set_val(defaults['Rmax'])
+        s_ab.set_val(defaults['ab'])
+        s_Rdg.set_val(defaults['Rdg'])
+        s_Rmg.set_val(defaults['Rmg'])
+        s_hzd.set_val(defaults['hzd'])
+        s_hzb.set_val(defaults['hzb'])
+        s_hzg.set_val(defaults['hzg'])
+        refresh_main()
+
+    btn_reset.on_clicked(reset_defaults)
 
     fig_rot = None; rot_lines = {}
 
@@ -372,6 +483,8 @@ def main():
             f"Observed target: {v_obs:.1f} km/s | Final − Observed = {dv:+.2f} km/s"
         ]
         text_box.set_text('\n'.join(lines))
+        # Update side table for quick readability
+        update_table(v_obs, v_gr_noboost, v_final)
 
     def refresh_main(_=None):
         rebuild_galaxy()
@@ -398,6 +511,21 @@ def main():
         s_hzd.set_val(params['hz_disk'])
         s_hzb.set_val(params['hz_bulge'])
         s_hzg.set_val(params['hz_gas'])
+        # Update defaults for component fields to align with current preset
+        defaults.update({
+            'Mdisk': params['M_disk']/1e10,
+            'Mbulge': params['M_bulge']/1e10,
+            'Mgas': params['M_gas']/1e10,
+            'Rd': params['Rd_disk'],
+            'Rmax': params['Rmax_disk'],
+            'ab': params['a_bulge'],
+            'Rdg': params['Rd_gas'],
+            'Rmg': params['Rmax_gas'],
+            'hzd': params['hz_disk'],
+            'hzb': params['hz_bulge'],
+            'hzg': params['hz_gas'],
+        })
+        refresh_main()
 
     def on_preset_clicked(label: str):
         apply_preset(label)
