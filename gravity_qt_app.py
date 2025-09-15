@@ -32,7 +32,7 @@ try:
     from PyQt6.QtCore import Qt, QTimer
     from PyQt6.QtWidgets import (
         QApplication, QMainWindow, QWidget, QGridLayout, QHBoxLayout, QVBoxLayout,
-        QSplitter, QLabel, QDoubleSpinBox, QSpinBox, QComboBox, QPushButton,
+        QSplitter, QLabel, QDoubleSpinBox, QSpinBox, QComboBox, QPushButton, QCheckBox,
         QGroupBox, QFormLayout, QFileDialog, QTableWidget, QTableWidgetItem, QDialog,
         QSizePolicy)
     QT_IS_6 = True
@@ -40,7 +40,7 @@ except Exception:
     from PyQt5.QtCore import Qt, QTimer
     from PyQt5.QtWidgets import (
         QApplication, QMainWindow, QWidget, QGridLayout, QHBoxLayout, QVBoxLayout,
-        QSplitter, QLabel, QDoubleSpinBox, QSpinBox, QComboBox, QPushButton,
+        QSplitter, QLabel, QDoubleSpinBox, QSpinBox, QComboBox, QPushButton, QCheckBox,
         QGroupBox, QFormLayout, QFileDialog, QTableWidget, QTableWidgetItem, QDialog,
         QSizePolicy
     )
@@ -433,6 +433,21 @@ class MainWindow(QMainWindow):
         btnRow.addWidget(self.btnBuild); btnRow.addWidget(self.btnVectors); btnRow.addWidget(self.btnSaveCSV)
         rightLayout.addLayout(btnRow)
 
+        # Solver group
+        self.grpSolve = QGroupBox("Solver")
+        layS = QFormLayout(self.grpSolve)
+        self.solveObjective = QComboBox(); self.solveObjective.addItems(["Match test star (Final → Observed)"])  # placeholder for future curve fit
+        self.chkSolveDk = QCheckBox("Solve Density k"); self.chkSolveDk.setChecked(True)
+        self.chkSolveG  = QCheckBox("Solve G scale"); self.chkSolveG.setChecked(False)
+        self.chkSolveWk = QCheckBox("Solve Well k"); self.chkSolveWk.setChecked(False)
+        self.btnSolve = QPushButton("Solve")
+        layS.addRow("Objective", self.solveObjective)
+        layS.addRow(self.chkSolveDk)
+        layS.addRow(self.chkSolveG)
+        layS.addRow(self.chkSolveWk)
+        layS.addRow(self.btnSolve)
+        rightLayout.addWidget(self.grpSolve)
+
         # Dedicated Tips panel
         self.tipsBox = QGroupBox("Tips")
         self.tipsBox.setVisible(False)
@@ -464,6 +479,7 @@ class MainWindow(QMainWindow):
         self.btnBuild.clicked.connect(self.build_from_fields)
         self.btnVectors.clicked.connect(self.open_vectors)
         self.btnSaveCSV.clicked.connect(self.save_curve_csv)
+        self.btnSolve.clicked.connect(self.solve_params)
         for w in [self.spinG, self.spinDk, self.spinDr, self.spinWk, self.spinWr, self.spinVobs]:
             w.valueChanged.connect(self.schedule_refresh)
         for w in [self.sN, self.sR, self.sBa, self.sHz, self.sBf, self.sMt]:
@@ -491,6 +507,75 @@ class MainWindow(QMainWindow):
             self.tipsBox.setVisible(False)
         else:
             self.show_tip(key, text)
+
+    # ----- Solver -----
+    def golden_section(self, f, lo, hi, iters=28, tol=1e-4):
+        phi = (1 + 5 ** 0.5) / 2
+        invphi = 1 / phi
+        invphi2 = (1 - invphi)
+        a, b = float(lo), float(hi)
+        c = b - invphi * (b - a)
+        d = a + invphi * (b - a)
+        fc = f(c)
+        fd = f(d)
+        for _ in range(iters):
+            if abs(b - a) < tol * (abs(c) + abs(d)) + 1e-12:
+                break
+            if fc < fd:
+                b, d, fd = d, c, fc
+                c = b - invphi * (b - a)
+                fc = f(c)
+            else:
+                a, c, fc = c, d, fd
+                d = a + invphi * (b - a)
+                fd = f(d)
+        x = (a + b) / 2
+        fx = f(x)
+        return x, fx
+
+    def solve_params(self):
+        # Objective: minimize squared error at test star
+        if len(self.model.masses) == 0:
+            self.show_tip("Solver", "No stars available to solve against. Build a galaxy first.")
+            return
+        vobs = float(self.spinVobs.value())
+        # Starting vals
+        g0  = float(self.spinG.value())
+        dk0 = float(self.spinDk.value())
+        wk0 = float(self.spinWk.value())
+        # Bounds
+        g_lo, g_hi = 0.5, 2.0
+        dk_lo, dk_hi = 0.0, 3.0
+        wk_lo, wk_hi = 0.0, 1.0
+
+        def obj(g, dk, wk):
+            knobs = DensityKnobs(g_scale=g, dens_k=dk, dens_R=float(self.spinDr.value()), well_k=wk, well_R=float(self.spinWr.value()))
+            _, _, vF = self.model.speeds_at_test(knobs)
+            return (vF - vobs) ** 2
+
+        g, dk, wk = g0, dk0, wk0
+        # Coordinate descent: a few passes
+        for _ in range(2):
+            if self.chkSolveDk.isChecked():
+                def f1(x): return obj(g, max(dk_lo, min(dk_hi, x)), wk)
+                dk, _ = self.golden_section(f1, dk_lo, dk_hi)
+            if self.chkSolveG.isChecked():
+                def f2(x): return obj(max(g_lo, min(g_hi, x)), dk, wk)
+                g, _ = self.golden_section(f2, g_lo, g_hi)
+            if self.chkSolveWk.isChecked():
+                def f3(x): return obj(g, dk, max(wk_lo, min(wk_hi, x)))
+                wk, _ = self.golden_section(f3, wk_lo, wk_hi)
+
+        # Apply results
+        if self.chkSolveDk.isChecked():
+            self.spinDk.setValue(float(dk))
+        if self.chkSolveG.isChecked():
+            self.spinG.setValue(float(g))
+        if self.chkSolveWk.isChecked():
+            self.spinWk.setValue(float(wk))
+        # Refresh
+        self.refresh_physics()
+        self.show_tip("Solver", f"Solved values:\nG scale={g:.4f}\nDensity k={dk:.4f}\nWell k={wk:.4f}\nObjective (squared error)={(obj(g, dk, wk)):.4f}")
 
     # ----- Actions -----
     def on_preset(self, name: str):
