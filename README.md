@@ -16,6 +16,21 @@ Repository layout
 - assets/ — images
 - requirements.txt
 
+Data catalog (under data/)
+- SPARC_Lelli2016c.mrt — SPARC master table (fixed-width). Source: SPARC Database (CWRU). Used by the script when --sparc-mrt is provided.
+- Rotmod_LTG/ — SPARC LTG rotation curve decompositions (dens, sfb, rotmod.dat)
+- BulgeDiskDec_LTG/ — Bulge/Disk decomposition inputs (dens, sfb) for LTGs
+- gaia_sky_slices/ — Gaia sky slice CSV/Parquet inputs (star catalogs)
+- pantheon/ — Pantheon+SH0ES supernova datasets
+- BOSS/ — BAO/FS consensus products from BOSS DR12
+- sparc_rotmod_ltg.parquet — Parquet of SPARC rotmod (LTG) for quick analysis
+- boundaries.csv — Boundaries used/derived for outer-region evaluation (generated)
+- Other generated: sparc_predictions_by_radius.csv, sparc_predictions_by_galaxy.csv, sparc_human_by_radius.csv, sparc_human_by_galaxy.csv, rotation_curve.csv, compare_presets.csv, etc.
+
+Notes:
+- Large binaries are tracked with Git LFS (e.g., *.parquet, *.png). Ensure Git LFS is installed (git lfs install) to fetch these.
+- Data sets are included for local analysis and reproducibility; see original sources for licensing and citation requirements.
+
 Install
 - macOS example using a virtual environment:
 
@@ -87,10 +102,14 @@ python src/scripts/sparc_predict.py \
     - galaxy, type, R_kpc, boundary_kpc, is_outer, Vobs_kms, Vbar_kms, Vgr_kms, gr_percent_close, gr_failing, G_pred, Vpred_kms, percent_close
   - sparc_predictions_by_galaxy.csv
     - galaxy, type, M_bary_Msun, boundary_kpc, outer_points, median_percent_close, mean_percent_close, gr_failing_points, median_percent_close_on_gr_failing, mean_percent_close_on_gr_failing
+  - sparc_human_by_radius.csv (human-friendly)
+    - Galaxy, Galaxy_Type, Radius_kpc, Boundary_kpc, In_Outer_Region, Observed_Speed_km_s, Baryonic_Speed_km_s, GR_Speed_km_s, GR_Percent_Off, G_Predicted, Predicted_Speed_km_s, Model_Percent_Off, Baryonic_Mass_Msun
+  - sparc_human_by_galaxy.csv (human-friendly)
+    - Galaxy, Galaxy_Type, Baryonic_Mass_Msun, Mass_Category, Boundary_kpc, Outer_Points_Count, Avg_GR_Percent_Off, Median_GR_Percent_Off, Avg_Model_Percent_Off, Median_Model_Percent_Off
   - boundaries.csv (for transparency when derived automatically)
 
 Expected results
-- For each galaxy, in the outer region (R ≥ boundary_kpc), Vpred should track Vobs more closely than pure GR baryons in many cases when beta < 0. See the CSVs for percent_close metrics.
+- For each galaxy, in the outer region (R ≥ boundary_kpc), Vpred should track Vobs more closely than pure GR baryons in many cases when beta < 0. See the human-friendly CSVs for easily readable percent off summaries and mass categories.
 
 Notes on implementation
 - The SPARC script logs the formula and parameters used on each run.

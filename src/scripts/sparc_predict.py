@@ -296,6 +296,10 @@ def run(args):
     boundaries_out = out_dir / 'boundaries.csv'
     boundaries.to_csv(boundaries_out, index=False)
 
+    # Compute human-friendly columns (percent off instead of percent close)
+    df['gr_percent_off'] = 100.0 * np.abs(df['Vgr_kms'] - df['Vobs_kms']) / df['Vobs_kms'].replace(0, np.nan)
+    df['model_percent_off'] = 100.0 * np.abs(df['Vpred_kms'] - df['Vobs_kms']) / df['Vobs_kms'].replace(0, np.nan)
+
     # Galaxy-level summary on outer region
     def agg_grp(g: pd.DataFrame):
         g_outer = g[g['is_outer'] & g['percent_close'].notna()]
@@ -307,6 +311,10 @@ def run(args):
             'outer_points': int(len(g_outer)),
             'median_percent_close': float(np.nanmedian(g_outer['percent_close'])) if len(g_outer)>0 else np.nan,
             'mean_percent_close': float(np.nanmean(g_outer['percent_close'])) if len(g_outer)>0 else np.nan,
+            'avg_gr_percent_off': float(np.nanmean(g_outer['gr_percent_off'])) if len(g_outer)>0 else np.nan,
+            'median_gr_percent_off': float(np.nanmedian(g_outer['gr_percent_off'])) if len(g_outer)>0 else np.nan,
+            'avg_model_percent_off': float(np.nanmean(g_outer['model_percent_off'])) if len(g_outer)>0 else np.nan,
+            'median_model_percent_off': float(np.nanmedian(g_outer['model_percent_off'])) if len(g_outer)>0 else np.nan,
             'gr_failing_points': int(len(g_fail)),
             'median_percent_close_on_gr_failing': float(np.nanmedian(g_fail['percent_close'])) if len(g_fail)>0 else np.nan,
             'mean_percent_close_on_gr_failing': float(np.nanmean(g_fail['percent_close'])) if len(g_fail)>0 else np.nan,
@@ -315,8 +323,59 @@ def run(args):
     by_gal_path = out_dir / 'sparc_predictions_by_galaxy.csv'
     by_gal.to_csv(by_gal_path, index=False)
 
+    # Also write human-friendly per-radius and by-galaxy CSVs with descriptive headers
+    human_by_radius = pd.DataFrame({
+        'Galaxy': df['galaxy'],
+        'Galaxy_Type': df['type'],
+        'Radius_kpc': df['R_kpc'],
+        'Boundary_kpc': df['boundary_kpc'],
+        'In_Outer_Region': df['is_outer'],
+        'Observed_Speed_km_s': df['Vobs_kms'],
+        'Baryonic_Speed_km_s': df['Vbar_kms'],
+        'GR_Speed_km_s': df['Vgr_kms'],
+        'GR_Percent_Off': df['gr_percent_off'],
+        'G_Predicted': df['G_pred'],
+        'Predicted_Speed_km_s': df['Vpred_kms'],
+        'Model_Percent_Off': df['model_percent_off'],
+        'Baryonic_Mass_Msun': df.get('M_bary', np.nan),
+    })
+    human_by_radius_path = out_dir / 'sparc_human_by_radius.csv'
+    human_by_radius.to_csv(human_by_radius_path, index=False)
+
+    def mass_category(m):
+        try:
+            m = float(m)
+        except Exception:
+            return ''
+        if not np.isfinite(m):
+            return ''
+        if m < 1e9:
+            return 'ultra-light'
+        if m < 1e10:
+            return 'dwarf'
+        if m < 1e11:
+            return 'MW-like'
+        return 'massive'
+
+    human_by_gal = pd.DataFrame({
+        'Galaxy': by_gal['galaxy'],
+        'Galaxy_Type': by_gal['type'],
+        'Baryonic_Mass_Msun': by_gal['M_bary_Msun'],
+        'Mass_Category': by_gal['M_bary_Msun'].apply(mass_category),
+        'Boundary_kpc': by_gal['boundary_kpc'],
+        'Outer_Points_Count': by_gal['outer_points'],
+        'Avg_GR_Percent_Off': by_gal['avg_gr_percent_off'],
+        'Median_GR_Percent_Off': by_gal['median_gr_percent_off'],
+        'Avg_Model_Percent_Off': by_gal['avg_model_percent_off'],
+        'Median_Model_Percent_Off': by_gal['median_model_percent_off'],
+    })
+    human_by_gal_path = out_dir / 'sparc_human_by_galaxy.csv'
+    human_by_gal.to_csv(human_by_gal_path, index=False)
+
     print(f"Wrote: {by_radius_path}")
     print(f"Wrote: {by_gal_path}")
+    print(f"Wrote: {human_by_radius_path}")
+    print(f"Wrote: {human_by_gal_path}")
     missing = by_gal['M_bary_Msun'].isna().sum()
     if missing:
         print(f"WARNING: {missing} galaxies missing M_bary (fill mass CSV and re-run)")
