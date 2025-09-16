@@ -1,0 +1,10 @@
+# BOSS DR12 combined sample correlation function wedges analysis (pre-reconstruction), Sanchez et al. 2016
+0.38 dM(rsfid/rs) 1501.01
+0.38 Hz(rs/rsfid) 82.4098
+0.38 fsig8        0.468274
+0.51 dM(rsfid/rs) 1944.67
+0.51 Hz(rs/rsfid) 89.0587
+0.51 fsig8        0.468274
+0.61 dM(rsfid/rs) 2263.09
+0.61 Hz(rs/rsfid) 94.6242
+0.61 fsig8        0.468274

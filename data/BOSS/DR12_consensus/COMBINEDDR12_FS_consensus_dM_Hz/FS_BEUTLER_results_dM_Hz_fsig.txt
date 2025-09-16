@@ -1,0 +1,10 @@
+# BOSS DR12 combined sample power spectrum multipole analysis (pre-reconstruction), Beutler et al. 2016
+0.38 dM(rsfid/rs) 1548.12
+0.38 Hz(rs/rsfid) 82.4097
+0.38 fsig8        0.479183
+0.51 dM(rsfid/rs) 2005.69
+0.51 Hz(rs/rsfid) 89.0585
+0.51 fsig8        0.479183
+0.61 dM(rsfid/rs) 2334.11
+0.61 Hz(rs/rsfid) 94.6241
+0.61 fsig8        0.479183

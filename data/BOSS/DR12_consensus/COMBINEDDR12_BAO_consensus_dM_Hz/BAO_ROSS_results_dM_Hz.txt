@@ -1,0 +1,7 @@
+# BOSS DR12 combined sample correlation function multipole analysis (post-reconstruction), Ross et al. 2016
+0.38 dM(rsfid/rs) 1512.17
+0.38 Hz(rs/rsfid) 81.1223
+0.51 dM(rsfid/rs) 1971.33
+0.51 Hz(rs/rsfid) 91.0236
+0.61 dM(rsfid/rs) 2294.75
+0.61 Hz(rs/rsfid) 99.4038

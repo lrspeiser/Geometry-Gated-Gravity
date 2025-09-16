@@ -1,0 +1,10 @@
+# BOSS DR12 combined sample power spectrum wedges analysis (pre-reconstruction), Grieb et al. 2016
+0.38 dM(rsfid/rs) 1524.96
+0.38 Hz(rs/rsfid) 81.1184
+0.38 fsig8        0.498183
+0.51 dM(rsfid/rs) 1975.68
+0.51 Hz(rs/rsfid) 87.663
+0.51 fsig8        0.498183
+0.61 dM(rsfid/rs) 2299.19
+0.61 Hz(rs/rsfid) 93.1413
+0.61 fsig8        0.498183

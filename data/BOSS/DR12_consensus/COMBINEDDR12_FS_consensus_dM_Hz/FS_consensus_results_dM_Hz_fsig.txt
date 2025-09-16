@@ -1,0 +1,10 @@
+# FS-only consensus results, Alam et al. 2016
+0.38 dM(rsfid/rs) 1528.65
+0.38 Hz(rs/rsfid) 81.2369
+0.38 fsig8        0.502242
+0.51 dM(rsfid/rs) 2007.41
+0.51 Hz(rs/rsfid) 88.3372
+0.51 fsig8        0.459128
+0.61 dM(rsfid/rs) 2274.01
+0.61 Hz(rs/rsfid) 95.5946
+0.61 fsig8        0.419163

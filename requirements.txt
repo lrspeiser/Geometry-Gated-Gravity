@@ -1,1 +1,6 @@
+numpy
+matplotlib
+pandas
+pyarrow
+astropy
 PyQt6
