@@ -7,7 +7,7 @@ PARQUET=$(DATA_DIR)/sparc_rotmod_ltg.parquet
 MRT=$(DATA_DIR)/SPARC_Lelli2016c.mrt
 MASTER=$(DATA_DIR)/Rotmod_LTG/MasterSheet_SPARC.csv
 
-.PHONY: all run run-master run-mrt
+.PHONY: all run run-master run-mrt run-shell optimize-shell run-density-models build-parquet
 
 all: run-master
 
@@ -19,6 +19,16 @@ run-master:
 
 run-mrt:
 	$(PY) $(SCRIPT) --parquet $(PARQUET) --sparc-mrt $(MRT) --output-dir $(DATA_DIR)
+
+run-shell:
+	$(PY) $(SCRIPT) --parquet $(PARQUET) --sparc-master-csv $(MASTER) --model shell --shell-mass-exp -0.35 --shell-middle 2.0 --shell-max 5.0 --output-dir $(DATA_DIR)
+
+optimize-shell:
+	$(PY) src/scripts/optimize_shell.py --parquet $(PARQUET) --master-csv $(MASTER) --out-base $(DATA_DIR)/opt_shell --refine
+
+# Run density-based model optimizer (no mass power-law)
+run-density-models:
+	$(PY) src/scripts/sparc_density_models.py --data-dir $(DATA_DIR) --output-dir $(DATA_DIR)/model_results --n-iter 60 --test-fraction 0.2
 
 build-parquet:
 	$(PY) src/scripts/build_sparc_parquet.py

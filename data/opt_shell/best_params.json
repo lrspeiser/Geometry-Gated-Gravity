@@ -1,0 +1,16 @@
+{
+  "mass_exp": -0.39999999999999997,
+  "middle": 2.5,
+  "max": 4.0,
+  "out_dir": "data/opt_shell/refine__me_-0.400__mid_2.50__max_4.00",
+  "point_mean_close": 74.79066440850413,
+  "point_median_close": 81.00528571176453,
+  "point_frac_ge90": 0.1959731543624161,
+  "gal_mean_of_medians": 71.79109175910324,
+  "gal_median_of_medians": 79.92271200295373,
+  "gal_frac_med_ge90": 0.19428571428571428,
+  "point_avg_gr_off": 39.68046285266468,
+  "point_avg_model_off": 25.209335591495876,
+  "point_improve_off": 14.471127261168807,
+  "point_frac_better_than_gr": 0.7208053691275168
+}
