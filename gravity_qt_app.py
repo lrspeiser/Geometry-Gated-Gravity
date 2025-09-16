@@ -260,7 +260,7 @@ class GravityModel:
             base = c["base"]
         if k <= 0:
             return np.ones(N)
-        scales = np.clip(1.0 + k * base, 0.1, 10.0)
+        scales = 1.0 + k * base
         c.update({"k": k, "scales": scales})
         return scales
 
@@ -733,8 +733,12 @@ class MainWindow(QMainWindow):
         self.spinG = QDoubleSpinBox(); self.spinG.setRange(0.1, 5.0); self.spinG.setDecimals(3); self.spinG.setValue(1.0)
         self.spinDk = QDoubleSpinBox(); self.spinDk.setRange(0.0, 5.0); self.spinDk.setDecimals(3); self.spinDk.setValue(0.0)
         self.spinDr = QDoubleSpinBox(); self.spinDr.setRange(0.05, 50.0); self.spinDr.setDecimals(3); self.spinDr.setValue(2.0)
+        self.chkDrFrac = QCheckBox("Use dens R as fraction of Rchar")
+        self.spinDrFrac = QDoubleSpinBox(); self.spinDrFrac.setRange(0.01, 1.0); self.spinDrFrac.setDecimals(3); self.spinDrFrac.setValue(0.15)
         self.spinDa = QDoubleSpinBox(); self.spinDa.setRange(0.0, 3.0); self.spinDa.setDecimals(3); self.spinDa.setValue(1.0)
         self.spinDth = QDoubleSpinBox(); self.spinDth.setRange(0.0, 5.0); self.spinDth.setDecimals(3); self.spinDth.setValue(1.0)
+        # Absolute density threshold (Msun/kpc^3) synced with fraction
+        self.spinDAbs = QDoubleSpinBox(); self.spinDAbs.setRange(0.0, 1e12); self.spinDAbs.setDecimals(3); self.spinDAbs.setValue(0.0)
         self.spinWk = QDoubleSpinBox(); self.spinWk.setRange(0.0, 5.0); self.spinWk.setDecimals(3); self.spinWk.setValue(0.0)
         self.spinWr = QDoubleSpinBox(); self.spinWr.setRange(0.05, 20.0); self.spinWr.setDecimals(3); self.spinWr.setValue(2.0)
         self.spinVobs = QDoubleSpinBox(); self.spinVobs.setRange(0.0, 1000.0); self.spinVobs.setDecimals(1); self.spinVobs.setValue(220.0)
@@ -744,10 +748,16 @@ class MainWindow(QMainWindow):
             "Legacy linear mode: if local density at the test star is low vs global, G_eff multiplies by (1 + k*(rho_ref/rho_local - 1)).")
         add_row_with_tip(form, "Density R (kpc)", self.spinDr,
             "Neighborhood size for computing local density at the evaluation point. 1–5 kpc typical. Smaller R makes the effect more local.")
+        add_row_with_tip(form, "Use dens R as frac of Rchar", self.chkDrFrac,
+            "If enabled, dens_R = frac × Rchar; otherwise, use absolute kpc.")
+        add_row_with_tip(form, "dens R frac of Rchar", self.spinDrFrac,
+            "When enabled, sets dens_R = frac × Rchar.")
         add_row_with_tip(form, "Density alpha", self.spinDa,
             "Power-law enhancement only at the evaluation point when local density is low: multiplier = (rho_ref/rho_local)^alpha. Set 0 to use legacy k mode.")
         add_row_with_tip(form, "Low dens thresh × rho_ref", self.spinDth,
             "Only apply density enhancement when rho_local < (threshold × rho_ref). For Earth-like regions, set threshold ≤ 1.0 so dense regions get baseline G only.")
+        add_row_with_tip(form, "Low dens abs (Msun/kpc^3)", self.spinDAbs,
+            "Absolute density threshold; synced with fraction via rho_ref.")
         add_row_with_tip(form, "Well k", self.spinWk,
             "Per-source modifier: stars in shallower local density get a >1× scale on their vector. Higher k boosts low-density contributors.")
         add_row_with_tip(form, "Well R (kpc)", self.spinWr,
@@ -830,9 +840,13 @@ class MainWindow(QMainWindow):
         self.chkShowRings = QCheckBox("Show low-density rings")
         self.spinRBins = QSpinBox(); self.spinRBins.setRange(5, 200); self.spinRBins.setValue(40)
         self.spinRThresh = QDoubleSpinBox(); self.spinRThresh.setRange(0.0, 5.0); self.spinRThresh.setDecimals(3); self.spinRThresh.setValue(1.0)
+        self.spinRAbs = QDoubleSpinBox(); self.spinRAbs.setRange(0.0, 1e12); self.spinRAbs.setDecimals(3); self.spinRAbs.setValue(0.0)
+        self.spinRHz = QDoubleSpinBox(); self.spinRHz.setRange(0.001, 50.0); self.spinRHz.setDecimals(3); self.spinRHz.setValue( max(0.002, 2.0*self.spinDr.value()) )
         layR.addRow(self.chkShowRings)
         layR.addRow("Radial bins", self.spinRBins)
         layR.addRow("Low dens thresh × rho_ref", self.spinRThresh)
+        layR.addRow("Low dens abs (Msun/kpc^3)", self.spinRAbs)
+        layR.addRow("Vertical thickness (kpc)", self.spinRHz)
         rightLayout.addWidget(self.grpRings)
         rightLayout.addStretch(1)
 
@@ -864,11 +878,25 @@ class MainWindow(QMainWindow):
         self.chkShowRings.toggled.connect(lambda _v: self.refresh_ring_overlay())
         self.spinRBins.valueChanged.connect(lambda _v: self.refresh_ring_overlay())
         self.spinRThresh.valueChanged.connect(lambda _v: self.refresh_ring_overlay())
+        self.spinRAbs.valueChanged.connect(lambda _v: self.refresh_ring_overlay(abs_changed=True))
+        self.spinRHz.valueChanged.connect(lambda _v: self.refresh_ring_overlay())
+        # Initialize sync guard before first sync
+        self._sync_guard = False
+        # Initial threshold sync
+        self.sync_density_thresholds()
         self.btnSaveSolution.clicked.connect(self.save_solution_profile)
         self.btnLoadSolution.clicked.connect(self.load_solution_profile)
         self.btnCompare.clicked.connect(self.open_compare_dialog)
-        for w in [self.spinG, self.spinDk, self.spinDr, self.spinDa, self.spinDth, self.spinWk, self.spinWr, self.spinVobs]:
-            w.valueChanged.connect(self.schedule_refresh)
+        for w in [self.spinG, self.spinDk, self.spinDr, self.chkDrFrac, self.spinDrFrac, self.spinDa, self.spinDth, self.spinDAbs, self.spinWk, self.spinWr, self.spinVobs]:
+            try:
+                w.valueChanged.connect(self.schedule_refresh)
+            except Exception:
+                # QCheckBox uses toggled
+                w.toggled.connect(self.schedule_refresh)
+        # Sync fraction/absolute thresholds based on rho_ref
+        self._sync_guard = False
+        self.spinDth.valueChanged.connect(lambda _v: self.sync_density_thresholds())
+        self.spinDAbs.valueChanged.connect(lambda _v: self.sync_density_thresholds(from_abs=True))
         for w in [self.sN, self.sR, self.sBa, self.sHz, self.sBf, self.sMt]:
             w.valueChanged.connect(self.schedule_rebuild)
         grpStruct.toggled.connect(lambda _checked: None)  # keep state; no action needed
@@ -1156,9 +1184,17 @@ class MainWindow(QMainWindow):
         self.canvas.draw_idle()
 
     def refresh_physics(self):
+        # Compute effective dens_R
+        dens_R_eff = float(self.spinDr.value())
+        try:
+            if self.chkDrFrac.isChecked() and len(self.model.masses)>0:
+                Rchar = float(np.max(np.linalg.norm(self.model.pos - self.model.COM, axis=1)))
+                dens_R_eff = float(self.spinDrFrac.value()) * max(1e-6, Rchar)
+        except Exception:
+            pass
         self.knobs = DensityKnobs(
             g_scale=float(self.spinG.value()),
-            dens_k=float(self.spinDk.value()), dens_R=float(self.spinDr.value()),
+            dens_k=float(self.spinDk.value()), dens_R=dens_R_eff,
             dens_alpha=float(self.spinDa.value()), dens_thresh_frac=float(self.spinDth.value()),
             well_k=float(self.spinWk.value()), well_R=float(self.spinWr.value()),
         )
@@ -1196,13 +1232,24 @@ class MainWindow(QMainWindow):
         if len(getattr(self, 'vf_stars', []))>0:
             import numpy as _np
             pct = 100.0 * (_np.sum(self.vf_stars <= vF) / max(1, len(self.vf_stars)))
+        ring_extra = ""
+        if getattr(self, 'grpRings', None) and self.grpRings.isChecked() and getattr(self, 'chkShowRings', None) and self.chkShowRings.isChecked():
+            try:
+                total_bins = int(self.spinRBins.value())
+                shaded = int(getattr(self, '_ring_shaded', 0))
+                rho_ref_last = float(getattr(self, '_rho_ref_last', 0.0))
+                rabs = float(self.spinRAbs.value())
+                rfrac = float(self.spinRThresh.value())
+                ring_extra = f"\nRing overlay: shaded {shaded}/{total_bins} | rho_ref={rho_ref_last:.3e} Msun/kpc^3 | thresh_abs={rabs:.3e} ({rfrac:.2f}×rho_ref)"
+            except Exception:
+                ring_extra = ""
         self.infoLabel.setText(
             f"Preset: {self.preset.currentText()} | N stars: {len(self.model.masses)} | Total mass: {total_mass:,.2e} Msun\n"
             f"Farthest-star radius: R = {far_R:.2f} kpc\n"
             f"G={self.knobs.g_scale:.2f} | Dens: k={self.knobs.dens_k:.2f}, alpha={self.knobs.dens_alpha:.2f} @ R={self.knobs.dens_R:.2f} | Thresh×rho_ref={self.knobs.dens_thresh_frac:.2f} | "
             f"Well k={self.knobs.well_k:.2f} @ R={self.knobs.well_R:.2f}\n"
             f"Speeds (km/s): Newtonian={vN:.2f}  GR-like={vG:.2f}  Final={vF:.2f} | Observed={vobs:.1f}  Δ={dv:+.2f} km/s\n"
-            f"Match to observed at test star: {match_pct:.1f}%\n"
+            f"Match to observed at test star: {match_pct:.1f}%{ring_extra}\n"
             f"Test star speed percentile among stars: {pct:.1f}% (green=GR fit, red=outliers, gold=test star)"
         )
 
@@ -1210,7 +1257,46 @@ class MainWindow(QMainWindow):
         dlg = VectorsDialog(self.model, self.knobs, self)
         dlg.exec()
 
-    def refresh_ring_overlay(self):
+    def sync_density_thresholds(self, from_abs: bool = False):
+        # synchronize fraction and absolute thresholds using current rho_ref
+        if self._sync_guard:
+            return
+        self._sync_guard = True
+        try:
+            rho_ref = getattr(self, '_rho_ref_last', None)
+            if rho_ref is None or rho_ref <= 0:
+                # attempt to compute rho_ref quickly
+                if len(self.model.masses) > 0:
+                    Rchar = float(np.max(np.linalg.norm(self.model.pos - self.model.COM, axis=1)))
+                    Vchar = (4.0/3.0) * math.pi * max(1e-30, Rchar**3)
+                    rho_ref = float(self.model.masses.sum()) / Vchar if Vchar > 0 else 0.0
+                else:
+                    rho_ref = 0.0
+            if rho_ref > 0:
+                if from_abs:
+                    # Update fraction from absolute for both eval and ring controls
+                    try:
+                        self.spinDth.setValue(float(self.spinDAbs.value())/rho_ref)
+                    except Exception:
+                        pass
+                    try:
+                        self.spinRThresh.setValue(float(self.spinRAbs.value())/rho_ref)
+                    except Exception:
+                        pass
+                else:
+                    # Update absolute from fraction for both eval and ring controls
+                    try:
+                        self.spinDAbs.setValue(float(self.spinDth.value())*rho_ref)
+                    except Exception:
+                        pass
+                    try:
+                        self.spinRAbs.setValue(float(self.spinRThresh.value())*rho_ref)
+                    except Exception:
+                        pass
+        finally:
+            self._sync_guard = False
+
+    def refresh_ring_overlay(self, abs_changed: bool = False):
         # Clear existing ring patches
         try:
             for p in self.ringPatches:
@@ -1227,6 +1313,9 @@ class MainWindow(QMainWindow):
         Rchar = float(_np.max(_np.linalg.norm(self.model.pos - self.model.COM, axis=1))) if len(self.model.masses) else 1.0
         Vchar = (4.0/3.0) * math.pi * max(1e-30, Rchar**3)
         rho_ref = float(self.model.masses.sum()) / Vchar if Vchar > 0 else 0.0
+        self._rho_ref_last = rho_ref
+        # Sync fraction/absolute controls based on which changed
+        self.sync_density_thresholds(from_abs=abs_changed)
         # Compute surface density per ring (annuli) using 2D projected radii
         bins = int(self.spinRBins.value())
         Rmax = float(_np.max(_np.linalg.norm(self.model.pos[:, :2] - self.model.COM[:2], axis=1)))
@@ -1242,9 +1331,10 @@ class MainWindow(QMainWindow):
             area = math.pi * (r1*r1 - r0*r0)
             sigma = m / max(1e-30, area)  # Msun / kpc^2
             # Convert to an equivalent 3D-like density by dividing by an effective height (use Hz from preset approximation or 2*dens_R)
-            hz_eff = max(1e-3, float(self.spinDr.value())*2.0)
+            hz_eff = max(1e-3, float(self.spinRHz.value()))
             rho_equiv = sigma / (2.0*hz_eff)
-            if rho_ref > 0 and rho_equiv < float(self.spinRThresh.value()) * rho_ref:
+            thresh_abs = float(self.spinRAbs.value()) if rho_ref > 0 else 0.0
+            if rho_ref > 0 and (rho_equiv < (float(self.spinRThresh.value()) * rho_ref) or (thresh_abs > 0.0 and rho_equiv < thresh_abs)):
                 # Draw a translucent annulus for this ring
                 patch = Wedge(center=(self.model.COM[0], self.model.COM[1]), r=r1, theta1=0, theta2=360, width=(r1-r0),
                               facecolor=(0.5,0.5,0.5,0.15), edgecolor=(0.5,0.5,0.5,0.35))
