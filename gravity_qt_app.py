@@ -820,6 +820,11 @@ class MainWindow(QMainWindow):
         add_row_with_tip(f2, "Total mass (1e10 Msun)", self.sMt, "Total luminous+gas mass distributed across all stars.")
         grpStruct.setLayout(f2)
 
+        # Mode toggle
+        self.chkSimpleMode = QCheckBox("Simple mode (hide advanced)")
+        self.chkSimpleMode.setChecked(True)
+        rightLayout.addWidget(self.chkSimpleMode)
+
         # Simple boundary group
         self.grpBoundary = QGroupBox("Boundary and enhancement (simple)")
         layB = QFormLayout(self.grpBoundary)
@@ -827,9 +832,11 @@ class MainWindow(QMainWindow):
         self.chkBoundaryUseMWFrac = QCheckBox("Apply MW fraction to all presets")
         self.chkBoundaryUseMWFrac.setChecked(True)
         self.spinAlphaSimple = QDoubleSpinBox(); self.spinAlphaSimple.setRange(0.0, 3.0); self.spinAlphaSimple.setDecimals(3); self.spinAlphaSimple.setValue(self.spinDa.value())
+        self.btnSolveAlpha = QPushButton("Solve enhancement (α)")
         layB.addRow("MW boundary R (kpc)", self.spinBoundaryMW)
         layB.addRow(self.chkBoundaryUseMWFrac)
         layB.addRow("Enhancement exponent α", self.spinAlphaSimple)
+        layB.addRow(self.btnSolveAlpha)
         rightLayout.addWidget(self.grpBoundary)
 
         rightLayout.addLayout(form)
@@ -924,6 +931,8 @@ class MainWindow(QMainWindow):
         self.btnLoadObs.clicked.connect(self.load_obs_curve)
         # Simple boundary wiring: keep alpha in sync
         self.spinAlphaSimple.valueChanged.connect(lambda v: self.spinDa.setValue(float(v)))
+        self.btnSolveAlpha.clicked.connect(self.solve_alpha_simple)
+        self.chkSimpleMode.toggled.connect(self.update_ui_mode)
         # Ring overlay signals
         self.grpRings.toggled.connect(lambda _v: self.refresh_ring_overlay())
         self.chkShowRings.toggled.connect(lambda _v: self.refresh_ring_overlay())
@@ -1054,6 +1063,32 @@ class MainWindow(QMainWindow):
         x = (a + b) / 2
         fx = f(x)
         return x, fx
+
+    def solve_alpha_simple(self):
+        # Solve only for alpha at fixed boundary and other knobs to match Observed v at test star
+        if len(self.model.masses) == 0:
+            self.show_tip("Simple", "No stars available to solve against. Build a galaxy first.")
+            return
+        vobs = float(self.spinVobs.value())
+        # Use current knobs but vary alpha; boundary applied in refresh_physics per preset
+        def obj_alpha(a):
+            a = max(0.0, min(3.0, float(a)))
+            # Temporarily override alpha and recompute speeds
+            kn = DensityKnobs(
+                g_scale=float(self.spinG.value()),
+                dens_k=float(self.spinDk.value()), dens_R=float(self.knobs.dens_R),
+                dens_alpha=a, dens_thresh_frac=float(self.spinDth.value()),
+                well_k=float(self.spinWk.value()), well_R=float(self.spinWr.value()),
+                boundary_R=float(self.knobs.boundary_R),
+            )
+            _, _, vF = self.model.speeds_at_test(kn)
+            return (vF - vobs) ** 2
+        a0 = float(self.spinAlphaSimple.value())
+        a_opt, err = self.golden_section(obj_alpha, 0.0, 3.0)
+        self.spinAlphaSimple.setValue(float(a_opt))
+        self.spinDa.setValue(float(a_opt))
+        self.refresh_physics()
+        self.show_tip("Simple", f"Solved enhancement exponent: alpha={a_opt:.4f} (objective={err:.4f}).")
 
     def solve_params(self):
         # Objective: minimize squared error at test star
@@ -1196,6 +1231,31 @@ class MainWindow(QMainWindow):
             self.animTimer.stop()
         # ensure colors are up-to-date
         self.update_colors()
+
+    def update_ui_mode(self, on: bool):
+        # Simple mode hides advanced groups; keeps only preset, observed v, boundary, solve alpha, compare
+        simple = bool(on)
+        # Groups
+        for g in [getattr(self, 'grpRings', None), getattr(self, 'grpAnim', None), getattr(self, 'grpSolve', None), getattr(self, 'tipsBox', None)]:
+            if g is not None:
+                g.setVisible(not simple)
+        # Show boundary group always
+        self.grpBoundary.setVisible(True)
+        # Show compare and save CSV buttons even in simple mode
+        self.btnCompare.setVisible(True)
+        self.btnSaveCSV.setVisible(True)
+        # Show only Solve Alpha in simple mode; hide advanced Solve buttons
+        self.btnSolveAlpha.setVisible(simple)
+        self.btnSolve.setVisible(not simple)
+        self.btnLoadObs.setVisible(not simple)
+        # Disable advanced knobs in simple mode
+        advanced_widgets = [self.spinG, self.spinDk, self.spinDr, self.chkDrFrac, self.spinDrFrac, self.spinDa, self.spinDth, self.spinDAbs, self.spinWk, self.spinWr]
+        for w in advanced_widgets:
+            try:
+                w.setEnabled(not simple)
+                w.setVisible(not simple)
+            except Exception:
+                pass
 
     def update_colors(self):
         if len(getattr(self, 'vf_stars', []))==0 or len(getattr(self, 'vg_stars', []))==0:
