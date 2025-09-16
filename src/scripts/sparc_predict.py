@@ -48,8 +48,8 @@ import os
 import pandas as pd
 import numpy as np
 
-A_DEFAULT = 5.589712133866334
-BETA_DEFAULT = -0.6913962885091143
+A_DEFAULT = 3.1125315951391666
+BETA_DEFAULT = 0.07417088846132323
 M0_DEFAULT = 1e10  # Msun
 
 # Project-relative defaults (no absolute paths). We locate the repo root assuming this file lives at src/scripts/.
@@ -134,6 +134,85 @@ def load_boundaries(boundaries_csv: Path | None, rotmod_df: pd.DataFrame, bounda
     return b[['galaxy','boundary_kpc']]
 
 
+def compute_G_enhanced(R_kpc, M_bary, boundary_kpc, shell_params: dict) -> float:
+    """Shell-based gravity enhancement factor G(R).
+
+    Concept:
+    - Inner region (R < 0.5*boundary): G = 1.0 (Newtonian)
+    - Middle region (0.5*boundary <= R < boundary): smooth cosine transition towards an enhanced value
+    - Outer region (R >= boundary): logarithmic growth that saturates at a maximum
+
+    Energy budget caps by mass (to avoid unphysical boosts):
+    - M_bary < 1e9 Msun: cap G <= 1.5
+    - M_bary < 5e9 Msun: cap G <= 2.5
+
+    Parameters (from shell_params with defaults):
+    - M_ref (default 1e10 Msun)
+    - mass_exp (default -0.35) — negative exponent boosts lower-mass galaxies relatively more
+    - inner_enhance (default 1.0)
+    - middle_enhance (default 2.0)
+    - max_enhance (default 5.0)
+
+    Returns
+    - float G_pred at this radius. If inputs are invalid, returns NaN to match pipeline semantics for missing masses.
+
+    See README (SPARC workflow: Shell model) for usage.
+    """
+    try:
+        R = float(R_kpc)
+        Mb = float(M_bary)
+        B = float(boundary_kpc)
+    except Exception:
+        return float('nan')
+
+    if not (np.isfinite(Mb) and Mb > 0.0):
+        # Keep NaN to signal missing mass, aligning with existing pipeline behavior
+        return float('nan')
+    if not (np.isfinite(B) and B > 0.0):
+        return float('nan')
+    if not np.isfinite(R):
+        return float('nan')
+
+    M_ref = float(shell_params.get('M_ref', 1e10))
+    mass_exp = float(shell_params.get('mass_exp', -0.35))
+    inner_enhance = float(shell_params.get('inner_enhance', 1.0))
+    middle_enhance = float(shell_params.get('middle_enhance', 2.0))
+    max_enhance = float(shell_params.get('max_enhance', 5.0))
+
+    if not (np.isfinite(M_ref) and M_ref > 0.0):
+        M_ref = 1e10
+
+    # Negative exponent => lower-mass galaxies get relatively more enhancement
+    try:
+        mass_factor = (Mb / M_ref) ** mass_exp
+    except Exception:
+        mass_factor = 1.0
+
+    inner_boundary = 0.5 * B
+    outer_boundary = B
+
+    if R < inner_boundary:
+        G = inner_enhance
+    elif R < outer_boundary:
+        denom = max(outer_boundary - inner_boundary, 1e-9)
+        t = (R - inner_boundary) / denom
+        t = min(max(t, 0.0), 1.0)
+        smooth_t = 0.5 * (1.0 - math.cos(math.pi * t))
+        G = inner_enhance + (middle_enhance - inner_enhance) * smooth_t * mass_factor
+    else:
+        excess = max((R - outer_boundary) / B, 0.0)
+        growth = 1.0 + 0.5 * math.log10(1.0 + excess)
+        G = min(max_enhance, middle_enhance * growth * mass_factor)
+
+    # Energy-budget caps for dwarfs
+    if Mb < 1e9:
+        G = min(G, 1.5)
+    elif Mb < 5e9:
+        G = min(G, 2.5)
+
+    return float(G)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--parquet', type=Path, default=(repo_root() / 'data/sparc_rotmod_ltg.parquet'))
@@ -151,15 +230,27 @@ def main():
     args = ap.parse_args()
 
 def run(args):
-    # Log the inverse mass-power law being used (beta < 0 indicates inverse correlation).
-    print(f"Using inverse mass-power law: G_pred = A * (M_bary / M0)^beta with A={args.A}, beta={args.beta}, M0={args.M0}")
-    print(f"Reading rotmod parquet from: {args.parquet}")
-    if getattr(args, 'mass_csv', None):
-        print(f"Mass CSV: {args.mass_csv}")
-    if getattr(args, 'sparc_master_csv', None):
-        print(f"SPARC MasterSheet: {args.sparc_master_csv}")
-    if getattr(args, 'sparc_mrt', None):
-        print(f"SPARC MRT: {args.sparc_mrt}")
+    # Model banner
+    model = getattr(args, 'model', 'power')
+    if model == 'shell':
+        print("Using shell-based gravity enhancement model")
+        print(f"Reading rotmod parquet from: {args.parquet}")
+        if getattr(args, 'mass_csv', None):
+            print(f"Mass CSV: {args.mass_csv}")
+        if getattr(args, 'sparc_master_csv', None):
+            print(f"SPARC MasterSheet: {args.sparc_master_csv}")
+        if getattr(args, 'sparc_mrt', None):
+            print(f"SPARC MRT: {args.sparc_mrt}")
+    else:
+        # Log the inverse mass-power law being used (beta < 0 indicates inverse correlation).
+        print(f"Using inverse mass-power law: G_pred = A * (M_bary / M0)^beta with A={args.A}, beta={args.beta}, M0={args.M0}")
+        print(f"Reading rotmod parquet from: {args.parquet}")
+        if getattr(args, 'mass_csv', None):
+            print(f"Mass CSV: {args.mass_csv}")
+        if getattr(args, 'sparc_master_csv', None):
+            print(f"SPARC MasterSheet: {args.sparc_master_csv}")
+        if getattr(args, 'sparc_mrt', None):
+            print(f"SPARC MRT: {args.sparc_mrt}")
     # Load rotmod parquet
     rot = pd.read_parquet(args.parquet)
     # Ensure expected columns
@@ -175,36 +266,112 @@ def run(args):
         import pandas as _pd
         from astropy.io import ascii
         from astropy.table import Table
-        # Try pandas read_fwf first with explicit column specs based on bytes
-        colspecs = [(0,11),(11,13),(13,19),(19,24),(24,26),(26,30),(30,34),(34,41),(41,48),(48,53),(53,61),(61,66),(66,74),(74,81),(81,86),(86,91),(91,96),(96,99),(99,113)]
-        colnames = ['Galaxy','T','D','e_D','f_D','Inc','e_Inc','L36','e_L36','Reff','SBeff','Rdisk','SBdisk','MHI','RHI','Vflat','e_Vflat','Q','Ref']
-        try:
-            df = _pd.read_fwf(path, colspecs=colspecs, names=colnames, dtype=str, header=None)
-            # Filter to rows that look like data: Galaxy has letters/digits and not header words
-            mask = df['Galaxy'].astype(str).str.match(r'\s*[A-Za-z0-9]')
-            df = df[mask].copy()
-        except Exception:
-            # Prefer the 'mrt' reader for CDS-style machine-readable tables
+        import re as _re
+
+        # Helpers: sanitize label, extract colspecs, alignment heuristic
+        def _sanitize_label(label: str) -> str:
+            lbl = label.strip().replace('[3.6]', '36').replace('Ref.', 'Ref')
+            lbl = _re.sub(r'[^A-Za-z0-9_]+', '', lbl)
+            if lbl == 'ID':
+                return 'Galaxy'
+            return lbl
+
+        def _extract_colspecs_from_header(text: str):
+            lines = text.splitlines()
+            hdr_idx = None
+            for i, line in enumerate(lines):
+                if _re.search(r'\bBytes\b\s+Format\b', line):
+                    hdr_idx = i
+                    break
+            if hdr_idx is None:
+                return None
+            spec_start = None
+            for j in range(hdr_idx+1, min(hdr_idx+6, len(lines))):
+                s = lines[j].strip('-= ')
+                if _re.match(r'^[-=]{5,}$', s) or _re.match(r'^[-=]{5,}$', lines[j].strip()):
+                    spec_start = j+1
+                    break
+            if spec_start is None:
+                spec_start = hdr_idx + 1
+            colspecs = []
+            for k in range(spec_start, len(lines)):
+                line = lines[k]
+                if _re.match(r'^[-=]{5,}$', line.strip('-= ')):
+                    break
+                m = _re.match(r'^\s*(\d+)\s*-\s*(\d+)\s+\S+\s+\S+\s+([^\s].*?)\s{2,}.*$', line)
+                if not m:
+                    continue
+                a, b, label = m.groups()
+                name = _sanitize_label(label)
+                colspecs.append((int(a)-1, int(b), name))
+            return colspecs or None
+
+        def _read_fwf(path: Path, colspecs):
+            names = [c[2] for c in colspecs]
+            specs = [(c[0], c[1]) for c in colspecs]
+            return _pd.read_fwf(path, colspecs=specs, names=names, dtype=str, header=None)
+
+        def _try_align_table1(path: Path, base_specs):
+            # keep Galaxy fixed, shift others
             try:
-                t = ascii.read(path, format='mrt', guess=False)
-            except Exception:
-                # Fallback to generic fixed_width
+                galaxy_idx = [i for i, (_, _, n) in enumerate(base_specs) if n == 'Galaxy'][0]
+            except IndexError:
+                galaxy_idx = 0
+            best_df = _pd.DataFrame(); best_shift = 0; best_score = -1
+            for shift in (-1, 0, 1, 2):
+                shifted = []
+                for i, (s, e, n) in enumerate(base_specs):
+                    if i == galaxy_idx:
+                        shifted.append((s, e, n))
+                    else:
+                        shifted.append((max(0, s+shift), max(0, e+shift), n))
                 try:
-                    t = ascii.read(path, format='fixed_width', guess=False)
+                    df_try = _read_fwf(path, shifted)
                 except Exception:
-                    # Last resort attempt
-                    t = Table.read(path)
-            df = t.to_pandas()
-            cols_lc = {c: str(c).strip() for c in df.columns}
-            df.columns = [cols_lc[c] for c in df.columns]
-            # Normalize name selection
-            if 'Galaxy' not in df.columns:
-                df.rename(columns={df.columns[0]:'Galaxy'}, inplace=True)
-        # Clean numeric columns
+                    continue
+                for c in ('T','D'):
+                    if c in df_try.columns:
+                        df_try[c] = _pd.to_numeric(df_try[c], errors='coerce')
+                score = int(df_try['D'].notna().sum()) if 'D' in df_try.columns else 0
+                if score > best_score:
+                    best_score = score; best_df = df_try; best_shift = shift
+            return best_df, best_shift
+
+        # Derive colspecs from header and align
+        text = Path(path).read_text(encoding='utf-8', errors='ignore')
+        specs = _extract_colspecs_from_header(text)
+        df = None
+        used_shift = 0
+        if specs is not None:
+            try:
+                df = _read_fwf(path, specs)
+                # If looks like Table1, align if needed
+                if {'T','D'}.issubset(set(df.columns)):
+                    d_non = _pd.to_numeric(df['D'], errors='coerce').notna().sum()
+                    if d_non < 50:
+                        df, used_shift = _try_align_table1(path, specs)
+            except Exception:
+                df = None
+        if df is None:
+            # Fallback readers
+            try:
+                df = _read_fwf(path, [(0,11,'Galaxy'),(11,13,'T'),(13,19,'D'),(19,24,'e_D'),(24,26,'f_D'),(26,30,'Inc'),(30,34,'e_Inc'),(34,41,'L36'),(41,48,'e_L36'),(48,53,'Reff'),(53,61,'SBeff'),(61,66,'Rdisk'),(66,74,'SBdisk'),(74,81,'MHI'),(81,86,'RHI'),(86,91,'Vflat'),(91,96,'e_Vflat'),(96,99,'Q'),(99,113,'Ref')])
+            except Exception:
+                try:
+                    t = ascii.read(path, format='mrt', guess=False)
+                except Exception:
+                    try:
+                        t = ascii.read(path, format='fixed_width', guess=False)
+                    except Exception:
+                        t = Table.read(path)
+                df = t.to_pandas()
+                df.columns = [str(c).strip() for c in df.columns]
+                if 'Galaxy' not in df.columns:
+                    df.rename(columns={df.columns[0]:'Galaxy'}, inplace=True)
+        # Sanity: coerce numeric and filter
         for c in ['T','D','e_D','f_D','Inc','e_Inc','L36','e_L36','Reff','SBeff','Rdisk','SBdisk','MHI','RHI','Vflat','e_Vflat','Q']:
             if c in df.columns:
                 df[c] = _pd.to_numeric(df[c], errors='coerce')
-        # Keep rows that look like actual galaxies: valid T and D
         if 'T' in df.columns:
             df = df[df['T'].between(0, 11, inclusive='both')]
         if 'D' in df.columns:
@@ -220,36 +387,26 @@ def run(args):
         out['type'] = df[tcol] if tcol else 'LTG'
         # Disk scale Rd
         rd = None
-        for cand in ['rd','r_d','rd_kpc','r_d_kpc']:
+        for cand in ['Rd_kpc','Rd','rd','r_d','rd_kpc','r_d_kpc']:
             if cand in df.columns:
                 rd = df[cand]; break
-        # Units may not be kpc; assume table provides kpc; if not present, NaN
         out['Rd_kpc'] = pd.to_numeric(rd, errors='coerce') if rd is not None else np.nan
-        # Masses
-        # Priority 1: use L[3.6] and MHI to estimate baryonic mass
+        # Mass estimate from L36 & MHI in 1e9 units
+        L36_col = 'L36' if 'L36' in df.columns else None
+        MHI_col = 'MHI' if 'MHI' in df.columns else None
         Mb = None
-        # Identify possible column names for L36 and MHI
-        def find_col(cands):
-            for c in cands:
-                if c in df.columns:
-                    return c
-            return None
-        col_L36 = find_col(['L[3.6]','L_3.6','L36','L3.6'])
-        col_MHI = find_col(['MHI','M_HI','MHI_1e9'])
-        if col_L36 is not None or col_MHI is not None:
-            L36_1e9 = pd.to_numeric(df[col_L36], errors='coerce') if col_L36 is not None else 0.0
-            MHI_1e9 = pd.to_numeric(df[col_MHI], errors='coerce') if col_MHI is not None else 0.0
-            # Msun
+        if L36_col is not None or MHI_col is not None:
+            L36_1e9 = pd.to_numeric(df.get(L36_col, 0.0), errors='coerce') if L36_col else 0.0
+            MHI_1e9 = pd.to_numeric(df.get(MHI_col, 0.0), errors='coerce') if MHI_col else 0.0
             Mstar = float(getattr(args, 'ml_star36', 0.5)) * L36_1e9 * 1e9
             Mgas = 1.33 * MHI_1e9 * 1e9
             Mb = Mstar + Mgas
-        # Fallbacks: direct M_bary or component-based
         if Mb is None:
+            # Fallbacks same as before
             for cand in ['m_bary','mbary','mbar','m_baryon']:
                 if cand in df.columns:
                     Mb = pd.to_numeric(df[cand], errors='coerce'); break
         if Mb is None:
-            # Components (look for linear or log10)
             Mstar = None; Mgas = None; Mbul = None
             for cand in ['mstar','m_star','mstar_disk','mstar_tot','mstar_kpc']:
                 if cand in df.columns:
@@ -260,7 +417,6 @@ def run(args):
             for cand in ['mgas','m_gas']:
                 if cand in df.columns:
                     Mgas = pd.to_numeric(df[cand], errors='coerce'); break
-            # log variants
             if Mstar is None:
                 for cand in ['logmstar','log_mstar','log10mstar']:
                     if cand in df.columns:
@@ -273,7 +429,6 @@ def run(args):
                 for cand in ['logmgas','log_mgas']:
                     if cand in df.columns:
                         Mgas = np.power(10.0, pd.to_numeric(df[cand], errors='coerce')); break
-            # Combine
             zero = pd.Series(0.0, index=df.index)
             Mstar = Mstar if Mstar is not None else zero
             Mbul = Mbul if Mbul is not None else zero
@@ -287,113 +442,140 @@ def run(args):
     rd_df = None
     masses_df = None
 
-    # Types and Rd from MasterSheet if available
-    master_path = None
-    if getattr(args, 'sparc_master_csv', None):
-        master_path = args.sparc_master_csv
+    # Preferred: use prebuilt Parquet with clean masses and T (from build_sparc_parquet.py)
+    masses_parquet_default = repo_root() / 'data' / 'sparc_master_clean.parquet'
+    masses_parquet = getattr(args, 'masses_parquet', None) or masses_parquet_default
+    if masses_parquet and Path(masses_parquet).exists():
+        clean = pd.read_parquet(masses_parquet)
+        # Masses
+        masses_df = clean[['galaxy_key','M_bary']].copy()
+        # Rd_kpc from Rdisk if present
+        if 'Rdisk' in clean.columns:
+            rd_df = clean[['galaxy_key','Rdisk']].rename(columns={'Rdisk':'Rd_kpc'})
+        # Types from T mapping
+        T_TO_MORPH = {0: 'S0', 1: 'Sa', 2: 'Sab', 3: 'Sb', 4: 'Sbc', 5: 'Sc', 6: 'Scd', 7: 'Sd', 8: 'Sdm', 9: 'Sm', 10: 'Im', 11: 'BCD'}
+        tnum = pd.to_numeric(clean.get('T', pd.Series([np.nan]*len(clean))), errors='coerce')
+        morph = tnum.map(T_TO_MORPH)
+        def morph_to_class(s: str) -> str:
+            s = (s or '').strip()
+            if s == 'S0':
+                return 'lenticular'
+            if s in ('Sa','Sab','Sb','Sbc','Sc','Scd','Sd','Sdm'):
+                return 'spiral'
+            if s == 'BCD':
+                return 'dwarf BCD'
+            if s in ('Sm','Im'):
+                return 'dwarf irregular'
+            return ''
+        types_df = pd.DataFrame({
+            'galaxy_key': clean['galaxy_key'],
+            'type': morph.fillna('LTG').astype(str),
+            'class': morph.fillna('').astype(str).apply(morph_to_class),
+        })
+        print(f"Masses and types loaded from Parquet: {masses_parquet}")
     else:
-        # Prefer .mrt master if present, else CSV
-        cand_mrt = repo_root() / 'data/Rotmod_LTG/MasterSheet_SPARC.mrt'
-        cand_csv = repo_root() / 'data/Rotmod_LTG/MasterSheet_SPARC.csv'
-        if cand_mrt.exists():
-            master_path = cand_mrt
-        elif cand_csv.exists():
-            master_path = cand_csv
-    if master_path and Path(master_path).exists():
-        def parse_sparc_master_csv(path: Path) -> pd.DataFrame:
-            df = None
-            if str(path).lower().endswith('.mrt'):
-                # Use MRT reader
-                from astropy.io import ascii as _ascii
-                try:
-                    t = _ascii.read(path, format='mrt', guess=False)
-                except Exception:
-                    t = _ascii.read(path, format='fixed_width', guess=False)
-                df = t.to_pandas()
-            else:
-                # Robust CSV reader with fallbacks for odd delimiters/quotes
-                try:
-                    df = pd.read_csv(path, comment='#')
-                except Exception:
+        # Types and Rd from MasterSheet if available
+        master_path = None
+        if getattr(args, 'sparc_master_csv', None):
+            master_path = args.sparc_master_csv
+        else:
+            # Prefer .mrt master if present, else CSV
+            cand_mrt = repo_root() / 'data/Rotmod_LTG/MasterSheet_SPARC.mrt'
+            cand_csv = repo_root() / 'data/Rotmod_LTG/MasterSheet_SPARC.csv'
+            if cand_mrt.exists():
+                master_path = cand_mrt
+            elif cand_csv.exists():
+                master_path = cand_csv
+        if master_path and Path(master_path).exists():
+            def parse_sparc_master_csv(path: Path) -> pd.DataFrame:
+                df = None
+                if str(path).lower().endswith('.mrt'):
+                    # Use MRT reader
+                    from astropy.io import ascii as _ascii
                     try:
-                        df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+                        t = _ascii.read(path, format='mrt', guess=False)
                     except Exception:
-                        df = pd.read_table(path, comment='#', delim_whitespace=True, engine='python')
-            # Normalize name
-            name_col = None
-            for cand in ['galaxy','Galaxy','Name','name','objname']:
-                if cand in df.columns:
-                    name_col = cand; break
-            if name_col is None:
-                name_col = df.columns[0]
-            out = pd.DataFrame()
-            out['galaxy'] = df[name_col].astype(str)
-            out['galaxy_key'] = out['galaxy'].apply(norm_name)
-            # Morphological type: prefer explicit text columns, else map numeric T
-            tcol_txt = None
-            for cand in ['type','Type','Morph','morph','morph_type']:
-                if cand in df.columns:
-                    tcol_txt = cand; break
-            morph_text = None
-            if tcol_txt is not None:
-                morph_text = df[tcol_txt].astype(str)
-            else:
-                # Try numeric Hubble Type code 'T' per MasterSheet note
-                T_TO_MORPH = {
-                    0: 'S0', 1: 'Sa', 2: 'Sab', 3: 'Sb', 4: 'Sbc', 5: 'Sc', 6: 'Scd', 7: 'Sd', 8: 'Sdm', 9: 'Sm', 10: 'Im', 11: 'BCD'
-                }
-                if 'T' in df.columns:
+                        t = _ascii.read(path, format='fixed_width', guess=False)
+                    df = t.to_pandas()
+                else:
+                    # Robust CSV reader with fallbacks for odd delimiters/quotes
                     try:
-                        tnum = pd.to_numeric(df['T'], errors='coerce')
+                        df = pd.read_csv(path, comment='#')
                     except Exception:
-                        tnum = pd.Series([np.nan]*len(df))
-                    morph_text = tnum.map(T_TO_MORPH)
-            out['type'] = morph_text if morph_text is not None else 'LTG'
-            # High-level class from morphology
-            def morph_to_class(s: str) -> str:
-                s = (s or '').strip()
-                if s == 'S0':
-                    return 'lenticular'
-                if s in ('Sa','Sab','Sb','Sbc','Sc','Scd','Sd','Sdm'):
-                    return 'spiral'
-                if s == 'BCD':
-                    return 'dwarf BCD'
-                if s in ('Sm','Im'):
-                    return 'dwarf irregular'
-                return ''
-            out['class'] = out['type'].astype(str).apply(morph_to_class)
-            # Rd if present
-            rd = None
-            for cand in ['Rd_kpc','Rd','rd','r_d','r_d_kpc']:
-                if cand in df.columns:
-                    rd = df[cand]; break
-            out['Rd_kpc'] = pd.to_numeric(rd, errors='coerce') if rd is not None else np.nan
-            return out[['galaxy','galaxy_key','type','class','Rd_kpc']]
-        types_df = parse_sparc_master_csv(Path(master_path))
-        rd_df = types_df[['galaxy_key','Rd_kpc']]
-        print(f"Galaxy types loaded from MasterSheet: {master_path}")
+                        try:
+                            df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+                        except Exception:
+                            df = pd.read_table(path, comment='#', delim_whitespace=True, engine='python')
+                # Normalize name
+                name_col = None
+                for cand in ['galaxy','Galaxy','Name','name','objname']:
+                    if cand in df.columns:
+                        name_col = cand; break
+                if name_col is None:
+                    name_col = df.columns[0]
+                out = pd.DataFrame()
+                out['galaxy'] = df[name_col].astype(str)
+                out['galaxy_key'] = out['galaxy'].apply(norm_name)
+                # Morphological type: prefer explicit text columns, else map numeric T
+                tcol_txt = None
+                for cand in ['type','Type','Morph','morph','morph_type']:
+                    if cand in df.columns:
+                        tcol_txt = cand; break
+                morph_text = None
+                if tcol_txt is not None:
+                    morph_text = df[tcol_txt].astype(str)
+                else:
+                    T_TO_MORPH = {0: 'S0', 1: 'Sa', 2: 'Sab', 3: 'Sb', 4: 'Sbc', 5: 'Sc', 6: 'Scd', 7: 'Sd', 8: 'Sdm', 9: 'Sm', 10: 'Im', 11: 'BCD'}
+                    if 'T' in df.columns:
+                        try:
+                            tnum = pd.to_numeric(df['T'], errors='coerce')
+                        except Exception:
+                            tnum = pd.Series([np.nan]*len(df))
+                        morph_text = tnum.map(T_TO_MORPH)
+                out['type'] = morph_text if morph_text is not None else 'LTG'
+                # High-level class from morphology
+                def morph_to_class(s: str) -> str:
+                    s = (s or '').strip()
+                    if s == 'S0':
+                        return 'lenticular'
+                    if s in ('Sa','Sab','Sb','Sbc','Sc','Scd','Sd','Sdm'):
+                        return 'spiral'
+                    if s == 'BCD':
+                        return 'dwarf BCD'
+                    if s in ('Sm','Im'):
+                        return 'dwarf irregular'
+                    return ''
+                out['class'] = out['type'].astype(str).apply(morph_to_class)
+                # Rd if present
+                rd = None
+                for cand in ['Rd_kpc','Rd','rd','r_d','r_d_kpc']:
+                    if cand in df.columns:
+                        rd = df[cand]; break
+                out['Rd_kpc'] = pd.to_numeric(rd, errors='coerce') if rd is not None else np.nan
+                return out[['galaxy','galaxy_key','type','class','Rd_kpc']]
+            types_df = parse_sparc_master_csv(Path(master_path))
+            rd_df = types_df[['galaxy_key','Rd_kpc']]
+            print(f"Galaxy types loaded from MasterSheet: {master_path}")
 
-    # Masses from preferred source
-    if args.mass_csv is not None and Path(args.mass_csv).exists():
-        masses_df = load_masses(args.mass_csv)[['galaxy_key','M_bary']]
-        print(f"Masses loaded from mass CSV: {args.mass_csv}")
-    elif args.sparc_mrt and Path(args.sparc_mrt).exists():
-        mrt_df = parse_sparc_mrt(args.sparc_mrt)
-        masses_df = mrt_df[['galaxy_key','M_bary']]
-        # Prefer Rd from master; if missing, take Rd from MRT parse
-        if rd_df is None:
-            rd_df = mrt_df[['galaxy_key','Rd_kpc']]
-        print(f"Masses derived from SPARC MRT: {args.sparc_mrt}")
-    elif master_path and Path(master_path).exists():
-        # As a last resort, if MasterSheet had masses (rare), use them
-        ms_df = parse_sparc_master_csv(Path(master_path))
-        if 'M_bary' in ms_df.columns:
-            masses_df = ms_df[['galaxy_key','M_bary']]
-            if rd_df is None and 'Rd_kpc' in ms_df.columns:
-                rd_df = ms_df[['galaxy_key','Rd_kpc']]
-            print("Masses taken from MasterSheet")
-    else:
-        raise SystemExit("Provide one of --mass-csv or --sparc-mrt or ensure MasterSheet is present with masses.")
+        # Masses from preferred source
+        if args.mass_csv is not None and Path(args.mass_csv).exists():
+            masses_df = load_masses(args.mass_csv)[['galaxy_key','M_bary']]
+            print(f"Masses loaded from mass CSV: {args.mass_csv}")
+        elif args.sparc_mrt and Path(args.sparc_mrt).exists():
+            mrt_df = parse_sparc_mrt(args.sparc_mrt)
+            masses_df = mrt_df[['galaxy_key','M_bary']]
+            if rd_df is None:
+                rd_df = mrt_df[['galaxy_key','Rd_kpc']]
+            print(f"Masses derived from SPARC MRT: {args.sparc_mrt}")
+        elif master_path and Path(master_path).exists():
+            ms_df = parse_sparc_master_csv(Path(master_path))
+            if 'M_bary' in ms_df.columns:
+                masses_df = ms_df[['galaxy_key','M_bary']]
+                if rd_df is None and 'Rd_kpc' in ms_df.columns:
+                    rd_df = ms_df[['galaxy_key','Rd_kpc']]
+                print("Masses taken from MasterSheet")
+        else:
+            raise SystemExit("Provide one of --masses-parquet, --mass-csv or --sparc-mrt, or ensure MasterSheet is present with masses.")
 
     if masses_df is None:
         print("WARNING: No masses found; G_pred and model outputs will be NaN where M_bary is missing.")
@@ -440,10 +622,29 @@ def run(args):
                    + np.maximum(0.0, df['Vbul_kms'].fillna(0.0))**2)
     df['Vbar_kms'] = vbar
 
-    # Compute G_pred from mass (rows without mass will be NaN)
-    with np.errstate(divide='ignore', invalid='ignore'):
-        scale = (df['M_bary'] / float(args.M0)) ** float(args.beta)
-        df['G_pred'] = float(args.A) * scale
+    # Compute G_pred from selected model
+    model = getattr(args, 'model', 'power')
+    if model == 'shell':
+        shell_params = {
+            'M_ref': float(getattr(args, 'shell_M_ref', 1e10)),
+            'mass_exp': float(getattr(args, 'shell_mass_exp', -0.35)),
+            'inner_enhance': 1.0,
+            'middle_enhance': float(getattr(args, 'shell_middle', 2.0)),
+            'max_enhance': float(getattr(args, 'shell_max', 5.0)),
+        }
+        print(
+            f"Shell params: M_ref={shell_params['M_ref']:.2e}, mass_exp={shell_params['mass_exp']:.3f}, "
+            f"inner=1.0, middle={shell_params['middle_enhance']:.2f}, max={shell_params['max_enhance']:.2f}"
+        )
+        # Row-wise computation to consume per-radius R and per-galaxy boundary and mass
+        def _row_G(row):
+            return compute_G_enhanced(row['R_kpc'], row.get('M_bary', np.nan), row.get('boundary_kpc', np.nan), shell_params)
+        df['G_pred'] = df.apply(_row_G, axis=1)
+    else:
+        # Power-law mass scaling (rows without mass will be NaN)
+        with np.errstate(divide='ignore', invalid='ignore'):
+            scale = (df['M_bary'] / float(args.M0)) ** float(args.beta)
+            df['G_pred'] = float(args.A) * scale
 
     # Predicted speed assuming velocity scales with sqrt(G)
     df['Vpred_kms'] = np.sqrt(np.maximum(0.0, df['G_pred'])) * df['Vbar_kms']
@@ -452,6 +653,11 @@ def run(args):
     df['Vgr_kms'] = df['Vbar_kms']
     gr_pct = 100.0 * (1.0 - np.abs(df['Vgr_kms'] - df['Vobs_kms']) / df['Vobs_kms'].replace(0, np.nan))
     df['gr_percent_close'] = gr_pct
+
+    # Required G per-star to match Vobs from baryon-only curve
+    with np.errstate(divide='ignore', invalid='ignore'):
+        df['G_required'] = (df['Vobs_kms'] / df['Vbar_kms'].replace(0, np.nan)) ** 2
+        df['G_ratio'] = df['G_required'] / df['G_pred']
 
     # Outer-region mask and percent_close
     df['is_outer'] = df['R_kpc'] >= df['boundary_kpc'].fillna(np.inf)  # if no boundary, nothing is outer
@@ -467,7 +673,9 @@ def run(args):
     # Write by-radius CSV
     out_dir = args.output_dir
     out_dir.mkdir(parents=True, exist_ok=True)
-    by_radius = df[['galaxy','type','R_kpc','boundary_kpc','is_outer','Vobs_kms','Vbar_kms','Vgr_kms','gr_percent_close','gr_failing','G_pred','Vpred_kms','percent_close']]
+    by_radius = df[['galaxy','type','R_kpc','boundary_kpc','is_outer','Vobs_kms','Vbar_kms','Vgr_kms','gr_percent_close','gr_failing','G_pred','G_required','G_ratio','Vpred_kms','percent_close']].copy()
+    if getattr(args, 'model', 'power') == 'shell':
+        by_radius['Model'] = 'shell'
     by_radius_path = out_dir / 'sparc_predictions_by_radius.csv'
     by_radius.to_csv(by_radius_path, index=False)
     # Also write boundaries used for transparency (see README: SPARC workflow)
@@ -482,6 +690,8 @@ def run(args):
     def agg_grp(g: pd.DataFrame):
         g_outer = g[g['is_outer'] & g['percent_close'].notna()]
         g_fail = g[g['gr_failing'] & g['percent_close'].notna()]
+        # Use outer region (physically relevant) for G diagnostics
+        g_outer_all = g[g['is_outer']]
         return pd.Series({
             'type': g['type'].iloc[0] if len(g)>0 else 'LTG',
             'M_bary_Msun': g['M_bary'].iloc[0] if 'M_bary' in g.columns else np.nan,
@@ -496,8 +706,15 @@ def run(args):
             'gr_failing_points': int(len(g_fail)),
             'median_percent_close_on_gr_failing': float(np.nanmedian(g_fail['percent_close'])) if len(g_fail)>0 else np.nan,
             'mean_percent_close_on_gr_failing': float(np.nanmean(g_fail['percent_close'])) if len(g_fail)>0 else np.nan,
+            # G diagnostics (outer region)
+            'median_G_Required_Outer': float(np.nanmedian(g_outer_all['G_required'])) if len(g_outer_all)>0 else np.nan,
+            'mean_G_Required_Outer': float(np.nanmean(g_outer_all['G_required'])) if len(g_outer_all)>0 else np.nan,
+            'median_G_Ratio_Outer': float(np.nanmedian(g_outer_all['G_ratio'])) if len(g_outer_all)>0 else np.nan,
+            'mean_G_Ratio_Outer': float(np.nanmean(g_outer_all['G_ratio'])) if len(g_outer_all)>0 else np.nan,
         })
     by_gal = df.groupby('galaxy').apply(agg_grp).reset_index()
+    if getattr(args, 'model', 'power') == 'shell':
+        by_gal['Model'] = 'shell'
     by_gal_path = out_dir / 'sparc_predictions_by_galaxy.csv'
     by_gal.to_csv(by_gal_path, index=False)
 
@@ -518,6 +735,8 @@ def run(args):
         'Model_Percent_Off': df['model_percent_off'],
         'Baryonic_Mass_Msun': df.get('M_bary', np.nan),
     })
+    if getattr(args, 'model', 'power') == 'shell':
+        human_by_radius['Model'] = 'shell'
     human_by_radius_path = out_dir / 'sparc_human_by_radius.csv'
     human_by_radius.to_csv(human_by_radius_path, index=False)
 
@@ -552,7 +771,13 @@ def run(args):
         'Median_GR_Percent_Off': by_gal['median_gr_percent_off'],
         'Avg_Model_Percent_Off': by_gal['avg_model_percent_off'],
         'Median_Model_Percent_Off': by_gal['median_model_percent_off'],
+        'Median_G_Required_Outer': by_gal['median_G_Required_Outer'],
+        'Mean_G_Required_Outer': by_gal['mean_G_Required_Outer'],
+        'Median_G_Ratio_Outer': by_gal['median_G_Ratio_Outer'],
+        'Mean_G_Ratio_Outer': by_gal['mean_G_Ratio_Outer'],
     })
+    if getattr(args, 'model', 'power') == 'shell':
+        human_by_gal['Model'] = 'shell'
     human_by_gal_path = out_dir / 'sparc_human_by_galaxy.csv'
     human_by_gal.to_csv(human_by_gal_path, index=False)
 
@@ -563,15 +788,62 @@ def run(args):
         Median_GR_Percent_Off=('Median_GR_Percent_Off','median'),
         Avg_Model_Percent_Off=('Avg_Model_Percent_Off','mean'),
         Median_Model_Percent_Off=('Median_Model_Percent_Off','median'),
+        Median_G_Ratio_Outer=('Median_G_Ratio_Outer','median'),
+        Mean_G_Ratio_Outer=('Mean_G_Ratio_Outer','mean'),
     ).reset_index()
     summary_by_type_path = out_dir / 'sparc_summary_by_type.csv'
     grouped.to_csv(summary_by_type_path, index=False)
+
+    # Diagnostics: G_required vs M_bary (outer medians)
+    diag = human_by_gal[['Galaxy','Galaxy_Type','Galaxy_Class','Baryonic_Mass_Msun','Median_G_Required_Outer','Mean_G_Required_Outer','Median_G_Ratio_Outer','Mean_G_Ratio_Outer']].copy()
+    diag_path = out_dir / 'sparc_greq_vs_mass.csv'
+    diag.to_csv(diag_path, index=False)
+
+    # Simple fit: log10(G_required_med) vs log10(M_bary/M0)
+    fit_txt = out_dir / 'sparc_greq_mass_fit.txt'
+    try:
+        x = np.log10(diag['Baryonic_Mass_Msun'] / float(args.M0))
+        y = np.log10(diag['Median_G_Required_Outer'])
+        mask = np.isfinite(x) & np.isfinite(y)
+        if mask.sum() >= 2:
+            beta_fit, logA_fit = np.polyfit(x[mask], y[mask], 1)
+            A_fit = 10 ** logA_fit
+            with open(fit_txt, 'w') as fh:
+                fh.write(f'A_fit={A_fit}\n')
+                fh.write(f'beta_fit={beta_fit}\n')
+            print(f'Fitted G_required ~ A*(M/M0)^beta with A_fit={A_fit:.6g}, beta_fit={beta_fit:.6g}')
+        else:
+            with open(fit_txt, 'w') as fh:
+                fh.write('Insufficient data for fit\n')
+    except Exception as e:
+        with open(fit_txt, 'w') as fh:
+            fh.write(f'Fit failed: {e}\n')
+        print(f'G_required vs mass fit failed: {e}')
 
     print(f"Wrote: {by_radius_path}")
     print(f"Wrote: {by_gal_path}")
     print(f"Wrote: {human_by_radius_path}")
     print(f"Wrote: {human_by_gal_path}")
     print(f"Wrote: {summary_by_type_path}")
+
+    # Additional diagnostics for shell model (inner vs outer medians)
+    if getattr(args, 'model', 'power') == 'shell':
+        try:
+            inner_mask = df['R_kpc'] < 0.5 * df['boundary_kpc']
+            outer_mask = df['R_kpc'] >= df['boundary_kpc']
+            inner = df.loc[inner_mask]
+            outer = df.loc[outer_mask]
+            print(f"Inner median G_pred: {np.nanmedian(inner['G_pred']):.3f} (n={int(inner_mask.sum())})")
+            print(
+                "Outer medians - "
+                f"G_required: {np.nanmedian(outer['G_required']):.3f}, "
+                f"G_pred: {np.nanmedian(outer['G_pred']):.3f}, "
+                f"G_ratio: {np.nanmedian(outer['G_ratio']):.3f}, "
+                f"% close: {np.nanmedian(outer['percent_close']):.1f}"
+            )
+        except Exception as e:
+            print(f"[warn] Shell diagnostics skipped: {e}")
+
     missing = by_gal['M_bary_Msun'].isna().sum()
     if missing:
         print(f"WARNING: {missing} galaxies missing M_bary (fill mass CSV and re-run)")
@@ -584,13 +856,26 @@ if __name__ == '__main__':
                     help='Path to SPARC MasterSheet_SPARC.csv. If provided, derive masses and types from this CSV.')
     ap.add_argument('--sparc-mrt', type=Path, required=False,
                     help='Path to SPARC_Lelli2016c.mrt (fixed-width). Used to derive masses and Rd when mass-csv not given. See README.')
+    ap.add_argument('--masses-parquet', type=Path, required=False,
+                    help='Path to sparc_master_clean.parquet produced by build_sparc_parquet.py (preferred source for M_bary, T, and Rd).')
     ap.add_argument('--boundaries-csv', type=Path)
     ap.add_argument('--boundary-frac', type=float, default=0.5)
+
+    # Model selection and parameters
+    ap.add_argument('--model', choices=['power','shell'], default='power',
+                    help='Select gravity model (default: power).')
+    # Power-law params (unchanged defaults)
     ap.add_argument('--A', type=float, default=A_DEFAULT)
     ap.add_argument('--beta', type=float, default=BETA_DEFAULT)
     ap.add_argument('--M0', type=float, default=M0_DEFAULT)
+    # Shell-model params
+    ap.add_argument('--shell-M-ref', type=float, default=1e10, help='Reference mass for shell model (Msun)')
+    ap.add_argument('--shell-mass-exp', type=float, default=-0.35, help='Mass scaling exponent for shell model (negative boosts low-mass galaxies)')
+    ap.add_argument('--shell-middle', type=float, default=2.0, help='Middle-shell peak enhancement factor')
+    ap.add_argument('--shell-max', type=float, default=5.0, help='Maximum outer-shell enhancement')
+
     ap.add_argument('--ml-star36', type=float, default=0.5, help='Mass-to-light ratio (Msun/Lsun) at 3.6μm for stars')
-    ap.add_argument('--gr-fail-thresh', type=float, default=0.9, help='Threshold for GR percent_close below which a star is considered GR-failing (e.g., 0.9 = 10% off)')
+    ap.add_argument('--gr-fail-thresh', type=float, default=0.9, help='Threshold for GR percent_close below which a star is considered GR-failing (e.g., 0.9 = 10%% off)')
     ap.add_argument('--output-dir', type=Path, default=DEFAULT_DATA_DIR)
     args = ap.parse_args()
     run(args)
