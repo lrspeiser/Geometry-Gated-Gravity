@@ -1,0 +1,11 @@
+{
+  "MW-like disk": {
+    "G": 1.816,
+    "Dk": 3.0,
+    "Dr": 2.0,
+    "Wk": 0.0,
+    "Wr": 2.0,
+    "Vobs": 220.0,
+    "Preset": "MW-like disk"
+  }
+}

@@ -396,7 +396,8 @@ class CompareWorker(QThread):
 
     def __init__(self, presets, knobs: DensityKnobs, objective: str, vobs: float, obs_curve=None, N_override: int = 0,
                  resolve: bool = True, solve_dk: bool = True, solve_g: bool = True, solve_wk: bool = True,
-                 boundary_mw_kpc: float = 8.0, use_mw_frac: bool = True, parent=None):
+                 boundary_mw_kpc: float = 8.0, use_mw_frac: bool = True, boundaries_map: dict | None = None,
+                 solve_g_only: bool = False, parent=None):
         super().__init__(parent)
         self.presets = presets
         self.knobs = knobs
@@ -411,6 +412,8 @@ class CompareWorker(QThread):
         self.rows = []
         self.boundary_mw_kpc = float(boundary_mw_kpc)
         self.use_mw_frac = bool(use_mw_frac)
+        self.boundaries_map = boundaries_map or {}
+        self.solve_g_only = bool(solve_g_only)
 
     def run(self):
         import time
@@ -476,6 +479,12 @@ class CompareWorker(QThread):
         return x, fx
 
     def _boundary_for_preset(self, preset_name: str) -> float:
+        # Prefer explicit map if provided
+        if preset_name in self.boundaries_map:
+            try:
+                return float(self.boundaries_map[preset_name])
+            except Exception:
+                pass
         try:
             mw_Rdisk = float(PRESET_SIMPLE["MW-like disk"]["Rdisk"])  # kpc
             this_Rdisk = float(PRESET_SIMPLE.get(preset_name, {}).get("Rdisk", mw_Rdisk))
@@ -488,6 +497,10 @@ class CompareWorker(QThread):
             return self.boundary_mw_kpc
 
     def _err_for_knobs(self, model: GravityModel, knobs: DensityKnobs):
+        if self.solve_g_only:
+            # Test-star objective only; ignore curve objective in this mode
+            _, _, vF = model.speeds_at_test(knobs)
+            return float((vF - self.vobs) ** 2)
         if self.objective.startswith('curve'):
             R_vals, vN_arr, vG_arr, vF_arr = self._curve_vtriple_for_model(model, knobs, nR=60)
             if self.obs_curve is not None:
@@ -505,12 +518,15 @@ class CompareWorker(QThread):
         import time
         t1 = time.perf_counter()
         model = self._build_from_preset(name)
-        # Apply boundary for this preset
+        # Apply boundary for this preset; optionally ignore enhancement for G-only mode
+        alpha = 0.0 if self.solve_g_only else self.knobs.dens_alpha
+        wk = 0.0 if self.solve_g_only else self.knobs.well_k
+        dk = 0.0 if self.solve_g_only else self.knobs.dens_k
         k2 = DensityKnobs(
             g_scale=self.knobs.g_scale,
-            dens_k=self.knobs.dens_k, dens_R=self.knobs.dens_R,
-            dens_alpha=self.knobs.dens_alpha, dens_thresh_frac=self.knobs.dens_thresh_frac,
-            well_k=self.knobs.well_k, well_R=self.knobs.well_R,
+            dens_k=dk, dens_R=self.knobs.dens_R,
+            dens_alpha=alpha, dens_thresh_frac=self.knobs.dens_thresh_frac,
+            well_k=wk, well_R=self.knobs.well_R,
             boundary_R=self._boundary_for_preset(name),
         )
         err_fixed = self._err_for_knobs(model, k2)
@@ -518,9 +534,11 @@ class CompareWorker(QThread):
         _, _, vF_fixed = model.speeds_at_test(self.knobs)
         g_req_fixed = required_g_for_test(model, self.knobs, self.vobs)
         close_fixed = percent_closeness(vF_fixed, self.vobs)
+        M_bary = float(model.masses.sum())
         row = {
             "preset": name,
             "N": int(len(model.masses)),
+            "M_bary": M_bary,
             "err_fixed": float(err_fixed),
             "close_fixed_pct": float(close_fixed),
             "g": float(self.knobs.g_scale),
@@ -533,25 +551,32 @@ class CompareWorker(QThread):
             "g_req_fixed": float(g_req_fixed),
         }
         if self.resolve:
-            g_lo, g_hi = 0.5, 2.0
+            g_lo, g_hi = 0.01, 100.0
             dk_lo, dk_hi = 0.0, 3.0
             wk_lo, wk_hi = 0.0, 1.0
             g = float(self.knobs.g_scale); dk = float(self.knobs.dens_k); wk = float(self.knobs.well_k)
-            for _ in range(2):
-                if self.solve_dk:
-                    f1 = lambda x: self._err_for_knobs(model, DensityKnobs(g_scale=g, dens_k=max(dk_lo, min(dk_hi, x)), dens_R=self.knobs.dens_R, dens_alpha=self.knobs.dens_alpha, dens_thresh_frac=self.knobs.dens_thresh_frac, well_k=wk, well_R=self.knobs.well_R))
-                    dk, _ = self._golden_section(f1, dk_lo, dk_hi)
-                if self.solve_g:
-                    f2 = lambda x: self._err_for_knobs(model, DensityKnobs(g_scale=max(g_lo, min(g_hi, x)), dens_k=dk, dens_R=self.knobs.dens_R, dens_alpha=self.knobs.dens_alpha, dens_thresh_frac=self.knobs.dens_thresh_frac, well_k=wk, well_R=self.knobs.well_R))
-                    g, _ = self._golden_section(f2, g_lo, g_hi)
-                if self.solve_wk:
-                    f3 = lambda x: self._err_for_knobs(model, DensityKnobs(g_scale=g, dens_k=dk, dens_R=self.knobs.dens_R, dens_alpha=self.knobs.dens_alpha, dens_thresh_frac=self.knobs.dens_thresh_frac, well_k=max(wk_lo, min(wk_hi, x)), well_R=self.knobs.well_R))
-                    wk, _ = self._golden_section(f3, wk_lo, wk_hi)
-            solved_knobs = DensityKnobs(g_scale=float(g), dens_k=float(dk), dens_R=float(self.knobs.dens_R), dens_alpha=self.knobs.dens_alpha, dens_thresh_frac=self.knobs.dens_thresh_frac, well_k=float(wk), well_R=float(self.knobs.well_R), boundary_R=self._boundary_for_preset(name))
+            if self.solve_g_only:
+                # Solve only G with enhancement off, boundary applied
+                fG = lambda x: self._err_for_knobs(model, DensityKnobs(g_scale=max(g_lo, min(g_hi, x)), dens_k=0.0, dens_R=self.knobs.dens_R, dens_alpha=0.0, dens_thresh_frac=self.knobs.dens_thresh_frac, well_k=0.0, well_R=self.knobs.well_R, boundary_R=self._boundary_for_preset(name)))
+                g, _ = self._golden_section(fG, g_lo, g_hi)
+                solved_knobs = DensityKnobs(g_scale=float(g), dens_k=0.0, dens_R=float(self.knobs.dens_R), dens_alpha=0.0, dens_thresh_frac=self.knobs.dens_thresh_frac, well_k=0.0, well_R=float(self.knobs.well_R), boundary_R=self._boundary_for_preset(name))
+            else:
+                for _ in range(2):
+                    if self.solve_dk:
+                        f1 = lambda x: self._err_for_knobs(model, DensityKnobs(g_scale=g, dens_k=max(dk_lo, min(dk_hi, x)), dens_R=self.knobs.dens_R, dens_alpha=self.knobs.dens_alpha, dens_thresh_frac=self.knobs.dens_thresh_frac, well_k=wk, well_R=self.knobs.well_R))
+                        dk, _ = self._golden_section(f1, dk_lo, dk_hi)
+                    if self.solve_g:
+                        f2 = lambda x: self._err_for_knobs(model, DensityKnobs(g_scale=max(g_lo, min(g_hi, x)), dens_k=dk, dens_R=self.knobs.dens_R, dens_alpha=self.knobs.dens_alpha, dens_thresh_frac=self.knobs.dens_thresh_frac, well_k=wk, well_R=self.knobs.well_R))
+                        g, _ = self._golden_section(f2, g_lo, g_hi)
+                    if self.solve_wk:
+                        f3 = lambda x: self._err_for_knobs(model, DensityKnobs(g_scale=g, dens_k=dk, dens_R=self.knobs.dens_R, dens_alpha=self.knobs.dens_alpha, dens_thresh_frac=self.knobs.dens_thresh_frac, well_k=max(wk_lo, min(wk_hi, x)), well_R=self.knobs.well_R))
+                        wk, _ = self._golden_section(f3, wk_lo, wk_hi)
+                solved_knobs = DensityKnobs(g_scale=float(g), dens_k=float(dk), dens_R=float(self.knobs.dens_R), dens_alpha=self.knobs.dens_alpha, dens_thresh_frac=self.knobs.dens_thresh_frac, well_k=float(wk), well_R=float(self.knobs.well_R), boundary_R=self._boundary_for_preset(name))
             err_solved = float(self._err_for_knobs(model, solved_knobs))
             _, _, vF_solved = model.speeds_at_test(solved_knobs)
             g_req_solved = required_g_for_test(model, solved_knobs, self.vobs)
             close_solved = percent_closeness(vF_solved, self.vobs)
+            ratio = float(solved_knobs.g_scale) / max(1e-30, float(model.masses.sum()))
             row.update({
                 "g_solved": solved_knobs.g_scale,
                 "dens_k_solved": solved_knobs.dens_k,
@@ -559,6 +584,7 @@ class CompareWorker(QThread):
                 "err_solved": err_solved,
                 "g_req_solved": float(g_req_solved),
                 "close_solved_pct": float(close_solved),
+                "g_over_M": ratio,
             })
         t2 = time.perf_counter()
         row["time_s"] = float(t2 - t1)
@@ -592,19 +618,26 @@ class CompareAcrossPresetsDialog(QDialog):
         self.radioTest.setChecked(True)
         self.chkResolve = QCheckBox("Re-solve per preset starting from current knobs")
         self.chkResolve.setChecked(True)
+        self.chkUseBoundaries = QCheckBox("Use per-type boundaries")
+        self.chkUseBoundaries.setChecked(True)
+        self.btnEditBounds = QPushButton("Edit Boundaries…")
+        self.chkSolveGOnly = QCheckBox("Solve G only (no enhancement)")
         self.spinN = QSpinBox(); self.spinN.setRange(100, 200000); self.spinN.setValue(3000)
         ctrl.addWidget(self.radioTest, 0, 1)
         ctrl.addWidget(self.radioCurve, 1, 1)
         ctrl.addWidget(self.chkResolve, 2, 1)
-        ctrl.addWidget(QLabel("N stars override"), 3, 1)
-        ctrl.addWidget(self.spinN, 3, 2)
+        ctrl.addWidget(self.chkSolveGOnly, 2, 2)
+        ctrl.addWidget(self.chkUseBoundaries, 3, 1)
+        ctrl.addWidget(self.btnEditBounds, 3, 2)
+        ctrl.addWidget(QLabel("N stars override"), 4, 1)
+        ctrl.addWidget(self.spinN, 4, 2)
 
         vbox.addLayout(ctrl)
 
         # Table
         headers = [
-            "Preset","N","Err (fixed)","Err (solved)","% close (fixed)","% close (solved)",
-            "G","dens_k","dens_R","alpha","boundary_R","well_k","well_R","g_req (fixed)","g_req (solved)","time_s"
+            "Preset","N","M_bary","Err (fixed)","Err (solved)","% close (fixed)","% close (solved)",
+            "G","dens_k","dens_R","alpha","boundary_R","well_k","well_R","g_req (fixed)","g_req (solved)","G_solved","G/M","time_s"
         ]
         self.table = QTableWidget(0, len(headers))
         self.table.setHorizontalHeaderLabels(headers)
@@ -628,6 +661,7 @@ class CompareAcrossPresetsDialog(QDialog):
         self.btnSaveCSV.clicked.connect(self.save_csv)
         self.btnApply.clicked.connect(self.apply_selected)
         self.btnClose.clicked.connect(self.accept)
+        self.btnEditBounds.clicked.connect(self.edit_boundaries)
 
     def start_run(self):
         names = [i.text() for i in self.listPresets.selectedItems()]
@@ -642,9 +676,11 @@ class CompareAcrossPresetsDialog(QDialog):
             well_k=float(self.parent_ref.spinWk.value()), well_R=float(self.parent_ref.spinWr.value()),
         )
         obs_curve = self.parent_ref.obsCurve if (obj=='curve') else None
+        boundaries = self.parent_ref.load_boundaries_map() if self.chkUseBoundaries.isChecked() else None
         self.worker = CompareWorker(names, kn, obj, float(self.parent_ref.spinVobs.value()), obs_curve=obs_curve,
                                     N_override=N_override, resolve=self.chkResolve.isChecked(),
-                                    boundary_mw_kpc=float(self.parent_ref.spinBoundaryMW.value()), use_mw_frac=bool(self.parent_ref.chkBoundaryUseMWFrac.isChecked()))
+                                    boundary_mw_kpc=float(self.parent_ref.spinBoundaryMW.value()), use_mw_frac=bool(self.parent_ref.chkBoundaryUseMWFrac.isChecked()),
+                                    boundaries_map=boundaries, solve_g_only=bool(self.chkSolveGOnly.isChecked()))
         self.worker.rowReady.connect(self._on_row_ready)
         self.worker.progress.connect(self._on_progress)
         self.worker.finished.connect(self._on_finished)
@@ -660,13 +696,15 @@ class CompareAcrossPresetsDialog(QDialog):
         def get(k, default=""):
             return row[k] if k in row else default
         values = [
-            row["preset"], get("N", ""), f"{row['err_fixed']:.4g}",
+            row["preset"], get("N", ""), (f"{row['M_bary']:.3e}" if 'M_bary' in row else ""), f"{row['err_fixed']:.4g}",
             (f"{row['err_solved']:.4g}" if 'err_solved' in row else ""),
             (f"{row['close_fixed_pct']:.1f}%" if 'close_fixed_pct' in row else ""),
             (f"{row['close_solved_pct']:.1f}%" if 'close_solved_pct' in row else ""),
             f"{row['g']:.4f}", f"{row['dens_k']:.4f}", f"{row['dens_R']:.3f}", f"{row.get('alpha','')}", f"{row.get('boundary_R','')}", f"{row['well_k']:.4f}", f"{row['well_R']:.3f}",
             (f"{row['g_req_fixed']:.4f}" if 'g_req_fixed' in row and np.isfinite(row['g_req_fixed']) else "inf"),
             (f"{row['g_req_solved']:.4f}" if 'g_req_solved' in row and np.isfinite(row.get('g_req_solved', float('nan'))) else ""),
+            (f"{row['g_solved']:.4f}" if 'g_solved' in row else ""),
+            (f"{row['g_over_M']:.3e}" if 'g_over_M' in row else ""),
             f"{row['time_s']:.2f}"
         ]
         for c, val in enumerate(values):
@@ -688,12 +726,15 @@ class CompareAcrossPresetsDialog(QDialog):
         with open(path, "w", newline="") as f:
             w = csv.writer(f)
             keys = [
-                "preset","N","err_fixed","err_solved","close_fixed_pct","close_solved_pct",
-                "g","dens_k","dens_R","alpha","boundary_R","well_k","well_R","g_req_fixed","g_req_solved","time_s"
+                "preset","N","M_bary","err_fixed","err_solved","close_fixed_pct","close_solved_pct",
+                "g","dens_k","dens_R","alpha","boundary_R","well_k","well_R","g_req_fixed","g_req_solved","g_solved","g_over_M","time_s"
             ]
             w.writerow(keys)
             for row in self.rows:
                 w.writerow([row.get(k, "") for k in keys])
+
+    def edit_boundaries(self):
+        self.parent_ref.edit_boundaries()
 
     def apply_selected(self):
         r = self.table.currentRow()
@@ -1547,6 +1588,60 @@ class MainWindow(QMainWindow):
 
     def open_compare_dialog(self):
         dlg = CompareAcrossPresetsDialog(self)
+        dlg.exec()
+
+    # --- Boundaries storage ---
+    def boundaries_path(self) -> Path:
+        return Path.cwd()/"boundaries.json"
+
+    def load_boundaries_map(self) -> dict:
+        path = self.boundaries_path()
+        if path.exists():
+            try:
+                data = json.load(open(path, 'r'))
+                # only keep known presets
+                return {k: float(v) for k, v in data.items() if k in PRESET_OPTIONS}
+            except Exception:
+                pass
+        # default: MW-fraction rule based on current UI settings
+        mw_Rdisk = float(PRESET_SIMPLE["MW-like disk"]["Rdisk"])
+        frac = float(self.spinBoundaryMW.value()) / max(1e-6, mw_Rdisk)
+        out = {}
+        for name in PRESET_OPTIONS:
+            Rd = float(PRESET_SIMPLE.get(name, {}).get('Rdisk', mw_Rdisk))
+            out[name] = frac * Rd
+        return out
+
+    def save_boundaries_map(self, mapping: dict):
+        path = self.boundaries_path()
+        with open(path, 'w') as f:
+            json.dump(mapping, f, indent=2)
+
+    def edit_boundaries(self):
+        dlg = QDialog(self)
+        dlg.setWindowTitle("Edit per-type boundaries")
+        lay = QVBoxLayout(dlg)
+        table = QTableWidget(len(PRESET_OPTIONS), 2)
+        table.setHorizontalHeaderLabels(["Preset","Boundary R (kpc)"])
+        mapping = self.load_boundaries_map()
+        for i, name in enumerate(PRESET_OPTIONS):
+            table.setItem(i, 0, QTableWidgetItem(name))
+            spin = QDoubleSpinBox(); spin.setRange(0.0, 300.0); spin.setDecimals(2)
+            spin.setValue(float(mapping.get(name, 0.0)))
+            table.setCellWidget(i, 1, spin)
+        lay.addWidget(table)
+        btns = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
+        lay.addWidget(btns)
+        def on_ok():
+            out = {}
+            for i, name in enumerate(PRESET_OPTIONS):
+                w = table.cellWidget(i,1)
+                if w:
+                    out[name] = float(w.value())
+            self.save_boundaries_map(out)
+            dlg.accept()
+        btns.accepted.connect(on_ok)
+        btns.rejected.connect(dlg.reject)
         dlg.exec()
 
     def apply_knobs(self, knobs: DensityKnobs):
