@@ -44,6 +44,7 @@ Notes
 import argparse
 from pathlib import Path
 import math
+import os
 import pandas as pd
 import numpy as np
 
@@ -72,7 +73,12 @@ def load_masses(mass_csv: Path) -> pd.DataFrame:
     df['galaxy'] = df[name_col].astype(str)
     # Get type if present
     if 'type' not in df.columns:
-        df['type'] = 'LTG'
+        # Try common alternatives
+        tcol = None
+        for cand in ['Type','Morph','morph','morph_type']:
+            if cand in df.columns:
+                tcol = cand; break
+        df['type'] = df[tcol] if tcol else 'LTG'
     # Compute M_bary
     if 'M_bary' in df.columns:
         df['M_bary'] = df['M_bary'].astype(float)
@@ -106,6 +112,8 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--parquet', type=Path, default=(repo_root() / 'data/sparc_rotmod_ltg.parquet'))
     ap.add_argument('--mass-csv', type=Path, required=False)
+    ap.add_argument('--sparc-master-csv', type=Path, required=False,
+                    help='Path to SPARC MasterSheet_SPARC.csv. If provided, derive masses and types from this CSV.')
     ap.add_argument('--sparc-mrt', type=Path, required=False,
                     help='Path to SPARC_Lelli2016c.mrt (fixed-width). Used to derive masses and Rd when mass-csv not given. See README.')
     ap.add_argument('--boundaries-csv', type=Path)
@@ -122,6 +130,8 @@ def run(args):
     print(f"Reading rotmod parquet from: {args.parquet}")
     if getattr(args, 'mass_csv', None):
         print(f"Mass CSV: {args.mass_csv}")
+    if getattr(args, 'sparc_master_csv', None):
+        print(f"SPARC MasterSheet: {args.sparc_master_csv}")
     if getattr(args, 'sparc_mrt', None):
         print(f"SPARC MRT: {args.sparc_mrt}")
     # Load rotmod parquet
@@ -231,9 +241,79 @@ def run(args):
     if args.mass_csv is not None:
         masses = load_masses(args.mass_csv)
     else:
-        if not args.sparc_mrt:
-            raise SystemExit("Provide either --mass-csv or --sparc-mrt for masses")
-        masses = parse_sparc_mrt(args.sparc_mrt)
+        # Prefer MasterSheet CSV if provided (or if a default exists)
+        master_path = None
+        if getattr(args, 'sparc_master_csv', None):
+            master_path = args.sparc_master_csv
+        else:
+            cand = repo_root() / 'data/Rotmod_LTG/MasterSheet_SPARC.csv'
+            if cand.exists():
+                master_path = cand
+        if master_path and Path(master_path).exists():
+            def parse_sparc_master_csv(path: Path) -> pd.DataFrame:
+                df = pd.read_csv(path)
+                # Normalize name
+                name_col = None
+                for cand in ['galaxy','Galaxy','Name','name','objname']:
+                    if cand in df.columns:
+                        name_col = cand; break
+                if name_col is None:
+                    name_col = df.columns[0]
+                out = pd.DataFrame()
+                out['galaxy'] = df[name_col].astype(str)
+                out['galaxy_key'] = out['galaxy'].apply(norm_name)
+                # Type if present
+                tcol = None
+                for cand in ['type','Type','Morph','morph','morph_type']:
+                    if cand in df.columns:
+                        tcol = cand; break
+                out['type'] = df[tcol] if tcol else 'LTG'
+                # Rd if present
+                rd = None
+                for cand in ['Rd_kpc','Rd','rd','r_d','r_d_kpc']:
+                    if cand in df.columns:
+                        rd = df[cand]; break
+                out['Rd_kpc'] = pd.to_numeric(rd, errors='coerce') if rd is not None else np.nan
+                # Masses: prefer explicit M_bary; else components; else log components
+                Mb = None
+                if 'M_bary' in df.columns:
+                    Mb = pd.to_numeric(df['M_bary'], errors='coerce')
+                if Mb is None or Mb.isna().all():
+                    # components
+                    Mstar = None; Mbul = None; Mgas = None
+                    for cand in ['Mstar','M_star','Mstar_disk','Mstar_tot']:
+                        if cand in df.columns:
+                            Mstar = pd.to_numeric(df[cand], errors='coerce'); break
+                    for cand in ['Mbul','M_bulge','Mstar_bulge']:
+                        if cand in df.columns:
+                            Mbul = pd.to_numeric(df[cand], errors='coerce'); break
+                    for cand in ['MHI','M_HI','Mgas','M_gas']:
+                        if cand in df.columns:
+                            Mgas = pd.to_numeric(df[cand], errors='coerce'); break
+                    if Mstar is None:
+                        for cand in ['logMstar','log_mstar','log10Mstar']:
+                            if cand in df.columns:
+                                Mstar = np.power(10.0, pd.to_numeric(df[cand], errors='coerce')); break
+                    if Mbul is None:
+                        for cand in ['logMbul','log_mbul','log10Mbulge','log_mbulge']:
+                            if cand in df.columns:
+                                Mbul = np.power(10.0, pd.to_numeric(df[cand], errors='coerce')); break
+                    if Mgas is None:
+                        for cand in ['logMHI','log_MHI','log10MHI','log_mgas','logMGAS']:
+                            if cand in df.columns:
+                                Mgas = np.power(10.0, pd.to_numeric(df[cand], errors='coerce')); break
+                    zero = pd.Series(0.0, index=df.index)
+                    Mstar = Mstar if Mstar is not None else zero
+                    Mbul = Mbul if Mbul is not None else zero
+                    Mgas = Mgas if Mgas is not None else zero
+                    Mb = Mstar + Mbul + 1.33 * Mgas
+                out['M_bary'] = pd.to_numeric(Mb, errors='coerce')
+                return out[['galaxy','galaxy_key','type','M_bary','Rd_kpc']]
+            masses = parse_sparc_master_csv(Path(master_path))
+        elif args.sparc_mrt and Path(args.sparc_mrt).exists():
+            masses = parse_sparc_mrt(args.sparc_mrt)
+        else:
+            raise SystemExit("Provide one of --mass-csv, --sparc-master-csv, or --sparc-mrt (and ensure the file exists)")
 
     # Build boundaries using hybrid rule if not provided
     # boundary = min(max(3.2*Rd, 0.4*R_last), 0.8*R_last); if Rd missing -> 0.5*R_last
@@ -372,10 +452,22 @@ def run(args):
     human_by_gal_path = out_dir / 'sparc_human_by_galaxy.csv'
     human_by_gal.to_csv(human_by_gal_path, index=False)
 
+    # Grouped summary by Galaxy_Type and Mass_Category
+    grouped = human_by_gal.groupby(['Galaxy_Type','Mass_Category'], dropna=False).agg(
+        Galaxies=('Galaxy','count'),
+        Avg_GR_Percent_Off=('Avg_GR_Percent_Off','mean'),
+        Median_GR_Percent_Off=('Median_GR_Percent_Off','median'),
+        Avg_Model_Percent_Off=('Avg_Model_Percent_Off','mean'),
+        Median_Model_Percent_Off=('Median_Model_Percent_Off','median'),
+    ).reset_index()
+    summary_by_type_path = out_dir / 'sparc_summary_by_type.csv'
+    grouped.to_csv(summary_by_type_path, index=False)
+
     print(f"Wrote: {by_radius_path}")
     print(f"Wrote: {by_gal_path}")
     print(f"Wrote: {human_by_radius_path}")
     print(f"Wrote: {human_by_gal_path}")
+    print(f"Wrote: {summary_by_type_path}")
     missing = by_gal['M_bary_Msun'].isna().sum()
     if missing:
         print(f"WARNING: {missing} galaxies missing M_bary (fill mass CSV and re-run)")
@@ -384,6 +476,8 @@ if __name__ == '__main__':
     ap = argparse.ArgumentParser()
     ap.add_argument('--parquet', type=Path, default=(repo_root() / 'data/sparc_rotmod_ltg.parquet'))
     ap.add_argument('--mass-csv', type=Path, required=False)
+    ap.add_argument('--sparc-master-csv', type=Path, required=False,
+                    help='Path to SPARC MasterSheet_SPARC.csv. If provided, derive masses and types from this CSV.')
     ap.add_argument('--sparc-mrt', type=Path, required=False,
                     help='Path to SPARC_Lelli2016c.mrt (fixed-width). Used to derive masses and Rd when mass-csv not given. See README.')
     ap.add_argument('--boundaries-csv', type=Path)
