@@ -1,0 +1,1243 @@
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 22: Expected 10 fields in line 22, saw 11
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 28: Expected 10 fields in line 28, saw 11
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 31: Expected 10 fields in line 31, saw 18
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 32: Expected 10 fields in line 32, saw 18
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 34: Expected 10 fields in line 34, saw 11
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 35: Expected 10 fields in line 35, saw 11
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 43: Expected 10 fields in line 43, saw 11
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 48: Expected 10 fields in line 48, saw 11
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 53: Expected 10 fields in line 53, saw 11
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 54: Expected 10 fields in line 54, saw 11
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 55: Expected 10 fields in line 55, saw 11
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 56: Expected 10 fields in line 56, saw 12
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 61: Expected 10 fields in line 61, saw 11
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 62: Expected 10 fields in line 62, saw 12
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 63: Expected 10 fields in line 63, saw 11
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 64: Expected 10 fields in line 64, saw 12
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 71: Expected 10 fields in line 71, saw 11
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 72: Expected 10 fields in line 72, saw 11
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 73: Expected 10 fields in line 73, saw 12
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 77: Expected 10 fields in line 77, saw 11
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 81: Expected 10 fields in line 81, saw 11
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 82: Expected 10 fields in line 82, saw 11
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 84: Expected 10 fields in line 84, saw 14
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 87: Expected 10 fields in line 87, saw 11
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 88: Expected 10 fields in line 88, saw 11
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 92: Expected 10 fields in line 92, saw 12
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 93: Expected 10 fields in line 93, saw 12
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 95: Expected 10 fields in line 95, saw 11
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 99: Expected 10 fields in line 99, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 100: Expected 10 fields in line 100, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 101: Expected 10 fields in line 101, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 102: Expected 10 fields in line 102, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 103: Expected 10 fields in line 103, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 104: Expected 10 fields in line 104, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 105: Expected 10 fields in line 105, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 106: Expected 10 fields in line 106, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 107: Expected 10 fields in line 107, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 108: Expected 10 fields in line 108, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 109: Expected 10 fields in line 109, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 110: Expected 10 fields in line 110, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 111: Expected 10 fields in line 111, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 112: Expected 10 fields in line 112, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 113: Expected 10 fields in line 113, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 114: Expected 10 fields in line 114, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 115: Expected 10 fields in line 115, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 116: Expected 10 fields in line 116, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 117: Expected 10 fields in line 117, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 118: Expected 10 fields in line 118, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 119: Expected 10 fields in line 119, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 120: Expected 10 fields in line 120, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 121: Expected 10 fields in line 121, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 122: Expected 10 fields in line 122, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 123: Expected 10 fields in line 123, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 124: Expected 10 fields in line 124, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 125: Expected 10 fields in line 125, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 126: Expected 10 fields in line 126, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 127: Expected 10 fields in line 127, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 128: Expected 10 fields in line 128, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 129: Expected 10 fields in line 129, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 130: Expected 10 fields in line 130, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 131: Expected 10 fields in line 131, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 132: Expected 10 fields in line 132, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 133: Expected 10 fields in line 133, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 134: Expected 10 fields in line 134, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 135: Expected 10 fields in line 135, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 136: Expected 10 fields in line 136, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 137: Expected 10 fields in line 137, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 138: Expected 10 fields in line 138, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 139: Expected 10 fields in line 139, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 140: Expected 10 fields in line 140, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 141: Expected 10 fields in line 141, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 142: Expected 10 fields in line 142, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 143: Expected 10 fields in line 143, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 144: Expected 10 fields in line 144, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 145: Expected 10 fields in line 145, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 146: Expected 10 fields in line 146, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 147: Expected 10 fields in line 147, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 148: Expected 10 fields in line 148, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 149: Expected 10 fields in line 149, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 150: Expected 10 fields in line 150, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 151: Expected 10 fields in line 151, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 152: Expected 10 fields in line 152, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 153: Expected 10 fields in line 153, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 154: Expected 10 fields in line 154, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 155: Expected 10 fields in line 155, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 156: Expected 10 fields in line 156, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 157: Expected 10 fields in line 157, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 158: Expected 10 fields in line 158, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 159: Expected 10 fields in line 159, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 160: Expected 10 fields in line 160, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 161: Expected 10 fields in line 161, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 162: Expected 10 fields in line 162, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 163: Expected 10 fields in line 163, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 164: Expected 10 fields in line 164, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 165: Expected 10 fields in line 165, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 166: Expected 10 fields in line 166, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 167: Expected 10 fields in line 167, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 168: Expected 10 fields in line 168, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 169: Expected 10 fields in line 169, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 170: Expected 10 fields in line 170, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 171: Expected 10 fields in line 171, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 172: Expected 10 fields in line 172, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 173: Expected 10 fields in line 173, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 174: Expected 10 fields in line 174, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 175: Expected 10 fields in line 175, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 176: Expected 10 fields in line 176, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 177: Expected 10 fields in line 177, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 178: Expected 10 fields in line 178, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 179: Expected 10 fields in line 179, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 180: Expected 10 fields in line 180, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 181: Expected 10 fields in line 181, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 182: Expected 10 fields in line 182, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 183: Expected 10 fields in line 183, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 184: Expected 10 fields in line 184, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 185: Expected 10 fields in line 185, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 186: Expected 10 fields in line 186, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 187: Expected 10 fields in line 187, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 188: Expected 10 fields in line 188, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 189: Expected 10 fields in line 189, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 190: Expected 10 fields in line 190, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 191: Expected 10 fields in line 191, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 192: Expected 10 fields in line 192, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 193: Expected 10 fields in line 193, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 194: Expected 10 fields in line 194, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 195: Expected 10 fields in line 195, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 196: Expected 10 fields in line 196, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 197: Expected 10 fields in line 197, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 198: Expected 10 fields in line 198, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 199: Expected 10 fields in line 199, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 200: Expected 10 fields in line 200, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 201: Expected 10 fields in line 201, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 202: Expected 10 fields in line 202, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 203: Expected 10 fields in line 203, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 204: Expected 10 fields in line 204, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 205: Expected 10 fields in line 205, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 206: Expected 10 fields in line 206, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 207: Expected 10 fields in line 207, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 208: Expected 10 fields in line 208, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 209: Expected 10 fields in line 209, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 210: Expected 10 fields in line 210, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 211: Expected 10 fields in line 211, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 212: Expected 10 fields in line 212, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 213: Expected 10 fields in line 213, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 214: Expected 10 fields in line 214, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 215: Expected 10 fields in line 215, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 216: Expected 10 fields in line 216, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 217: Expected 10 fields in line 217, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 218: Expected 10 fields in line 218, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 219: Expected 10 fields in line 219, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 220: Expected 10 fields in line 220, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 221: Expected 10 fields in line 221, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 222: Expected 10 fields in line 222, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 223: Expected 10 fields in line 223, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 224: Expected 10 fields in line 224, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 225: Expected 10 fields in line 225, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 226: Expected 10 fields in line 226, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 227: Expected 10 fields in line 227, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 228: Expected 10 fields in line 228, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 229: Expected 10 fields in line 229, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 230: Expected 10 fields in line 230, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 231: Expected 10 fields in line 231, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 232: Expected 10 fields in line 232, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 233: Expected 10 fields in line 233, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 234: Expected 10 fields in line 234, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 235: Expected 10 fields in line 235, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 236: Expected 10 fields in line 236, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 237: Expected 10 fields in line 237, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 238: Expected 10 fields in line 238, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 239: Expected 10 fields in line 239, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 240: Expected 10 fields in line 240, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 241: Expected 10 fields in line 241, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 242: Expected 10 fields in line 242, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 243: Expected 10 fields in line 243, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 244: Expected 10 fields in line 244, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 245: Expected 10 fields in line 245, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 246: Expected 10 fields in line 246, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 247: Expected 10 fields in line 247, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 248: Expected 10 fields in line 248, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 249: Expected 10 fields in line 249, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 250: Expected 10 fields in line 250, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 251: Expected 10 fields in line 251, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 252: Expected 10 fields in line 252, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 253: Expected 10 fields in line 253, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 254: Expected 10 fields in line 254, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 255: Expected 10 fields in line 255, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 256: Expected 10 fields in line 256, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 257: Expected 10 fields in line 257, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 258: Expected 10 fields in line 258, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 259: Expected 10 fields in line 259, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 260: Expected 10 fields in line 260, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 261: Expected 10 fields in line 261, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 262: Expected 10 fields in line 262, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 263: Expected 10 fields in line 263, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 264: Expected 10 fields in line 264, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 265: Expected 10 fields in line 265, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 266: Expected 10 fields in line 266, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 267: Expected 10 fields in line 267, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 268: Expected 10 fields in line 268, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 269: Expected 10 fields in line 269, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 270: Expected 10 fields in line 270, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 271: Expected 10 fields in line 271, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 272: Expected 10 fields in line 272, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 273: Expected 10 fields in line 273, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 22: Expected 10 fields in line 22, saw 11
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 28: Expected 10 fields in line 28, saw 11
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 31: Expected 10 fields in line 31, saw 18
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 32: Expected 10 fields in line 32, saw 18
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 34: Expected 10 fields in line 34, saw 11
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 35: Expected 10 fields in line 35, saw 11
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 43: Expected 10 fields in line 43, saw 11
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 48: Expected 10 fields in line 48, saw 11
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 53: Expected 10 fields in line 53, saw 11
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 54: Expected 10 fields in line 54, saw 11
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 55: Expected 10 fields in line 55, saw 11
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 56: Expected 10 fields in line 56, saw 12
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 61: Expected 10 fields in line 61, saw 11
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 62: Expected 10 fields in line 62, saw 12
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 63: Expected 10 fields in line 63, saw 11
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 64: Expected 10 fields in line 64, saw 12
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 71: Expected 10 fields in line 71, saw 11
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 72: Expected 10 fields in line 72, saw 11
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 73: Expected 10 fields in line 73, saw 12
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 77: Expected 10 fields in line 77, saw 11
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 81: Expected 10 fields in line 81, saw 11
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 82: Expected 10 fields in line 82, saw 11
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 84: Expected 10 fields in line 84, saw 14
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 87: Expected 10 fields in line 87, saw 11
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 88: Expected 10 fields in line 88, saw 11
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 92: Expected 10 fields in line 92, saw 12
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 93: Expected 10 fields in line 93, saw 12
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 95: Expected 10 fields in line 95, saw 11
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 99: Expected 10 fields in line 99, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 100: Expected 10 fields in line 100, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 101: Expected 10 fields in line 101, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 102: Expected 10 fields in line 102, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 103: Expected 10 fields in line 103, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 104: Expected 10 fields in line 104, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 105: Expected 10 fields in line 105, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 106: Expected 10 fields in line 106, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 107: Expected 10 fields in line 107, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 108: Expected 10 fields in line 108, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 109: Expected 10 fields in line 109, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 110: Expected 10 fields in line 110, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 111: Expected 10 fields in line 111, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 112: Expected 10 fields in line 112, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 113: Expected 10 fields in line 113, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 114: Expected 10 fields in line 114, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 115: Expected 10 fields in line 115, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 116: Expected 10 fields in line 116, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 117: Expected 10 fields in line 117, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 118: Expected 10 fields in line 118, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 119: Expected 10 fields in line 119, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 120: Expected 10 fields in line 120, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 121: Expected 10 fields in line 121, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 122: Expected 10 fields in line 122, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 123: Expected 10 fields in line 123, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 124: Expected 10 fields in line 124, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 125: Expected 10 fields in line 125, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 126: Expected 10 fields in line 126, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 127: Expected 10 fields in line 127, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 128: Expected 10 fields in line 128, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 129: Expected 10 fields in line 129, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 130: Expected 10 fields in line 130, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 131: Expected 10 fields in line 131, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 132: Expected 10 fields in line 132, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 133: Expected 10 fields in line 133, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 134: Expected 10 fields in line 134, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 135: Expected 10 fields in line 135, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 136: Expected 10 fields in line 136, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 137: Expected 10 fields in line 137, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 138: Expected 10 fields in line 138, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 139: Expected 10 fields in line 139, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 140: Expected 10 fields in line 140, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 141: Expected 10 fields in line 141, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 142: Expected 10 fields in line 142, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 143: Expected 10 fields in line 143, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 144: Expected 10 fields in line 144, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 145: Expected 10 fields in line 145, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 146: Expected 10 fields in line 146, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 147: Expected 10 fields in line 147, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 148: Expected 10 fields in line 148, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 149: Expected 10 fields in line 149, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 150: Expected 10 fields in line 150, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 151: Expected 10 fields in line 151, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 152: Expected 10 fields in line 152, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 153: Expected 10 fields in line 153, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 154: Expected 10 fields in line 154, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 155: Expected 10 fields in line 155, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 156: Expected 10 fields in line 156, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 157: Expected 10 fields in line 157, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 158: Expected 10 fields in line 158, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 159: Expected 10 fields in line 159, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 160: Expected 10 fields in line 160, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 161: Expected 10 fields in line 161, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 162: Expected 10 fields in line 162, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 163: Expected 10 fields in line 163, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 164: Expected 10 fields in line 164, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 165: Expected 10 fields in line 165, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 166: Expected 10 fields in line 166, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 167: Expected 10 fields in line 167, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 168: Expected 10 fields in line 168, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 169: Expected 10 fields in line 169, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 170: Expected 10 fields in line 170, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 171: Expected 10 fields in line 171, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 172: Expected 10 fields in line 172, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 173: Expected 10 fields in line 173, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 174: Expected 10 fields in line 174, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 175: Expected 10 fields in line 175, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 176: Expected 10 fields in line 176, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 177: Expected 10 fields in line 177, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 178: Expected 10 fields in line 178, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 179: Expected 10 fields in line 179, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 180: Expected 10 fields in line 180, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 181: Expected 10 fields in line 181, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 182: Expected 10 fields in line 182, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 183: Expected 10 fields in line 183, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 184: Expected 10 fields in line 184, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 185: Expected 10 fields in line 185, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 186: Expected 10 fields in line 186, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 187: Expected 10 fields in line 187, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 188: Expected 10 fields in line 188, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 189: Expected 10 fields in line 189, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 190: Expected 10 fields in line 190, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 191: Expected 10 fields in line 191, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 192: Expected 10 fields in line 192, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 193: Expected 10 fields in line 193, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 194: Expected 10 fields in line 194, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 195: Expected 10 fields in line 195, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 196: Expected 10 fields in line 196, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 197: Expected 10 fields in line 197, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 198: Expected 10 fields in line 198, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 199: Expected 10 fields in line 199, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 200: Expected 10 fields in line 200, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 201: Expected 10 fields in line 201, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 202: Expected 10 fields in line 202, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 203: Expected 10 fields in line 203, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 204: Expected 10 fields in line 204, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 205: Expected 10 fields in line 205, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 206: Expected 10 fields in line 206, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 207: Expected 10 fields in line 207, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 208: Expected 10 fields in line 208, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 209: Expected 10 fields in line 209, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 210: Expected 10 fields in line 210, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 211: Expected 10 fields in line 211, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 212: Expected 10 fields in line 212, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 213: Expected 10 fields in line 213, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 214: Expected 10 fields in line 214, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 215: Expected 10 fields in line 215, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 216: Expected 10 fields in line 216, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 217: Expected 10 fields in line 217, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 218: Expected 10 fields in line 218, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 219: Expected 10 fields in line 219, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 220: Expected 10 fields in line 220, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 221: Expected 10 fields in line 221, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 222: Expected 10 fields in line 222, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 223: Expected 10 fields in line 223, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 224: Expected 10 fields in line 224, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 225: Expected 10 fields in line 225, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 226: Expected 10 fields in line 226, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 227: Expected 10 fields in line 227, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 228: Expected 10 fields in line 228, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 229: Expected 10 fields in line 229, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 230: Expected 10 fields in line 230, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 231: Expected 10 fields in line 231, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 232: Expected 10 fields in line 232, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 233: Expected 10 fields in line 233, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 234: Expected 10 fields in line 234, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 235: Expected 10 fields in line 235, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 236: Expected 10 fields in line 236, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 237: Expected 10 fields in line 237, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 238: Expected 10 fields in line 238, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 239: Expected 10 fields in line 239, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 240: Expected 10 fields in line 240, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 241: Expected 10 fields in line 241, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 242: Expected 10 fields in line 242, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 243: Expected 10 fields in line 243, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 244: Expected 10 fields in line 244, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 245: Expected 10 fields in line 245, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 246: Expected 10 fields in line 246, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 247: Expected 10 fields in line 247, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 248: Expected 10 fields in line 248, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 249: Expected 10 fields in line 249, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 250: Expected 10 fields in line 250, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 251: Expected 10 fields in line 251, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 252: Expected 10 fields in line 252, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 253: Expected 10 fields in line 253, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 254: Expected 10 fields in line 254, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 255: Expected 10 fields in line 255, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 256: Expected 10 fields in line 256, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 257: Expected 10 fields in line 257, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 258: Expected 10 fields in line 258, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 259: Expected 10 fields in line 259, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 260: Expected 10 fields in line 260, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 261: Expected 10 fields in line 261, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 262: Expected 10 fields in line 262, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 263: Expected 10 fields in line 263, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 264: Expected 10 fields in line 264, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 265: Expected 10 fields in line 265, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 266: Expected 10 fields in line 266, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 267: Expected 10 fields in line 267, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 268: Expected 10 fields in line 268, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 269: Expected 10 fields in line 269, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 270: Expected 10 fields in line 270, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 271: Expected 10 fields in line 271, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 272: Expected 10 fields in line 272, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py:319: ParserWarning: Skipping line 273: Expected 10 fields in line 273, saw 19
+
+  df = pd.read_csv(path, comment='#', engine='python', sep=None, on_bad_lines='warn')
+Using inverse mass-power law: G_pred = A * (M_bary / M0)^beta with A=5.589712133866334, beta=-0.6913962885091143, M0=10000000000.0
+Reading rotmod parquet from: /Users/leonardspeiser/Projects/GravityCalculator/data/sparc_rotmod_ltg.parquet
+SPARC MasterSheet: /Users/leonardspeiser/Projects/GravityCalculator/data/Rotmod_LTG/MasterSheet_SPARC.csv
+Galaxy types loaded from MasterSheet: /Users/leonardspeiser/Projects/GravityCalculator/data/Rotmod_LTG/MasterSheet_SPARC.csv
+WARNING: No masses found; G_pred and model outputs will be NaN where M_bary is missing.
+Wrote missing masses report: /Users/leonardspeiser/Projects/GravityCalculator/data/sparc_missing_masses.csv (175 unmatched)
+Traceback (most recent call last):
+  File "/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py", line 596, in <module>
+    run(args)
+    ~~~^^^^^^
+  File "/Users/leonardspeiser/Projects/GravityCalculator/src/scripts/sparc_predict.py", line 428, in run
+    df = rot.merge(masses_df, on='galaxy_key', how='left')
+  File "/opt/homebrew/Caskroom/miniconda/base/lib/python3.13/site-packages/pandas/core/frame.py", line 10839, in merge
+    return merge(
+        self,
+    ...<11 lines>...
+        validate=validate,
+    )
+  File "/opt/homebrew/Caskroom/miniconda/base/lib/python3.13/site-packages/pandas/core/reshape/merge.py", line 153, in merge
+    right_df = _validate_operand(right)
+  File "/opt/homebrew/Caskroom/miniconda/base/lib/python3.13/site-packages/pandas/core/reshape/merge.py", line 2692, in _validate_operand
+    raise TypeError(
+        f"Can only merge Series or DataFrame objects, a {type(obj)} was passed"
+    )
+TypeError: Can only merge Series or DataFrame objects, a <class 'NoneType'> was passed

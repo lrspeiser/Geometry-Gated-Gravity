@@ -302,9 +302,11 @@ def parse_mrt_file(path: Path) -> pd.DataFrame:
     df['galaxy_key'] = df['galaxy'].apply(norm_name)
 
     # Compute baryonic mass if components present
-    if 'L36' in df.columns and 'MHI' in df.columns:
+    if 'L36' in df.columns or 'MHI' in df.columns:
         # Units per header: L36 and MHI are in 1e9 solar units
-        df['M_bary'] = 0.5 * df['L36'].astype(float) * 1e9 + 1.33 * df['MHI'].astype(float) * 1e9
+        L36 = pd.to_numeric(df.get('L36'), errors='coerce').fillna(0.0)
+        MHI = pd.to_numeric(df.get('MHI'), errors='coerce').fillna(0.0)
+        df['M_bary'] = 0.5 * L36 * 1e9 + 1.33 * MHI * 1e9
 
     # Trim rows with empty keys
     df = df[df['galaxy_key'] != '']

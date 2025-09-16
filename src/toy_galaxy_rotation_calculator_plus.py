@@ -24,6 +24,7 @@ import os
 from pathlib import Path
 import numpy as np
 import matplotlib
+import pandas as pd
 
 # ---------- Physical constants ----------
 G_AST = 4.30091e-6   # kpc * (km/s)^2 / Msun
@@ -214,6 +215,15 @@ def main():
     parser.add_argument('--boost', type=float, default=1.0, help='Initial boost fraction.')
     parser.add_argument('--vobs', type=float, default=220.0, help='Initial observed v (km/s).')
 
+    # SPARC mode options
+    parser.add_argument('--galaxy', type=str, default=None, help='SPARC mode: galaxy name to load from SPARC CSV outputs in data/.')
+    parser.add_argument('--pred-csv', type=str, default='data/sparc_predictions_by_radius.csv', help='Path to SPARC predictions-by-radius CSV.')
+    parser.add_argument('--human-csv', type=str, default='data/sparc_human_by_radius.csv', help='Path to SPARC human-friendly by-radius CSV.')
+    parser.add_argument('--sparc-parquet', type=str, default=None, help='(Reserved) SPARC rotmod parquet path; current SPARC mode uses CSVs.')
+    parser.add_argument('--A', type=float, default=5.589712133866334, help='Mass–gravity coefficient A for G_pred = A*(M_bary/M0)^beta')
+    parser.add_argument('--beta', type=float, default=-0.6913962885091143, help='Mass–gravity exponent beta (<0 for inverse correlation).')
+    parser.add_argument('--M0', type=float, default=1e10, help='Mass normalization M0 (Msun).')
+
     args = parser.parse_args()
 
     if args.backend:
@@ -223,7 +233,7 @@ def main():
             print(f"Warning: could not set backend {args.backend}: {e}")
 
     import matplotlib.pyplot as plt
-    from matplotlib.widgets import TextBox, RadioButtons, Button
+    from matplotlib.widgets import TextBox, RadioButtons, Button, CheckButtons
 
     # Wrapper to provide a slider-like interface over TextBox
     class TBWrapper:
@@ -251,22 +261,125 @@ def main():
             # Mimic Slider.on_changed using TextBox.on_submit
             self.tb.on_submit(lambda _text: cb(self.val))
 
-    # ----- Initialize galaxy -----
+    # ----- SPARC mode state and loader -----
+    sparc = {
+        'active': False,
+        'name': None,
+        'type': None,
+        'cls': None,
+        'R': None,
+        'Vobs': None,
+        'Vbar': None,
+        'Vgr': None,
+        'Vpred': None,
+        'G_pred': None,
+        'is_outer': None,
+        'boundary': None,
+        'M_bary': None,
+    }
+
+    def _load_sparc(gal_name: str, pred_csv: str, human_csv: str, A: float, beta: float, M0: float) -> bool:
+        try:
+            dfp = pd.read_csv(pred_csv)
+        except Exception as e:
+            print(f"Warning: could not load {pred_csv}: {e}")
+            dfp = None
+        try:
+            dfh = pd.read_csv(human_csv)
+        except Exception as e:
+            print(f"Warning: could not load {human_csv}: {e}")
+            dfh = None
+        df_pred = None
+        if dfp is not None and 'galaxy' in dfp.columns:
+            t = dfp[dfp['galaxy'] == gal_name].copy()
+            if len(t):
+                df_pred = t
+        df_human = None
+        if dfh is not None and 'Galaxy' in dfh.columns:
+            t = dfh[dfh['Galaxy'] == gal_name].copy()
+            if len(t):
+                df_human = t
+        if df_pred is None and df_human is None:
+            print(f"Error: no SPARC rows found for '{gal_name}' in {pred_csv} or {human_csv}")
+            return False
+        # Build arrays priority: pred then human
+        if df_pred is not None:
+            df = df_pred.sort_values('R_kpc')
+            R = df['R_kpc'].to_numpy(dtype=float)
+            Vobs = df['Vobs_kms'].to_numpy(dtype=float)
+            Vbar = df['Vbar_kms'].to_numpy(dtype=float) if 'Vbar_kms' in df else None
+            Vgr  = df['Vgr_kms'].to_numpy(dtype=float) if 'Vgr_kms' in df else None
+            Vpred = df['Vpred_kms'].to_numpy(dtype=float) if 'Vpred_kms' in df else None
+            Gpred = df['G_pred'].to_numpy(dtype=float) if 'G_pred' in df else None
+            boundary = df['boundary_kpc'].to_numpy(dtype=float) if 'boundary_kpc' in df else None
+            is_outer = df['is_outer'].to_numpy() if 'is_outer' in df else None
+            gtype = str(df['type'].iloc[0]) if 'type' in df and len(df) else None
+            gcls = None
+        else:
+            df = df_human.sort_values('Radius_kpc')
+            R = df['Radius_kpc'].to_numpy(dtype=float)
+            Vobs = df['Observed_Speed_km_s'].to_numpy(dtype=float)
+            Vbar = df['Baryonic_Speed_km_s'].to_numpy(dtype=float) if 'Baryonic_Speed_km_s' in df else None
+            Vgr  = df['GR_Speed_km_s'].to_numpy(dtype=float) if 'GR_Speed_km_s' in df else None
+            Vpred = df['Predicted_Speed_km_s'].to_numpy(dtype=float) if 'Predicted_Speed_km_s' in df else None
+            Gpred = df['G_Predicted'].to_numpy(dtype=float) if 'G_Predicted' in df else None
+            boundary = df['Boundary_kpc'].to_numpy(dtype=float) if 'Boundary_kpc' in df else None
+            is_outer = df['In_Outer_Region'].to_numpy() if 'In_Outer_Region' in df else None
+            gtype = str(df['Galaxy_Type'].iloc[0]) if 'Galaxy_Type' in df and len(df) else None
+            gcls = str(df['Galaxy_Class'].iloc[0]) if 'Galaxy_Class' in df and len(df) else None
+        # Mass (from human if available)
+        M_bary = None
+        if df_human is not None and 'Baryonic_Mass_Msun' in df_human.columns:
+            mb = df_human['Baryonic_Mass_Msun'].dropna()
+            if len(mb):
+                M_bary = float(mb.iloc[0])
+        # Compute Vpred if missing
+        if Vpred is None and (Gpred is not None) and (Vbar is not None):
+            Vpred = np.sqrt(np.maximum(0.0, Gpred)) * Vbar
+        if (Vpred is None) and (M_bary is not None) and (Vbar is not None):
+            Gpred = A * (M_bary / float(M0))**beta
+            Vpred = np.sqrt(np.maximum(0.0, Gpred)) * Vbar
+        # Fallback boundary/is_outer
+        if boundary is None:
+            R_last = float(np.max(R)) if len(R) else 1.0
+            boundary_global = 0.5 * R_last
+            boundary = np.full_like(R, boundary_global, dtype=float)
+        if is_outer is None:
+            is_outer = R >= boundary
+        # Store
+        sparc.update(dict(active=True, name=gal_name, type=gtype, cls=gcls, R=R, Vobs=Vobs, Vbar=Vbar, Vgr=Vgr, Vpred=Vpred, G_pred=Gpred, is_outer=is_outer, boundary=boundary, M_bary=M_bary))
+        print(f"SPARC mode: loaded {gal_name} from CSVs; A={A}, beta={beta}, M0={M0}")
+        return True
+
+    # ----- Initialize galaxy or SPARC dataset -----
+    # Ensure preset params exist for UI defaults even in SPARC mode
     pp = preset_params(args.config)
-    pos, masses = make_galaxy_components(
-        args.seed, args.spread,
-        pp['M_disk'], pp['M_bulge'], pp['M_gas'],
-        pp['Rd_disk'], pp['Rmax_disk'], pp['a_bulge'],
-        pp['Rd_gas'], pp['Rmax_gas'], pp['hz_disk'], pp['hz_bulge'], pp['hz_gas']
-    )
-    if masses.sum() <= 0 or len(masses) == 0:
-        COM = np.zeros(3)
-        R_all = np.array([1.0])
-    else:
-        COM = (pos * masses[:, None]).sum(axis=0) / masses.sum()
-        R_all = np.linalg.norm(pos[:, :2] - COM[:2], axis=1)
-    R_edge = np.quantile(R_all, float(args.outer)) if len(R_all) else 1.0
-    test_point = COM + np.array([R_edge, 0.0, 0.0])
+    sparc_loaded = False
+    if args.galaxy:
+        sparc_loaded = _load_sparc(args.galaxy, args.pred_csv, args.human_csv, float(args.A), float(args.beta), float(args.M0))
+        if sparc_loaded:
+            # Provide empty geometry to keep UI stable; curves will come from SPARC
+            pos = np.zeros((0, 3)); masses = np.zeros((0,))
+            COM = np.zeros(3); R_all = np.array([1.0]); R_edge = 1.0
+            test_point = COM + np.array([R_edge, 0.0, 0.0])
+        else:
+            print(f"Falling back to toy mode; SPARC galaxy '{args.galaxy}' not found.")
+
+    if not sparc_loaded:
+        pos, masses = make_galaxy_components(
+            args.seed, args.spread,
+            pp['M_disk'], pp['M_bulge'], pp['M_gas'],
+            pp['Rd_disk'], pp['Rmax_disk'], pp['a_bulge'],
+            pp['Rd_gas'], pp['Rmax_gas'], pp['hz_disk'], pp['hz_bulge'], pp['hz_gas']
+        )
+        if masses.sum() <= 0 or len(masses) == 0:
+            COM = np.zeros(3)
+            R_all = np.array([1.0])
+        else:
+            COM = (pos * masses[:, None]).sum(axis=0) / masses.sum()
+            R_all = np.linalg.norm(pos[:, :2] - COM[:2], axis=1)
+        R_edge = np.quantile(R_all, float(args.outer)) if len(R_all) else 1.0
+        test_point = COM + np.array([R_edge, 0.0, 0.0])
 
     # ----- Figure and axes -----
     fig = plt.figure(figsize=(12, 9))
@@ -276,6 +389,8 @@ def main():
     galaxy_scatter = ax.scatter(pos[:, 0], pos[:, 1], s=5, alpha=0.6)
     test_star_plot, = ax.plot([test_point[0]], [test_point[1]], marker='*', markersize=10)
     com_plot, = ax.plot([COM[0]], [COM[1]], marker='x', markersize=8)
+    # GR overlay scatter for SPARC animation (initially empty/hidden)
+    gr_overlay_scatter = ax.scatter([], [], s=8, facecolors='none', edgecolors='cyan', alpha=0.6, visible=False)
     ax.set_xlabel("x (kpc)"); ax.set_ylabel("y (kpc)")
     ax.set_title("Toy Galaxy Rotation Calculator — PLUS")
     text_box = ax.text(0.02, 0.98, "", transform=ax.transAxes, va='top')
@@ -388,6 +503,13 @@ def main():
     ax_btn_vectors = fig.add_axes([0.80, 0.56, 0.17, 0.035]); btn_vectors = Button(ax_btn_vectors, 'Force Vectors')
     # Reset to defaults button
     ax_btn_reset = fig.add_axes([0.80, 0.28, 0.17, 0.035]); btn_reset = Button(ax_btn_reset, 'Reset Defaults')
+
+    # --- SPARC animation controls (shown when SPARC mode active) ---
+    ax_btn_anim = fig.add_axes([0.80, 0.52, 0.17, 0.035]); btn_anim = Button(ax_btn_anim, 'Start Animation')
+    ax_inv     = fig.add_axes([0.80, 0.48, 0.17, 0.035]); tb_inv = TextBox(ax_inv, 'InvCorr scale (0-1)', initial='1.0')
+    ax_chk_gr  = fig.add_axes([0.80, 0.44, 0.17, 0.065]); chk_gr = CheckButtons(ax_chk_gr, ['Show GR overlay'], [False])
+
+    s_invscale = TBWrapper(tb_inv, parse=float, clamp=(0.0, 2.0), default=1.0)
     
     fig_rot = None; rot_lines = {}; fig_vec = None; vec_state = {}
     # Caching for performance
@@ -450,6 +572,9 @@ def main():
     }
 
     def build_simple_galaxy(_evt=None):
+        # In SPARC mode, geometry is not used; just refresh the curves/readout
+        if sparc['active']:
+            update_readout(); fig.canvas.draw_idle(); refresh_rotation_curve(); return
         nonlocal pos, masses, COM, R_all, R_edge, test_point
         N_total = int(s_Nstars.val)
         R_disk = float(s_Rdisk.val)
@@ -629,6 +754,19 @@ def main():
         ax_btn_reset.set_position([x, y - h, w, h]); y -= (h + pad)
         ax_btn_curve.set_position([x, y - h, w, h]); y -= (h + pad)
         ax_btn_save.set_position([x, y - h, w, h]); y -= (h + pad)
+        # SPARC animation controls
+        ax_btn_anim.set_position([x, y - h, w, h]); y -= (h + pad)
+        ax_inv.set_position([x, y - h, w, h]); y -= (h + pad)
+        ax_chk_gr.set_position([x, y - 2*h, w, 2*h]); y -= (2*h + pad)
+        # Hide most controls when in SPARC mode for a cleaner UI
+        if sparc['active']:
+            for ax_box in [ax_sN, ax_sR, ax_sBa, ax_sHz, ax_sBf, ax_sMt, ax_sDk, ax_sDr, ax_sWk, ax_sWr,
+                           ax_sG, ax_kGR, ax_att, ax_boost, ax_vobs, ax_soft, ax_radio, ax_btn_vectors, ax_btn_reset]:
+                ax_box.set_visible(False)
+            # Show animation controls only in SPARC mode
+            ax_btn_anim.set_visible(True); ax_inv.set_visible(True); ax_chk_gr.set_visible(True)
+        else:
+            ax_btn_anim.set_visible(False); ax_inv.set_visible(False); ax_chk_gr.set_visible(False)
         fig.canvas.draw_idle()
 
     reflow_ui()
@@ -636,6 +774,8 @@ def main():
     fig_rot = None; rot_lines = {}; fig_vec = None; vec_state = {}
 
     def rebuild_galaxy():
+        if sparc['active']:
+            return
         nonlocal pos, masses, COM, R_all, R_edge, test_point
         params = dict(
             M_disk=float(s_Mdisk.val)*1e10, M_bulge=float(s_Mbulge.val)*1e10, M_gas=float(s_Mgas.val)*1e10,
@@ -847,6 +987,36 @@ def main():
         return R_vals, np.array(vN), np.array(vGR), np.array(vF)
 
     def update_readout():
+        if sparc['active'] and sparc['R'] is not None:
+            R = sparc['R']; Vobs = sparc['Vobs']; Vbar = sparc['Vbar']; Vgr = sparc['Vgr']; Vpred = sparc['Vpred']
+            is_outer = sparc['is_outer'] if sparc['is_outer'] is not None else np.full_like(R, False, dtype=bool)
+            # Outer summaries
+            if Vpred is not None and Vobs is not None:
+                mask = is_outer if np.any(is_outer) else np.ones_like(R, dtype=bool)
+                try:
+                    v_obs_med = float(np.nanmedian(Vobs[mask]))
+                    v_gr_med = float(np.nanmedian(Vgr[mask])) if Vgr is not None else (float(np.nanmedian(Vbar[mask])) if Vbar is not None else float('nan'))
+                    v_pred_med = float(np.nanmedian(Vpred[mask]))
+                except Exception:
+                    v_obs_med = v_gr_med = v_pred_med = float('nan')
+                # Closeness percent median
+                with np.errstate(divide='ignore', invalid='ignore'):
+                    close = 100.0 * (1.0 - np.abs(Vpred - Vobs) / np.maximum(1e-9, Vobs))
+                close = np.clip(close, 0.0, 100.0)
+                med_close = float(np.nanmedian(close[mask])) if np.any(mask) else float('nan')
+            else:
+                v_obs_med = v_gr_med = v_pred_med = med_close = float('nan')
+            # Compose lines
+            lines = [
+                f"Galaxy: {sparc['name']} | Type: {sparc.get('type') or ''}{' (' + sparc['cls'] + ')' if sparc.get('cls') else ''}",
+                f"M_bary: {(sparc['M_bary'] if sparc['M_bary'] is not None else float('nan')):,.3e} Msun | Boundary (median): {float(np.nanmedian(sparc['boundary'])):.2f} kpc",
+                f"Outer-region median closeness: {med_close:.1f}%",
+                f"Speeds median (km/s): Obs={v_obs_med:.2f}  GR/Pure={v_gr_med:.2f}  Pred={v_pred_med:.2f}",
+            ]
+            text_box.set_text('\n'.join(lines))
+            update_table(v_obs_med, v_gr_med, v_pred_med)
+            return
+        # Default toy readout
         v_newton, v_gr_noboost, v_final, drop_frac, boost_factor = compute_speeds_at_point()
         v_obs = float(s_vobs.val); dv = v_final - v_obs
         if len(masses) > 0:
@@ -865,22 +1035,29 @@ def main():
             f"Observed target: {v_obs:.1f} km/s | Final − Observed = {dv:+.2f} km/s"
         ]
         text_box.set_text('\n'.join(lines))
-        # Update side table for quick readability
         update_table(v_obs, v_gr_noboost, v_final)
 
     def refresh_main(_=None):
-        rebuild_galaxy()
-        if len(masses) > 0:
-            galaxy_scatter.set_offsets(pos[:, :2])
+        if not sparc['active']:
+            rebuild_galaxy()
+            if len(masses) > 0:
+                galaxy_scatter.set_offsets(pos[:, :2])
+            else:
+                galaxy_scatter.set_offsets(np.empty((0, 2)))
+            test_star_plot.set_data([test_point[0]], [test_point[1]])
+            com_plot.set_data([COM[0]], [COM[1]])
         else:
-            galaxy_scatter.set_offsets(np.empty((0, 2)))
-        test_star_plot.set_data([test_point[0]], [test_point[1]])
-        com_plot.set_data([COM[0]], [COM[1]])
+            # Ensure axes reflect SPARC star field if initialized
+            if sp_state.get('R') is not None:
+                Rmax = float(np.nanmax(sp_state['R'])) if len(sp_state['R']) else 1.0
+                ax.set_xlim(-1.1*Rmax, 1.1*Rmax); ax.set_ylim(-1.1*Rmax, 1.1*Rmax)
         update_readout()
         fig.canvas.draw_idle()
         refresh_rotation_curve()
 
     def apply_preset(name: str):
+        if sparc['active']:
+            return
         # Simple galaxy defaults per type
         if name == "MW-like disk":
             p = dict(Nstars=8000, Rdisk=20.0, BulgeA=0.6, Hz=0.3, BulgeFrac=0.2, Mtot1e10=8.0)
@@ -916,12 +1093,21 @@ def main():
             ax2 = fig_rot.add_axes([0.12, 0.12, 0.85, 0.85])
             ax2.set_xlabel("R (kpc)"); ax2.set_ylabel("v_circ (km/s)")
             ax2.set_title("Rotation Curve")
-            R, vN, vGR, vF = rotation_curve()
-            lnN, = ax2.plot(R, vN, lw=1.5, label="Newtonian")
-            lnG, = ax2.plot(R, vGR, lw=1.5, label="GR,no boost")
-            lnF, = ax2.plot(R, vF, lw=2.0, label="Final (boosted)")
-            ax2.legend(loc="best")
-            rot_lines = {'ax': ax2, 'N': lnN, 'GR': lnG, 'F': lnF}
+            if sparc['active'] and sparc['R'] is not None:
+                R = sparc['R']; Vobs = sparc['Vobs']; Vbar = sparc['Vbar']; Vgr = sparc['Vgr']; Vpred = sparc['Vpred']
+                lnObs = ax2.scatter(R, Vobs, s=12, c='k', alpha=0.6, label="Observed")
+                lnN, = ax2.plot(R, (Vbar if Vbar is not None else np.zeros_like(R)), lw=1.5, label="Baryonic")
+                lnG, = ax2.plot(R, (Vgr if Vgr is not None else (Vbar if Vbar is not None else np.zeros_like(R))), lw=1.0, linestyle='--', label="GR (pure)")
+                lnF, = ax2.plot(R, (Vpred if Vpred is not None else np.zeros_like(R)), lw=2.0, label="Predicted")
+                ax2.legend(loc="best")
+                rot_lines = {'ax': ax2, 'N': lnN, 'GR': lnG, 'F': lnF, 'Obs': lnObs}
+            else:
+                R, vN, vGR, vF = rotation_curve()
+                lnN, = ax2.plot(R, vN, lw=1.5, label="Newtonian")
+                lnG, = ax2.plot(R, vGR, lw=1.5, label="GR,no boost")
+                lnF, = ax2.plot(R, vF, lw=2.0, label="Final (boosted)")
+                ax2.legend(loc="best")
+                rot_lines = {'ax': ax2, 'N': lnN, 'GR': lnG, 'F': lnF}
             fig_rot.canvas.draw_idle()
         else:
             refresh_rotation_curve()
@@ -929,15 +1115,30 @@ def main():
 
     def refresh_rotation_curve():
         if rot_lines:
-            R, vN, vGR, vF = rotation_curve()
-            rot_lines['N'].set_data(R, vN)
-            rot_lines['GR'].set_data(R, vGR)
-            rot_lines['F'].set_data(R, vF)
             ax2 = rot_lines['ax']
-            if len(R) > 0:
-                ax2.set_xlim(R.min(), R.max()*1.02)
-                vmax = max(1.0, vN.max() if len(vN) else 1.0, vGR.max() if len(vGR) else 1.0, vF.max() if len(vF) else 1.0)
-                ax2.set_ylim(0.0, vmax*1.1)
+            if sparc['active'] and sparc['R'] is not None:
+                R = sparc['R']; Vobs = sparc['Vobs']; Vbar = sparc['Vbar']; Vgr = sparc['Vgr']; Vpred = sparc['Vpred']
+                rot_lines['N'].set_data(R, (Vbar if Vbar is not None else np.zeros_like(R)))
+                rot_lines['GR'].set_data(R, (Vgr if Vgr is not None else (Vbar if Vbar is not None else np.zeros_like(R))))
+                rot_lines['F'].set_data(R, (Vpred if Vpred is not None else np.zeros_like(R)))
+                if 'Obs' in rot_lines:
+                    rot_lines['Obs'].set_offsets(np.column_stack([R, Vobs]))
+                if len(R) > 0:
+                    ax2.set_xlim(R.min(), R.max()*1.02)
+                    vmax = max(1.0,
+                               (float(np.nanmax(Vobs)) if Vobs is not None and len(Vobs) else 1.0),
+                               (float(np.nanmax(Vbar)) if Vbar is not None else 1.0),
+                               (float(np.nanmax(Vpred)) if Vpred is not None else 1.0))
+                    ax2.set_ylim(0.0, vmax*1.1)
+            else:
+                R, vN, vGR, vF = rotation_curve()
+                rot_lines['N'].set_data(R, vN)
+                rot_lines['GR'].set_data(R, vGR)
+                rot_lines['F'].set_data(R, vF)
+                if len(R) > 0:
+                    ax2.set_xlim(R.min(), R.max()*1.02)
+                    vmax = max(1.0, vN.max() if len(vN) else 1.0, vGR.max() if len(vGR) else 1.0, vF.max() if len(vF) else 1.0)
+                    ax2.set_ylim(0.0, vmax*1.1)
             fig_rot.canvas.draw_idle()
 
     # ----- Force vectors window -----
@@ -1031,17 +1232,34 @@ def main():
         plt.show()
 
     def save_curve_csv(_=None):
-        R, vN, vGR, vF = rotation_curve()
         out = Path('rotation_curve.csv')
         import csv
         with out.open('w', newline='') as f:
             w = csv.writer(f)
-            w.writerow(["R_kpc", "v_newton_kms", "v_gr_no_boost_kms", "v_final_kms",
-                        "G_scale", "GR_k_toy", "extra_atten", "boost_fraction", "softening_kpc"])
-            for i in range(len(R)):
-                w.writerow([float(R[i]), float(vN[i]), float(vGR[i]), float(vF[i]),
-                            float(s_Gscale.val), float(s_kGR.val), float(s_att.val),
-                            float(s_boost.val), float(s_soften.val)])
+            if sparc['active'] and sparc['R'] is not None:
+                w.writerow(["galaxy","type","R_kpc","Vobs_kms","Vbar_kms","Vgr_kms","Vpred_kms","G_pred","boundary_kpc","is_outer","M_bary_Msun"])
+                R = sparc['R']; Vobs = sparc['Vobs']; Vbar = sparc['Vbar']; Vgr = sparc['Vgr']; Vpred = sparc['Vpred']
+                Gpred = sparc['G_pred']; b = sparc['boundary']; io = sparc['is_outer']
+                for i in range(len(R)):
+                    w.writerow([
+                        sparc['name'], (sparc['type'] or ''), float(R[i]),
+                        float(Vobs[i]) if Vobs is not None else '',
+                        float(Vbar[i]) if Vbar is not None else '',
+                        float(Vgr[i]) if (Vgr is not None) else '',
+                        float(Vpred[i]) if (Vpred is not None) else '',
+                        float(Gpred[i]) if (Gpred is not None and hasattr(Gpred, '__len__')) else (float(Gpred) if (Gpred is not None) else ''),
+                        float(b[i]) if b is not None else '',
+                        bool(io[i]) if io is not None else '',
+                        float(sparc['M_bary']) if sparc['M_bary'] is not None else ''
+                    ])
+            else:
+                w.writerow(["R_kpc", "v_newton_kms", "v_gr_no_boost_kms", "v_final_kms",
+                            "G_scale", "GR_k_toy", "extra_atten", "boost_fraction", "softening_kpc"])
+                R, vN, vGR, vF = rotation_curve()
+                for i in range(len(R)):
+                    w.writerow([float(R[i]), float(vN[i]), float(vGR[i]), float(vF[i]),
+                                float(s_Gscale.val), float(s_kGR.val), float(s_att.val),
+                                float(s_boost.val), float(s_soften.val)])
         print(f"Saved rotation curve to {out.resolve()}")
 
     # Wire up callbacks
@@ -1053,6 +1271,129 @@ def main():
     btn_curve.on_clicked(show_rotation_curve)
     btn_save.on_clicked(save_curve_csv)
     btn_vectors.on_clicked(show_vectors_table)
+
+    # -------- SPARC star animation state and hooks --------
+    sp_state = {
+        'R': None,
+        'theta_model': None,
+        'theta_gr': None,
+        'timer': None,
+        'running': False,
+    }
+
+    def _gpred_scalar():
+        Gp = sparc.get('G_pred')
+        if Gp is None:
+            if sparc.get('M_bary') is not None:
+                return float(args.A) * (float(sparc['M_bary']) / float(args.M0))**float(args.beta)
+            return 1.0
+        if hasattr(Gp, '__len__'):
+            try:
+                return float(np.nanmedian(Gp))
+            except Exception:
+                return 1.0
+        return float(Gp)
+
+    def _interp(arr_x, arr_y, x):
+        if arr_x is None or arr_y is None:
+            return np.full_like(x, np.nan, dtype=float)
+        return np.interp(x, arr_x, arr_y, left=arr_y[0], right=arr_y[-1])
+
+    def _compute_v_model(Rvals):
+        Vbar = sparc.get('Vbar')
+        R = sparc.get('R')
+        vb = _interp(R, Vbar, Rvals)
+        Gp = _gpred_scalar()
+        s = float(s_invscale.val if s_invscale.val is not None else 1.0)
+        Geff = (1.0 - s) + s * float(Gp)
+        return np.sqrt(max(0.0, Geff)) * vb
+
+    def _compute_v_gr(Rvals):
+        # Prefer GR curve if present, else use baryonic Vbar
+        R = sparc.get('R')
+        curve = sparc.get('Vgr') if sparc.get('Vgr') is not None else sparc.get('Vbar')
+        return _interp(R, curve, Rvals)
+
+    def _compute_v_obs(Rvals):
+        return _interp(sparc.get('R'), sparc.get('Vobs'), Rvals)
+
+    def _init_anim_stars():
+        if not sparc['active'] or sparc.get('R') is None or len(sparc['R']) == 0:
+            return
+        # One star per SPARC radius for clarity
+        sp_state['R'] = sparc['R'].astype(float).copy()
+        N = len(sp_state['R'])
+        rng_local = np.random.default_rng(int(args.seed))
+        sp_state['theta_model'] = rng_local.uniform(0.0, 2*np.pi, size=N)
+        sp_state['theta_gr']    = rng_local.uniform(0.0, 2*np.pi, size=N)
+        # Initialize positions
+        Rvals = sp_state['R']
+        x = Rvals * np.cos(sp_state['theta_model']); y = Rvals * np.sin(sp_state['theta_model'])
+        galaxy_scatter.set_offsets(np.column_stack([x, y]))
+        # Set axis range
+        Rmax = float(np.nanmax(Rvals)) if len(Rvals) else 1.0
+        ax.set_xlim(-1.1*Rmax, 1.1*Rmax); ax.set_ylim(-1.1*Rmax, 1.1*Rmax)
+        # Seed GR overlay positions
+        xg = Rvals * np.cos(sp_state['theta_gr']); yg = Rvals * np.sin(sp_state['theta_gr'])
+        gr_overlay_scatter.set_offsets(np.column_stack([xg, yg]))
+        # Initial colors based on closeness
+        v_mod = _compute_v_model(Rvals); v_obs = _compute_v_obs(Rvals)
+        close = np.isfinite(v_obs) & (v_obs > 1e-9) & (np.abs(v_mod - v_obs) <= 0.1 * v_obs)
+        colors = np.where(close, 'green', 'crimson')
+        galaxy_scatter.set_color(colors)
+
+    def _anim_step():
+        if not sp_state.get('running', False):
+            return
+        Rvals = sp_state.get('R')
+        if Rvals is None or len(Rvals) == 0:
+            return
+        # Speeds (km/s) -> angular advance scaled to look good
+        v_mod = _compute_v_model(Rvals)
+        v_gr  = _compute_v_gr(Rvals)
+        # Avoid divide by zero
+        w_mod = v_mod / np.maximum(1e-6, Rvals)
+        w_gr  = v_gr  / np.maximum(1e-6, Rvals)
+        dt = 0.002  # visual time step factor
+        sp_state['theta_model'] = (sp_state['theta_model'] + w_mod * dt) % (2*np.pi)
+        sp_state['theta_gr']    = (sp_state['theta_gr']    + w_gr  * dt) % (2*np.pi)
+        x = Rvals * np.cos(sp_state['theta_model']); y = Rvals * np.sin(sp_state['theta_model'])
+        galaxy_scatter.set_offsets(np.column_stack([x, y]))
+        if gr_overlay_scatter.get_visible():
+            xg = Rvals * np.cos(sp_state['theta_gr']); yg = Rvals * np.sin(sp_state['theta_gr'])
+            gr_overlay_scatter.set_offsets(np.column_stack([xg, yg]))
+        # Update colors by closeness to observed
+        v_obs = _compute_v_obs(Rvals)
+        close = np.isfinite(v_obs) & (v_obs > 1e-9) & (np.abs(v_mod - v_obs) <= 0.1 * v_obs)
+        galaxy_scatter.set_color(np.where(close, 'green', 'crimson'))
+        fig.canvas.draw_idle()
+
+    def _toggle_anim(_evt=None):
+        if not sparc['active']:
+            print("Animation requires SPARC mode (--galaxy).")
+            return
+        if sp_state['R'] is None:
+            _init_anim_stars()
+        if sp_state.get('timer') is None:
+            sp_state['timer'] = fig.canvas.new_timer(interval=30)
+            sp_state['timer'].add_callback(_anim_step)
+        sp_state['running'] = not sp_state.get('running', False)
+        if sp_state['running']:
+            btn_anim.label.set_text('Pause Animation')
+            sp_state['timer'].start()
+        else:
+            btn_anim.label.set_text('Start Animation')
+            sp_state['timer'].stop()
+
+    def _on_toggle_gr(label):
+        if label == 'Show GR overlay':
+            vis = not gr_overlay_scatter.get_visible()
+            gr_overlay_scatter.set_visible(vis)
+            fig.canvas.draw_idle()
+
+    btn_anim.on_clicked(_toggle_anim)
+    chk_gr.on_clicked(_on_toggle_gr)
+    s_invscale.on_changed(lambda _v: None)  # speeds update implicitly on next frame
 
     # Initial draw
     refresh_main()
