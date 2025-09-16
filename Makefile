@@ -19,3 +19,6 @@ run-master:
 
 run-mrt:
 	$(PY) $(SCRIPT) --parquet $(PARQUET) --sparc-mrt $(MRT) --output-dir $(DATA_DIR)
+
+build-parquet:
+	$(PY) src/scripts/build_sparc_parquet.py
