@@ -27,7 +27,7 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib import colors as mcolors
-from matplotlib.patches import Circle
+from matplotlib.patches import Circle, Wedge
 
 
 # Try PyQt6 first, fall back to PyQt5
@@ -178,7 +178,6 @@ class DensityKnobs:
     dens_k: float = 0.0
     dens_R: float = 2.0
     dens_alpha: float = 1.0  # power-law exponent; if <=0, fall back to linear dens_k mode
-    dens_max: float = 1000.0  # max multiplicative boost cap
     dens_thresh_frac: float = 1.0  # apply enhancement only if rho_local < dens_thresh_frac * rho_ref
     well_k: float = 0.0
     well_R: float = 2.0
@@ -225,13 +224,13 @@ class GravityModel:
         alpha = float(knobs.dens_alpha)
         if apply_enh and alpha > 0.0:
             ratio = rho_ref / max(rho_local, 1e-30)
-            mult = float(np.clip(ratio ** alpha, 1.0, float(knobs.dens_max)))
+            mult = float(max(0.0, ratio ** alpha))
             return G0 * mult
         # Fallback linear mode if alpha <= 0
         k = float(knobs.dens_k)
         if apply_enh and k > 0.0 and rho_ref > 0.0:
             boost = k * max(0.0, (rho_ref / max(rho_local, 1e-30)) - 1.0)
-            mult = max(1.0, min(float(knobs.dens_max), 1.0 + boost))
+            mult = max(0.0, 1.0 + boost)
             return G0 * mult
         return G0
 
@@ -504,13 +503,13 @@ class CompareWorker(QThread):
             g = float(self.knobs.g_scale); dk = float(self.knobs.dens_k); wk = float(self.knobs.well_k)
             for _ in range(2):
                 if self.solve_dk:
-                    f1 = lambda x: self._err_for_knobs(model, DensityKnobs(g_scale=g, dens_k=max(dk_lo, min(dk_hi, x)), dens_R=self.knobs.dens_R, dens_alpha=self.knobs.dens_alpha, dens_max=self.knobs.dens_max, dens_thresh_frac=self.knobs.dens_thresh_frac, well_k=wk, well_R=self.knobs.well_R))
+                    f1 = lambda x: self._err_for_knobs(model, DensityKnobs(g_scale=g, dens_k=max(dk_lo, min(dk_hi, x)), dens_R=self.knobs.dens_R, dens_alpha=self.knobs.dens_alpha, dens_thresh_frac=self.knobs.dens_thresh_frac, well_k=wk, well_R=self.knobs.well_R))
                     dk, _ = self._golden_section(f1, dk_lo, dk_hi)
                 if self.solve_g:
-                    f2 = lambda x: self._err_for_knobs(model, DensityKnobs(g_scale=max(g_lo, min(g_hi, x)), dens_k=dk, dens_R=self.knobs.dens_R, dens_alpha=self.knobs.dens_alpha, dens_max=self.knobs.dens_max, dens_thresh_frac=self.knobs.dens_thresh_frac, well_k=wk, well_R=self.knobs.well_R))
+                    f2 = lambda x: self._err_for_knobs(model, DensityKnobs(g_scale=max(g_lo, min(g_hi, x)), dens_k=dk, dens_R=self.knobs.dens_R, dens_alpha=self.knobs.dens_alpha, dens_thresh_frac=self.knobs.dens_thresh_frac, well_k=wk, well_R=self.knobs.well_R))
                     g, _ = self._golden_section(f2, g_lo, g_hi)
                 if self.solve_wk:
-                    f3 = lambda x: self._err_for_knobs(model, DensityKnobs(g_scale=g, dens_k=dk, dens_R=self.knobs.dens_R, dens_alpha=self.knobs.dens_alpha, dens_max=self.knobs.dens_max, dens_thresh_frac=self.knobs.dens_thresh_frac, well_k=max(wk_lo, min(wk_hi, x)), well_R=self.knobs.well_R))
+                    f3 = lambda x: self._err_for_knobs(model, DensityKnobs(g_scale=g, dens_k=dk, dens_R=self.knobs.dens_R, dens_alpha=self.knobs.dens_alpha, dens_thresh_frac=self.knobs.dens_thresh_frac, well_k=max(wk_lo, min(wk_hi, x)), well_R=self.knobs.well_R))
                     wk, _ = self._golden_section(f3, wk_lo, wk_hi)
             solved_knobs = DensityKnobs(g_scale=float(g), dens_k=float(dk), dens_R=float(self.knobs.dens_R), well_k=float(wk), well_R=float(self.knobs.well_R))
             err_solved = float(self._err_for_knobs(model, solved_knobs))
@@ -603,7 +602,7 @@ class CompareAcrossPresetsDialog(QDialog):
         kn = DensityKnobs(
             g_scale=float(self.parent_ref.spinG.value()),
             dens_k=float(self.parent_ref.spinDk.value()), dens_R=float(self.parent_ref.spinDr.value()),
-            dens_alpha=float(self.parent_ref.spinDa.value()), dens_max=float(self.parent_ref.spinDmax.value()), dens_thresh_frac=float(self.parent_ref.spinDth.value()),
+            dens_alpha=float(self.parent_ref.spinDa.value()), dens_thresh_frac=float(self.parent_ref.spinDth.value()),
             well_k=float(self.parent_ref.spinWk.value()), well_R=float(self.parent_ref.spinWr.value()),
         )
         obs_curve = self.parent_ref.obsCurve if (obj=='curve') else None
@@ -735,7 +734,6 @@ class MainWindow(QMainWindow):
         self.spinDk = QDoubleSpinBox(); self.spinDk.setRange(0.0, 5.0); self.spinDk.setDecimals(3); self.spinDk.setValue(0.0)
         self.spinDr = QDoubleSpinBox(); self.spinDr.setRange(0.05, 50.0); self.spinDr.setDecimals(3); self.spinDr.setValue(2.0)
         self.spinDa = QDoubleSpinBox(); self.spinDa.setRange(0.0, 3.0); self.spinDa.setDecimals(3); self.spinDa.setValue(1.0)
-        self.spinDmax = QDoubleSpinBox(); self.spinDmax.setRange(1.0, 10000.0); self.spinDmax.setDecimals(0); self.spinDmax.setValue(1000.0)
         self.spinDth = QDoubleSpinBox(); self.spinDth.setRange(0.0, 5.0); self.spinDth.setDecimals(3); self.spinDth.setValue(1.0)
         self.spinWk = QDoubleSpinBox(); self.spinWk.setRange(0.0, 5.0); self.spinWk.setDecimals(3); self.spinWk.setValue(0.0)
         self.spinWr = QDoubleSpinBox(); self.spinWr.setRange(0.05, 20.0); self.spinWr.setDecimals(3); self.spinWr.setValue(2.0)
@@ -747,9 +745,7 @@ class MainWindow(QMainWindow):
         add_row_with_tip(form, "Density R (kpc)", self.spinDr,
             "Neighborhood size for computing local density at the evaluation point. 1–5 kpc typical. Smaller R makes the effect more local.")
         add_row_with_tip(form, "Density alpha", self.spinDa,
-            "Power-law enhancement only at the evaluation point when local density is low: multiplier = (rho_ref/rho_local)^alpha, capped by Max boost. Set 0 to use legacy k mode.")
-        add_row_with_tip(form, "Max boost", self.spinDmax,
-            "Cap on the density-based multiplier (applies only when rho_local < threshold×rho_ref).")
+            "Power-law enhancement only at the evaluation point when local density is low: multiplier = (rho_ref/rho_local)^alpha. Set 0 to use legacy k mode.")
         add_row_with_tip(form, "Low dens thresh × rho_ref", self.spinDth,
             "Only apply density enhancement when rho_local < (threshold × rho_ref). For Earth-like regions, set threshold ≤ 1.0 so dense regions get baseline G only.")
         add_row_with_tip(form, "Well k", self.spinWk,
@@ -827,6 +823,17 @@ class MainWindow(QMainWindow):
         self.tipsText.setStyleSheet("background:#f8fbff;border:1px solid #c9e1ff;border-radius:4px;padding:8px;color:#123;")
         tipsLayout.addWidget(self.tipsText)
         rightLayout.addWidget(self.tipsBox)
+        # Ring overlay controls
+        self.grpRings = QGroupBox("Ring density overlay")
+        self.grpRings.setCheckable(True); self.grpRings.setChecked(False)
+        layR = QFormLayout(self.grpRings)
+        self.chkShowRings = QCheckBox("Show low-density rings")
+        self.spinRBins = QSpinBox(); self.spinRBins.setRange(5, 200); self.spinRBins.setValue(40)
+        self.spinRThresh = QDoubleSpinBox(); self.spinRThresh.setRange(0.0, 5.0); self.spinRThresh.setDecimals(3); self.spinRThresh.setValue(1.0)
+        layR.addRow(self.chkShowRings)
+        layR.addRow("Radial bins", self.spinRBins)
+        layR.addRow("Low dens thresh × rho_ref", self.spinRThresh)
+        rightLayout.addWidget(self.grpRings)
         rightLayout.addStretch(1)
 
         # Matplotlib artists
@@ -839,6 +846,8 @@ class MainWindow(QMainWindow):
         self.ax.add_patch(self.lowDensPatch)
         self.ax.set_xlabel("x (kpc)"); self.ax.set_ylabel("y (kpc)")
         self.ax.set_title("Gravity Calculator — Qt")
+        # Ring density overlay (annuli)
+        self.ringPatches = []
 
         # Events (debounced)
         self.timer = QTimer(self); self.timer.setSingleShot(True); self.timer.setInterval(200)
@@ -850,10 +859,15 @@ class MainWindow(QMainWindow):
         self.btnSaveCSV.clicked.connect(self.save_curve_csv)
         self.btnSolve.clicked.connect(self.solve_params)
         self.btnLoadObs.clicked.connect(self.load_obs_curve)
+        # Ring overlay signals
+        self.grpRings.toggled.connect(lambda _v: self.refresh_ring_overlay())
+        self.chkShowRings.toggled.connect(lambda _v: self.refresh_ring_overlay())
+        self.spinRBins.valueChanged.connect(lambda _v: self.refresh_ring_overlay())
+        self.spinRThresh.valueChanged.connect(lambda _v: self.refresh_ring_overlay())
         self.btnSaveSolution.clicked.connect(self.save_solution_profile)
         self.btnLoadSolution.clicked.connect(self.load_solution_profile)
         self.btnCompare.clicked.connect(self.open_compare_dialog)
-        for w in [self.spinG, self.spinDk, self.spinDr, self.spinDa, self.spinDmax, self.spinDth, self.spinWk, self.spinWr, self.spinVobs]:
+        for w in [self.spinG, self.spinDk, self.spinDr, self.spinDa, self.spinDth, self.spinWk, self.spinWr, self.spinVobs]:
             w.valueChanged.connect(self.schedule_refresh)
         for w in [self.sN, self.sR, self.sBa, self.sHz, self.sBf, self.sMt]:
             w.valueChanged.connect(self.schedule_rebuild)
@@ -1067,6 +1081,8 @@ class MainWindow(QMainWindow):
         self.ax.set_xlim(self.model.COM[0] - R_plot, self.model.COM[0] + R_plot)
         self.ax.set_ylim(self.model.COM[1] - R_plot, self.model.COM[1] + R_plot)
         self.canvas.draw_idle()
+        # Update ring overlay after scene limits change
+        self.refresh_ring_overlay()
 
     def build_animation_state(self):
         if len(self.model.masses) == 0:
@@ -1143,7 +1159,7 @@ class MainWindow(QMainWindow):
         self.knobs = DensityKnobs(
             g_scale=float(self.spinG.value()),
             dens_k=float(self.spinDk.value()), dens_R=float(self.spinDr.value()),
-            dens_alpha=float(self.spinDa.value()), dens_max=float(self.spinDmax.value()), dens_thresh_frac=float(self.spinDth.value()),
+            dens_alpha=float(self.spinDa.value()), dens_thresh_frac=float(self.spinDth.value()),
             well_k=float(self.spinWk.value()), well_R=float(self.spinWr.value()),
         )
         vN, vG, vF = self.model.speeds_at_test(self.knobs)
@@ -1172,6 +1188,8 @@ class MainWindow(QMainWindow):
         match_pct = percent_closeness(vF, vobs)
         # update curve cache and star speeds (for percentile & animation)
         self.compute_star_speeds_vf()
+        # Update ring overlay when physics refreshed (rho_ref depends on mass distribution extents)
+        self.refresh_ring_overlay()
         total_mass = float(self.model.masses.sum())
         far_R = float(np.linalg.norm(self.model.test_point[:2] - self.model.COM[:2])) if len(self.model.masses) else 0.0
         pct = 0.0
@@ -1181,7 +1199,7 @@ class MainWindow(QMainWindow):
         self.infoLabel.setText(
             f"Preset: {self.preset.currentText()} | N stars: {len(self.model.masses)} | Total mass: {total_mass:,.2e} Msun\n"
             f"Farthest-star radius: R = {far_R:.2f} kpc\n"
-            f"G={self.knobs.g_scale:.2f} | Dens: k={self.knobs.dens_k:.2f}, alpha={self.knobs.dens_alpha:.2f}, max={self.knobs.dens_max:.0f} @ R={self.knobs.dens_R:.2f} | Thresh×rho_ref={self.knobs.dens_thresh_frac:.2f} | "
+            f"G={self.knobs.g_scale:.2f} | Dens: k={self.knobs.dens_k:.2f}, alpha={self.knobs.dens_alpha:.2f} @ R={self.knobs.dens_R:.2f} | Thresh×rho_ref={self.knobs.dens_thresh_frac:.2f} | "
             f"Well k={self.knobs.well_k:.2f} @ R={self.knobs.well_R:.2f}\n"
             f"Speeds (km/s): Newtonian={vN:.2f}  GR-like={vG:.2f}  Final={vF:.2f} | Observed={vobs:.1f}  Δ={dv:+.2f} km/s\n"
             f"Match to observed at test star: {match_pct:.1f}%\n"
@@ -1191,6 +1209,48 @@ class MainWindow(QMainWindow):
     def open_vectors(self):
         dlg = VectorsDialog(self.model, self.knobs, self)
         dlg.exec()
+
+    def refresh_ring_overlay(self):
+        # Clear existing ring patches
+        try:
+            for p in self.ringPatches:
+                p.remove()
+        except Exception:
+            pass
+        self.ringPatches = []
+        if not self.grpRings.isChecked() or not self.chkShowRings.isChecked():
+            self.canvas.draw_idle(); return
+        if len(self.model.masses) == 0:
+            self.canvas.draw_idle(); return
+        import numpy as _np
+        # Compute rho_ref from 3D volume as in compute_G_eff
+        Rchar = float(_np.max(_np.linalg.norm(self.model.pos - self.model.COM, axis=1))) if len(self.model.masses) else 1.0
+        Vchar = (4.0/3.0) * math.pi * max(1e-30, Rchar**3)
+        rho_ref = float(self.model.masses.sum()) / Vchar if Vchar > 0 else 0.0
+        # Compute surface density per ring (annuli) using 2D projected radii
+        bins = int(self.spinRBins.value())
+        Rmax = float(_np.max(_np.linalg.norm(self.model.pos[:, :2] - self.model.COM[:2], axis=1)))
+        if not (Rmax > 0 and bins > 0):
+            self.canvas.draw_idle(); return
+        edges = _np.linspace(0.0, Rmax, bins+1)
+        Rxy = _np.linalg.norm(self.model.pos[:, :2] - self.model.COM[:2], axis=1)
+        mass = self.model.masses
+        for i in range(bins):
+            r0, r1 = float(edges[i]), float(edges[i+1])
+            mask = (Rxy >= r0) & (Rxy < r1)
+            m = float(mass[mask].sum())
+            area = math.pi * (r1*r1 - r0*r0)
+            sigma = m / max(1e-30, area)  # Msun / kpc^2
+            # Convert to an equivalent 3D-like density by dividing by an effective height (use Hz from preset approximation or 2*dens_R)
+            hz_eff = max(1e-3, float(self.spinDr.value())*2.0)
+            rho_equiv = sigma / (2.0*hz_eff)
+            if rho_ref > 0 and rho_equiv < float(self.spinRThresh.value()) * rho_ref:
+                # Draw a translucent annulus for this ring
+                patch = Wedge(center=(self.model.COM[0], self.model.COM[1]), r=r1, theta1=0, theta2=360, width=(r1-r0),
+                              facecolor=(0.5,0.5,0.5,0.15), edgecolor=(0.5,0.5,0.5,0.35))
+                self.ax.add_patch(patch)
+                self.ringPatches.append(patch)
+        self.canvas.draw_idle()
 
     def save_curve_csv(self):
         path, _ = QFileDialog.getSaveFileName(self, "Save rotation_curve.csv", str(Path.cwd()/"rotation_curve.csv"))
@@ -1221,7 +1281,7 @@ class MainWindow(QMainWindow):
         name = str(name).strip()
         entry = dict(
             G=float(self.spinG.value()), Dk=float(self.spinDk.value()), Dr=float(self.spinDr.value()),
-            Da=float(self.spinDa.value()), Dmax=float(self.spinDmax.value()), Dth=float(self.spinDth.value()),
+            Da=float(self.spinDa.value()), Dth=float(self.spinDth.value()),
             Wk=float(self.spinWk.value()), Wr=float(self.spinWr.value()), Vobs=float(self.spinVobs.value()),
             Preset=str(self.preset.currentText())
         )
@@ -1261,7 +1321,6 @@ class MainWindow(QMainWindow):
         self.spinDk.setValue(float(ent.get('Dk', self.spinDk.value())))
         self.spinDr.setValue(float(ent.get('Dr', self.spinDr.value())))
         self.spinDa.setValue(float(ent.get('Da', self.spinDa.value())))
-        self.spinDmax.setValue(float(ent.get('Dmax', self.spinDmax.value())))
         self.spinDth.setValue(float(ent.get('Dth', self.spinDth.value())))
         self.spinWk.setValue(float(ent.get('Wk', self.spinWk.value())))
         self.spinWr.setValue(float(ent.get('Wr', self.spinWr.value())))
