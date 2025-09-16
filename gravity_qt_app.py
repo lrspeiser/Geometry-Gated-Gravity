@@ -181,6 +181,7 @@ class DensityKnobs:
     dens_thresh_frac: float = 1.0  # apply enhancement only if rho_local < dens_thresh_frac * rho_ref
     well_k: float = 0.0
     well_R: float = 2.0
+    boundary_R: float = 0.0  # apply per-source enhancement only for sources with R>=boundary_R (simple mode)
 
 
 class GravityModel:
@@ -236,6 +237,7 @@ class GravityModel:
 
     def well_scales(self, knobs: DensityKnobs) -> np.ndarray:
         k = float(knobs.well_k); Rw = max(1e-6, float(knobs.well_R))
+        alpha = float(knobs.dens_alpha)
         N = len(self.masses)
         if N == 0:
             return np.ones(0)
@@ -258,9 +260,18 @@ class GravityModel:
             c.update({"version": self.version, "R": Rw, "base": base})
         else:
             base = c["base"]
-        if k <= 0:
-            return np.ones(N)
-        scales = 1.0 + k * base
+        # Start with ones
+        scales = np.ones(N, dtype=float)
+        # Apply per-source boundary-based enhancement using alpha if configured
+        if alpha > 0.0 and float(getattr(knobs, 'boundary_R', 0.0)) > 0.0:
+            # ratio = 1 + base
+            ratio = 1.0 + base
+            Rsrc = np.linalg.norm(self.pos - self.COM, axis=1)
+            mask = Rsrc >= float(knobs.boundary_R)
+            scales[mask] *= np.power(np.maximum(0.0, ratio[mask]), alpha)
+        # Apply legacy well_k linear scaling if requested (advanced)
+        if k > 0.0:
+            scales *= (1.0 + k * base)
         c.update({"k": k, "scales": scales})
         return scales
 
@@ -384,7 +395,8 @@ class CompareWorker(QThread):
     finished = Signal(list)
 
     def __init__(self, presets, knobs: DensityKnobs, objective: str, vobs: float, obs_curve=None, N_override: int = 0,
-                 resolve: bool = True, solve_dk: bool = True, solve_g: bool = True, solve_wk: bool = True, parent=None):
+                 resolve: bool = True, solve_dk: bool = True, solve_g: bool = True, solve_wk: bool = True,
+                 boundary_mw_kpc: float = 8.0, use_mw_frac: bool = True, parent=None):
         super().__init__(parent)
         self.presets = presets
         self.knobs = knobs
@@ -397,6 +409,8 @@ class CompareWorker(QThread):
         self.solve_g = bool(solve_g)
         self.solve_wk = bool(solve_wk)
         self.rows = []
+        self.boundary_mw_kpc = float(boundary_mw_kpc)
+        self.use_mw_frac = bool(use_mw_frac)
 
     def run(self):
         import time
@@ -461,6 +475,18 @@ class CompareWorker(QThread):
         fx = f(x)
         return x, fx
 
+    def _boundary_for_preset(self, preset_name: str) -> float:
+        try:
+            mw_Rdisk = float(PRESET_SIMPLE["MW-like disk"]["Rdisk"])  # kpc
+            this_Rdisk = float(PRESET_SIMPLE.get(preset_name, {}).get("Rdisk", mw_Rdisk))
+            if self.use_mw_frac and mw_Rdisk > 0:
+                frac = self.boundary_mw_kpc / mw_Rdisk
+                return frac * this_Rdisk
+            else:
+                return self.boundary_mw_kpc
+        except Exception:
+            return self.boundary_mw_kpc
+
     def _err_for_knobs(self, model: GravityModel, knobs: DensityKnobs):
         if self.objective.startswith('curve'):
             R_vals, vN_arr, vG_arr, vF_arr = self._curve_vtriple_for_model(model, knobs, nR=60)
@@ -479,7 +505,15 @@ class CompareWorker(QThread):
         import time
         t1 = time.perf_counter()
         model = self._build_from_preset(name)
-        err_fixed = self._err_for_knobs(model, self.knobs)
+        # Apply boundary for this preset
+        k2 = DensityKnobs(
+            g_scale=self.knobs.g_scale,
+            dens_k=self.knobs.dens_k, dens_R=self.knobs.dens_R,
+            dens_alpha=self.knobs.dens_alpha, dens_thresh_frac=self.knobs.dens_thresh_frac,
+            well_k=self.knobs.well_k, well_R=self.knobs.well_R,
+            boundary_R=self._boundary_for_preset(name),
+        )
+        err_fixed = self._err_for_knobs(model, k2)
         # Compute required G and closeness at test star for fixed knobs (test-star objective semantics)
         _, _, vF_fixed = model.speeds_at_test(self.knobs)
         g_req_fixed = required_g_for_test(model, self.knobs, self.vobs)
@@ -492,6 +526,8 @@ class CompareWorker(QThread):
             "g": float(self.knobs.g_scale),
             "dens_k": float(self.knobs.dens_k),
             "dens_R": float(self.knobs.dens_R),
+            "alpha": float(self.knobs.dens_alpha),
+            "boundary_R": float(k2.boundary_R),
             "well_k": float(self.knobs.well_k),
             "well_R": float(self.knobs.well_R),
             "g_req_fixed": float(g_req_fixed),
@@ -511,7 +547,7 @@ class CompareWorker(QThread):
                 if self.solve_wk:
                     f3 = lambda x: self._err_for_knobs(model, DensityKnobs(g_scale=g, dens_k=dk, dens_R=self.knobs.dens_R, dens_alpha=self.knobs.dens_alpha, dens_thresh_frac=self.knobs.dens_thresh_frac, well_k=max(wk_lo, min(wk_hi, x)), well_R=self.knobs.well_R))
                     wk, _ = self._golden_section(f3, wk_lo, wk_hi)
-            solved_knobs = DensityKnobs(g_scale=float(g), dens_k=float(dk), dens_R=float(self.knobs.dens_R), well_k=float(wk), well_R=float(self.knobs.well_R))
+            solved_knobs = DensityKnobs(g_scale=float(g), dens_k=float(dk), dens_R=float(self.knobs.dens_R), dens_alpha=self.knobs.dens_alpha, dens_thresh_frac=self.knobs.dens_thresh_frac, well_k=float(wk), well_R=float(self.knobs.well_R), boundary_R=self._boundary_for_preset(name))
             err_solved = float(self._err_for_knobs(model, solved_knobs))
             _, _, vF_solved = model.speeds_at_test(solved_knobs)
             g_req_solved = required_g_for_test(model, solved_knobs, self.vobs)
@@ -568,7 +604,7 @@ class CompareAcrossPresetsDialog(QDialog):
         # Table
         headers = [
             "Preset","N","Err (fixed)","Err (solved)","% close (fixed)","% close (solved)",
-            "G","dens_k","dens_R","well_k","well_R","g_req (fixed)","g_req (solved)","time_s"
+            "G","dens_k","dens_R","alpha","boundary_R","well_k","well_R","g_req (fixed)","g_req (solved)","time_s"
         ]
         self.table = QTableWidget(0, len(headers))
         self.table.setHorizontalHeaderLabels(headers)
@@ -607,7 +643,8 @@ class CompareAcrossPresetsDialog(QDialog):
         )
         obs_curve = self.parent_ref.obsCurve if (obj=='curve') else None
         self.worker = CompareWorker(names, kn, obj, float(self.parent_ref.spinVobs.value()), obs_curve=obs_curve,
-                                    N_override=N_override, resolve=self.chkResolve.isChecked())
+                                    N_override=N_override, resolve=self.chkResolve.isChecked(),
+                                    boundary_mw_kpc=float(self.parent_ref.spinBoundaryMW.value()), use_mw_frac=bool(self.parent_ref.chkBoundaryUseMWFrac.isChecked()))
         self.worker.rowReady.connect(self._on_row_ready)
         self.worker.progress.connect(self._on_progress)
         self.worker.finished.connect(self._on_finished)
@@ -627,7 +664,7 @@ class CompareAcrossPresetsDialog(QDialog):
             (f"{row['err_solved']:.4g}" if 'err_solved' in row else ""),
             (f"{row['close_fixed_pct']:.1f}%" if 'close_fixed_pct' in row else ""),
             (f"{row['close_solved_pct']:.1f}%" if 'close_solved_pct' in row else ""),
-            f"{row['g']:.4f}", f"{row['dens_k']:.4f}", f"{row['dens_R']:.3f}", f"{row['well_k']:.4f}", f"{row['well_R']:.3f}",
+            f"{row['g']:.4f}", f"{row['dens_k']:.4f}", f"{row['dens_R']:.3f}", f"{row.get('alpha','')}", f"{row.get('boundary_R','')}", f"{row['well_k']:.4f}", f"{row['well_R']:.3f}",
             (f"{row['g_req_fixed']:.4f}" if 'g_req_fixed' in row and np.isfinite(row['g_req_fixed']) else "inf"),
             (f"{row['g_req_solved']:.4f}" if 'g_req_solved' in row and np.isfinite(row.get('g_req_solved', float('nan'))) else ""),
             f"{row['time_s']:.2f}"
@@ -652,7 +689,7 @@ class CompareAcrossPresetsDialog(QDialog):
             w = csv.writer(f)
             keys = [
                 "preset","N","err_fixed","err_solved","close_fixed_pct","close_solved_pct",
-                "g","dens_k","dens_R","well_k","well_R","g_req_fixed","g_req_solved","time_s"
+                "g","dens_k","dens_R","alpha","boundary_R","well_k","well_R","g_req_fixed","g_req_solved","time_s"
             ]
             w.writerow(keys)
             for row in self.rows:
@@ -783,6 +820,18 @@ class MainWindow(QMainWindow):
         add_row_with_tip(f2, "Total mass (1e10 Msun)", self.sMt, "Total luminous+gas mass distributed across all stars.")
         grpStruct.setLayout(f2)
 
+        # Simple boundary group
+        self.grpBoundary = QGroupBox("Boundary and enhancement (simple)")
+        layB = QFormLayout(self.grpBoundary)
+        self.spinBoundaryMW = QDoubleSpinBox(); self.spinBoundaryMW.setRange(0.0, 200.0); self.spinBoundaryMW.setDecimals(2); self.spinBoundaryMW.setValue(8.0)
+        self.chkBoundaryUseMWFrac = QCheckBox("Apply MW fraction to all presets")
+        self.chkBoundaryUseMWFrac.setChecked(True)
+        self.spinAlphaSimple = QDoubleSpinBox(); self.spinAlphaSimple.setRange(0.0, 3.0); self.spinAlphaSimple.setDecimals(3); self.spinAlphaSimple.setValue(self.spinDa.value())
+        layB.addRow("MW boundary R (kpc)", self.spinBoundaryMW)
+        layB.addRow(self.chkBoundaryUseMWFrac)
+        layB.addRow("Enhancement exponent α", self.spinAlphaSimple)
+        rightLayout.addWidget(self.grpBoundary)
+
         rightLayout.addLayout(form)
         rightLayout.addWidget(grpStruct)
 
@@ -873,6 +922,8 @@ class MainWindow(QMainWindow):
         self.btnSaveCSV.clicked.connect(self.save_curve_csv)
         self.btnSolve.clicked.connect(self.solve_params)
         self.btnLoadObs.clicked.connect(self.load_obs_curve)
+        # Simple boundary wiring: keep alpha in sync
+        self.spinAlphaSimple.valueChanged.connect(lambda v: self.spinDa.setValue(float(v)))
         # Ring overlay signals
         self.grpRings.toggled.connect(lambda _v: self.refresh_ring_overlay())
         self.chkShowRings.toggled.connect(lambda _v: self.refresh_ring_overlay())
@@ -887,7 +938,7 @@ class MainWindow(QMainWindow):
         self.btnSaveSolution.clicked.connect(self.save_solution_profile)
         self.btnLoadSolution.clicked.connect(self.load_solution_profile)
         self.btnCompare.clicked.connect(self.open_compare_dialog)
-        for w in [self.spinG, self.spinDk, self.spinDr, self.chkDrFrac, self.spinDrFrac, self.spinDa, self.spinDth, self.spinDAbs, self.spinWk, self.spinWr, self.spinVobs]:
+        for w in [self.spinG, self.spinDk, self.spinDr, self.chkDrFrac, self.spinDrFrac, self.spinDa, self.spinDth, self.spinDAbs, self.spinWk, self.spinWr, self.spinVobs, self.spinBoundaryMW, self.chkBoundaryUseMWFrac, self.spinAlphaSimple]:
             try:
                 w.valueChanged.connect(self.schedule_refresh)
             except Exception:
@@ -1192,11 +1243,26 @@ class MainWindow(QMainWindow):
                 dens_R_eff = float(self.spinDrFrac.value()) * max(1e-6, Rchar)
         except Exception:
             pass
+        # Compute boundary R for current preset based on MW fraction rule if enabled
+        def boundary_for_preset(preset_name: str) -> float:
+            try:
+                mw_Rdisk = float(PRESET_SIMPLE["MW-like disk"]["Rdisk"])  # kpc
+                this_Rdisk = float(PRESET_SIMPLE.get(preset_name, {}).get("Rdisk", mw_Rdisk))
+                mw_boundary = float(self.spinBoundaryMW.value())
+                if self.chkBoundaryUseMWFrac.isChecked() and mw_Rdisk > 0:
+                    frac = mw_boundary / mw_Rdisk
+                    return frac * this_Rdisk
+                else:
+                    return mw_boundary
+            except Exception:
+                return float(self.spinBoundaryMW.value())
+        boundary_R_now = boundary_for_preset(self.preset.currentText())
         self.knobs = DensityKnobs(
             g_scale=float(self.spinG.value()),
             dens_k=float(self.spinDk.value()), dens_R=dens_R_eff,
             dens_alpha=float(self.spinDa.value()), dens_thresh_frac=float(self.spinDth.value()),
             well_k=float(self.spinWk.value()), well_R=float(self.spinWr.value()),
+            boundary_R=float(boundary_R_now),
         )
         vN, vG, vF = self.model.speeds_at_test(self.knobs)
         # Update low-density enhancement patch visibility/location
@@ -1246,7 +1312,7 @@ class MainWindow(QMainWindow):
         self.infoLabel.setText(
             f"Preset: {self.preset.currentText()} | N stars: {len(self.model.masses)} | Total mass: {total_mass:,.2e} Msun\n"
             f"Farthest-star radius: R = {far_R:.2f} kpc\n"
-            f"G={self.knobs.g_scale:.2f} | Dens: k={self.knobs.dens_k:.2f}, alpha={self.knobs.dens_alpha:.2f} @ R={self.knobs.dens_R:.2f} | Thresh×rho_ref={self.knobs.dens_thresh_frac:.2f} | "
+            f"G={self.knobs.g_scale:.2f} | α={self.knobs.dens_alpha:.2f} | dens_R={self.knobs.dens_R:.2f} kpc | boundary_R={self.knobs.boundary_R:.2f} kpc | thresh×rho_ref={self.knobs.dens_thresh_frac:.2f} | "
             f"Well k={self.knobs.well_k:.2f} @ R={self.knobs.well_R:.2f}\n"
             f"Speeds (km/s): Newtonian={vN:.2f}  GR-like={vG:.2f}  Final={vF:.2f} | Observed={vobs:.1f}  Δ={dv:+.2f} km/s\n"
             f"Match to observed at test star: {match_pct:.1f}%{ring_extra}\n"
