@@ -7,7 +7,7 @@ PARQUET=$(DATA_DIR)/sparc_rotmod_ltg.parquet
 MRT=$(DATA_DIR)/SPARC_Lelli2016c.mrt
 MASTER=$(DATA_DIR)/Rotmod_LTG/MasterSheet_SPARC.csv
 
-.PHONY: all run run-master run-mrt run-shell optimize-shell run-density-models build-parquet
+.PHONY: all run run-master run-mrt run-shell optimize-shell run-density-models build-parquet plot-overlays
 
 all: run-master
 
@@ -25,6 +25,13 @@ run-shell:
 
 optimize-shell:
 	$(PY) src/scripts/optimize_shell.py --parquet $(PARQUET) --master-csv $(MASTER) --out-base $(DATA_DIR)/opt_shell --refine
+
+# Generate overlay figures from a model output directory
+# Example:
+#   make plot-overlays IN_DIR=$(DATA_DIR)/opt_shell/refine__me_-0.400__mid_2.50__max_4.00 \
+#                      OUT_DIR=reports/figures/opt_shell_refine_-0.40_2.50_4.00
+plot-overlays:
+	$(PY) src/scripts/plot_overlays.py --in-dir "$(IN_DIR)" --out-dir "$(OUT_DIR)"
 
 # Run density-based model optimizer (no mass power-law)
 run-density-models:
