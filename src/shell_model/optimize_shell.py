@@ -54,7 +54,7 @@ def run_predict(parquet: Path, master_csv: Path | None, mrt: Path | None,
                 out_dir: Path, mass_ref: float, mass_exp: float,
                 middle: float, max_enh: float) -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
-    script = repo_root() / 'src/scripts/sparc_predict.py'
+    script = repo_root() / 'src/shell_model/sparc_predict.py'
     cmd = [sys.executable, str(script),
            '--parquet', str(parquet),
            '--model', 'shell',
