@@ -1,0 +1,9 @@
+*.png filter=lfs diff=lfs merge=lfs -text
+*.parquet filter=lfs diff=lfs merge=lfs -text
+*.zip filter=lfs diff=lfs merge=lfs -text
+*.tar.gz filter=lfs diff=lfs merge=lfs -text
+*.dat filter=lfs diff=lfs merge=lfs -text
+*.sfb filter=lfs diff=lfs merge=lfs -text
+*.dens filter=lfs diff=lfs merge=lfs -text
+*.mrt filter=lfs diff=lfs merge=lfs -text
+*.cov filter=lfs diff=lfs merge=lfs -text

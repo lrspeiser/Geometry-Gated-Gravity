@@ -1,7 +1,3 @@
-# Distance = 3.52 Mpc
-# Rad	Vobs	errV	Vgas	Vdisk	Vbul	SBdisk	SBbul		
-# kpc	km/s	km/s	km/s	km/s	km/s	L/pc^2	L/pc^2
-0.10	13.90	3.84	2.80	7.62	0.00	126.29	0.00
-0.30	29.90	3.92	7.72	17.26	0.00	62.07	0.00
-0.51	46.70	4.10	11.07	20.43	0.00	30.50	0.00
-0.71	60.40	9.40	11.87	21.37	0.00	16.58	0.00
+version https://git-lfs.github.com/spec/v1
+oid sha256:0160e097208451c82ac12493cab78dfdd02b38e3127912dbca63c0e969ce9e46
+size 288
