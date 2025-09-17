@@ -231,26 +231,20 @@ def main():
 
 def run(args):
     # Model banner
-    model = getattr(args, 'model', 'power')
+    model = getattr(args, 'model', 'shell')
+    print(f"Reading rotmod parquet from: {args.parquet}")
+    if getattr(args, 'mass_csv', None):
+        print(f"Mass CSV: {args.mass_csv}")
+    if getattr(args, 'sparc_master_csv', None):
+        print(f"SPARC MasterSheet: {args.sparc_master_csv}")
+    if getattr(args, 'sparc_mrt', None):
+        print(f"SPARC MRT: {args.sparc_mrt}")
     if model == 'shell':
-        print("Using shell-based gravity enhancement model")
-        print(f"Reading rotmod parquet from: {args.parquet}")
-        if getattr(args, 'mass_csv', None):
-            print(f"Mass CSV: {args.mass_csv}")
-        if getattr(args, 'sparc_master_csv', None):
-            print(f"SPARC MasterSheet: {args.sparc_master_csv}")
-        if getattr(args, 'sparc_mrt', None):
-            print(f"SPARC MRT: {args.sparc_mrt}")
+        print("Using shell-based gravity enhancement model (inner G=1, smooth transition, capped outer growth)")
+    elif model == 'gr':
+        print("Using GR baseline (no scaling): G=1 across all radii")
     else:
-        # Log the inverse mass-power law being used (beta < 0 indicates inverse correlation).
-        print(f"Using inverse mass-power law: G_pred = A * (M_bary / M0)^beta with A={args.A}, beta={args.beta}, M0={args.M0}")
-        print(f"Reading rotmod parquet from: {args.parquet}")
-        if getattr(args, 'mass_csv', None):
-            print(f"Mass CSV: {args.mass_csv}")
-        if getattr(args, 'sparc_master_csv', None):
-            print(f"SPARC MasterSheet: {args.sparc_master_csv}")
-        if getattr(args, 'sparc_mrt', None):
-            print(f"SPARC MRT: {args.sparc_mrt}")
+        raise SystemExit(f"Unsupported model '{model}'. Use 'shell' or 'gr'.")
     # Load rotmod parquet
     rot = pd.read_parquet(args.parquet)
     # Ensure expected columns
@@ -623,7 +617,7 @@ def run(args):
     df['Vbar_kms'] = vbar
 
     # Compute G_pred from selected model
-    model = getattr(args, 'model', 'power')
+    model = getattr(args, 'model', 'shell')
     if model == 'shell':
         shell_params = {
             'M_ref': float(getattr(args, 'shell_M_ref', 1e10)),
@@ -640,11 +634,11 @@ def run(args):
         def _row_G(row):
             return compute_G_enhanced(row['R_kpc'], row.get('M_bary', np.nan), row.get('boundary_kpc', np.nan), shell_params)
         df['G_pred'] = df.apply(_row_G, axis=1)
+    elif model == 'gr':
+        # GR baseline: no scaling
+        df['G_pred'] = 1.0
     else:
-        # Power-law mass scaling (rows without mass will be NaN)
-        with np.errstate(divide='ignore', invalid='ignore'):
-            scale = (df['M_bary'] / float(args.M0)) ** float(args.beta)
-            df['G_pred'] = float(args.A) * scale
+        raise SystemExit(f"Unsupported model '{model}'. Use 'shell' or 'gr'.")
 
     # Predicted speed assuming velocity scales with sqrt(G)
     df['Vpred_kms'] = np.sqrt(np.maximum(0.0, df['G_pred'])) * df['Vbar_kms']
@@ -674,8 +668,10 @@ def run(args):
     out_dir = args.output_dir
     out_dir.mkdir(parents=True, exist_ok=True)
     by_radius = df[['galaxy','type','R_kpc','boundary_kpc','is_outer','Vobs_kms','Vbar_kms','Vgr_kms','gr_percent_close','gr_failing','G_pred','G_required','G_ratio','Vpred_kms','percent_close']].copy()
-    if getattr(args, 'model', 'power') == 'shell':
+    if getattr(args, 'model', 'shell') == 'shell':
         by_radius['Model'] = 'shell'
+    elif getattr(args, 'model', 'shell') == 'gr':
+        by_radius['Model'] = 'gr'
     by_radius_path = out_dir / 'sparc_predictions_by_radius.csv'
     by_radius.to_csv(by_radius_path, index=False)
     # Also write boundaries used for transparency (see README: SPARC workflow)
@@ -713,8 +709,10 @@ def run(args):
             'mean_G_Ratio_Outer': float(np.nanmean(g_outer_all['G_ratio'])) if len(g_outer_all)>0 else np.nan,
         })
     by_gal = df.groupby('galaxy').apply(agg_grp).reset_index()
-    if getattr(args, 'model', 'power') == 'shell':
+    if getattr(args, 'model', 'shell') == 'shell':
         by_gal['Model'] = 'shell'
+    elif getattr(args, 'model', 'shell') == 'gr':
+        by_gal['Model'] = 'gr'
     by_gal_path = out_dir / 'sparc_predictions_by_galaxy.csv'
     by_gal.to_csv(by_gal_path, index=False)
 
@@ -735,8 +733,10 @@ def run(args):
         'Model_Percent_Off': df['model_percent_off'],
         'Baryonic_Mass_Msun': df.get('M_bary', np.nan),
     })
-    if getattr(args, 'model', 'power') == 'shell':
+    if getattr(args, 'model', 'shell') == 'shell':
         human_by_radius['Model'] = 'shell'
+    elif getattr(args, 'model', 'shell') == 'gr':
+        human_by_radius['Model'] = 'gr'
     human_by_radius_path = out_dir / 'sparc_human_by_radius.csv'
     human_by_radius.to_csv(human_by_radius_path, index=False)
 
@@ -776,8 +776,10 @@ def run(args):
         'Median_G_Ratio_Outer': by_gal['median_G_Ratio_Outer'],
         'Mean_G_Ratio_Outer': by_gal['mean_G_Ratio_Outer'],
     })
-    if getattr(args, 'model', 'power') == 'shell':
+    if getattr(args, 'model', 'shell') == 'shell':
         human_by_gal['Model'] = 'shell'
+    elif getattr(args, 'model', 'shell') == 'gr':
+        human_by_gal['Model'] = 'gr'
     human_by_gal_path = out_dir / 'sparc_human_by_galaxy.csv'
     human_by_gal.to_csv(human_by_gal_path, index=False)
 
@@ -802,7 +804,7 @@ def run(args):
     # Simple fit: log10(G_required_med) vs log10(M_bary/M0)
     fit_txt = out_dir / 'sparc_greq_mass_fit.txt'
     try:
-        x = np.log10(diag['Baryonic_Mass_Msun'] / float(args.M0))
+        x = np.log10(diag['Baryonic_Mass_Msun'] / float(M0_DEFAULT))
         y = np.log10(diag['Median_G_Required_Outer'])
         mask = np.isfinite(x) & np.isfinite(y)
         if mask.sum() >= 2:
@@ -827,7 +829,7 @@ def run(args):
     print(f"Wrote: {summary_by_type_path}")
 
     # Additional diagnostics for shell model (inner vs outer medians)
-    if getattr(args, 'model', 'power') == 'shell':
+    if getattr(args, 'model', 'shell') == 'shell':
         try:
             inner_mask = df['R_kpc'] < 0.5 * df['boundary_kpc']
             outer_mask = df['R_kpc'] >= df['boundary_kpc']
@@ -862,12 +864,8 @@ if __name__ == '__main__':
     ap.add_argument('--boundary-frac', type=float, default=0.5)
 
     # Model selection and parameters
-    ap.add_argument('--model', choices=['power','shell'], default='power',
-                    help='Select gravity model (default: power).')
-    # Power-law params (unchanged defaults)
-    ap.add_argument('--A', type=float, default=A_DEFAULT)
-    ap.add_argument('--beta', type=float, default=BETA_DEFAULT)
-    ap.add_argument('--M0', type=float, default=M0_DEFAULT)
+    ap.add_argument('--model', choices=['shell','gr'], default='shell',
+                    help='Select gravity model: shell (default) or gr (no scaling baseline).')
     # Shell-model params
     ap.add_argument('--shell-M-ref', type=float, default=1e10, help='Reference mass for shell model (Msun)')
     ap.add_argument('--shell-mass-exp', type=float, default=-0.35, help='Mass scaling exponent for shell model (negative boosts low-mass galaxies)')
