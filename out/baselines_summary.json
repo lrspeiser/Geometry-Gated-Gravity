@@ -1,0 +1,14 @@
+{
+  "N_galaxies": 143,
+  "GR": {
+    "mean_off": 36.07730059129616
+  },
+  "MOND_simple": {
+    "a0_hat": 5e-11,
+    "mean_off": 14.604923744950417
+  },
+  "Burkert_subset": {
+    "N": 9,
+    "mean_off": 2.1453908817998397
+  }
+}

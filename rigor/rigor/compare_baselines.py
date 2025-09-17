@@ -59,7 +59,10 @@ def compare_baselines(parquet="data/sparc_rotmod_ltg.parquet", master="data/Rotm
     for g in ds.galaxies:
         mask = g.outer_mask if use_outer else np.isfinite(g.R_kpc)
         Vpred = mond_simple(g.Vbar_kms[mask], g.R_kpc[mask], a0=a0_hat)
-        stats = summarize_outer(g.Vobs_kms, np.where(mask, Vpred, g.Vbar_kms), g.eVobs_kms, mask)  # compute only on mask
+        # Fix: expand masked prediction back to full length before scoring
+        Vpred_full = np.array(g.Vbar_kms, copy=True)
+        Vpred_full[mask] = Vpred
+        stats = summarize_outer(g.Vobs_kms, Vpred_full, g.eVobs_kms, mask)
         mond_stats.append(stats)
     # Burkert per galaxy
     burkert_stats = []
@@ -71,7 +74,10 @@ def compare_baselines(parquet="data/sparc_rotmod_ltg.parquet", master="data/Rotm
         mask = g.outer_mask if use_outer else np.isfinite(g.R_kpc)
         Vh = np.array([burkert_velocity_kms(r, rho0, r0) for r in g.R_kpc[mask]])
         Vpred = np.sqrt(np.maximum(g.Vbar_kms[mask]**2 + Vh**2, 0.0))
-        stats = summarize_outer(g.Vobs_kms, np.where(mask, Vpred, g.Vbar_kms), g.eVobs_kms, mask)
+        # Fix: expand masked prediction back to full length before scoring
+        Vpred_full = np.array(g.Vbar_kms, copy=True)
+        Vpred_full[mask] = Vpred
+        stats = summarize_outer(g.Vobs_kms, Vpred_full, g.eVobs_kms, mask)
         burkert_stats.append(stats)
     out = {
         "N_galaxies": ds.meta["N_galaxies"],
