@@ -39,3 +39,45 @@ run-density-models:
 
 build-parquet:
 	$(PY) src/legacy/build_sparc_parquet.py
+
+# Install vendored rigor package (Option B)
+install-rigor:
+	$(PY) -m pip install -e rigor
+
+# Hierarchical Bayesian fit on SPARC (outer-only)
+fit-bayes:
+	$(PY) -m rigor.fit_sparc \
+	  --parquet data/sparc_rotmod_ltg.parquet \
+	  --master  data/Rotmod_LTG/MasterSheet_SPARC.csv \
+	  --xi shell_logistic_radius \
+	  --outer sigma --sigma_th 10 \
+	  --use_outer_only \
+	  --outdir out/xi_shell_logistic_radius \
+	  --platform cpu \
+	  --warmup 1500 --samples 1500 --chains 4
+
+# Joint SPARC + Milky Way (binned) fit
+fit-bayes-joint:
+	$(PY) -m rigor.fit_joint_mw \
+	  --parquet data/sparc_rotmod_ltg.parquet \
+	  --master  data/Rotmod_LTG/MasterSheet_SPARC.csv \
+	  --mw_csv path/to/gaia_stars.csv \
+	  --xi shell_logistic_radius \
+	  --outer sigma --sigma_th 10 \
+	  --use_outer_only \
+	  --outdir out/joint_mw_sparc \
+	  --platform cpu \
+	  --warmup 1500 --samples 1500 --chains 4
+
+# Baseline comparison (GR/MOND/Burkert)
+compare-baselines:
+	$(PY) -m rigor --parquet data/sparc_rotmod_ltg.parquet --master data/Rotmod_LTG/MasterSheet_SPARC.csv --out_json out/baselines_summary.json --outer
+
+# Posterior overlays (68% bands) after a completed run
+bayes-overlays:
+	$(PY) -m rigor.plotting \
+	  --post  out/xi_shell_logistic_radius/posterior_samples.npz \
+	  --figdir out/xi_shell_logistic_radius/figs \
+	  --parquet data/sparc_rotmod_ltg.parquet \
+	  --master  data/Rotmod_LTG/MasterSheet_SPARC.csv \
+	  --outer sigma --sigma_th 10

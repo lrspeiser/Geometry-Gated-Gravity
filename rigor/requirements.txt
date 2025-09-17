@@ -1,0 +1,13 @@
+
+numpy>=1.24
+pandas>=2.0
+pyarrow>=13.0
+matplotlib>=3.7
+arviz>=0.16
+numpyro>=0.15
+# Install one of the JAX packages appropriate for your platform:
+#   CPU only:       pip install jax
+#   NVIDIA CUDA:    pip install jax[cuda12] -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
+#   Apple Silicon:  pip install jax-metal
+# Optional:
+pysr>=0.14
