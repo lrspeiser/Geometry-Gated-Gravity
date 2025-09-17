@@ -6,7 +6,7 @@ from typing import Dict, Any, List, Tuple
 
 from .data import load_sparc
 from .metrics import summarize_outer
-from .cupy_utils import xp, HAS_CUPY, to_xp, xi_shell_logistic_radius, xi_logistic_density, gate_fixed, gate_learned, vpred_from_xi
+from .cupy_utils import xp, HAS_CUPY, to_xp, xi_shell_logistic_radius, xi_logistic_density, xi_combined_radius_density, gate_fixed, gate_learned, vpred_from_xi
 
 try:
     import matplotlib
@@ -34,6 +34,11 @@ def eval_config(ds, xi_name: str, gating: str, params: Dict[str, float]) -> Tupl
                                      lnSigma_c=params.get("lnSigma_c", math.log(10.0)),
                                      width_sigma=params.get("width_sigma", 0.6),
                                      n_sigma=params.get("n_sigma", 1.0))
+        elif xi_name == "combined_radius_density":
+            xi = xi_combined_radius_density(R, Sigma, Mbar,
+                                            xi_cap=params.get("xi_cap", 6.0),
+                                            xi_max_r=params.get("xi_max_r", 3.0), lnR0_base=params.get("lnR0_base", math.log(3.0)), width=params.get("width", 0.6), alpha_M=params.get("alpha_M", -0.2),
+                                            xi_max_d=params.get("xi_max_d", 3.0), lnSigma_c=params.get("lnSigma_c", math.log(10.0)), width_sigma=params.get("width_sigma", 0.6), n_sigma=params.get("n_sigma", 1.0))
         else:
             xi = xi_shell_logistic_radius(R, Mbar,
                                           xi_max=params.get("xi_max", 3.0),
@@ -69,6 +74,19 @@ def random_params(xi_name: str, gating: str, rng: random.Random) -> Dict[str, fl
         p["lnSigma_c"] = math.log(10.0) + rng.uniform(-2.0, 2.0)  # ~ [e^-2*10, e^2*10]
         p["width_sigma"] = rng.uniform(0.1, 1.5)
         p["n_sigma"] = rng.uniform(0.5, 5.0)
+    elif xi_name == "combined_radius_density":
+        # radius branch
+        p["xi_max_r"] = rng.uniform(1.5, 8.0)
+        p["lnR0_base"] = math.log(3.0) + rng.uniform(-1.2, 1.2)
+        p["width"] = rng.uniform(0.1, 1.5)
+        p["alpha_M"] = rng.uniform(-0.8, 0.3)
+        # density branch
+        p["xi_max_d"] = rng.uniform(1.2, 8.0)
+        p["lnSigma_c"] = math.log(10.0) + rng.uniform(-2.0, 2.0)
+        p["width_sigma"] = rng.uniform(0.1, 1.5)
+        p["n_sigma"] = rng.uniform(0.5, 5.0)
+        # cap
+        p["xi_cap"] = rng.uniform(2.0, 10.0)
     else:
         p["lnR0_base"] = math.log(3.0) + rng.uniform(-1.2, 1.2)
         p["width"] = rng.uniform(0.1, 1.5)
@@ -94,6 +112,11 @@ def refine_around(best: Dict[str, float], scale: float, xi_name: str, gating: st
     if xi_name == "logistic_density":
         if "width_sigma" in p: p["width_sigma"] = float(np.clip(p["width_sigma"], 0.05, 2.0))
         if "n_sigma" in p: p["n_sigma"] = float(np.clip(p["n_sigma"], 0.3, 8.0))
+    elif xi_name == "combined_radius_density":
+        if "width" in p: p["width"] = float(np.clip(p["width"], 0.05, 2.0))
+        if "width_sigma" in p: p["width_sigma"] = float(np.clip(p["width_sigma"], 0.05, 2.0))
+        if "n_sigma" in p: p["n_sigma"] = float(np.clip(p["n_sigma"], 0.3, 8.0))
+        if "xi_cap" in p: p["xi_cap"] = float(np.clip(p["xi_cap"], 1.5, 12.0))
     else:
         if "width" in p: p["width"] = float(np.clip(p["width"], 0.05, 2.0))
     if gating == "fixed":
@@ -120,6 +143,11 @@ def overlay_quick(ds, xi_name: str, gating: str, params: Dict[str, float], out_d
                                      lnSigma_c=params.get("lnSigma_c", math.log(10.0)),
                                      width_sigma=params.get("width_sigma", 0.6),
                                      n_sigma=params.get("n_sigma", 1.0))
+        elif xi_name == "combined_radius_density":
+            Xi = xi_combined_radius_density(R, g.Sigma_bar, Mbar,
+                                            xi_cap=params.get("xi_cap", 6.0),
+                                            xi_max_r=params.get("xi_max_r", 3.0), lnR0_base=params.get("lnR0_base", math.log(3.0)), width=params.get("width", 0.6), alpha_M=params.get("alpha_M", -0.2),
+                                            xi_max_d=params.get("xi_max_d", 3.0), lnSigma_c=params.get("lnSigma_c", math.log(10.0)), width_sigma=params.get("width_sigma", 0.6), n_sigma=params.get("n_sigma", 1.0))
         else:
             Xi = xi_shell_logistic_radius(R, Mbar,
                                           xi_max=params.get("xi_max", 3.0),
@@ -159,7 +187,7 @@ def main():
     ap.add_argument("--parquet", default="data/sparc_rotmod_ltg.parquet")
     ap.add_argument("--master", default="data/Rotmod_LTG/MasterSheet_SPARC.csv")
     ap.add_argument("--outdir", default="out/cupy_search")
-    ap.add_argument("--xi", nargs="*", default=["shell_logistic_radius", "logistic_density"])
+    ap.add_argument("--xi", nargs="*", default=["shell_logistic_radius", "logistic_density", "combined_radius_density"])
     ap.add_argument("--gating", nargs="*", default=["fixed", "learned"])
     ap.add_argument("--random", type=int, default=60, help="Random samples per variant")
     ap.add_argument("--refine", type=int, default=30, help="Refinement samples around best")
