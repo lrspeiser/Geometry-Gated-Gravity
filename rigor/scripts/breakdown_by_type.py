@@ -153,6 +153,7 @@ def compute_per_type(ds, xi_name: str, gating: str, params: Dict[str, Any], type
     per_type_gal_major_over: Dict[int, int] = {}
     per_type_gal_ties: Dict[int, int] = {}
     per_type_ngal: Dict[int, int] = {}
+    per_gal_rows: List[Dict[str, Any]] = []
 
     total_outer = 0
     total_under = 0
@@ -230,6 +231,10 @@ def compute_per_type(ds, xi_name: str, gating: str, params: Dict[str, Any], type
         total_under += int(np.sum(dv < 0))
         total_over  += int(np.sum(dv > 0))
         med = float(np.median(dv))
+        mean_off_g = float(np.mean(dv))
+        rmse_g = float(math.sqrt(np.mean(np.square(dv))))
+        under_g = int(np.sum(dv < 0))
+        over_g  = int(np.sum(dv > 0))
         if med < -1e-6:
             gal_major_under += 1
         elif med > 1e-6:
@@ -238,13 +243,26 @@ def compute_per_type(ds, xi_name: str, gating: str, params: Dict[str, Any], type
             gal_ties += 1
         # type accumulators
         tcode: Optional[int] = type_map.get(g.name)
+        label = LABELS.get(tcode, None) if tcode is not None else None
+        per_gal_rows.append({
+            'galaxy': g.name,
+            'type_code': tcode,
+            'type_label': label,
+            'outer_points': int(mask.sum()),
+            'under_points': under_g,
+            'over_points': over_g,
+            'under_pct': (100.0*under_g/int(mask.sum())) if int(mask.sum()) else float('nan'),
+            'over_pct': (100.0*over_g/int(mask.sum())) if int(mask.sum()) else float('nan'),
+            'mean_off': mean_off_g,
+            'rmse': rmse_g,
+        })
         if tcode is None:
-            continue  # exclude from type-level stats but kept in overall
+            continue  # exclude from type-level stats but kept in overall and per-gal
         add_type_init(tcode)
         per_type_dv[tcode].extend([float(x) for x in dv])
         per_type_outer_counts[tcode] += int(mask.sum())
-        per_type_under[tcode] += int(np.sum(dv < 0))
-        per_type_over[tcode]  += int(np.sum(dv > 0))
+        per_type_under[tcode] += under_g
+        per_type_over[tcode]  += over_g
         if med < -1e-6:
             per_type_gal_major_under[tcode] += 1
         elif med > 1e-6:
@@ -336,11 +354,57 @@ def compute_per_type(ds, xi_name: str, gating: str, params: Dict[str, Any], type
         'rmse': float(math.sqrt(np.mean(np.square(excl_dv)))) if excl_dv else float('nan'),
     }
 
+    # outlier detection (per-galaxy)
+    # Use z-scores across all galaxies for rmse and |mean_off|; also provide top within-type outliers if needed.
+    df_g = pd.DataFrame(per_gal_rows)
+    outliers = {}
+    if len(df_g) >= 5:
+        # Standardize columns
+        for col in ['rmse', 'mean_off', 'under_pct']:
+            mu = float(df_g[col].mean()) if np.isfinite(df_g[col]).all() else float(np.nanmean(df_g[col]))
+            sd = float(df_g[col].std(ddof=0)) if np.isfinite(df_g[col]).all() else float(np.nanstd(df_g[col]))
+            sd = sd if sd>0 else 1.0
+            df_g[col + '_z'] = (df_g[col] - mu) / sd
+        # Overall outliers by rmse_z and |mean_off_z|
+        df_g['abs_mean_off_z'] = df_g['mean_off_z'].abs()
+        top_rmse = df_g.sort_values('rmse_z', ascending=False).head(15)
+        top_bias = df_g.sort_values('abs_mean_off_z', ascending=False).head(15)
+        outliers['top_rmse'] = top_rmse[['galaxy','type_code','type_label','outer_points','rmse','rmse_z']].to_dict(orient='records')
+        outliers['top_abs_bias'] = top_bias[['galaxy','type_code','type_label','outer_points','mean_off','abs_mean_off_z']].to_dict(orient='records')
+        # Nearest neighbor pairs in z-space using (rmse_z, mean_off_z, under_pct_z)
+        X = df_g[['rmse_z','mean_off_z','under_pct_z']].to_numpy()
+        names = df_g['galaxy'].tolist()
+        types = df_g['type_label'].tolist()
+        pairs: List[Dict[str, Any]] = []
+        n = len(names)
+        for i in range(n):
+            # find nearest j != i
+            dmin = float('inf'); jbest = -1
+            for j in range(n):
+                if i==j: continue
+                d = float(np.linalg.norm(X[i]-X[j]))
+                if d < dmin:
+                    dmin = d; jbest = j
+            if jbest >= 0:
+                pairs.append({'galaxy_a': names[i], 'type_a': types[i], 'galaxy_b': names[jbest], 'type_b': types[jbest], 'distance': dmin})
+        # Deduplicate by picking smallest distances and ignoring reverse duplicates
+        pairs = sorted(pairs, key=lambda r: r['distance'])
+        seen = set(); nn_pairs = []
+        for p in pairs:
+            key = tuple(sorted([p['galaxy_a'], p['galaxy_b']]))
+            if key in seen: continue
+            seen.add(key)
+            nn_pairs.append(p)
+            if len(nn_pairs) >= 15: break
+        outliers['nearest_pairs'] = nn_pairs
+    
     return {
         'overall': overall,
         'per_type': per_type_metrics,
         'flagged_types': flagged,
         'exclude_flagged': excl_metrics,
+        'per_galaxy': df_g.to_dict(orient='records'),
+        'outliers': outliers,
     }
 
 def main():
@@ -391,6 +455,10 @@ def main():
             })
         df = pd.DataFrame(rows).sort_values(['type_code'])
         df.to_csv(base + '.csv', index=False)
+        # CSV per galaxy
+        df_g = pd.DataFrame(res.get('per_galaxy', []))
+        if not df_g.empty:
+            df_g.to_csv(base + '_per_galaxy.csv', index=False)
         # Markdown report
         md_lines = []
         md_lines.append('# Under/Over by Hubble Type')
@@ -422,10 +490,39 @@ def main():
         md_lines.append(f"- Under: {ex['under_points']} ({ex['under_pct']:.2f}%)  Over: {ex['over_points']} ({ex['over_pct']:.2f}%)")
         md_lines.append(f"- Mean offset: {ex['mean_off']:.2f} km/s  RMSE: {ex['rmse']:.2f} km/s")
         md_lines.append('')
+        # Outliers and nearest pairs
+        outs = res.get('outliers', {}) or {}
+        top_rmse = outs.get('top_rmse', [])
+        top_bias = outs.get('top_abs_bias', [])
+        nn_pairs = outs.get('nearest_pairs', [])
+        if top_rmse:
+            md_lines.append('Top outlier galaxies by RMSE (z-score):')
+            md_lines.append('')
+            md_lines.append('| Galaxy | Type | outer_pts | RMSE | z |')
+            md_lines.append('|--------|------|-----------|------|---|')
+            for r in top_rmse[:10]:
+                md_lines.append(f"| {r['galaxy']} | {r.get('type_label','')} | {r['outer_points']} | {r['rmse']:.1f} | {r['rmse_z']:.2f} |")
+            md_lines.append('')
+        if top_bias:
+            md_lines.append('Top outlier galaxies by |mean offset| (z-score):')
+            md_lines.append('')
+            md_lines.append('| Galaxy | Type | outer_pts | mean_off | z |')
+            md_lines.append('|--------|------|-----------|----------|---|')
+            for r in top_bias[:10]:
+                md_lines.append(f"| {r['galaxy']} | {r.get('type_label','')} | {r['outer_points']} | {r['mean_off']:.1f} | {r['abs_mean_off_z']:.2f} |")
+            md_lines.append('')
+        if nn_pairs:
+            md_lines.append('Closest galaxy pairs by metric similarity (z-space on rmse, mean_off, under_pct):')
+            md_lines.append('')
+            md_lines.append('| Galaxy A | Type A | Galaxy B | Type B | distance |')
+            md_lines.append('|----------|--------|----------|--------|----------|')
+            for p in nn_pairs[:10]:
+                md_lines.append(f"| {p['galaxy_a']} | {p.get('type_a','')} | {p['galaxy_b']} | {p.get('type_b','')} | {p['distance']:.2f} |")
+            md_lines.append('')
         md_lines.append(f"Data sources: {os.path.join(args.outdir, 'leaderboard.csv')} and {os.path.join(args.outdir, tag, 'best_params.json')} ; types from {args.master}")
         with open(base + '.md', 'w', encoding='utf-8') as f:
             f.write('\n'.join(md_lines))
-        print(f"Saved: {base}.json/.csv/.md")
+        print(f"Saved: {base}.json/.csv/.md and {base}_per_galaxy.csv")
 
 if __name__ == '__main__':
     main()
