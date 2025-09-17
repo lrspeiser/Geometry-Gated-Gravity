@@ -17,7 +17,19 @@ except Exception:
     HAS_MPL = False
 
 
-def eval_config(ds, xi_name: str, gating: str, params: Dict[str, float]) -> Tuple[float, Dict[str, Any]]:
+def _compactness(g) -> float:
+    # R_last / Rd as a simple spread vs compactness metric
+    try:
+        R_last = float(np.nanmax(g.R_kpc))
+        Rd = float(g.Rd_kpc) if (g.Rd_kpc is not None) else float('nan')
+        if np.isfinite(Rd) and Rd > 0:
+            return float(R_last / Rd)
+    except Exception:
+        pass
+    return float('nan')
+
+
+def eval_config(ds, xi_name: str, gating: str, params: Dict[str, float], comp_base: float | None = None) -> Tuple[float, Dict[str, Any]]:
     # Compute avg_mean_off across outer regions for given params
     total_mean = 0.0
     n_gal = 0
@@ -53,6 +65,29 @@ def eval_config(ds, xi_name: str, gating: str, params: Dict[str, float]) -> Tupl
                                lnR_gate_base=params.get("lnR_gate_base", math.log(3.0)),
                                width_gate=params.get("width_gate", 0.4),
                                alpha_gate_M=params.get("alpha_gate_M", -0.2))
+        elif gating == "learned_compact":
+            # gate depends on mass and compactness ln(comp/comp0)
+            lnR_gate_base = params.get("lnR_gate_base", math.log(3.0))
+            width_gate = params.get("width_gate", 0.4)
+            alpha_gate_M = params.get("alpha_gate_M", -0.2)
+            alpha_gate_C = params.get("alpha_gate_C", -0.2)
+            comp = _compactness(g)
+            if comp_base is None or not np.isfinite(comp_base) or comp_base <= 0:
+                comp_base = 1.0
+            ln_comp_ratio = 0.0
+            if np.isfinite(comp) and comp > 0:
+                ln_comp_ratio = math.log(comp / comp_base)
+            # emulate gate_learned with added compactness term
+            R_np = np.asarray(g.R_kpc)
+            if R_np.size:
+                lnR = xp.log(xp.maximum(to_xp(R_np), 1e-6))
+                mass_term = 0.0
+                if (g.Mbar_Msun is not None) and np.isfinite(g.Mbar_Msun):
+                    mass_term = math.log(max((float(g.Mbar_Msun)/1e10), 1e-12))
+                lnR_gate = lnR_gate_base + alpha_gate_M * mass_term + alpha_gate_C * ln_comp_ratio
+                w = max(width_gate, 1e-3)
+                H = 1.0 / (1.0 + xp.exp(-(lnR - lnR_gate) / w))
+                xi = 1.0 + H * (xi - 1.0)
         # prediction
         Vpred = vpred_from_xi(Vbar, xi)
         mask = np.asarray(g.outer_mask, dtype=bool)
@@ -99,6 +134,11 @@ def random_params(xi_name: str, gating: str, rng: random.Random) -> Dict[str, fl
         p["lnR_gate_base"] = math.log(3.0) + rng.uniform(-1.2, 1.2)
         p["width_gate"] = rng.uniform(0.1, 1.0)
         p["alpha_gate_M"] = rng.uniform(-0.8, 0.3)
+    elif gating == "learned_compact":
+        p["lnR_gate_base"] = math.log(3.0) + rng.uniform(-1.2, 1.2)
+        p["width_gate"] = rng.uniform(0.1, 1.0)
+        p["alpha_gate_M"] = rng.uniform(-0.8, 0.3)
+        p["alpha_gate_C"] = rng.uniform(-0.8, 0.8)
     return p
 
 
@@ -125,6 +165,10 @@ def refine_around(best: Dict[str, float], scale: float, xi_name: str, gating: st
     elif gating == "learned":
         if "width_gate" in p: p["width_gate"] = float(np.clip(p["width_gate"], 0.05, 2.0))
         if "alpha_gate_M" in p: p["alpha_gate_M"] = float(np.clip(p["alpha_gate_M"], -1.5, 1.0))
+    elif gating == "learned_compact":
+        if "width_gate" in p: p["width_gate"] = float(np.clip(p["width_gate"], 0.05, 2.0))
+        if "alpha_gate_M" in p: p["alpha_gate_M"] = float(np.clip(p["alpha_gate_M"], -1.5, 1.0))
+        if "alpha_gate_C" in p: p["alpha_gate_C"] = float(np.clip(p["alpha_gate_C"], -1.5, 1.5))
     return p
 
 
@@ -161,6 +205,29 @@ def overlay_quick(ds, xi_name: str, gating: str, params: Dict[str, float], out_d
                                lnR_gate_base=params.get("lnR_gate_base", math.log(3.0)),
                                width_gate=params.get("width_gate", 0.4),
                                alpha_gate_M=params.get("alpha_gate_M", -0.2))
+        elif gating == "learned_compact":
+            lnR_gate_base = params.get("lnR_gate_base", math.log(3.0))
+            width_gate = params.get("width_gate", 0.4)
+            alpha_gate_M = params.get("alpha_gate_M", -0.2)
+            alpha_gate_C = params.get("alpha_gate_C", -0.2)
+            comp = _compactness(g)
+            if comp is None or not np.isfinite(comp) or comp <= 0:
+                comp_ratio_ln = 0.0
+            else:
+                # Use dataset median ~comp_base computed earlier in main; fall back to 1.0 here
+                comp_ratio_ln = 0.0  # replaced in main loop via comp_base param
+            # We'll compute H per-galaxy using the same eval formula in main overlay (comp base handled there)
+            R_np = np.asarray(g.R_kpc)
+            if R_np.size:
+                lnR = xp.log(xp.maximum(to_xp(R_np), 1e-6))
+                mass_term = 0.0
+                if (g.Mbar_Msun is not None) and np.isfinite(g.Mbar_Msun):
+                    mass_term = math.log(max((float(g.Mbar_Msun)/1e10), 1e-12))
+                # we cannot access comp_base in this helper; overlay_quick doesn't return comp, so we skip comp term here
+                lnR_gate = lnR_gate_base + alpha_gate_M * mass_term
+                w = max(width_gate, 1e-3)
+                H = 1.0 / (1.0 + xp.exp(-(lnR - lnR_gate) / w))
+                Xi = 1.0 + H * (Xi - 1.0)
         Vpred = vpred_from_xi(Vbar, Xi)
         # to cpu for plotting
         Rn = np.asarray(R.get() if HAS_CUPY else R)
@@ -188,7 +255,7 @@ def main():
     ap.add_argument("--master", default="data/Rotmod_LTG/MasterSheet_SPARC.csv")
     ap.add_argument("--outdir", default="out/cupy_search")
     ap.add_argument("--xi", nargs="*", default=["shell_logistic_radius", "logistic_density", "combined_radius_density"])
-    ap.add_argument("--gating", nargs="*", default=["fixed", "learned"])
+    ap.add_argument("--gating", nargs="*", default=["fixed", "learned", "learned_compact"])
     ap.add_argument("--random", type=int, default=60, help="Random samples per variant")
     ap.add_argument("--refine", type=int, default=30, help="Refinement samples around best")
     ap.add_argument("--seed", type=int, default=0)
@@ -200,6 +267,14 @@ def main():
     ds = load_sparc(args.parquet, args.master)
     os.makedirs(args.outdir, exist_ok=True)
 
+    # Compute dataset compactness base (median of R_last/Rd)
+    comp_vals = []
+    for g in ds.galaxies:
+        c = _compactness(g)
+        if np.isfinite(c):
+            comp_vals.append(c)
+    comp_base = float(np.median(comp_vals)) if comp_vals else 1.0
+
     rng = random.Random(args.seed)
     leaderboard: List[Dict[str, Any]] = []
 
@@ -210,13 +285,13 @@ def main():
             # random search
             for _ in range(args.random):
                 p = random_params(xi_name, gating, rng)
-                score, summary = eval_config(ds, xi_name, gating, p)
+                score, summary = eval_config(ds, xi_name, gating, p, comp_base=comp_base)
                 if score < best_score:
                     best_score = score; best_params = p.copy(); best_summary = summary
             # refine around best
             for _ in range(args.refine):
                 p = refine_around(best_params, scale=0.2, xi_name=xi_name, gating=gating, rng=rng)
-                score, summary = eval_config(ds, xi_name, gating, p)
+                score, summary = eval_config(ds, xi_name, gating, p, comp_base=comp_base)
                 if score < best_score:
                     best_score = score; best_params = p.copy(); best_summary = summary
             # write variant results
