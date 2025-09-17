@@ -1,0 +1,16 @@
+{
+  "top_variant": {
+    "xi": "shell_logistic_radius",
+    "gating": "fixed"
+  },
+  "total_outer_points": 1167,
+  "under_points": 679,
+  "over_points": 488,
+  "under_pct": 58.18337617823479,
+  "over_pct": 41.81662382176521,
+  "gal_major_under": 88,
+  "gal_major_over": 55,
+  "gal_ties": 0,
+  "compactness_base": 1.0,
+  "generated_at": "2025-09-17T09:00:10"
+}
