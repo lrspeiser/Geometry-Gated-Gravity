@@ -115,17 +115,17 @@ def fit_hierarchical(dataset, xi_name="shell_logistic_radius", rng_key=0,
         Vpred = Vbar_adj * jnp.sqrt(jnp.clip(xi, 1.0, 100.0))
 
         sigma_eff = jnp.sqrt(jnp.square(eV) + jnp.square(sigma_int_g)[:, None])
-        # Use a factor with masked log-probabilities to avoid broadcast/plate issues
-        Vpred_f = Vpred.reshape(-1)
-        Vobs_f = Vobs.reshape(-1)
-        sigma_f = sigma_eff.reshape(-1)
-        mask_f = data_mask.reshape(-1)
-        idx = jnp.nonzero(mask_f, size=None, fill_value=0)[0]
-        Vpred_sel = Vpred_f[idx]
-        Vobs_sel = Vobs_f[idx]
-        sigma_sel = sigma_f[idx]
-        logp = dist.StudentT(nu, Vpred_sel, sigma_sel).log_prob(Vobs_sel)
-        numpyro.factor("obs_logp", jnp.sum(logp))
+        # Sanitize arrays to avoid NaNs/Inf in distribution parameters outside the mask
+        Vpred = jnp.where(data_mask, Vpred, 0.0)
+        Vobs_c = jnp.where(data_mask, jnp.nan_to_num(Vobs, nan=0.0, posinf=0.0, neginf=0.0), 0.0)
+        sigma_eff = jnp.nan_to_num(sigma_eff, nan=1.0, posinf=1e6, neginf=1e6)
+        sigma_eff = jnp.where(data_mask, sigma_eff, 1.0)
+        # Use masked observation to avoid dynamic indexing under JAX transformations
+        numpyro.sample(
+            "obs",
+            dist.StudentT(nu, Vpred, sigma_eff).mask(data_mask),
+            obs=Vobs_c,
+        )
 
     # Backend already selected above before importing jax
 
