@@ -6,7 +6,7 @@ from typing import Dict, Any, List, Tuple
 
 from .data import load_sparc
 from .metrics import summarize_outer
-from .cupy_utils import xp, HAS_CUPY, to_xp, xi_shell_logistic_radius, xi_logistic_density, xi_combined_radius_density, gate_fixed, gate_learned, vpred_from_xi
+from .cupy_utils import xp, HAS_CUPY, to_xp, xi_shell_logistic_radius, xi_logistic_density, xi_combined_radius_density, xi_combined_radius_density_gamma, gate_fixed, gate_learned, vpred_from_xi
 
 try:
     import matplotlib
@@ -51,6 +51,12 @@ def eval_config(ds, xi_name: str, gating: str, params: Dict[str, float], comp_ba
                                             xi_cap=params.get("xi_cap", 6.0),
                                             xi_max_r=params.get("xi_max_r", 3.0), lnR0_base=params.get("lnR0_base", math.log(3.0)), width=params.get("width", 0.6), alpha_M=params.get("alpha_M", -0.2),
                                             xi_max_d=params.get("xi_max_d", 3.0), lnSigma_c=params.get("lnSigma_c", math.log(10.0)), width_sigma=params.get("width_sigma", 0.6), n_sigma=params.get("n_sigma", 1.0))
+        elif xi_name == "combined_radius_density_gamma":
+            xi = xi_combined_radius_density_gamma(R, Sigma, Mbar,
+                                                  xi_cap=params.get("xi_cap", 6.0),
+                                                  xi_max_r=params.get("xi_max_r", 3.0), lnR0_base=params.get("lnR0_base", math.log(3.0)), width=params.get("width", 0.6), alpha_M=params.get("alpha_M", -0.2),
+                                                  xi_max_d=params.get("xi_max_d", 3.0), lnSigma_c=params.get("lnSigma_c", math.log(10.0)), width_sigma=params.get("width_sigma", 0.6), n_sigma=params.get("n_sigma", 1.0),
+                                                  gamma=params.get("gamma", 1.0))
         else:
             xi = xi_shell_logistic_radius(R, Mbar,
                                           xi_max=params.get("xi_max", 3.0),
@@ -97,8 +103,17 @@ def eval_config(ds, xi_name: str, gating: str, params: Dict[str, float], comp_ba
         total_mean += float(res["mean_off"])  # per-galaxy avg percent off in outer
         total_outer_pts += int(mask.sum())
         n_gal += 1
+        # Collect additional metrics
+        avg_rmse = avg_pct = 0.0
+        # For simplicity, accumulate via auxiliary fields on first gal
+        if 'sum_rmse' not in locals():
+            sum_rmse = 0.0; sum_pct = 0.0
+        sum_rmse += float(res.get("rmse", 0.0))
+        sum_pct += float(res.get("pct_close_90", 0.0))
     avg_mean_off = total_mean / max(n_gal, 1)
-    return avg_mean_off, {"avg_mean_off": avg_mean_off, "galaxies": n_gal, "outer_points": total_outer_pts}
+    avg_rmse = sum_rmse / max(n_gal, 1)
+    avg_pct_close_90 = sum_pct / max(n_gal, 1)
+    return avg_mean_off, {"avg_mean_off": avg_mean_off, "avg_rmse": avg_rmse, "avg_pct_close_90": avg_pct_close_90, "galaxies": n_gal, "outer_points": total_outer_pts}
 
 
 def random_params(xi_name: str, gating: str, rng: random.Random) -> Dict[str, float]:
@@ -122,6 +137,10 @@ def random_params(xi_name: str, gating: str, rng: random.Random) -> Dict[str, fl
         p["n_sigma"] = rng.uniform(0.5, 5.0)
         # cap
         p["xi_cap"] = rng.uniform(2.0, 10.0)
+    elif xi_name == "combined_radius_density_gamma":
+        # same as combined, plus gamma
+        p = random_params("combined_radius_density", gating, rng)
+        p["gamma"] = rng.uniform(0.3, 3.0)
     else:
         p["lnR0_base"] = math.log(3.0) + rng.uniform(-1.2, 1.2)
         p["width"] = rng.uniform(0.1, 1.5)
@@ -157,6 +176,9 @@ def refine_around(best: Dict[str, float], scale: float, xi_name: str, gating: st
         if "width_sigma" in p: p["width_sigma"] = float(np.clip(p["width_sigma"], 0.05, 2.0))
         if "n_sigma" in p: p["n_sigma"] = float(np.clip(p["n_sigma"], 0.3, 8.0))
         if "xi_cap" in p: p["xi_cap"] = float(np.clip(p["xi_cap"], 1.5, 12.0))
+    elif xi_name == "combined_radius_density_gamma":
+        p = refine_around(p, 0.0, xi_name="combined_radius_density", gating=gating, rng=rng)  # reuse combined clamps
+        if "gamma" in p: p["gamma"] = float(np.clip(p["gamma"], 0.1, 5.0))
     else:
         if "width" in p: p["width"] = float(np.clip(p["width"], 0.05, 2.0))
     if gating == "fixed":
@@ -192,6 +214,12 @@ def overlay_quick(ds, xi_name: str, gating: str, params: Dict[str, float], out_d
                                             xi_cap=params.get("xi_cap", 6.0),
                                             xi_max_r=params.get("xi_max_r", 3.0), lnR0_base=params.get("lnR0_base", math.log(3.0)), width=params.get("width", 0.6), alpha_M=params.get("alpha_M", -0.2),
                                             xi_max_d=params.get("xi_max_d", 3.0), lnSigma_c=params.get("lnSigma_c", math.log(10.0)), width_sigma=params.get("width_sigma", 0.6), n_sigma=params.get("n_sigma", 1.0))
+        elif xi_name == "combined_radius_density_gamma":
+            Xi = xi_combined_radius_density_gamma(R, g.Sigma_bar, Mbar,
+                                                  xi_cap=params.get("xi_cap", 6.0),
+                                                  xi_max_r=params.get("xi_max_r", 3.0), lnR0_base=params.get("lnR0_base", math.log(3.0)), width=params.get("width", 0.6), alpha_M=params.get("alpha_M", -0.2),
+                                                  xi_max_d=params.get("xi_max_d", 3.0), lnSigma_c=params.get("lnSigma_c", math.log(10.0)), width_sigma=params.get("width_sigma", 0.6), n_sigma=params.get("n_sigma", 1.0),
+                                                  gamma=params.get("gamma", 1.0))
         else:
             Xi = xi_shell_logistic_radius(R, Mbar,
                                           xi_max=params.get("xi_max", 3.0),
@@ -254,7 +282,7 @@ def main():
     ap.add_argument("--parquet", default="data/sparc_rotmod_ltg.parquet")
     ap.add_argument("--master", default="data/Rotmod_LTG/MasterSheet_SPARC.csv")
     ap.add_argument("--outdir", default="out/cupy_search")
-    ap.add_argument("--xi", nargs="*", default=["shell_logistic_radius", "logistic_density", "combined_radius_density"])
+    ap.add_argument("--xi", nargs="*", default=["shell_logistic_radius", "logistic_density", "combined_radius_density", "combined_radius_density_gamma"])
     ap.add_argument("--gating", nargs="*", default=["fixed", "learned", "learned_compact"])
     ap.add_argument("--random", type=int, default=60, help="Random samples per variant")
     ap.add_argument("--refine", type=int, default=30, help="Refinement samples around best")

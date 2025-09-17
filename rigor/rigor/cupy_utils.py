@@ -83,6 +83,23 @@ def xi_combined_radius_density(R_kpc, Sigma_bar, Mbar,
     return xp.minimum(prod, xi_cap)
 
 
+def xi_combined_radius_density_gamma(R_kpc, Sigma_bar, Mbar,
+                                     *, xi_cap=6.0,
+                                        # radius params
+                                        xi_max_r=3.0, lnR0_base=math.log(3.0), width=0.6, alpha_M=-0.2,
+                                        # density params
+                                        xi_max_d=3.0, lnSigma_c=math.log(10.0), width_sigma=0.6, n_sigma=1.0,
+                                        gamma=1.0,
+                                        Mref=1e10):
+    """Combined xi with density exponent gamma: xi = min(xi_r * (xi_d^gamma), xi_cap)."""
+    xi_r = xi_shell_logistic_radius(R_kpc, Mbar,
+                                    xi_max=xi_max_r, lnR0_base=lnR0_base, width=width, alpha_M=alpha_M, Mref=Mref)
+    xi_d = xi_logistic_density(R_kpc, Sigma_bar, Mbar,
+                               xi_max=xi_max_d, lnSigma_c=lnSigma_c, width_sigma=width_sigma, n_sigma=n_sigma)
+    prod = xp.asarray(xi_r) * xp.power(xp.asarray(xi_d), gamma)
+    return xp.minimum(prod, xi_cap)
+
+
 def vpred_from_xi(Vbar_kms, xi):
     Vbar = xp.asarray(Vbar_kms)
     xi = xp.asarray(xi)
