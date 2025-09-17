@@ -6,7 +6,8 @@ import numpy as np
 
 def fit_hierarchical(dataset, xi_name="shell_logistic_radius", rng_key=0,
                      use_outer_only=False, num_warmup=1500, num_samples=1500, num_chains=4,
-                     target_accept=0.8, platform="gpu", save_dir="results_numpyro"):
+                     target_accept=0.8, platform="gpu", save_dir="results_numpyro",
+                     gating_mode: str = "none", gate_R_kpc: float = 3.0, gate_width: float = 0.4):
 
     # Select backend BEFORE importing jax
     if platform == "gpu":
@@ -29,6 +30,7 @@ def fit_hierarchical(dataset, xi_name="shell_logistic_radius", rng_key=0,
     from numpyro import distributions as dist
     from numpyro.infer import MCMC, NUTS
     from .xi import XI_REGISTRY, shell_logistic_radius, logistic_density
+    from jax.nn import sigmoid
 
     if xi_name not in XI_REGISTRY:
         raise KeyError(f"Unknown xi_name '{xi_name}'. Available: {list(XI_REGISTRY)}")
@@ -65,6 +67,7 @@ def fit_hierarchical(dataset, xi_name="shell_logistic_radius", rng_key=0,
     R = jnp.asarray(R); Vobs=jnp.asarray(Vobs); eV=jnp.asarray(eV); Vbar=jnp.asarray(Vbar); Sigma=jnp.asarray(Sigma)
     mask_valid = jnp.asarray(mask_valid); mask_outer=jnp.asarray(mask_outer)
     Mbar = jnp.asarray(Mbar)
+    Mref = 1e10
 
     data_mask = mask_valid & (mask_outer if use_outer_only else jnp.ones_like(mask_valid, dtype=bool))
 
@@ -101,7 +104,7 @@ def fit_hierarchical(dataset, xi_name="shell_logistic_radius", rng_key=0,
             "lnSigma_c": lnSigma_c,
             "width_sigma": width_sigma,
             "n_sigma": n_sigma,
-            "Mref": 1e10,
+            "Mref": Mref,
         }
 
         # Compute xi for each galaxy row with vectorized calls
@@ -112,6 +115,22 @@ def fit_hierarchical(dataset, xi_name="shell_logistic_radius", rng_key=0,
             return xi
 
         xi = vmap(xi_for_g)(jnp.arange(G))
+        # Optional gating to clamp inner region to GR (xi->1) below a threshold radius
+        lnR = jnp.log(jnp.maximum(R, 1e-6))
+        if gating_mode == "fixed":
+            lnR_gate = jnp.log(jnp.maximum(gate_R_kpc, 1e-6))
+            H = sigmoid((lnR - lnR_gate) / jnp.maximum(gate_width, 1e-3))
+            xi = 1.0 + H * (xi - 1.0)
+        elif gating_mode == "learned":
+            lnR_gate_base = numpyro.sample("lnR_gate_base", dist.Normal(jnp.log(3.0), 1.0))
+            width_gate = numpyro.sample("width_gate", dist.TruncatedNormal(0.4, 0.3, low=0.05, high=2.0))
+            alpha_gate_M = numpyro.sample("alpha_gate_M", dist.Normal(-0.2, 0.5))
+            sigma_Rgate = numpyro.sample("sigma_Rgate", dist.HalfCauchy(0.5))
+            with numpyro.plate("galaxies", G):
+                dlnR_gate_g = numpyro.sample("dlnR_gate_g", dist.Normal(0.0, sigma_Rgate))
+            lnR_gate_g = lnR_gate_base + alpha_gate_M * jnp.log(jnp.maximum(Mbar / Mref, 1e-12)) + dlnR_gate_g[:, None]
+            H = sigmoid((lnR - lnR_gate_g) / jnp.maximum(width_gate, 1e-3))
+            xi = 1.0 + H * (xi - 1.0)
         Vpred = Vbar_adj * jnp.sqrt(jnp.clip(xi, 1.0, 100.0))
 
         sigma_eff = jnp.sqrt(jnp.square(eV) + jnp.square(sigma_int_g)[:, None])

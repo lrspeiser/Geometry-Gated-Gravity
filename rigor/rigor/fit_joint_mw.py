@@ -47,14 +47,22 @@ def main():
         g = bin_mw_stars(df)
     # Build joint dataset
     joint = Dataset(galaxies = ds.galaxies + [g], meta={**ds.meta, "joint_with_mw": True})
-    post, names = fit_hierarchical(joint, xi_name=args.xi, rng_key=args.rng, use_outer_only=True,
-                                   num_samples=args.samples, num_warmup=args.warmup, num_chains=args.chains,
-                                   platform=args.platform, save_dir=args.outdir)
-    # Save overlays including MW (last entry)
-    import os
-    os.makedirs(os.path.join(args.outdir, "figs"), exist_ok=True)
-    for idx, gal in enumerate(joint.galaxies[:6] + [joint.galaxies[-1]]):
-        overlay_with_posterior(gal, post, xi_name=args.xi, out_path=os.path.join(args.outdir, "figs", f"{gal.name}.png"), gal_index=idx)
+    # Run three variants: none, fixed gate, learned gate
+    variants = [
+        ("none", {}),
+        ("fixed", {"gate_R_kpc": 3.0, "gate_width": 0.4}),
+        ("learned", {}),
+    ]
+    for mode, opts in variants:
+        subdir = os.path.join(args.outdir, f"gating_{mode}")
+        post, names = fit_hierarchical(joint, xi_name=args.xi, rng_key=args.rng, use_outer_only=True,
+                                       num_samples=args.samples, num_warmup=args.warmup, num_chains=args.chains,
+                                       platform=args.platform, save_dir=subdir,
+                                       gating_mode=mode, **({"gate_R_kpc": opts.get("gate_R_kpc", 3.0), "gate_width": opts.get("gate_width", 0.4)}))
+        figs = os.path.join(subdir, "figs")
+        os.makedirs(figs, exist_ok=True)
+        for idx, gal in enumerate(joint.galaxies[:6] + [joint.galaxies[-1]]):
+            overlay_with_posterior(gal, post, xi_name=args.xi, out_path=os.path.join(figs, f"{gal.name}.png"), gal_index=idx, title_suffix=f"gate={mode}")
     print("Done. Joint results in", args.outdir)
 
 if __name__ == "__main__":

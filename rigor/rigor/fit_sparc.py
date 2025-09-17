@@ -29,6 +29,10 @@ def main():
     ap.add_argument("--k_Rd", type=float, default=3.0)
     ap.add_argument("--xi", default="shell_logistic_radius")
     ap.add_argument("--use_outer_only", action="store_true")
+    ap.add_argument("--gating_mode", choices=["none","fixed","learned"], default="none",
+                    help="Inner gating mode: none (smooth xi), fixed (clamp inner R<R_gate), learned (learn per-galaxy R_gate).")
+    ap.add_argument("--gate_R_kpc", type=float, default=3.0, help="Fixed gating radius (kpc) when --gating_mode=fixed")
+    ap.add_argument("--gate_width", type=float, default=0.4, help="Logistic width in ln R for gating transition")
     ap.add_argument("--outdir", default="out/xi_shell")
     ap.add_argument("--platform", choices=["gpu","cpu","mps"], default="gpu")
     ap.add_argument("--rng", type=int, default=0)
@@ -42,7 +46,8 @@ def main():
 
     posterior, names = fit_hierarchical(ds, xi_name=args.xi, rng_key=args.rng, use_outer_only=args.use_outer_only,
                                         num_samples=args.samples, num_warmup=args.warmup, num_chains=args.chains,
-                                        platform=("gpu" if args.platform in ["gpu","mps"] else "cpu"), save_dir=args.outdir)
+                                        platform=("gpu" if args.platform in ["gpu","mps"] else "cpu"), save_dir=args.outdir,
+                                        gating_mode=args.gating_mode, gate_R_kpc=args.gate_R_kpc, gate_width=args.gate_width)
     # Save a couple of overlays
     os.makedirs(os.path.join(args.outdir, "figs"), exist_ok=True)
     for g in ds.galaxies[:6]:

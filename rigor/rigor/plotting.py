@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from .xi import shell_logistic_radius, logistic_density
 from .data import load_sparc
 
-def overlay_with_posterior(gal, posterior, xi_name="shell_logistic_radius", out_path=None, gal_index=None):
+def overlay_with_posterior(gal, posterior, xi_name="shell_logistic_radius", out_path=None, gal_index=None, title_suffix=None):
     post = {k: np.asarray(v) for k,v in posterior.items()}
     nsamp_all = len(post[list(post.keys())[0]])
     nsamp = min(400, nsamp_all)
@@ -45,7 +45,8 @@ def overlay_with_posterior(gal, posterior, xi_name="shell_logistic_radius", out_
         plt.axvline(rb, ls=":", color="k", alpha=0.6)
         plt.text(rb, 0.98*max(np.nanmax(gal.Vobs_kms), np.nanmax(med)), "outer boundary", rotation=90, va="top", ha="right", fontsize=8, alpha=0.7)
     plt.xlabel("Radius R (kpc)"); plt.ylabel("Speed (km/s)")
-    plt.title(gal.name)
+    ttl = gal.name if not title_suffix else f"{gal.name} — {title_suffix}"
+    plt.title(ttl)
     plt.legend()
     if out_path:
         os.makedirs(os.path.dirname(out_path), exist_ok=True)
