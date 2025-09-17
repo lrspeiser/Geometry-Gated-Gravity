@@ -140,18 +140,16 @@ def compute_G_enhanced(R_kpc, M_bary, boundary_kpc, shell_params: dict) -> float
     Concept:
     - Inner region (R < 0.5*boundary): G = 1.0 (Newtonian)
     - Middle region (0.5*boundary <= R < boundary): smooth cosine transition towards an enhanced value
-    - Outer region (R >= boundary): logarithmic growth that saturates at a maximum
+    - Outer region (R >= boundary): gentle logarithmic growth (NO exterior cap applied).
 
-    Energy budget caps by mass (to avoid unphysical boosts):
-    - M_bary < 1e9 Msun: cap G <= 1.5
-    - M_bary < 5e9 Msun: cap G <= 2.5
+    Note: We deliberately avoid any exterior caps on G in the outer region to prevent
+    systematic underprediction. Inner clamp (G=1) and smooth transition are preserved.
 
     Parameters (from shell_params with defaults):
     - M_ref (default 1e10 Msun)
     - mass_exp (default -0.35) — negative exponent boosts lower-mass galaxies relatively more
     - inner_enhance (default 1.0)
     - middle_enhance (default 2.0)
-    - max_enhance (default 5.0)
 
     Returns
     - float G_pred at this radius. If inputs are invalid, returns NaN to match pipeline semantics for missing masses.
@@ -177,7 +175,8 @@ def compute_G_enhanced(R_kpc, M_bary, boundary_kpc, shell_params: dict) -> float
     mass_exp = float(shell_params.get('mass_exp', -0.35))
     inner_enhance = float(shell_params.get('inner_enhance', 1.0))
     middle_enhance = float(shell_params.get('middle_enhance', 2.0))
-    max_enhance = float(shell_params.get('max_enhance', 5.0))
+    # max_enhance removed (no exterior cap)
+    _ = shell_params.get('max_enhance', None)
 
     if not (np.isfinite(M_ref) and M_ref > 0.0):
         M_ref = 1e10
@@ -202,13 +201,8 @@ def compute_G_enhanced(R_kpc, M_bary, boundary_kpc, shell_params: dict) -> float
     else:
         excess = max((R - outer_boundary) / B, 0.0)
         growth = 1.0 + 0.5 * math.log10(1.0 + excess)
-        G = min(max_enhance, middle_enhance * growth * mass_factor)
-
-    # Energy-budget caps for dwarfs
-    if Mb < 1e9:
-        G = min(G, 1.5)
-    elif Mb < 5e9:
-        G = min(G, 2.5)
+        # No exterior cap; allow gentle log growth
+        G = middle_enhance * growth * mass_factor
 
     return float(G)
 

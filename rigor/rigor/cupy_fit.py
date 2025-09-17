@@ -48,12 +48,12 @@ def eval_config(ds, xi_name: str, gating: str, params: Dict[str, float], comp_ba
                                      n_sigma=params.get("n_sigma", 1.0))
         elif xi_name == "combined_radius_density":
             xi = xi_combined_radius_density(R, Sigma, Mbar,
-                                            xi_cap=params.get("xi_cap", 6.0),
+                                            xi_cap=params.get("xi_cap", None),
                                             xi_max_r=params.get("xi_max_r", 3.0), lnR0_base=params.get("lnR0_base", math.log(3.0)), width=params.get("width", 0.6), alpha_M=params.get("alpha_M", -0.2),
                                             xi_max_d=params.get("xi_max_d", 3.0), lnSigma_c=params.get("lnSigma_c", math.log(10.0)), width_sigma=params.get("width_sigma", 0.6), n_sigma=params.get("n_sigma", 1.0))
         elif xi_name == "combined_radius_density_gamma":
             xi = xi_combined_radius_density_gamma(R, Sigma, Mbar,
-                                                  xi_cap=params.get("xi_cap", 6.0),
+                                                  xi_cap=params.get("xi_cap", None),
                                                   xi_max_r=params.get("xi_max_r", 3.0), lnR0_base=params.get("lnR0_base", math.log(3.0)), width=params.get("width", 0.6), alpha_M=params.get("alpha_M", -0.2),
                                                   xi_max_d=params.get("xi_max_d", 3.0), lnSigma_c=params.get("lnSigma_c", math.log(10.0)), width_sigma=params.get("width_sigma", 0.6), n_sigma=params.get("n_sigma", 1.0),
                                                   gamma=params.get("gamma", 1.0))
@@ -136,7 +136,8 @@ def random_params(xi_name: str, gating: str, rng: random.Random) -> Dict[str, fl
         p["width_sigma"] = rng.uniform(0.1, 1.5)
         p["n_sigma"] = rng.uniform(0.5, 5.0)
         # cap
-        p["xi_cap"] = rng.uniform(2.0, 10.0)
+        # no exterior cap by default; allow param if provided
+        # p["xi_cap"] can be set externally if needed
     elif xi_name == "combined_radius_density_gamma":
         # same as combined, plus gamma
         p = random_params("combined_radius_density", gating, rng)
@@ -175,7 +176,7 @@ def refine_around(best: Dict[str, float], scale: float, xi_name: str, gating: st
         if "width" in p: p["width"] = float(np.clip(p["width"], 0.05, 2.0))
         if "width_sigma" in p: p["width_sigma"] = float(np.clip(p["width_sigma"], 0.05, 2.0))
         if "n_sigma" in p: p["n_sigma"] = float(np.clip(p["n_sigma"], 0.3, 8.0))
-        if "xi_cap" in p: p["xi_cap"] = float(np.clip(p["xi_cap"], 1.5, 12.0))
+        # no default clamping for xi_cap (exterior cap removed)
     elif xi_name == "combined_radius_density_gamma":
         p = refine_around(p, 0.0, xi_name="combined_radius_density", gating=gating, rng=rng)  # reuse combined clamps
         if "gamma" in p: p["gamma"] = float(np.clip(p["gamma"], 0.1, 5.0))
@@ -211,12 +212,12 @@ def overlay_quick(ds, xi_name: str, gating: str, params: Dict[str, float], out_d
                                      n_sigma=params.get("n_sigma", 1.0))
         elif xi_name == "combined_radius_density":
             Xi = xi_combined_radius_density(R, g.Sigma_bar, Mbar,
-                                            xi_cap=params.get("xi_cap", 6.0),
+                                            xi_cap=params.get("xi_cap", None),
                                             xi_max_r=params.get("xi_max_r", 3.0), lnR0_base=params.get("lnR0_base", math.log(3.0)), width=params.get("width", 0.6), alpha_M=params.get("alpha_M", -0.2),
                                             xi_max_d=params.get("xi_max_d", 3.0), lnSigma_c=params.get("lnSigma_c", math.log(10.0)), width_sigma=params.get("width_sigma", 0.6), n_sigma=params.get("n_sigma", 1.0))
         elif xi_name == "combined_radius_density_gamma":
             Xi = xi_combined_radius_density_gamma(R, g.Sigma_bar, Mbar,
-                                                  xi_cap=params.get("xi_cap", 6.0),
+                                                  xi_cap=params.get("xi_cap", None),
                                                   xi_max_r=params.get("xi_max_r", 3.0), lnR0_base=params.get("lnR0_base", math.log(3.0)), width=params.get("width", 0.6), alpha_M=params.get("alpha_M", -0.2),
                                                   xi_max_d=params.get("xi_max_d", 3.0), lnSigma_c=params.get("lnSigma_c", math.log(10.0)), width_sigma=params.get("width_sigma", 0.6), n_sigma=params.get("n_sigma", 1.0),
                                                   gamma=params.get("gamma", 1.0))

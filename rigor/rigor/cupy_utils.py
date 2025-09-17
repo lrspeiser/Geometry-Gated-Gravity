@@ -65,7 +65,7 @@ def gate_learned(xi, R_kpc, Mbar, *, lnR_gate_base=math.log(3.0), width_gate=0.4
 
 
 def xi_combined_radius_density(R_kpc, Sigma_bar, Mbar,
-                                *, xi_cap=6.0,
+                                *, xi_cap=None,
                                    # radius params
                                    xi_max_r=3.0, lnR0_base=math.log(3.0), width=0.6, alpha_M=-0.2,
                                    # density params
@@ -80,11 +80,13 @@ def xi_combined_radius_density(R_kpc, Sigma_bar, Mbar,
     xi_d = xi_logistic_density(R_kpc, Sigma_bar, Mbar,
                                xi_max=xi_max_d, lnSigma_c=lnSigma_c, width_sigma=width_sigma, n_sigma=n_sigma)
     prod = xp.asarray(xi_r) * xp.asarray(xi_d)
-    return xp.minimum(prod, xi_cap)
+    if xi_cap is not None and float(xi_cap) > 0:
+        return xp.minimum(prod, xi_cap)
+    return prod
 
 
 def xi_combined_radius_density_gamma(R_kpc, Sigma_bar, Mbar,
-                                     *, xi_cap=6.0,
+                                     *, xi_cap=None,
                                         # radius params
                                         xi_max_r=3.0, lnR0_base=math.log(3.0), width=0.6, alpha_M=-0.2,
                                         # density params
@@ -97,7 +99,9 @@ def xi_combined_radius_density_gamma(R_kpc, Sigma_bar, Mbar,
     xi_d = xi_logistic_density(R_kpc, Sigma_bar, Mbar,
                                xi_max=xi_max_d, lnSigma_c=lnSigma_c, width_sigma=width_sigma, n_sigma=n_sigma)
     prod = xp.asarray(xi_r) * xp.power(xp.asarray(xi_d), gamma)
-    return xp.minimum(prod, xi_cap)
+    if xi_cap is not None and float(xi_cap) > 0:
+        return xp.minimum(prod, xi_cap)
+    return prod
 
 
 def vpred_from_xi(Vbar_kms, xi):
