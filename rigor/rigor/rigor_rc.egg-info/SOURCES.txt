@@ -1,0 +1,7 @@
+README.md
+pyproject.toml
+rigor/rigor_rc.egg-info/PKG-INFO
+rigor/rigor_rc.egg-info/SOURCES.txt
+rigor/rigor_rc.egg-info/dependency_links.txt
+rigor/rigor_rc.egg-info/requires.txt
+rigor/rigor_rc.egg-info/top_level.txt

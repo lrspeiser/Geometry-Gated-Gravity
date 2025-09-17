@@ -8,6 +8,21 @@ def fit_hierarchical(dataset, xi_name="shell_logistic_radius", rng_key=0,
                      use_outer_only=False, num_warmup=1500, num_samples=1500, num_chains=4,
                      target_accept=0.8, platform="gpu", save_dir="results_numpyro"):
 
+    # Select backend BEFORE importing jax
+    if platform == "gpu":
+        os.environ["JAX_PLATFORMS"] = "cuda"
+        os.environ.setdefault("XLA_PYTHON_CLIENT_PREALLOCATE", "false")
+        os.environ.setdefault("JAX_ENABLE_X64", "true")
+    elif platform == "mps":
+        os.environ["JAX_PLATFORMS"] = "metal"
+        os.environ.setdefault("XLA_PYTHON_CLIENT_PREALLOCATE", "false")
+        os.environ.setdefault("JAX_ENABLE_X64", "true")
+    else:
+        # Force CPU to avoid accidental Metal selection when jax-metal is installed
+        os.environ["JAX_PLATFORMS"] = "cpu"
+        os.environ.setdefault("XLA_PYTHON_CLIENT_PREALLOCATE", "false")
+        os.environ.setdefault("JAX_ENABLE_X64", "true")
+
     import jax, jax.numpy as jnp
     from jax import random, vmap
     import numpyro
@@ -69,43 +84,50 @@ def fit_hierarchical(dataset, xi_name="shell_logistic_radius", rng_key=0,
         nu = numpyro.sample("nu", dist.TruncatedNormal(6.0, 3.0, low=2.0, high=50.0))
 
         G = R.shape[0]; J = R.shape[1]
+        # Per-galaxy nuisance parameters
         with numpyro.plate("galaxies", G):
             dlogML_g = numpyro.sample("dlogML_g", dist.Normal(0.0, sigma_ML))
             sigma_int_g = numpyro.sample("sigma_int_g", dist.HalfCauchy(5.0))
 
-            Vbar_adj = Vbar * jnp.exp(0.5 * dlogML_g)[:,None]
+        # Adjusted baryonic speed per galaxy (broadcast over radii)
+        Vbar_adj = Vbar * jnp.exp(0.5 * dlogML_g)[:, None]
 
-            # xi parameters dict (all jnp scalars)
-            params = {
-                "xi_max": xi_max,
-                "lnR0_base": lnR0_base,
-                "width": width,
-                "alpha_M": alpha_M,
-                "lnSigma_c": lnSigma_c,
-                "width_sigma": width_sigma,
-                "n_sigma": n_sigma,
-                "Mref": 1e10,
-            }
+        # xi parameters dict (all jnp scalars)
+        params = {
+            "xi_max": xi_max,
+            "lnR0_base": lnR0_base,
+            "width": width,
+            "alpha_M": alpha_M,
+            "lnSigma_c": lnSigma_c,
+            "width_sigma": width_sigma,
+            "n_sigma": n_sigma,
+            "Mref": 1e10,
+        }
 
-            # Compute xi for each galaxy row with vectorized calls
-            def xi_for_g(g):
-                xi_r = shell_logistic_radius(R[g], None, Mbar[g], params)
-                xi_d = logistic_density(R[g], Sigma[g], Mbar[g], params)
-                xi = jnp.minimum(xi_r * xi_d, 10.0)
-                return xi
+        # Compute xi for each galaxy row with vectorized calls
+        def xi_for_g(g):
+            xi_r = shell_logistic_radius(R[g], None, Mbar[g], params)
+            xi_d = logistic_density(R[g], Sigma[g], Mbar[g], params)
+            xi = jnp.minimum(xi_r * xi_d, 10.0)
+            return xi
 
-            xi = vmap(xi_for_g)(jnp.arange(G))
-            Vpred = Vbar_adj * jnp.sqrt(jnp.clip(xi, 1.0, 100.0))
+        xi = vmap(xi_for_g)(jnp.arange(G))
+        Vpred = Vbar_adj * jnp.sqrt(jnp.clip(xi, 1.0, 100.0))
 
-            sigma_eff = jnp.sqrt(jnp.square(eV) + jnp.square(sigma_int_g)[:,None])
-            numpyro.sample("obs", dist.StudentT(nu, Vpred, sigma_eff).mask(data_mask), obs=Vobs)
+        sigma_eff = jnp.sqrt(jnp.square(eV) + jnp.square(sigma_int_g)[:, None])
+        # Use a factor with masked log-probabilities to avoid broadcast/plate issues
+        Vpred_f = Vpred.reshape(-1)
+        Vobs_f = Vobs.reshape(-1)
+        sigma_f = sigma_eff.reshape(-1)
+        mask_f = data_mask.reshape(-1)
+        idx = jnp.nonzero(mask_f, size=None, fill_value=0)[0]
+        Vpred_sel = Vpred_f[idx]
+        Vobs_sel = Vobs_f[idx]
+        sigma_sel = sigma_f[idx]
+        logp = dist.StudentT(nu, Vpred_sel, sigma_sel).log_prob(Vobs_sel)
+        numpyro.factor("obs_logp", jnp.sum(logp))
 
-    if platform == "gpu":
-        os.environ["JAX_PLATFORMS"] = "cuda"
-    elif platform == "mps":
-        os.environ["JAX_PLATFORMS"] = "metal"
-        os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = "false"
-        os.environ["JAX_ENABLE_X64"] = "true"
+    # Backend already selected above before importing jax
 
     kernel = NUTS(model, target_accept_prob=target_accept, dense_mass=True)
     mcmc = MCMC(kernel, num_warmup=num_warmup, num_samples=num_samples, num_chains=num_chains, progress_bar=True)

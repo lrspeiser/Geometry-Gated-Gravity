@@ -38,10 +38,23 @@ class Dataset:
     galaxies: List[GalaxyData]
     meta: Dict
 
-def _first_present(d: dict, *cands, default=None):
+def _first_present(container, *cands, default=None):
+    """Return the first candidate name present in a container of names.
+    Accepts a pandas Index, list-like, or dict-like (uses keys()). Returns the
+    candidate string itself, not the value.
+    """
+    names = container
+    if hasattr(container, 'keys') and not hasattr(container, 'dtype'):
+        # Likely a dict/DataFrame; use keys for membership
+        try:
+            names = container.keys()
+        except Exception:
+            names = container
     for c in cands:
-        if c in d:
-            return d[c]
+        if c is None:
+            continue
+        if c in names:
+            return c
     return default
 
 def _compute_outer_mask(R_kpc, V_kms, Sigma_bar, Rd_kpc, method="sigma", sigma_th=10.0, k_Rd=3.0, slope_eps=0.03):
@@ -90,11 +103,11 @@ def load_sparc(path_parquet="data/sparc_rotmod_ltg.parquet",
     Vbar_col = _first_present(df.columns, "Vbar_kms", "Vbar", default=None)
     if Vbar_col is None:
         # Try to reconstruct Vbar^2 = Vgas^2 + Vdisk^2 + Vbul^2
-        vgas = _first_present(df, "Vgas_kms", "Vgas", default=None)
-        vdisk= _first_present(df, "Vdisk_kms", "Vdisk", default=None)
-        vbul = _first_present(df, "Vbul_kms", "Vbul", default=None)
-        if vgas and vdisk:
-            df["__Vbar2__"] = (df[vgas]**2 + df[vdisk]**2 + (df[vbul]**2 if vbul else 0.0))
+        vgas = _first_present(df.columns, "Vgas_kms", "Vgas", default=None)
+        vdisk= _first_present(df.columns, "Vdisk_kms", "Vdisk", default=None)
+        vbul = _first_present(df.columns, "Vbul_kms", "Vbul", default=None)
+        if vgas is not None and vdisk is not None and (vgas in df.columns) and (vdisk in df.columns):
+            df["__Vbar2__"] = (df[vgas]**2 + df[vdisk]**2 + (df[vbul]**2 if (vbul is not None and vbul in df.columns) else 0.0))
             df["Vbar_kms"]  = np.sqrt(np.maximum(df["__Vbar2__"], 0.0))
             Vbar_col = "Vbar_kms"
         else:
@@ -103,13 +116,25 @@ def load_sparc(path_parquet="data/sparc_rotmod_ltg.parquet",
     # Load master sheet for Rd and masses if available
     master = None
     if os.path.exists(path_master):
-        master = pd.read_csv(path_master)
-        gname_m = _first_present(master.columns, "galaxy", "Galaxy", "NAME", default="Galaxy")
-        Rd_col  = _first_present(master.columns, "Rd_kpc", "Ropt_kpc", "R_d", default=None)
-        Mbar_col= _first_present(master.columns, "Mbar_Msun", "Mbar", "Mbar [Msun]", default=None)
-        master = master.rename(columns={gname_m:"Galaxy"})
-        if Rd_col: master = master.rename(columns={Rd_col:"Rd_kpc"})
-        if Mbar_col: master = master.rename(columns={Mbar_col:"Mbar_Msun"})
+        try:
+            master = pd.read_csv(path_master)
+        except Exception:
+            # Fallback: let pandas infer delimiter via python engine; skip bad lines
+            try:
+                master = pd.read_csv(path_master, sep=None, engine='python', on_bad_lines='skip')
+            except Exception:
+                master = None
+        if master is not None:
+            gname_m = _first_present(master.columns, "galaxy", "Galaxy", "NAME", default=None)
+            if gname_m is None or gname_m not in master.columns:
+                # Could not locate a valid galaxy-name column; ignore master
+                master = None
+            else:
+                Rd_col  = _first_present(master.columns, "Rd_kpc", "Ropt_kpc", "R_d", default=None)
+                Mbar_col= _first_present(master.columns, "Mbar_Msun", "Mbar", "Mbar [Msun]", default=None)
+                master = master.rename(columns={gname_m:"Galaxy"})
+                if Rd_col and Rd_col in master.columns: master = master.rename(columns={Rd_col:"Rd_kpc"})
+                if Mbar_col and Mbar_col in master.columns: master = master.rename(columns={Mbar_col:"Mbar_Msun"})
     galaxies = []
     for gname, gdf in df.groupby(name_col):
         gdf = gdf.sort_values(R_col)
