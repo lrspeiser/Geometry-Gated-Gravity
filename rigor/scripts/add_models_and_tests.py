@@ -144,6 +144,190 @@ def _norm_name(s: str) -> str:
             break
     return s
 
+def load_name_overrides(path: Path|None) -> dict:
+    """Optional CSV with columns: gal_id, gal_src. Returns dict gal_id -> gal_src."""
+    if path is None or (not path.exists()):
+        return {}
+    try:
+        df = pd.read_csv(path)
+        if {'gal_id','gal_src'}.issubset(df.columns):
+            return dict(zip(df['gal_id'].astype(str), df['gal_src'].astype(str)))
+    except Exception:
+        pass
+    return {}
+
+def join_masses_enhanced(df: pd.DataFrame,
+                         primary_parquet: Path|None,
+                         fallback_parquet: Path|None=None,
+                         overrides_csv: Path|None=None,
+                         allow_fuzzy: bool=False, fuzzy_cutoff: float=0.95,
+                         audit_out: Path|None=None) -> pd.DataFrame:
+    """
+    Attach M_bary_Msun using manual overrides, exact raw and normalized matches, and optional fuzzy matching.
+    Writes an audit CSV with join_method and matched name.
+    """
+    def _load(p: Path|None):
+        if p is None or (not p.exists()):
+            return None
+        try:
+            return pd.read_parquet(p)
+        except Exception:
+            return None
+
+    m = _load(primary_parquet)
+    if m is None:
+        m = _load(fallback_parquet)
+    if m is None:
+        return df
+
+    mass_cols = [c for c in ('M_bary','M_bary_Msun','Mbary','Mb') if c in m.columns]
+    if not mass_cols:
+        if {'M_star','M_HI'}.issubset(set(m.columns)):
+            m = m.copy()
+            m['M_bary'] = pd.to_numeric(m['M_star'], errors='coerce') + 1.33*pd.to_numeric(m['M_HI'], errors='coerce')
+            mass_cols = ['M_bary']
+        else:
+            return df
+    mcol = mass_cols[0]
+
+    gcol = next((c for c in ('galaxy','Galaxy','name','Name','gal_name') if c in m.columns), None)
+    if gcol is None:
+        return df
+
+    left = df.copy()
+    left['gal_id'] = left['gal_id'].astype(str)
+    left['_norm'] = left['gal_id'].map(_norm_name)
+
+    mm = m[[gcol, mcol]].rename(columns={gcol:'gal_src', mcol:'M_bary_Msun'})
+    mm['gal_src'] = mm['gal_src'].astype(str)
+    mm['_norm'] = mm['gal_src'].map(_norm_name)
+
+    audit = pd.DataFrame({'gal_id': left['gal_id'], '_norm': left['_norm']})
+    audit['join_method'] = 'missing'
+    audit['match_name'] = pd.NA
+    joined_mass = pd.Series(index=left.index, dtype='float64')
+
+    overrides = load_name_overrides(overrides_csv)
+    if overrides:
+        ov_df = pd.DataFrame({'gal_id': list(overrides.keys()), 'gal_src': list(overrides.values())})
+        left = left.merge(ov_df, on='gal_id', how='left')
+        mask_ov = left['gal_src'].notna()
+        if mask_ov.any():
+            tmp = left[mask_ov].merge(mm[['gal_src','M_bary_Msun']], on='gal_src', how='left')
+            joined_mass.loc[mask_ov] = tmp['M_bary_Msun'].values
+            audit.loc[mask_ov, 'join_method'] = 'override'
+            audit.loc[mask_ov, 'match_name'] = left.loc[mask_ov, 'gal_src']
+
+    # exact raw
+    mask_need = joined_mass.isna()
+    if mask_need.any():
+        left_sub = left[mask_need].copy()
+        left_sub = left_sub.reset_index().rename(columns={'index':'_idx'})
+        tmp = left_sub.merge(mm[['gal_src','M_bary_Msun']], left_on='gal_id', right_on='gal_src', how='left')
+        ok = tmp['M_bary_Msun'].notna()
+        if ok.any():
+            idxs = tmp.loc[ok, '_idx'].to_numpy()
+            joined_mass.loc[idxs] = tmp.loc[ok, 'M_bary_Msun'].to_numpy()
+            audit.loc[idxs, 'join_method'] = 'exact_raw'
+            audit.loc[idxs, 'match_name'] = tmp.loc[ok, 'gal_src'].to_numpy()
+
+    # exact norm
+    mask_need = joined_mass.isna()
+    if mask_need.any():
+        left_sub = left[mask_need].copy()
+        left_sub = left_sub.reset_index().rename(columns={'index':'_idx'})
+        tmp = left_sub.merge(mm[['_norm','M_bary_Msun','gal_src']], on='_norm', how='left')
+        ok = tmp['M_bary_Msun'].notna()
+        if ok.any():
+            idxs = tmp.loc[ok, '_idx'].to_numpy()
+            joined_mass.loc[idxs] = tmp.loc[ok, 'M_bary_Msun'].to_numpy()
+            audit.loc[idxs, 'join_method'] = 'exact_norm'
+            audit.loc[idxs, 'match_name'] = tmp.loc[ok, 'gal_src'].to_numpy()
+
+    # fuzzy on raw (strict)
+    if allow_fuzzy:
+        mask_need = joined_mass.isna()
+        if mask_need.any():
+            src_names = mm['gal_src'].tolist()
+            src_map = dict(zip(mm['gal_src'], mm['M_bary_Msun']))
+            targets = left.loc[mask_need, 'gal_id'].tolist()
+            picks, mb = [], []
+            for t in targets:
+                match = difflib.get_close_matches(t, src_names, n=1, cutoff=fuzzy_cutoff)
+                if match:
+                    picks.append(match[0]); mb.append(src_map[match[0]])
+                else:
+                    picks.append(pd.NA); mb.append(np.nan)
+            idxs = mask_need[mask_need].index
+            joined_mass.loc[idxs] = mb
+            audit.loc[idxs, 'join_method'] = np.where(pd.notna(picks), 'fuzzy', 'missing')
+            audit.loc[idxs, 'match_name'] = picks
+
+    left['M_bary_Msun'] = pd.to_numeric(joined_mass, errors='coerce')
+    med = float(np.nanmedian(left['M_bary_Msun']))
+    if np.isfinite(med) and (0.01 <= med <= 100.0):
+        left['M_bary_Msun'] = left['M_bary_Msun'] * 1e10
+
+    if audit_out is not None:
+        audit['M_bary_Msun'] = left['M_bary_Msun']
+        audit.to_csv(audit_out, index=False)
+
+    out = df.copy()
+    out['M_bary_Msun'] = left['M_bary_Msun'].values
+    return out
+
+
+def attach_observed_vflat(df: pd.DataFrame, all_tables_parquet: Path|None, audit_out: Path|None=None) -> pd.DataFrame:
+    """Attach catalog Vflat (km/s) from sparc_all_tables.parquet to each row by galaxy."""
+    if all_tables_parquet is None or (not all_tables_parquet.exists()):
+        return df
+    try:
+        t = pd.read_parquet(all_tables_parquet)
+    except Exception:
+        return df
+    name_col = next((c for c in ('galaxy','Galaxy','name','Name','gal_name') if c in t.columns), None)
+    if name_col is None or 'Vflat' not in t.columns:
+        return df
+    tt = t[[name_col,'Vflat']].rename(columns={name_col:'gal_src', 'Vflat':'Vflat_obs_kms'})
+    tt['gal_src'] = tt['gal_src'].astype(str)
+    tt['_norm'] = tt['gal_src'].map(_norm_name)
+    left = df.copy()
+    left['gal_id'] = left['gal_id'].astype(str)
+    left['_norm'] = left['gal_id'].map(_norm_name)
+    # exact raw then normalized
+    j = left.merge(tt[['gal_src','Vflat_obs_kms']], left_on='gal_id', right_on='gal_src', how='left')
+    need = j['Vflat_obs_kms'].isna()
+    if need.any():
+        left_sub = left[need].reset_index().rename(columns={'index':'_idx'})
+        j2 = left_sub.merge(tt[['_norm','Vflat_obs_kms']], on='_norm', how='left')
+        ok = j2['Vflat_obs_kms'].notna()
+        if ok.any():
+            idxs = j2.loc[ok, '_idx'].to_numpy()
+            j.loc[idxs, 'Vflat_obs_kms'] = j2.loc[ok, 'Vflat_obs_kms'].to_numpy()
+    out = df.copy()
+    out['Vflat_obs_kms'] = pd.to_numeric(j['Vflat_obs_kms'], errors='coerce')
+    if audit_out is not None:
+        a = pd.DataFrame({'gal_id': out['gal_id'], 'Vflat_obs_kms': out['Vflat_obs_kms']})
+        a.to_csv(audit_out, index=False)
+    return out
+
+
+def btfr_outlier_report(btfr_obs_df: pd.DataFrame, out_csv: Path, alpha_canon: float = 4.0) -> None:
+    """Top-25 residual outliers vs Mb ~ A * v^alpha_canon to highlight likely join issues."""
+    d = btfr_obs_df.dropna(subset=['M_bary_Msun','vflat_obs_kms']).copy()
+    d = d[(d['M_bary_Msun']>0) & (d['vflat_obs_kms']>0)]
+    if d.empty:
+        pd.DataFrame().to_csv(out_csv, index=False); return
+    v = np.asarray(d['vflat_obs_kms'])
+    Mb = np.asarray(d['M_bary_Msun'])
+    A = np.median(Mb / np.power(v, alpha_canon))
+    Mb_pred = A * np.power(v, alpha_canon)
+    resid = np.log10(Mb) - np.log10(Mb_pred)
+    d = d.assign(log10Mb=np.log10(Mb), log10v=np.log10(v), log10Mb_pred=np.log10(Mb_pred), resid_dex=resid)
+    d = d.reindex(columns=['gal_id','vflat_obs_kms','M_bary_Msun','log10v','log10Mb','log10Mb_pred','resid_dex'])
+    d = d.iloc[np.argsort(-np.abs(d['resid_dex']))][:25]
+    d.to_csv(out_csv, index=False)
+
 def join_masses(df: pd.DataFrame, primary_parquet: Path|None, fallback_parquet: Path|None=None,
                 allow_fuzzy: bool=True, fuzzy_cutoff: float=0.88, audit_out: Path|None=None) -> pd.DataFrame:
     """
@@ -403,14 +587,17 @@ if __name__ == '__main__':
     raw = pd.read_csv(args.pred_csv)
     df = normalize_columns(raw)
     # Attach baryonic masses using all_tables first, then fallback to master_clean; write audit CSV
-    df = join_masses(
+    df = join_masses_enhanced(
         df,
         primary_parquet=Path('data')/'sparc_all_tables.parquet',
         fallback_parquet=Path(args.sparc_master_parquet) if args.sparc_master_parquet else None,
+        overrides_csv=Path('data')/'galaxy_name_overrides.csv',
         allow_fuzzy=False,
-        fuzzy_cutoff=0.90,
+        fuzzy_cutoff=0.95,
         audit_out=out_dir/'btfr_mass_join_audit.csv'
     )
+    # Attach catalog Vflat if available for observed BTFR
+    df = attach_observed_vflat(df, Path('data')/'sparc_all_tables.parquet', audit_out=out_dir/'btfr_vflat_catalog_audit.csv')
 
     # Narrow grids based on your prior run
     grid_logtail = [
@@ -484,8 +671,11 @@ if __name__ == '__main__':
         rows = []
         for gid, sub in df_in.groupby('gal_id'):
             sub = sub.sort_values('r_kpc')
-            k = max(1, int(frac_outer*len(sub)))
-            vflat = float(np.median(sub['v_obs_kms'].tail(k).values))
+            if 'Vflat_obs_kms' in sub.columns and np.isfinite(sub['Vflat_obs_kms']).any():
+                vflat = float(sub['Vflat_obs_kms'].dropna().iloc[0])
+            else:
+                k = max(1, int(frac_outer*len(sub)))
+                vflat = float(np.median(sub['v_obs_kms'].tail(k).values))
             Mb = float(sub['M_bary_Msun'].iloc[0]) if 'M_bary_Msun' in sub.columns else float('nan')
             rows.append((gid, vflat, Mb))
         return pd.DataFrame(rows, columns=['gal_id','vflat_obs_kms','M_bary_Msun'])
@@ -506,6 +696,11 @@ if __name__ == '__main__':
         yM = np.log10(np.clip(qc['M_bary_Msun'].to_numpy(), 1e-6, None))
         corr = float(np.corrcoef(xv, yM)[0,1])
         (out_dir/'btfr_qc.txt').write_text(f"Pearson corr(log vflat_obs, log Mb) = {corr:.3f}\n")
+    # Outlier list to quickly fix joins
+    try:
+        btfr_outlier_report(btfr_obs, out_dir/'btfr_join_outliers.csv', alpha_canon=4.0)
+    except Exception:
+        pass
 
     # Optional: Mass-coupled LogTail v0(Mb) = A * (Mb/1e10)^(1/4)
     if args.mass_coupled_v0 and ('M_bary_Msun' in df2.columns):

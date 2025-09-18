@@ -28,13 +28,15 @@ Outputs written to out/analysis/type_breakdown/
 - predictions_with_LogTail_MuPhi.csv
 - summary_logtail_muphi.json
 - btfr_logtail.csv, btfr_muphi.csv, btfr_logtail_fit.json (now includes two-form reporting with bootstrap CIs: Mb vs v and v vs Mb, plus alpha_from_beta)
-- btfr_observed.csv, btfr_observed_fit.json (observational BTFR sanity check), btfr_qc.txt (correlation check), btfr_mass_join_audit.csv (join audit)
+- btfr_observed.csv, btfr_observed_fit.json (observational BTFR sanity check), btfr_qc.txt (correlation check), btfr_mass_join_audit.csv (join audit), btfr_vflat_catalog_audit.csv (catalog Vflat audit), btfr_join_outliers.csv (top residuals vs Mb~A v^4 to fix names)
 - rar_logtail.csv, rar_muphi.csv, rar_obs_curved_stats.json, rar_logtail_curved_stats.json
 - outer_slopes_logtail.csv
 - lensing_logtail_shapes.csv, lensing_logtail_comparison.json
 - (if --mass_coupled_v0) predictions_with_LogTail_mass_coupled.csv, summary_logtail_mass_coupled.json, btfr_logtail_mass_coupled.csv, btfr_logtail_mass_coupled_fit.json
 
 Notes
+- Optional manual overrides: create data/galaxy_name_overrides.csv with columns [gal_id, gal_src] to force name matches for stubborn cases.
+- You can enable fuzzy name matching in the script call if desired (strict cutoff 0.95 recommended) after auditing btfr_mass_join_audit.csv.
 - BTFR previously showed NaN masses; this run joins masses from data/sparc_master_clean.parquet. If missing, BTFR fit will report n=0.
 - Lensing amplitude comparison requires a reference stack CSV with columns [R_kpc, DeltaSigma_Msun_per_kpc2]. If not provided, we still report predicted slope and amplitudes at 50/100 kpc.
 - RAR curved stats use a median relation and approximate orthogonal scatter in log space; consider a more formal orthogonal regression as a future improvement.
