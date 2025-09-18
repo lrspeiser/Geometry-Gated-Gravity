@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import annotations
-import json, math, numpy as np, pandas as pd
+import json, math, numpy as np, pandas as pd, re, difflib
 from pathlib import Path
 
 G_kpc_km2_s2_Msun = 4.300917270e-6  # G in (kpc km^2 s^-2 Msun^-1)
@@ -129,40 +129,100 @@ def delta_sigma_logtail_SIS(R_kpc, v0_kms, R_trunc_kpc):
 
 # --- New utilities for BTFR, outer slopes, curved RAR, and lensing comparison ---
 
-def join_masses(df: pd.DataFrame, mass_parquet: Path | None) -> pd.DataFrame:
-    """Attach SPARC baryonic mass (M_bary_Msun) by galaxy if available.
-    mass_parquet should contain columns: 'galaxy' and 'M_bary'.
-    df must contain logical 'gal_id'.
+def _norm_name(s: str) -> str:
+    if s is None:
+        return ""
+    s = str(s).lower().strip()
+    s = re.sub(r'[\s\-_\.]+', '', s)
+    s = re.sub(r'[^a-z0-9]', '', s)
+    for pre in ('ngc','ugc','ic','eso','ddo'):
+        if s.startswith(pre):
+            m = re.match(r'([a-z]+)(\d+)(.*)$', s)
+            if m:
+                pre2, num, rest = m.groups()
+                s = f"{pre2}{num.zfill(4)}{rest}"
+            break
+    return s
+
+def join_masses(df: pd.DataFrame, primary_parquet: Path|None, fallback_parquet: Path|None=None,
+                allow_fuzzy: bool=True, fuzzy_cutoff: float=0.88, audit_out: Path|None=None) -> pd.DataFrame:
     """
-    if mass_parquet is None or (not Path(mass_parquet).exists()):
+    Attach M_bary_Msun using a robust join with name normalization and optional fuzzy matching.
+    """
+    def _load(pth: Path|None):
+        if pth is None or (not Path(pth).exists()):
+            return None
+        try:
+            return pd.read_parquet(pth)
+        except Exception:
+            return None
+
+    m = _load(primary_parquet)
+    if m is None:
+        m = _load(fallback_parquet)
+    if m is None:
         return df
-    try:
-        m = pd.read_parquet(mass_parquet)
-    except Exception:
+
+    # choose best mass column
+    cand_cols = [c for c in ('M_bary','M_bary_Msun','Mbary','Mb') if c in m.columns]
+    if not cand_cols:
+        if {'M_star','M_HI'}.issubset(set(m.columns)):
+            m = m.copy()
+            m['M_bary'] = pd.to_numeric(m['M_star'], errors='coerce') + 1.33*pd.to_numeric(m['M_HI'], errors='coerce')
+            cand_cols = ['M_bary']
+        else:
+            return df
+    mcol = cand_cols[0]
+
+    # pick a name column
+    gcol = None
+    for c in ('galaxy','Galaxy','name','Name','gal_name'):
+        if c in m.columns:
+            gcol = c; break
+    if gcol is None:
         return df
-    # Normalize columns
-    cols = list(m.columns)
-    gcol = 'galaxy' if 'galaxy' in cols else ('Galaxy' if 'Galaxy' in cols else None)
-    mbcol = 'M_bary' if 'M_bary' in cols else ('M_bary_Msun' if 'M_bary_Msun' in cols else None)
-    if (gcol is None) or (mbcol is None):
-        return df
-    mm = m[[gcol, mbcol]].rename(columns={gcol: 'gal_id', mbcol: 'M_bary_Msun'})
-    # Ensure comparable types
+
     left = df.copy()
     left['gal_id'] = left['gal_id'].astype(str)
-    mm['gal_id'] = mm['gal_id'].astype(str)
-    j = left.merge(mm, on='gal_id', how='left')
-    # Heuristic unit fix: if masses look like 1e10 Msun units, scale to Msun
-    try:
-        if 'M_bary_Msun' in j.columns:
-            mb = pd.to_numeric(j['M_bary_Msun'], errors='coerce')
-            med = float(np.nanmedian(mb))
-            if np.isfinite(med) and (0.01 <= med <= 100.0):  # likely in 1e10 Msun
-                mb = mb * 1e10
-            j['M_bary_Msun'] = mb
-    except Exception:
-        pass
-    return j
+    left['_norm'] = left['gal_id'].map(_norm_name)
+
+    mm = m[[gcol, mcol]].rename(columns={gcol:'gal_src', mcol:'M_bary_Msun'})
+    mm['gal_src'] = mm['gal_src'].astype(str)
+    mm['_norm'] = mm['gal_src'].map(_norm_name)
+
+    # exact on raw names
+    j1 = left.merge(mm[['gal_src','M_bary_Msun']], left_on='gal_id', right_on='gal_src', how='left', suffixes=('','_src'))
+    # exact on normalized
+    j_norm = left.merge(mm[['_norm','M_bary_Msun']], on='_norm', how='left', suffixes=('','_norm'))
+    j1['M_bary_Msun'] = j1['M_bary_Msun'].fillna(j_norm['M_bary_Msun'])
+
+    # optional fuzzy for remaining
+    if allow_fuzzy:
+        still = j1['M_bary_Msun'].isna()
+        if still.any():
+            src_names = mm['gal_src'].tolist()
+            src_map = dict(zip(mm['gal_src'], mm['M_bary_Msun']))
+            targets = j1.loc[still, 'gal_id'].tolist()
+            mb_fuzzy = []
+            for t in targets:
+                match = difflib.get_close_matches(t, src_names, n=1, cutoff=fuzzy_cutoff)
+                mb_fuzzy.append(src_map[match[0]] if match else np.nan)
+            j1.loc[still, 'M_bary_Msun'] = mb_fuzzy
+
+    # Heuristic unit fix (1e10 Msun -> Msun) if needed
+    mb = pd.to_numeric(j1['M_bary_Msun'], errors='coerce')
+    med = float(np.nanmedian(mb))
+    if np.isfinite(med) and (0.01 <= med <= 100.0):
+        mb = mb * 1e10
+    j1['M_bary_Msun'] = mb
+
+    # audit
+    if audit_out is not None:
+        audit = j1[['gal_id','M_bary_Msun','_norm']].copy()
+        audit['has_mass'] = audit['M_bary_Msun'].notna()
+        audit.to_csv(audit_out, index=False)
+
+    return j1.drop(columns=['gal_src'], errors='ignore')
 
 def btfr_fit(btfr_df: pd.DataFrame) -> dict:
     """Fit log10(M_b) vs log10(v_flat) with OLS; return slope alpha and scatter (dex)."""
@@ -342,8 +402,15 @@ if __name__ == '__main__':
     out_dir = Path(args.out_dir); out_dir.mkdir(parents=True, exist_ok=True)
     raw = pd.read_csv(args.pred_csv)
     df = normalize_columns(raw)
-    # Attach baryonic masses from SPARC master, if available
-    df = join_masses(df, Path(args.sparc_master_parquet) if args.sparc_master_parquet else None)
+    # Attach baryonic masses using all_tables first, then fallback to master_clean; write audit CSV
+    df = join_masses(
+        df,
+        primary_parquet=Path('data')/'sparc_all_tables.parquet',
+        fallback_parquet=Path(args.sparc_master_parquet) if args.sparc_master_parquet else None,
+        allow_fuzzy=False,
+        fuzzy_cutoff=0.90,
+        audit_out=out_dir/'btfr_mass_join_audit.csv'
+    )
 
     # Narrow grids based on your prior run
     grid_logtail = [
@@ -411,6 +478,34 @@ if __name__ == '__main__':
     lens_cmp = lensing_compare_basic(R_kpc, dSig, Path(args.lensing_stack_csv) if args.lensing_stack_csv else None)
     with open(out_dir/'lensing_logtail_comparison.json', 'w') as f:
         json.dump(lens_cmp, f, indent=2)
+
+    # Observed BTFR (sanity check on mass join)
+    def vflat_obs_per_gal(df_in: pd.DataFrame, frac_outer=0.3) -> pd.DataFrame:
+        rows = []
+        for gid, sub in df_in.groupby('gal_id'):
+            sub = sub.sort_values('r_kpc')
+            k = max(1, int(frac_outer*len(sub)))
+            vflat = float(np.median(sub['v_obs_kms'].tail(k).values))
+            Mb = float(sub['M_bary_Msun'].iloc[0]) if 'M_bary_Msun' in sub.columns else float('nan')
+            rows.append((gid, vflat, Mb))
+        return pd.DataFrame(rows, columns=['gal_id','vflat_obs_kms','M_bary_Msun'])
+
+    def btfr_fit_table(df_btfr: pd.DataFrame, vcol: str):
+        dtmp = df_btfr.rename(columns={vcol: 'vflat_kms'})
+        return btfr_fit_two_forms(dtmp)
+
+    btfr_obs = vflat_obs_per_gal(df2)
+    btfr_obs.to_csv(out_dir/'btfr_observed.csv', index=False)
+    with open(out_dir/'btfr_observed_fit.json','w') as f:
+        json.dump(btfr_fit_table(btfr_obs, 'vflat_obs_kms'), f, indent=2)
+
+    # Quick QC: correlation should be positive if join is correct
+    qc = btfr_obs.dropna()
+    if len(qc) > 5:
+        xv = np.log10(np.clip(qc['vflat_obs_kms'].to_numpy(), 1e-6, None))
+        yM = np.log10(np.clip(qc['M_bary_Msun'].to_numpy(), 1e-6, None))
+        corr = float(np.corrcoef(xv, yM)[0,1])
+        (out_dir/'btfr_qc.txt').write_text(f"Pearson corr(log vflat_obs, log Mb) = {corr:.3f}\n")
 
     # Optional: Mass-coupled LogTail v0(Mb) = A * (Mb/1e10)^(1/4)
     if args.mass_coupled_v0 and ('M_bary_Msun' in df2.columns):
