@@ -1,0 +1,93 @@
+{
+  "correlations": {
+    "mean_pct_close": {
+      "pearson": {
+        "outer_avg_vobs": 0.3613980786917039,
+        "outer_max_vobs": 0.3561483265583442,
+        "overall_avg_vobs": 0.35266306444606255,
+        "R_last": 0.3004992131026791,
+        "Rd_kpc": NaN,
+        "compactness": NaN,
+        "Mbar_Msun": NaN,
+        "type_code": -0.3838618007847399
+      },
+      "spearman": {
+        "outer_avg_vobs": 0.35105572740907387,
+        "outer_max_vobs": 0.3460131793897436,
+        "overall_avg_vobs": 0.34938601424821897,
+        "R_last": 0.33882585911734797,
+        "Rd_kpc": NaN,
+        "compactness": NaN,
+        "Mbar_Msun": NaN,
+        "type_code": -0.38056808887761295
+      }
+    },
+    "median_pct_close": {
+      "pearson": {
+        "outer_avg_vobs": 0.3600634319615514,
+        "outer_max_vobs": 0.3562755095515839,
+        "overall_avg_vobs": 0.35189185688221547,
+        "R_last": 0.29452680198302816,
+        "Rd_kpc": NaN,
+        "compactness": NaN,
+        "Mbar_Msun": NaN,
+        "type_code": -0.37827961791187237
+      },
+      "spearman": {
+        "outer_avg_vobs": 0.3416818991376078,
+        "outer_max_vobs": 0.3390968997664924,
+        "overall_avg_vobs": 0.34085583052118484,
+        "R_last": 0.3252395473698486,
+        "Rd_kpc": NaN,
+        "compactness": NaN,
+        "Mbar_Msun": NaN,
+        "type_code": -0.37455831080685775
+      }
+    },
+    "rmse_outer": {
+      "pearson": {
+        "outer_avg_vobs": 0.6005684450620066,
+        "outer_max_vobs": 0.60323671777235,
+        "overall_avg_vobs": 0.5808627954434656,
+        "R_last": 0.2337483614554946,
+        "Rd_kpc": NaN,
+        "compactness": NaN,
+        "Mbar_Msun": NaN,
+        "type_code": -0.45705273437280364
+      },
+      "spearman": {
+        "outer_avg_vobs": 0.6026119154152145,
+        "outer_max_vobs": 0.6070040189155618,
+        "overall_avg_vobs": 0.5841130700285629,
+        "R_last": 0.431504558451238,
+        "Rd_kpc": NaN,
+        "compactness": NaN,
+        "Mbar_Msun": NaN,
+        "type_code": -0.479849820127498
+      }
+    },
+    "bias_outer": {
+      "pearson": {
+        "outer_avg_vobs": 0.47986306857097255,
+        "outer_max_vobs": 0.48096120991025737,
+        "overall_avg_vobs": 0.45884656688566494,
+        "R_last": 0.0589033441370678,
+        "Rd_kpc": NaN,
+        "compactness": NaN,
+        "Mbar_Msun": NaN,
+        "type_code": -0.42042561459637534
+      },
+      "spearman": {
+        "outer_avg_vobs": 0.3597688283522655,
+        "outer_max_vobs": 0.3648684836263084,
+        "overall_avg_vobs": 0.33332922945599003,
+        "R_last": 0.15468287989257484,
+        "Rd_kpc": NaN,
+        "compactness": NaN,
+        "Mbar_Msun": NaN,
+        "type_code": -0.4160484760294508
+      }
+    }
+  },
+  "n_galaxies": 143
+}

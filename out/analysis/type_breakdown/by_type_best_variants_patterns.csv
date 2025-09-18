@@ -1,0 +1,5 @@
+xi,gating,types_won
+combined_radius_density_gamma,fixed,5
+combined_radius_density_gamma,learned_compact,3
+logistic_density,fixed,3
+combined_radius_density_gamma,learned,1

@@ -316,7 +316,7 @@ if __name__ == '__main__':
 
     # Curved RAR stats (data/obs vs g_bar, and LogTail vs g_bar)
     with open(out_dir/'rar_obs_curved_stats.json', 'w') as f:
-        json.dump(rar_curved_stats(rar_lt.rename(columns={'g_mod':'g_obs'}), ycol='g_obs'), f, indent=2)
+        json.dump(rar_curved_stats(rar_lt, ycol='g_obs'), f, indent=2)
     with open(out_dir/'rar_logtail_curved_stats.json', 'w') as f:
         json.dump(rar_curved_stats(rar_lt, ycol='g_mod'), f, indent=2)
 
@@ -360,7 +360,7 @@ if __name__ == '__main__':
                             best = dict(A_kms=A, rc_kpc=rc, r0_kpc=r0, delta_kpc=dl)
                             best_score = score
         if best is not None:
-            df_m, col_mass = apply_logtail_mass(df, **best)
+            df_m, col_mass = apply_logtail_mass(df, best['A_kms'], best['rc_kpc'], best['r0_kpc'], best['delta_kpc'])
             merged_mass = raw.copy(); merged_mass[col_mass] = df_m[col_mass]
             merged_mass.to_csv(out_dir/'predictions_with_LogTail_mass_coupled.csv', index=False)
             sum_mass = dict(model='LogTail_mass_coupled', median=median_closeness(df_m.loc[infer_outer_mask(df_m),'v_obs_kms'], df_m.loc[infer_outer_mask(df_m), col_mass]), params=best)

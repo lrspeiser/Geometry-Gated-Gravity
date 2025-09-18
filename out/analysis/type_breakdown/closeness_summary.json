@@ -1,0 +1,94 @@
+{
+  "excluded_outliers": [
+    {
+      "galaxy": "IC4202",
+      "Q": 1,
+      "confidence": "High"
+    },
+    {
+      "galaxy": "NGC0801",
+      "Q": 1,
+      "confidence": "High"
+    },
+    {
+      "galaxy": "NGC0891",
+      "Q": 1,
+      "confidence": "High"
+    },
+    {
+      "galaxy": "NGC2841",
+      "Q": 1,
+      "confidence": "High"
+    },
+    {
+      "galaxy": "NGC2955",
+      "Q": 1,
+      "confidence": "High"
+    },
+    {
+      "galaxy": "NGC3521",
+      "Q": 1,
+      "confidence": "High"
+    },
+    {
+      "galaxy": "NGC3877",
+      "Q": 2,
+      "confidence": "Medium"
+    },
+    {
+      "galaxy": "NGC3953",
+      "Q": 1,
+      "confidence": "High"
+    },
+    {
+      "galaxy": "NGC4088",
+      "Q": 1,
+      "confidence": "High"
+    },
+    {
+      "galaxy": "NGC5005",
+      "Q": 1,
+      "confidence": "High"
+    },
+    {
+      "galaxy": "NGC5371",
+      "Q": 1,
+      "confidence": "High"
+    },
+    {
+      "galaxy": "NGC6195",
+      "Q": 1,
+      "confidence": "High"
+    },
+    {
+      "galaxy": "UGC05253",
+      "Q": 2,
+      "confidence": "Medium"
+    },
+    {
+      "galaxy": "UGC06973",
+      "Q": 3,
+      "confidence": "Low"
+    },
+    {
+      "galaxy": "UGC11455",
+      "Q": 1,
+      "confidence": "High"
+    },
+    {
+      "galaxy": "UGC11914",
+      "Q": 1,
+      "confidence": "High"
+    }
+  ],
+  "agg_all_outer": {
+    "outer_points": 1167,
+    "mean_pct_close": 75.51961610236596,
+    "median_pct_close": 79.19408325323643
+  },
+  "agg_no_outliers_outer": {
+    "outer_points": 1004,
+    "mean_pct_close": 78.52672027891501,
+    "median_pct_close": 81.33533901288916
+  }
+}
