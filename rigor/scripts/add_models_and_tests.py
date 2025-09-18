@@ -152,11 +152,23 @@ def join_masses(df: pd.DataFrame, mass_parquet: Path | None) -> pd.DataFrame:
     left['gal_id'] = left['gal_id'].astype(str)
     mm['gal_id'] = mm['gal_id'].astype(str)
     j = left.merge(mm, on='gal_id', how='left')
+    # Heuristic unit fix: if masses look like 1e10 Msun units, scale to Msun
+    try:
+        if 'M_bary_Msun' in j.columns:
+            mb = pd.to_numeric(j['M_bary_Msun'], errors='coerce')
+            med = float(np.nanmedian(mb))
+            if np.isfinite(med) and (0.01 <= med <= 100.0):  # likely in 1e10 Msun
+                mb = mb * 1e10
+            j['M_bary_Msun'] = mb
+    except Exception:
+        pass
     return j
 
 def btfr_fit(btfr_df: pd.DataFrame) -> dict:
     """Fit log10(M_b) vs log10(v_flat) with OLS; return slope alpha and scatter (dex)."""
     d = btfr_df.dropna(subset=['M_bary_Msun','vflat_kms']).copy()
+    # Require positive values
+    d = d[(d['M_bary_Msun'] > 0) & (d['vflat_kms'] > 0)]
     if d.empty:
         return {'n': 0}
     x = np.log10(np.clip(d['vflat_kms'].to_numpy(), 1e-6, None))
@@ -227,24 +239,33 @@ def lensing_compare_basic(R_pred_kpc: np.ndarray, dSig_pred: np.ndarray, lensing
     """Compare predicted lensing with a provided stack CSV (R_kpc, DeltaSigma_Msun_per_kpc2).
     Returns slope of log-log pred, and amplitude ratios at 50 and 100 kpc if stack provided.
     """
-    # Pred slope in log-log
-    X = np.log10(np.clip(R_pred_kpc, 1e-9, None)); Y = np.log10(np.clip(dSig_pred, 1e-30, None))
-    A = np.vstack([X, np.ones_like(X)]).T
-    m_pred, b_pred = np.linalg.lstsq(A, Y, rcond=None)[0]
+    # Clean and sort
+    R = np.asarray(R_pred_kpc, dtype=float)
+    DS = np.asarray(dSig_pred, dtype=float)
+    m = np.isfinite(R) & np.isfinite(DS) & (R > 0) & (DS > 0)
+    R, DS = R[m], DS[m]
+    order = np.argsort(R)
+    R, DS = R[order], DS[order]
+    # Pred slope in log-log (should be ~ -1 for 1/R)
+    X, Y = np.log10(R), np.log10(DS)
+    m_pred, b_pred = np.polyfit(X, Y, 1)
     out = {'pred_slope_loglog': float(m_pred)}
     # Amplitudes
     for Rq in [50.0, 100.0]:
-        d = float(np.interp(Rq, R_pred_kpc, dSig_pred))
-        out[f'pred_DeltaSigma_{int(Rq)}kpc'] = d
+        out[f'pred_DeltaSigma_{int(Rq)}kpc'] = float(np.interp(Rq, R, DS))
     # If stack provided, compare amplitudes
     if lensing_stack_csv is not None and Path(lensing_stack_csv).exists():
         try:
             obs = pd.read_csv(lensing_stack_csv)
-            # Expect columns like R_kpc, DeltaSigma_Msun_per_kpc2
-            R = np.asarray(obs.iloc[:,0]); DS = np.asarray(obs.iloc[:,1])
+            R_o = np.asarray(obs.iloc[:,0], dtype=float)
+            DS_o = np.asarray(obs.iloc[:,1], dtype=float)
+            m2 = np.isfinite(R_o) & np.isfinite(DS_o) & (R_o > 0)
+            R_o, DS_o = R_o[m2], DS_o[m2]
+            order2 = np.argsort(R_o)
+            R_o, DS_o = R_o[order2], DS_o[order2]
             for Rq in [50.0, 100.0]:
-                dobs = float(np.interp(Rq, R, DS))
-                dpre = float(np.interp(Rq, R_pred_kpc, dSig_pred))
+                dobs = float(np.interp(Rq, R_o, DS_o))
+                dpre = float(np.interp(Rq, R, DS))
                 out[f'obs_DeltaSigma_{int(Rq)}kpc'] = dobs
                 out[f'amp_ratio_pred_over_obs_{int(Rq)}kpc'] = (dpre / dobs) if dobs > 0 else float('nan')
         except Exception:

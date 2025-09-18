@@ -7,10 +7,10 @@ Last updated: 2025-09-18
 What changed in this update
 - rigor/scripts/add_models_and_tests.py
   - Attach SPARC baryonic masses from data/sparc_master_clean.parquet when available.
-  - Export BTFR tables with valid M_bary_Msun and fit slope/scatter to btfr_logtail_fit.json.
+- Export BTFR tables with valid M_bary_Msun and fit slope/scatter to btfr_logtail_fit.json. Added unit heuristic (1e10 Msun -> Msun) and positivity checks in fit.
   - Compute curved RAR stats (approx. orthogonal scatter) for observed and LogTail: rar_obs_curved_stats.json, rar_logtail_curved_stats.json.
   - Export outer-slope distribution for observed vs LogTail: outer_slopes_logtail.csv.
-  - Lensing comparison helper: lensing_logtail_comparison.json (requires a provided stack CSV if amplitude comparison is desired). Shape CSV remains lensing_logtail_shapes.csv.
+- Lensing comparison helper: lensing_logtail_comparison.json (requires a provided stack CSV if amplitude comparison is desired). Now robustly sorts/cleans arrays; slope is ~ -1 for the 1/R tail. Shape CSV remains lensing_logtail_shapes.csv.
   - Optional mass-coupled LogTail v0(Mb) = A*(Mb/1e10)^(1/4) with grid search; exports predictions_with_LogTail_mass_coupled.csv and corresponding BTFR.
 
 How to run
