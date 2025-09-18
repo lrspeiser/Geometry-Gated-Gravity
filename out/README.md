@@ -27,7 +27,7 @@ How to run
 Outputs written to out/analysis/type_breakdown/
 - predictions_with_LogTail_MuPhi.csv
 - summary_logtail_muphi.json
-- btfr_logtail.csv, btfr_muphi.csv, btfr_logtail_fit.json
+- btfr_logtail.csv, btfr_muphi.csv, btfr_logtail_fit.json (now includes two-form reporting with bootstrap CIs: Mb vs v and v vs Mb, plus alpha_from_beta)
 - rar_logtail.csv, rar_muphi.csv, rar_obs_curved_stats.json, rar_logtail_curved_stats.json
 - outer_slopes_logtail.csv
 - lensing_logtail_shapes.csv, lensing_logtail_comparison.json

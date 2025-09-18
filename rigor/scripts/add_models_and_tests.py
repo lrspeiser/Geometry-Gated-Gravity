@@ -180,6 +180,62 @@ def btfr_fit(btfr_df: pd.DataFrame) -> dict:
     scatter = float(np.sqrt(np.mean(resid**2)))  # dex
     return {'n': int(len(d)), 'alpha': float(alpha), 'beta': float(beta), 'scatter_dex': scatter}
 
+# Two-form BTFR with bootstrap CIs
+
+def btfr_fit_two_forms(btfr_df: pd.DataFrame, n_boot: int = 2000, seed: int = 1337) -> dict:
+    """Return BTFR fits in both directions with bootstrap CIs.
+    Forms:
+      1) log10(Mb) = alpha * log10(vflat) + beta
+      2) log10(vflat) = beta * log10(Mb) + gamma  (also report alpha_from_beta = 1/beta)
+    Scatter is vertical RMS in the dependent variable's log space.
+    """
+    d = btfr_df.dropna(subset=['M_bary_Msun','vflat_kms']).copy()
+    d = d[(d['M_bary_Msun']>0) & (d['vflat_kms']>0)]
+    if d.empty:
+        return {'n': 0}
+
+    xv = np.log10(np.clip(d['vflat_kms'].to_numpy(), 1e-6, None))
+    yM = np.log10(np.clip(d['M_bary_Msun'].to_numpy(), 1e-6, None))
+
+    # OLS fits
+    A_v = np.vstack([xv, np.ones_like(xv)]).T
+    alpha, beta = np.linalg.lstsq(A_v, yM, rcond=None)[0]   # yM = alpha*xv + beta
+    yhatM = alpha*xv + beta
+    scatter_M = float(np.sqrt(np.mean((yM - yhatM)**2)))
+
+    A_M = np.vstack([yM, np.ones_like(yM)]).T
+    beta2, gamma = np.linalg.lstsq(A_M, xv, rcond=None)[0]  # xv = beta2*yM + gamma
+    xhatv = beta2*yM + gamma
+    scatter_v = float(np.sqrt(np.mean((xv - xhatv)**2)))
+
+    # Bootstrap CIs
+    rng = np.random.default_rng(seed)
+    alpha_bs, beta2_bs = [], []
+    n = len(d)
+    for _ in range(n_boot):
+        idx = rng.integers(0, n, n)
+        xv_b, yM_b = xv[idx], yM[idx]
+        A_vb = np.vstack([xv_b, np.ones_like(xv_b)]).T
+        a_b, _ = np.linalg.lstsq(A_vb, yM_b, rcond=None)[0]
+        A_Mb = np.vstack([yM_b, np.ones_like(yM_b)]).T
+        b2_b, _ = np.linalg.lstsq(A_Mb, xv_b, rcond=None)[0]
+        alpha_bs.append(a_b); beta2_bs.append(b2_b)
+    alpha_ci = (float(np.percentile(alpha_bs, 2.5)), float(np.percentile(alpha_bs, 97.5)))
+    beta2_ci  = (float(np.percentile(beta2_bs, 2.5)), float(np.percentile(beta2_bs, 97.5)))
+
+    return {
+        'n': int(n),
+        'form_Mb_vs_v': {
+            'alpha': float(alpha), 'beta': float(beta), 'scatter_dex': scatter_M,
+            'alpha_CI95': alpha_ci
+        },
+        'form_v_vs_Mb': {
+            'beta': float(beta2), 'gamma': float(gamma), 'scatter_dex': scatter_v,
+            'beta_CI95': beta2_ci,
+            'alpha_from_beta': float(1.0/beta2) if beta2 != 0 else float('nan')
+        }
+    }
+
 def outer_slopes(df_pred: pd.DataFrame, vcol: str, frac_outer=0.3) -> pd.DataFrame:
     """Return per-galaxy slopes s = d ln v / d ln r over the outer fraction of points."""
     rows = []
@@ -326,9 +382,11 @@ if __name__ == '__main__':
     btfr_mp = v_flat_per_gal(df2, col_mp)
     btfr_lt.to_csv(out_dir/'btfr_logtail.csv', index=False)
     btfr_mp.to_csv(out_dir/'btfr_muphi.csv', index=False)
-    # Fit BTFR slope/scatter for LogTail
+    # Fit BTFR slope/scatter for LogTail and MuPhi in both forms (with CIs)
     with open(out_dir/'btfr_logtail_fit.json', 'w') as f:
-        json.dump(btfr_fit(btfr_lt), f, indent=2)
+        json.dump(btfr_fit_two_forms(btfr_lt), f, indent=2)
+    with open(out_dir/'btfr_muphi_fit.json', 'w') as f:
+        json.dump(btfr_fit_two_forms(btfr_mp), f, indent=2)
 
     rar_lt = rar_table(df2, col_lt)
     rar_mp = rar_table(df2, col_mp)
@@ -390,6 +448,6 @@ if __name__ == '__main__':
             btfr_mass = v_flat_per_gal(df_m, col_mass)
             btfr_mass.to_csv(out_dir/'btfr_logtail_mass_coupled.csv', index=False)
             with open(out_dir/'btfr_logtail_mass_coupled_fit.json', 'w') as f:
-                json.dump(btfr_fit(btfr_mass), f, indent=2)
+                json.dump(btfr_fit_two_forms(btfr_mass), f, indent=2)
 
     print('Done.')
