@@ -29,11 +29,16 @@ def _read_mrt_fallback(mrt_path: Path) -> pd.DataFrame:
     df.columns = cols
     return df
 
-def read_sparc_catalog(mrt_path: Path) -> pd.DataFrame:
+def read_sparc_catalog(mrt_path: Path, ml36: float = 0.5) -> pd.DataFrame:
     """Return a catalog DataFrame with at least: Galaxy, Vflat (if present), L36, MHI, M_bary if present.
 
     Adds debug output to help diagnose column detection issues and avoids KeyError by
     filling missing expected columns with NaN.
+
+    Parameters
+    ----------
+    mrt_path : Path to SPARC_Lelli2016c.mrt
+    ml36     : Mass-to-light at 3.6µm (Msun/Lsun). Default 0.5.
     """
     df = _try_astropy_read(mrt_path)
     if df is None:
@@ -66,6 +71,7 @@ def read_sparc_catalog(mrt_path: Path) -> pd.DataFrame:
     mhib  = pick(df, r'MHI|M_HI')
     l36   = pick(df, r'L\[?3\.6\]?|L36|L_3\.6|L3p6|L\(3\.6\)')
     mbcol = pick(df, r'M[_ ]?bary|M_bary_Msun|Mbary')
+    qcol  = pick(df, r'Q')
 
     # Debug: show what we found
     try:
@@ -85,10 +91,12 @@ def read_sparc_catalog(mrt_path: Path) -> pd.DataFrame:
         keep['L36'] = pd.to_numeric(df[l36], errors='coerce')
     if mbcol:
         keep['M_bary_Msun'] = pd.to_numeric(df[mbcol], errors='coerce')
+    if qcol:
+        keep['Q'] = pd.to_numeric(df[qcol], errors='coerce')
 
     out = pd.DataFrame(keep)
 
-    # If M_bary is missing, synthesize M* + 1.33*MHI from L36 with a conservative M/L
+    # If M_bary is missing, synthesize M* + 1.33*MHI from L36 with a chosen M/L
     if 'M_bary_Msun' not in out.columns:
         # SPARC Table 1 uses 10^9 units for L[3.6] and MHI. Convert to physical Msun.
         n = len(out)
@@ -105,14 +113,14 @@ def read_sparc_catalog(mrt_path: Path) -> pd.DataFrame:
             MHI_vals = out['MHI'].to_numpy()
             # SPARC MHI is in 10^9 Msun -> scale by 1e9
             MHI_ms = MHI_vals * 1e9
-        # Stellar mass with baseline SPARC M/L_3.6 ~ 0.5
-        Mstar = 0.5 * np.where(np.isfinite(Lsun), Lsun, 0.0)
+        # Stellar mass with chosen M/L_3.6
+        Mstar = float(ml36) * np.where(np.isfinite(Lsun), Lsun, 0.0)
         Mb = Mstar + 1.33*np.where(np.isfinite(MHI_ms), MHI_ms, 0.0)
         Mb = np.where(Mb>0, Mb, np.nan)
         out['M_bary_Msun'] = Mb
 
     # Ensure expected columns exist to avoid KeyError downstream
-    for c in ('gal_id','Vflat_obs_kms','M_bary_Msun'):
+    for c in ('gal_id','Vflat_obs_kms','M_bary_Msun','Q'):
         if c not in out.columns:
             out[c] = np.nan
             try:
@@ -120,7 +128,7 @@ def read_sparc_catalog(mrt_path: Path) -> pd.DataFrame:
             except Exception:
                 pass
 
-    return out[['gal_id','Vflat_obs_kms','M_bary_Msun']].drop_duplicates('gal_id')
+    return out[['gal_id','Vflat_obs_kms','M_bary_Msun','Q']].drop_duplicates('gal_id')
 
 def read_rotmod_folder(rotmod_glob: str) -> pd.DataFrame:
     """Read per-galaxy Rotmod_LTG/*.rotmod.dat and build r_kpc, Vobs, Vgas, Vdisk, Vbul, Vbar."""
@@ -163,14 +171,23 @@ def main():
     ap.add_argument('--mrt', required=True, help='Path to data/SPARC_Lelli2016c.mrt')
     ap.add_argument('--rotmod_glob', default='data/Rotmod_LTG/*.rotmod.dat', help='Glob for per-galaxy rotmod files')
     ap.add_argument('--out_dir', required=True, help='Where to write btfr_observed.csv and sparc_predictions_by_radius.csv')
+    ap.add_argument('--ml36', type=float, default=0.5, help='Mass-to-light at 3.6µm (Msun/Lsun) used when deriving Mb from L[3.6]')
+    ap.add_argument('--min_Q', type=int, default=None, help='Optional SPARC quality threshold (keep entries with Q <= min_Q) for filtered BTFR outputs')
     args = ap.parse_args()
 
     out_dir = Path(args.out_dir); out_dir.mkdir(parents=True, exist_ok=True)
 
     # 1) Build BTFR observed table straight from SPARC MRT
-    cat = read_sparc_catalog(Path(args.mrt))
+    cat = read_sparc_catalog(Path(args.mrt), ml36=args.ml36)
     cat = cat[(cat['M_bary_Msun']>0) & (cat['M_bary_Msun'].notna())]
     cat.to_csv(out_dir/'btfr_observed_from_mrt.csv', index=False)
+    # Also write a Q-filtered variant if requested
+    if args.min_Q is not None and 'Q' in cat.columns:
+        try:
+            qf = cat[cat['Q'] <= int(args.min_Q)]
+            qf[['gal_id','Vflat_obs_kms','M_bary_Msun','Q']].to_csv(out_dir/f'btfr_observed_from_mrt_Qle{int(args.min_Q)}.csv', index=False)
+        except Exception:
+            pass
 
     # 2) Build predictions_by_radius-style table from rotmod files (for RC/RAR + outer medians)
     rc = read_rotmod_folder(args.rotmod_glob)
@@ -180,7 +197,14 @@ def main():
     # 3) If Vflat missing in MRT, patch it from outer-median of RC
     have_vflat = 'Vflat_obs_kms' in cat.columns and cat['Vflat_obs_kms'].notna()
     if have_vflat.any():
-        cat[['gal_id','Vflat_obs_kms','M_bary_Msun']].to_csv(out_dir/'btfr_observed.csv', index=False)
+        base = cat[['gal_id','Vflat_obs_kms','M_bary_Msun']]
+        base.to_csv(out_dir/'btfr_observed.csv', index=False)
+        if args.min_Q is not None and 'Q' in cat.columns:
+            try:
+                base_q = cat[cat['Q'] <= int(args.min_Q)][['gal_id','Vflat_obs_kms','M_bary_Msun']]
+                base_q.to_csv(out_dir/f'btfr_observed_Qle{int(args.min_Q)}.csv', index=False)
+            except Exception:
+                pass
     else:
         vflat_from_rc = []
         for gid, sub in rc.groupby('gal_id'):
