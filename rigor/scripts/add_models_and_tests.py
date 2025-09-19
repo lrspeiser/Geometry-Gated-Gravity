@@ -315,6 +315,37 @@ def attach_observed_vflat(df: pd.DataFrame, all_tables_parquet: Path|None, audit
     return out
 
 
+def attach_morph_type(df: pd.DataFrame, all_tables_parquet: Path|None) -> pd.DataFrame:
+    """Attach morphological type T from sparc_all_tables.parquet by galaxy name normalization."""
+    if all_tables_parquet is None or (not all_tables_parquet.exists()):
+        return df
+    try:
+        t = pd.read_parquet(all_tables_parquet)
+    except Exception:
+        return df
+    name_col = next((c for c in ('galaxy','Galaxy','name','Name','gal_name') if c in t.columns), None)
+    if name_col is None or ('T' not in t.columns):
+        return df
+    tt = t[[name_col,'T']].rename(columns={name_col:'gal_src', 'T':'T_type'})
+    tt['gal_src'] = tt['gal_src'].astype(str)
+    tt['_norm'] = tt['gal_src'].map(_norm_name)
+    left = df.copy()
+    left['gal_id'] = left['gal_id'].astype(str)
+    left['_norm'] = left['gal_id'].map(_norm_name)
+    j = left.merge(tt[['gal_src','T_type']], left_on='gal_id', right_on='gal_src', how='left')
+    need = j['T_type'].isna()
+    if need.any():
+        left_sub = left[need].reset_index().rename(columns={'index':'_idx'})
+        j2 = left_sub.merge(tt[['_norm','T_type']], on='_norm', how='left')
+        ok = j2['T_type'].notna()
+        if ok.any():
+            idxs = j2.loc[ok, '_idx'].to_numpy()
+            j.loc[idxs, 'T_type'] = j2.loc[ok, 'T_type'].to_numpy()
+    out = df.copy()
+    out['T_type'] = pd.to_numeric(j['T_type'], errors='coerce')
+    return out
+
+
 def btfr_outlier_report(btfr_obs_df: pd.DataFrame, out_csv: Path, alpha_canon: float = 4.0) -> None:
     """Top-25 residual outliers vs Mb ~ A * v^alpha_canon to highlight likely join issues."""
     d = btfr_obs_df.dropna(subset=['M_bary_Msun','vflat_obs_kms']).copy()
@@ -832,6 +863,38 @@ if __name__ == '__main__':
         json.dump(rar_curved_stats(rar_lt, ycol='g_obs'), f, indent=2)
     with open(out_dir/'rar_logtail_curved_stats.json', 'w') as f:
         json.dump(rar_curved_stats(rar_lt, ycol='g_mod'), f, indent=2)
+
+    # Per-type RC medians and RAR stats
+    df2_T = attach_morph_type(df2, Path('data')/'sparc_all_tables.parquet')
+    outer_mask_all = infer_outer_mask(df2_T)
+    rc_by_T = {}
+    for Tval, sub in df2_T.groupby('T_type'):
+        if len(sub) < 5:
+            continue
+        outer_sub = infer_outer_mask(sub)
+        rc_by_T[str(Tval)] = {
+            'LogTail_median': float(median_closeness(sub.loc[outer_sub,'v_obs_kms'], sub.loc[outer_sub, col_lt])),
+            'MuPhi_median':   float(median_closeness(sub.loc[outer_sub,'v_obs_kms'], sub.loc[outer_sub, col_mp])),
+            'n_points': int(len(sub))
+        }
+    with open(out_dir/'rc_medians_by_T.json','w') as f:
+        json.dump(rc_by_T, f, indent=2)
+
+    # RAR by type (observed and model)
+    # Map T by galaxy to rar table
+    gid_to_T = df2_T.dropna(subset=['T_type']).drop_duplicates('gal_id').set_index('gal_id')['T_type'].to_dict()
+    rar_lt_T = rar_lt.copy()
+    rar_lt_T['T_type'] = rar_lt_T['gal_id'].map(gid_to_T)
+    rar_by_T_obs, rar_by_T_mod = {}, {}
+    for Tval, sub in rar_lt_T.dropna(subset=['T_type']).groupby('T_type'):
+        stats_obs = rar_curved_stats(sub, ycol='g_obs')
+        stats_mod = rar_curved_stats(sub, ycol='g_mod')
+        rar_by_T_obs[str(Tval)] = stats_obs
+        rar_by_T_mod[str(Tval)] = stats_mod
+    with open(out_dir/'rar_obs_curved_by_T.json','w') as f:
+        json.dump(rar_by_T_obs, f, indent=2)
+    with open(out_dir/'rar_logtail_curved_by_T.json','w') as f:
+        json.dump(rar_by_T_mod, f, indent=2)
 
     # Outer-slope distribution
     slopes = outer_slopes(df2.rename(columns={col_lt:'v_model_kms'}).rename(columns={'v_model_kms':col_lt}), col_lt)
