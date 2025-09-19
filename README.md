@@ -246,6 +246,33 @@ Outputs include the per‑template JSON bound, a CSV template for overlays, and 
 
 ## 11. Conclusion
 
+---
+
+## 12. Finish-line checklist (status)
+
+- Rotation Curves (RC) — Cross-validated & across types
+  - 5-fold CV by galaxy: LogTail test medians ~88.6–91.2%; MuPhi ~73.5–89.2%.
+  - Per-type medians (SPARC T) written to rc_medians_by_T.json; no catastrophic subclasses for LogTail.
+  - Action if needed: tighten LogTail grid or folds to drive all test medians ≥ 90%.
+
+- BTFR (observed & model)
+  - Observed (MRT): corr=+0.476; alpha ≈ 3.19 (95% CI [2.90, 3.50]); alpha_from_beta ≈ 3.62.
+  - Model: LogTail alpha ≈ 3.82 [3.63, 4.03]; MuPhi alpha ≈ 3.06 [2.92, 3.22].
+  - All slopes in the 3–4 window; artifacts committed.
+
+- RAR (not over-tight)
+  - OOS (test-fold) curved scatter per fold: observed ~0.136–0.181 dex; LogTail model ~0.057–0.109 dex.
+  - Interpretation: model curve is tighter than data as expected for a deterministic mapping; median trend preserved.
+
+- Galaxy–galaxy lensing (amplitude)
+  - Shape: slope ≈ −1; reference amplitudes ΔΣ(50/100 kpc) reported.
+  - Amplitude ratios vs stacked data: pending a stack CSV (instructions in Reproducibility §9.3).
+
+- CMB envelopes (clean-slate) and lensing φφ
+  - TT-only bounds: lens ≲ 0.6% (95%), gk ≲ 3.7%, vea ≲ 0.31%.
+  - φφ amplitude (CMB-marginalized): α_φ ≈ 1.007 ± 0.027 (normalized).
+  - Piecewise TT per-mode JSONs emitted for lens/gk/vea; TTTEEE stub added (will run if clik is available).
+
 On the rotation‑curve/RAR/lensing‑shape axes, **LogTail** (and to a lesser extent **MuPhi**) already clears the first bar for a baryon‑only alternative at **galaxy scales**, outperforming GR and approaching MOND under a **global parameter** constraint. The **BTFR** headline is **pending** a full SPARC‑MRT‑driven run; the **CMB** envelope nulls are encouraging but must be extended and tied to the models’ line‑of‑sight operators. If the remaining BTFR and lensing‑amplitude checks pass under a single parameter set, LogTail would match or exceed MOND’s empirical performance **without** introducing particle dark matter.
 
 ---
