@@ -303,13 +303,9 @@ def attach_observed_vflat(df: pd.DataFrame, all_tables_parquet: Path|None, audit
     j = left.merge(tt[['gal_src','Vflat_obs_kms']], left_on='gal_id', right_on='gal_src', how='left')
     need = j['Vflat_obs_kms'].isna()
     if need.any():
-        idx_missing = j.index[need]
-        left_sub = left.loc[idx_missing].reset_index().rename(columns={'index':'_idx'})
-        j2 = left_sub.merge(tt[['_norm','Vflat_obs_kms']], on='_norm', how='left')
-        ok = j2['Vflat_obs_kms'].notna()
-        if ok.any():
-            idxs = j2.loc[ok, '_idx'].to_numpy()
-            j.loc[idxs, 'Vflat_obs_kms'] = j2.loc[ok, 'Vflat_obs_kms'].to_numpy()
+        # Use j's own order to avoid index alignment issues
+        j2 = j.loc[need, ['_norm']].merge(tt[['_norm','Vflat_obs_kms']], on='_norm', how='left')
+        j.loc[need, 'Vflat_obs_kms'] = j2['Vflat_obs_kms'].to_numpy()
     out = df.copy()
     out['Vflat_obs_kms'] = pd.to_numeric(j['Vflat_obs_kms'], errors='coerce')
     if audit_out is not None:
@@ -338,14 +334,9 @@ def attach_morph_type(df: pd.DataFrame, all_tables_parquet: Path|None) -> pd.Dat
     j = left.merge(tt[['gal_src','T_type']], left_on='gal_id', right_on='gal_src', how='left')
     need = j['T_type'].isna()
     if need.any():
-        # Align boolean mask with left's index via j.index
-        idx_missing = j.index[need]
-        left_sub = left.loc[idx_missing].reset_index().rename(columns={'index':'_idx'})
-        j2 = left_sub.merge(tt[['_norm','T_type']], on='_norm', how='left')
-        ok = j2['T_type'].notna()
-        if ok.any():
-            idxs = j2.loc[ok, '_idx'].to_numpy()
-            j.loc[idxs, 'T_type'] = j2.loc[ok, 'T_type'].to_numpy()
+        # Use j's own order to avoid index alignment issues
+        j2 = j.loc[need, ['_norm']].merge(tt[['_norm','T_type']], on='_norm', how='left')
+        j.loc[need, 'T_type'] = j2['T_type'].to_numpy()
     out = df.copy()
     out['T_type'] = pd.to_numeric(j['T_type'], errors='coerce')
     return out
