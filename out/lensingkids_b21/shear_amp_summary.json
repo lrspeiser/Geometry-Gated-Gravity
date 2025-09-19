@@ -1,0 +1,80 @@
+{
+  "chains": [
+    {
+      "chain": "C:\\Users\\henry\\dev\\GravityCalculator\\data\\lensing\\kids_b21\\chain_desy3_and_kids1000_hybrid_analysis.txt",
+      "n_samples": 11032,
+      "S8_percentiles": {
+        "p16": 0.7737091028604399,
+        "p50": 0.7909056875341748,
+        "p84": 0.8070696164530977
+      },
+      "A_shear_from_S8": {
+        "median": 0.9080153963912119,
+        "p16": 0.8689588849602363,
+        "p84": 0.945509313110394,
+        "S8_ref": 0.83
+      },
+      "phi_amp": {
+        "alpha_hat": 1.0069608598114206,
+        "sigma": 0.02743408982413429
+      },
+      "A_over_phi": {
+        "A_shear_median": 0.9080153963912119,
+        "alpha_phi": 1.0069608598114206,
+        "tension_sigma": 3.606661057629275
+      }
+    },
+    {
+      "chain": "C:\\Users\\henry\\dev\\GravityCalculator\\data\\lensing\\kids_b21\\chain_desy3_hybrid_analysis.txt",
+      "n_samples": 7904,
+      "S8_percentiles": {
+        "p16": 0.7822362954103895,
+        "p50": 0.8032516261457434,
+        "p84": 0.8231168848345771
+      },
+      "A_shear_from_S8": {
+        "median": 0.9365846638202661,
+        "p16": 0.8882183507872989,
+        "p84": 0.9834829526778612,
+        "S8_ref": 0.83
+      },
+      "phi_amp": {
+        "alpha_hat": 1.0069608598114206,
+        "sigma": 0.02743408982413429
+      },
+      "A_over_phi": {
+        "A_shear_median": 0.9365846638202661,
+        "alpha_phi": 1.0069608598114206,
+        "tension_sigma": 2.565282699090795
+      }
+    },
+    {
+      "chain": "C:\\Users\\henry\\dev\\GravityCalculator\\data\\lensing\\kids_b21\\chain_kids1000_hybrid_analysis.txt",
+      "n_samples": 7598,
+      "S8_percentiles": {
+        "p16": 0.7364390586335945,
+        "p50": 0.7664157670368267,
+        "p84": 0.7901046007362296
+      },
+      "A_shear_from_S8": {
+        "median": 0.8526536913378536,
+        "p16": 0.7872586544943169,
+        "p84": 0.9061769198788747,
+        "S8_ref": 0.83
+      },
+      "phi_amp": {
+        "alpha_hat": 1.0069608598114206,
+        "sigma": 0.02743408982413429
+      },
+      "A_over_phi": {
+        "A_shear_median": 0.8526536913378536,
+        "alpha_phi": 1.0069608598114206,
+        "tension_sigma": 5.624650552023053
+      }
+    }
+  ],
+  "combined": {
+    "n_chains": 3,
+    "S8_median_mean": 0.7868576935722483
+  }
+}
