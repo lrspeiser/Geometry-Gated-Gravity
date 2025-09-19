@@ -104,7 +104,10 @@ We rebuilt the observed BTFR directly from the SPARC MRT (catalog‑of‑record)
   - Mb vs v: **alpha ≈ 3.19** (95% CI [2.90, 3.50])
   - v vs Mb: **alpha_from_beta ≈ 3.62** (from 1/beta)
 
-These are in the expected 3–4 range. We also regenerated the model BTFR tables (LogTail/MuPhi) using the observed masses for consistency. Earlier negative‑corr outputs in the repo are now explicitly superseded by the MRT‑based observed table.
+These are in the expected 3–4 range. We also regenerated the model BTFR tables (LogTail/MuPhi) using the observed masses for consistency:
+- LogTail: alpha ≈ 3.82 (95% CI [3.63, 4.03]), alpha_from_beta ≈ 4.07, n=175
+- MuPhi:   alpha ≈ 3.06 (95% CI [2.92, 3.22]), alpha_from_beta ≈ 3.38, n=175
+Earlier negative‑corr outputs in the repo are now explicitly superseded by the MRT‑based observed table.
 
 > Note: the full RC suite still computes an internal “btfr_observed.csv” for QC; we now restore that file from the MRT‑derived version in the release artifacts to ensure headline BTFR is always tied to the catalog‑of‑record.
 
