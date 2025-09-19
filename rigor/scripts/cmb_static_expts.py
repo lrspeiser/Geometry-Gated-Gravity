@@ -420,6 +420,10 @@ def build_argparser() -> argparse.ArgumentParser:
     # Piecewise envelopes
     ap.add_argument('--piecewise', action='store_true', help='Fit piecewise band amplitudes for the chosen template mode')
     ap.add_argument('--bands', type=str, default='2-50,50-250,250-800,800-1500,1500-2500', help='Comma-separated band edges like "2-50,50-250,250-800,800-1500,1500-2500"')
+
+    # Optional TTTEEE via clik
+    ap.add_argument('--use_clik_ttteee', action='store_true', help='Attempt TTTEEE joint envelope via clik; writes a note if clik is unavailable')
+    ap.add_argument('--clik_path', type=str, default='data/baseline/plc_3.0/hi_l/plik_lite/plik_lite_v22_TTTEEE.clik', help='Path to plik_lite TTTEEE .clik container')
     return ap
 
 
@@ -477,9 +481,21 @@ if __name__ == '__main__':
             "Cov_A": [[float(x) for x in row] for row in Cov_A.tolist()],
             "covariance_used": cov_used,
         }
-        with open(os.path.join(args.out_dir, 'cmb_envelope_piecewise.json'), 'w') as f:
+        fname = f"cmb_envelope_piecewise_{args.mode}.json"
+        with open(os.path.join(args.out_dir, fname), 'w') as f:
             json.dump(out, f, indent=2)
-        print(f"Piecewise A_hat per band ({cov_used}): {A_hat}")
+        print(f"Piecewise A_hat per band ({args.mode}, {cov_used}): {A_hat}")
+
+    # Optional TTTEEE note if requested
+    if args.use_clik_ttteee:
+        note = {"ttteee_requested": True, "clik_path": args.clik_path, "status": "unavailable"}
+        try:
+            import clik  # noqa: F401
+            note["status"] = "available_todo"
+        except Exception:
+            pass
+        with open(os.path.join(args.out_dir, 'ttteee_status.json'), 'w') as f:
+            json.dump(note, f, indent=2)
 
     # 3) Standard single-parameter envelope run (if requested)
     if args.mode and args.plik_lite_dir:
