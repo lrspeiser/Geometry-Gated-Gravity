@@ -181,11 +181,22 @@ We constructed **linear “envelope” operators** that emulate three late‑tim
 ```bash
 # Using your existing per-radius table (columns normalized in-script)
 py rigor/scripts/add_models_and_tests.py \
-  --pred_csv out/analysis/type_breakdown/predictions_by_radius.csv \
+  --pred_csv out/analysis/type_breakdown/sparc_predictions_by_radius.csv \
   --out_dir out/analysis/type_breakdown
 ```
 
 This produces: `summary_logtail_muphi.json` (RC medians), `rar_*_curved_stats.json`, `btfr_*_fit.json`, and `lensing_logtail_*` artifacts. See the exact outputs and param grids in the script .
+
+### 9.15 Build observed BTFR and per‑radius table directly from SPARC MRT
+
+```bash
+python -u rigor/scripts/build_from_sparc_mrt.py \
+  --mrt data/SPARC_Lelli2016c.mrt \
+  --rotmod_glob "data/Rotmod_LTG/*.rotmod.dat" \
+  --out_dir out/analysis/type_breakdown
+```
+
+This writes `btfr_observed_from_mrt.csv` (and `btfr_observed.csv`) and `sparc_predictions_by_radius.csv` under `out/analysis/type_breakdown/`.
 
 ### 9.2 Cross‑validation (5‑fold, by galaxy)
 
@@ -249,6 +260,12 @@ Outputs include the per‑template JSON bound, a CSV template for overlays, and 
 ---
 
 ## 12. Finish-line checklist (status)
+
+### Bug fix note (2025‑09‑19): boolean mask index alignment in per‑type CV
+
+- Issue: a pandas IndexingError occurred in `attach_morph_type` (and similarly in `attach_observed_vflat`) when computing per‑type CV medians. The code built a boolean mask (`need`) on a merged frame and then attempted to index the original left frame with it (or with positions from the merge), causing index/label mismatches.
+- Fix: fill missing values using the merged frame’s own order: compute the normalized‑name join on `j.loc[need, ['_norm']]` against a de‑duplicated catalog (`drop_duplicates('_norm')`), then assign back via the same boolean mask. This avoids label/position confusion and handles catalog duplicates deterministically.
+- Verification: re‑ran the full pipeline including `--do_cv`. Outputs now include `cv_by_T.csv` per fold and the aggregated `cv_by_T_summary.csv`, with no IndexingError.
 
 - Rotation Curves (RC) — Cross-validated & across types
   - 5-fold CV by galaxy: LogTail test medians ~88.6–91.2%; MuPhi ~73.5–89.2%.
