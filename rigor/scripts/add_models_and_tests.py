@@ -664,16 +664,23 @@ if __name__ == '__main__':
         else:
             btfr_obs_quick = vflat_obs_per_gal_quick(df)
         btfr_obs_quick.to_csv(out_dir/'btfr_observed.csv', index=False)
-        fits_quick = btfr_fit_two_forms(btfr_obs_quick.rename(columns={'vflat_obs_kms':'vflat_kms'}))
+        # Handle either case of vflat column name
+        vcol = 'vflat_obs_kms' if 'vflat_obs_kms' in btfr_obs_quick.columns else (
+            'Vflat_obs_kms' if 'Vflat_obs_kms' in btfr_obs_quick.columns else None)
+        df_fit = btfr_obs_quick.rename(columns={vcol: 'vflat_kms'}) if vcol else btfr_obs_quick
+        fits_quick = btfr_fit_two_forms(df_fit)
         with open(out_dir/'btfr_observed_fit.json','w') as f:
             json.dump(fits_quick, f, indent=2)
 
         qc = btfr_obs_quick.dropna()
         corr = float('nan')
         if len(qc) > 5:
-            xv = np.log10(np.clip(qc['vflat_obs_kms'].to_numpy(), 1e-6, None))
-            yM = np.log10(np.clip(qc['M_bary_Msun'].to_numpy(), 1e-6, None))
-            corr = float(np.corrcoef(xv, yM)[0,1])
+            vcol = 'vflat_obs_kms' if 'vflat_obs_kms' in qc.columns else (
+                'Vflat_obs_kms' if 'Vflat_obs_kms' in qc.columns else None)
+            if vcol:
+                xv = np.log10(np.clip(qc[vcol].to_numpy(), 1e-6, None))
+                yM = np.log10(np.clip(qc['M_bary_Msun'].to_numpy(), 1e-6, None))
+                corr = float(np.corrcoef(xv, yM)[0,1])
         (out_dir/'btfr_qc.txt').write_text(f"Pearson corr(log vflat_obs, log Mb) = {corr:.3f}\n")
 
         # Outliers + suggestions to accelerate manual overrides
