@@ -328,6 +328,36 @@ def btfr_outlier_report(btfr_obs_df: pd.DataFrame, out_csv: Path, alpha_canon: f
     d = d.iloc[np.argsort(-np.abs(d['resid_dex']))][:25]
     d.to_csv(out_csv, index=False)
 
+
+def suggest_name_overrides(outliers_csv: Path,
+                           all_tables_parquet: Path,
+                           out_csv: Path,
+                           cutoff: float = 0.95) -> None:
+    """
+    For galaxies in btfr_join_outliers.csv, suggest a likely catalog name (gal_src)
+    from sparc_all_tables.parquet using strict fuzzy matching. Writes a CSV:
+      gal_id, suggestion_gal_src, similarity
+    Review and copy confirmed rows into data/galaxy_name_overrides.csv.
+    """
+    if (not outliers_csv.exists()) or (not all_tables_parquet.exists()):
+        pd.DataFrame().to_csv(out_csv, index=False); return
+    try:
+        outl = pd.read_csv(outliers_csv)
+        t = pd.read_parquet(all_tables_parquet)
+    except Exception:
+        pd.DataFrame().to_csv(out_csv, index=False); return
+    name_col = next((c for c in ('galaxy','Galaxy','name','Name','gal_name') if c in t.columns), None)
+    if name_col is None:
+        pd.DataFrame().to_csv(out_csv, index=False); return
+    src_names = t[name_col].astype(str).tolist()
+    sugg_rows = []
+    for gid in outl['gal_id'].astype(str).unique():
+        match = difflib.get_close_matches(gid, src_names, n=1, cutoff=cutoff)
+        if match:
+            sim = difflib.SequenceMatcher(None, gid, match[0]).ratio()
+            sugg_rows.append({'gal_id': gid, 'suggestion_gal_src': match[0], 'similarity': sim})
+    pd.DataFrame(sugg_rows, columns=['gal_id','suggestion_gal_src','similarity']).to_csv(out_csv, index=False)
+
 def join_masses(df: pd.DataFrame, primary_parquet: Path|None, fallback_parquet: Path|None=None,
                 allow_fuzzy: bool=True, fuzzy_cutoff: float=0.88, audit_out: Path|None=None) -> pd.DataFrame:
     """
@@ -581,6 +611,8 @@ if __name__ == '__main__':
     ap.add_argument('--sparc_master_parquet', default=str(Path('data')/'sparc_master_clean.parquet'))
     ap.add_argument('--mass_coupled_v0', action='store_true', help='Enable LogTail v0(Mb)=A*(Mb/1e10)^(1/4) grid search')
     ap.add_argument('--lensing_stack_csv', default=None, help='Optional CSV of stacked lensing to compare against')
+    ap.add_argument('--suggest_overrides', action='store_true', help='Write galaxy_name_override_suggestions.csv derived from btfr_join_outliers.csv.')
+    ap.add_argument('--enable_strict_fuzzy', action='store_true', help='Allow fuzzy matching (cutoff=0.95) for remaining mass joins after overrides.')
     args = ap.parse_args()
 
     out_dir = Path(args.out_dir); out_dir.mkdir(parents=True, exist_ok=True)
@@ -592,7 +624,7 @@ if __name__ == '__main__':
         primary_parquet=Path('data')/'sparc_all_tables.parquet',
         fallback_parquet=Path(args.sparc_master_parquet) if args.sparc_master_parquet else None,
         overrides_csv=Path('data')/'galaxy_name_overrides.csv',
-        allow_fuzzy=False,
+        allow_fuzzy=args.enable_strict_fuzzy,
         fuzzy_cutoff=0.95,
         audit_out=out_dir/'btfr_mass_join_audit.csv'
     )
@@ -701,6 +733,13 @@ if __name__ == '__main__':
         btfr_outlier_report(btfr_obs, out_dir/'btfr_join_outliers.csv', alpha_canon=4.0)
     except Exception:
         pass
+
+    # Optional: write override suggestions for review
+    if args.suggest_overrides:
+        try:
+            suggest_name_overrides(out_dir/'btfr_join_outliers.csv', Path('data')/'sparc_all_tables.parquet', out_dir/'galaxy_name_override_suggestions.csv', cutoff=0.95)
+        except Exception:
+            pass
 
     # Optional: Mass-coupled LogTail v0(Mb) = A * (Mb/1e10)^(1/4)
     if args.mass_coupled_v0 and ('M_bary_Msun' in df2.columns):
