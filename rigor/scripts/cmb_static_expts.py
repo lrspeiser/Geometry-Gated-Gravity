@@ -224,16 +224,19 @@ def peak_positions(ell: np.ndarray, y: np.ndarray, nmax: int = 5) -> Dict:
 
 # ----------------------------- Lensing reconstruction amplitude -----------------------------
 
-def fit_lensing_phi_amplitude(lensing_dir: str) -> Tuple[float, float]:
+def fit_lensing_phi_amplitude(lensing_dir: str) -> Tuple[float, float, Dict]:
     """Fit amplitude alpha for Planck lensing reconstruction pp_hat against fiducial cl_fid.
 
     Expects the directory to contain FITS primary-array files (no extensions):
-      - pp_hat   (Nbins,) binned C_L^{\phi\phi} estimate
+      - pp_hat   (Nbins,) binned C_L^{\phi\phi} estimate (Planck convention)
       - siginv   (Nbins^2,) inverse covariance, row-major
       - cl_fid   (Lmax+1,) unbinned fiducial C_L^{\phi\phi}
       - bins     (Nbins * (Lmax+1),) binning matrix to map unbinned -> binned
 
-    Returns (alpha_hat, sigma_alpha).
+    We convert the unbinned fiducial to L^4 C_L^{\phi\phi}/(2π) units before binning,
+    to match the common Planck plotting/likelihood convention for binned lensing power.
+
+    Returns (alpha_hat, sigma_alpha, meta_dict).
     """
     pp_hat = read_fits_primary_array(os.path.join(lensing_dir, 'pp_hat')).astype(np.float64).ravel()
     siginv_1d = read_fits_primary_array(os.path.join(lensing_dir, 'siginv')).astype(np.float64).ravel()
@@ -246,19 +249,38 @@ def fit_lensing_phi_amplitude(lensing_dir: str) -> Tuple[float, float]:
         raise RuntimeError(f"bins size {bins_1d.size} != Nbins({Nbins}) * L({L})")
     # Reshape binning to (Nbins, L) so that t_binned = B @ cl_unb
     B = bins_1d.reshape((Nbins, L))
-    t = B @ cl_unb  # (Nbins,)
+
+    # Convert fiducial to L^4 C_L^{phi phi}/(2π) units before binning
+    Ls = np.arange(L, dtype=np.float64)
+    Lfac = (Ls * (Ls + 1.0))**2 / (2.0 * np.pi)
+    clpp_L4_over_2pi = Lfac * cl_unb
+
+    t = B @ clpp_L4_over_2pi  # (Nbins,)
 
     if siginv_1d.size != Nbins * Nbins:
         raise RuntimeError(f"siginv size {siginv_1d.size} != Nbins^2({Nbins*Nbins})")
     SigInv = siginv_1d.reshape((Nbins, Nbins))
 
     tCt = float(t @ SigInv @ t)
-    if tCt <= 0:
+    if not np.isfinite(tCt) or tCt <= 0:
         raise RuntimeError("Non-positive t^T C^{-1} t; cannot define sigma")
     tCd = float(t @ SigInv @ pp_hat)
-    a_hat = tCd / tCt
-    sigma_a = tCt ** -0.5
-    return a_hat, sigma_a
+    a_hat_raw = tCd / tCt
+    sigma_raw = tCt ** -0.5
+
+    # Self-calibration hook (kept as identity unless future factors are discovered)
+    # For pure binning+units consistency, alpha on fiducial should be ~1 if data=theory.
+    # We keep scale=1.0 here; set non-unity if an additional global convention factor is identified.
+    scale = 1.0
+    a_hat = scale * a_hat_raw
+    sigma_a = abs(scale) * sigma_raw
+
+    meta = {
+        "normalization": "L4_over_2pi_before_binning",
+        "bins_shape": [int(Nbins), int(L)],
+        "scale_applied": float(scale),
+    }
+    return a_hat, sigma_a, meta
 
 
 # ----------------------------- Piecewise envelope fit -----------------------------
@@ -397,7 +419,7 @@ def build_argparser() -> argparse.ArgumentParser:
 
     # Piecewise envelopes
     ap.add_argument('--piecewise', action='store_true', help='Fit piecewise band amplitudes for the chosen template mode')
-    ap.add_argument('--bands', type=str, default='2-200,200-800,800-2500', help='Comma-separated band edges like "2-200,200-800,800-2500"')
+    ap.add_argument('--bands', type=str, default='2-50,50-250,250-800,800-1500,1500-2500', help='Comma-separated band edges like "2-50,50-250,250-800,800-1500,1500-2500"')
     return ap
 
 
@@ -410,10 +432,10 @@ if __name__ == '__main__':
     # 1) Lensing reconstruction amplitude
     if args.phiamp:
         try:
-            a_hat, sig = fit_lensing_phi_amplitude(args.lensing_dir)
+            a_hat, sig, meta = fit_lensing_phi_amplitude(args.lensing_dir)
             with open(os.path.join(args.out_dir, 'cmb_lensing_amp.json'), 'w') as f:
-                json.dump({"alpha_hat": float(a_hat), "sigma": float(sig)}, f, indent=2)
-            print(f"Lensing φφ amplitude: alpha_hat={a_hat:.4g} ± {sig:.4g}")
+                json.dump({"alpha_hat": float(a_hat), "sigma": float(sig), **meta}, f, indent=2)
+            print(f"Lensing φφ amplitude (normalized): alpha_hat={a_hat:.4g} ± {sig:.4g}")
         except Exception as e:
             print(f"[WARN] Lensing amplitude fit failed: {e}")
 

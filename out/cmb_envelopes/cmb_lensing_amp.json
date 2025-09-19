@@ -1,4 +1,10 @@
 {
-  "alpha_hat": 25436.36767234549,
-  "sigma": 2299.4248571168596
+  "alpha_hat": 1.0069608598114206,
+  "sigma": 0.02743408982413429,
+  "normalization": "L4_over_2pi_before_binning",
+  "bins_shape": [
+    9,
+    2501
+  ],
+  "scale_applied": 1.0
 }
