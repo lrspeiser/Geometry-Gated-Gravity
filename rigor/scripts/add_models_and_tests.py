@@ -37,10 +37,10 @@ def normalize_columns(df: pd.DataFrame) -> pd.DataFrame:
     cols = list(df.columns)
     mapping = {}
     mapping['gal_id']   = _first_present(cols, 'gal_id','galaxy','Galaxy')
-    mapping['r_kpc']    = _first_present(cols, 'r_kpc','R_kpc','R')
-    mapping['vbar_kms'] = _first_present(cols, 'vbar_kms','Vbar_kms','Vbar')
-    mapping['v_obs_kms']= _first_present(cols, 'v_obs_kms','Vobs_kms','V_obs_kms','Vobs')
-    mapping['is_outer'] = _first_present(cols, 'is_outer','outer_flag')
+    mapping['r_kpc']    = _first_present(cols, 'r_kpc','R_kpc','R','Radius_kpc')
+    mapping['vbar_kms'] = _first_present(cols, 'vbar_kms','Vbar_kms','Vbar','Baryonic_Speed_km_s')
+    mapping['v_obs_kms']= _first_present(cols, 'v_obs_kms','Vobs_kms','V_obs_kms','Vobs','Observed_Speed_km_s')
+    mapping['is_outer'] = _first_present(cols, 'is_outer','outer_flag','In_Outer_Region')
     mapping['M_bary_Msun'] = _first_present(cols, 'M_bary_Msun','Baryonic_Mass_Msun','M_bary')
     # Validate required
     required = ['gal_id','r_kpc','vbar_kms','v_obs_kms']
@@ -726,6 +726,29 @@ if __name__ == '__main__':
     # BTFR and RAR exports (with masses attached if available)
     btfr_lt = v_flat_per_gal(df2, col_lt)
     btfr_mp = v_flat_per_gal(df2, col_mp)
+    # If an observed BTFR table exists (from SPARC MRT), prefer its masses for model BTFRs
+    def _find_btfr_obs(pred_csv_path: Path, out_dir_path: Path) -> Path|None:
+        cand1 = out_dir_path/'btfr_observed.csv'
+        cand2 = pred_csv_path.parent/'btfr_observed.csv'
+        if cand1.exists():
+            return cand1
+        if cand2.exists():
+            return cand2
+        return None
+    # Resolve pred_csv path if available
+    try:
+        pred_csv_path = Path(getattr(args, 'pred_csv', ''))
+    except Exception:
+        pred_csv_path = Path('')
+    obs_path = _find_btfr_obs(pred_csv_path, out_dir)
+    if obs_path is not None:
+        try:
+            obs_btfr = pd.read_csv(obs_path)
+            obs_btfr = obs_btfr[['gal_id','M_bary_Msun']].dropna()
+            btfr_lt = btfr_lt.drop(columns=['M_bary_Msun'], errors='ignore').merge(obs_btfr, on='gal_id', how='left')
+            btfr_mp = btfr_mp.drop(columns=['M_bary_Msun'], errors='ignore').merge(obs_btfr, on='gal_id', how='left')
+        except Exception:
+            pass
     btfr_lt.to_csv(out_dir/'btfr_logtail.csv', index=False)
     btfr_mp.to_csv(out_dir/'btfr_muphi.csv', index=False)
     # Fit BTFR slope/scatter for LogTail and MuPhi in both forms (with CIs)
