@@ -1,0 +1,13 @@
+{
+  "Sigma_hat": 0.9733801697999874,
+  "sigma": 0.0222979271797817,
+  "A_shear_median": 0.9080153963912119,
+  "A_shear_sigma": 0.038275214075078834,
+  "alpha_phi": 1.0069608598114206,
+  "alpha_phi_sigma": 0.02743408982413429,
+  "inputs": {
+    "shear_json": "C:\\Users\\henry\\dev\\GravityCalculator\\out\\lensingkids_b21\\shear_amp_summary.json",
+    "phi_json": "C:\\Users\\henry\\dev\\GravityCalculator\\out\\cmb_envelopes\\cmb_lensing_amp.json",
+    "picked_chain": "C:\\Users\\henry\\dev\\GravityCalculator\\data\\lensing\\kids_b21\\chain_desy3_and_kids1000_hybrid_analysis.txt"
+  }
+}
