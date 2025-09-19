@@ -271,7 +271,7 @@ Outputs include the per‑template JSON bound, a CSV template for overlays, and 
 - CMB envelopes (clean-slate) and lensing φφ
   - TT-only bounds: lens ≲ 0.6% (95%), gk ≲ 3.7%, vea ≲ 0.31%.
   - φφ amplitude (CMB-marginalized): α_φ ≈ 1.007 ± 0.027 (normalized).
-  - Piecewise TT per-mode JSONs emitted for lens/gk/vea; TTTEEE stub added (will run if clik is available).
+  - Piecewise TT per-mode JSONs emitted for lens/gk/vea; TTTEEE status: unavailable (clik not found); will run joint envelopes once clik is available.
 
 On the rotation‑curve/RAR/lensing‑shape axes, **LogTail** (and to a lesser extent **MuPhi**) already clears the first bar for a baryon‑only alternative at **galaxy scales**, outperforming GR and approaching MOND under a **global parameter** constraint. The **BTFR** headline is **pending** a full SPARC‑MRT‑driven run; the **CMB** envelope nulls are encouraging but must be extended and tied to the models’ line‑of‑sight operators. If the remaining BTFR and lensing‑amplitude checks pass under a single parameter set, LogTail would match or exceed MOND’s empirical performance **without** introducing particle dark matter.
 
