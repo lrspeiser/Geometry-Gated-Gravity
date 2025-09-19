@@ -86,6 +86,11 @@ Cross‑validation (5‑fold, by galaxy):
 
 Using 3,391 points, the **observed** $g_{\rm obs}(g_{\rm bar})$ relation shows **0.1718 dex** orthogonal scatter (R²≈0.874). The **LogTail model** relation $g_{\rm model}(g_{\rm bar})$ is **much tighter at 0.0686 dex** (R²≈0.984), reflecting the single‑setting global fit against $V_{\rm obs}$ rather than an independent RAR calibration  .
 
+Per‑type robustness (SPARC morphological T):
+- RC medians by T are written to `out/analysis/type_breakdown/rc_medians_by_T.json` (LogTail and MuPhi medians, counts).
+- RAR curved stats by T are in `rar_obs_curved_by_T.json` (observed) and `rar_logtail_curved_by_T.json` (model).
+- Summary: LogTail maintains high medians across T with no catastrophic subclasses; MuPhi varies more but behaves as expected given the current grid.
+
 ### 5.3 Lensing sanity check (stack‑like ΔΣ)
 
 For the best‑fit LogTail parameters above, the predicted excess surface density follows a **slope ~−1 in log‑log** (isothermal expectation) with reference amplitudes **ΔΣ(50 kpc)=2.285×10⁷** and **ΔΣ(100 kpc)=1.143×10⁷ M⊙/kpc²** .
@@ -201,7 +206,20 @@ py rigor/scripts/add_models_and_tests.py \
 
 Inspect `btfr_qc.txt` (must be positive), `btfr_observed_fit.json`, and the join audits produced by the script (see data schemas)  .
 
-### 9.3 CMB TT envelopes (Planck plik_lite)
+### 9.3 Lensing amplitude check (with a stacked CSV)
+
+If you have a stacked lensing CSV with columns `[R_kpc, DeltaSigma_Msun_per_kpc2]`, compare predicted ΔΣ(R) to the stack amplitudes:
+
+```bash
+python -u rigor/scripts/add_models_and_tests.py \
+  --pred_csv out/analysis/type_breakdown/sparc_predictions_by_radius.csv \
+  --out_dir out/analysis/type_breakdown \
+  --lensing_stack_csv data/your_stack.csv
+```
+
+This writes `lensing_logtail_comparison.json` with predicted slope (~−1), ΔΣ(50/100 kpc), and amplitude ratios vs the provided stack.
+
+### 9.4 CMB TT envelopes (Planck plik_lite)
 
 ```bash
 # Lens-like smoothing, low-ℓ gate (gk), high-ℓ void envelope (vea)
