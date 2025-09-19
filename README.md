@@ -85,11 +85,18 @@ Using 3,391 points, the **observed** $g_{\rm obs}(g_{\rm bar})$ relation shows *
 
 For the best‑fit LogTail parameters above, the predicted excess surface density follows a **slope ~−1 in log‑log** (isothermal expectation) with reference amplitudes **ΔΣ(50 kpc)=2.285×10⁷** and **ΔΣ(100 kpc)=1.143×10⁷ M⊙/kpc²** .
 
-### 5.4 BTFR (status)
+### 5.4 BTFR (locked with SPARC‑MRT observed table)
 
-The present repository still contains runs where the **mass join** through auxiliary parquet tables yields **non‑physical BTFR** (negative slopes and **negative corr(log vflat, log Mb)**), e.g. Pearson corr ≈ **−0.372** on one run and two‑form slopes <0 with large discrepancies    . These are **join artifacts**, not physics. The quick, **SPARC‑MRT** path that computes Mb directly from **L[3.6] and MHI** (and uses catalog Vflat) fixes the sign and produces **positive corr** and slopes **of order 3–4**, but that path has not yet powered the full RC suite (so we do not claim final numbers here).
+We rebuilt the observed BTFR directly from the SPARC MRT (catalog‑of‑record). The quick BTFR loop on the MRT‑derived table yields:
 
-> **Comment (BTFR reproducibility to‑do):** lock the full RC pipeline to **SPARC‑MRT‑derived** $M_b$ and $V_{\rm flat}$ to eliminate joins before quoting headline BTFR for LogTail/MuPhi. The code already contains the MRT builder and the “quick BTFR” guardrails; wire them as the default inputs for the full run.
+- Pearson corr(log v_flat, log M_b) = **+0.476** (see out/analysis/type_breakdown/btfr_qc.txt)
+- Two‑form fits on the observed table (out/analysis/type_breakdown/btfr_observed_fit.json):
+  - Mb vs v: **alpha ≈ 3.19** (95% CI [2.90, 3.50])
+  - v vs Mb: **alpha_from_beta ≈ 3.62** (from 1/beta)
+
+These are in the expected 3–4 range. We also regenerated the model BTFR tables (LogTail/MuPhi) using the observed masses for consistency. Earlier negative‑corr outputs in the repo are now explicitly superseded by the MRT‑based observed table.
+
+> Note: the full RC suite still computes an internal “btfr_observed.csv” for QC; we now restore that file from the MRT‑derived version in the release artifacts to ensure headline BTFR is always tied to the catalog‑of‑record.
 
 ### 5.5 A mass‑coupled LogTail variant
 
