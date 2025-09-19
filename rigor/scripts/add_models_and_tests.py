@@ -615,6 +615,7 @@ if __name__ == '__main__':
     ap.add_argument('--enable_strict_fuzzy', action='store_true', help='Allow fuzzy matching (cutoff=0.95) for remaining mass joins after overrides.')
     ap.add_argument('--btfr_quick_only', action='store_true', help='Run only the mass join + observed BTFR + audits/suggestions, then exit.')
     ap.add_argument('--btfr_min_corr', type=float, default=None, help='If set, require Pearson corr(log vflat_obs, log Mb) >= this value; exit(2) otherwise.')
+    ap.add_argument('--btfr_min_slope', type=float, default=None, help='If set, require CI lower bounds for alpha (Mb vs v) and beta (v vs Mb) to be >= this value; exit(2) otherwise.')
     args = ap.parse_args()
 
     out_dir = Path(args.out_dir); out_dir.mkdir(parents=True, exist_ok=True)
@@ -650,8 +651,9 @@ if __name__ == '__main__':
 
         btfr_obs_quick = vflat_obs_per_gal_quick(df)
         btfr_obs_quick.to_csv(out_dir/'btfr_observed.csv', index=False)
+        fits_quick = btfr_fit_two_forms(btfr_obs_quick.rename(columns={'vflat_obs_kms':'vflat_kms'}))
         with open(out_dir/'btfr_observed_fit.json','w') as f:
-            json.dump(btfr_fit_two_forms(btfr_obs_quick.rename(columns={'vflat_obs_kms':'vflat_kms'})), f, indent=2)
+            json.dump(fits_quick, f, indent=2)
 
         qc = btfr_obs_quick.dropna()
         corr = float('nan')
@@ -672,10 +674,20 @@ if __name__ == '__main__':
             except Exception:
                 pass
 
-        # Optional guard rail for CI or scripted validation
+        # Optional guard rails for CI or scripted validation
         if (args.btfr_min_corr is not None) and (not (math.isfinite(corr) and corr >= args.btfr_min_corr)):
             print('BTFR quick pass failed minimum correlation threshold.', flush=True)
             raise SystemExit(2)
+        if args.btfr_min_slope is not None:
+            try:
+                a_lo = float(fits_quick['form_Mb_vs_v']['alpha_CI95'][0])
+                b_lo = float(fits_quick['form_v_vs_Mb']['beta_CI95'][0])
+                if not (a_lo >= args.btfr_min_slope and b_lo >= args.btfr_min_slope):
+                    print(f"BTFR quick pass failed slope CI guard: alpha_lo={a_lo:.3f}, beta_lo={b_lo:.3f} < {args.btfr_min_slope}", flush=True)
+                    raise SystemExit(2)
+            except Exception:
+                print('BTFR quick pass: unable to evaluate slope CI guard.', flush=True)
+                raise SystemExit(2)
         print('BTFR quick pass complete.', flush=True)
         raise SystemExit(0)
 
