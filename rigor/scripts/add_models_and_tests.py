@@ -613,6 +613,8 @@ if __name__ == '__main__':
     ap.add_argument('--lensing_stack_csv', default=None, help='Optional CSV of stacked lensing to compare against')
     ap.add_argument('--suggest_overrides', action='store_true', help='Write galaxy_name_override_suggestions.csv derived from btfr_join_outliers.csv.')
     ap.add_argument('--enable_strict_fuzzy', action='store_true', help='Allow fuzzy matching (cutoff=0.95) for remaining mass joins after overrides.')
+    ap.add_argument('--btfr_quick_only', action='store_true', help='Run only the mass join + observed BTFR + audits/suggestions, then exit.')
+    ap.add_argument('--btfr_min_corr', type=float, default=None, help='If set, require Pearson corr(log vflat_obs, log Mb) >= this value; exit(2) otherwise.')
     args = ap.parse_args()
 
     out_dir = Path(args.out_dir); out_dir.mkdir(parents=True, exist_ok=True)
@@ -630,6 +632,52 @@ if __name__ == '__main__':
     )
     # Attach catalog Vflat if available for observed BTFR
     df = attach_observed_vflat(df, Path('data')/'sparc_all_tables.parquet', audit_out=out_dir/'btfr_vflat_catalog_audit.csv')
+
+    # Optional quick BTFR-only flow for fast iteration on name overrides
+    if args.btfr_quick_only:
+        def vflat_obs_per_gal_quick(df_in: pd.DataFrame, frac_outer=0.3) -> pd.DataFrame:
+            rows = []
+            for gid, sub in df_in.groupby('gal_id'):
+                sub = sub.sort_values('r_kpc')
+                if 'Vflat_obs_kms' in sub.columns and np.isfinite(sub['Vflat_obs_kms']).any():
+                    vflat = float(sub['Vflat_obs_kms'].dropna().iloc[0])
+                else:
+                    k = max(1, int(frac_outer*len(sub)))
+                    vflat = float(np.median(sub['v_obs_kms'].tail(k).values))
+                Mb = float(sub['M_bary_Msun'].iloc[0]) if 'M_bary_Msun' in sub.columns else float('nan')
+                rows.append((gid, vflat, Mb))
+            return pd.DataFrame(rows, columns=['gal_id','vflat_obs_kms','M_bary_Msun'])
+
+        btfr_obs_quick = vflat_obs_per_gal_quick(df)
+        btfr_obs_quick.to_csv(out_dir/'btfr_observed.csv', index=False)
+        with open(out_dir/'btfr_observed_fit.json','w') as f:
+            json.dump(btfr_fit_two_forms(btfr_obs_quick.rename(columns={'vflat_obs_kms':'vflat_kms'})), f, indent=2)
+
+        qc = btfr_obs_quick.dropna()
+        corr = float('nan')
+        if len(qc) > 5:
+            xv = np.log10(np.clip(qc['vflat_obs_kms'].to_numpy(), 1e-6, None))
+            yM = np.log10(np.clip(qc['M_bary_Msun'].to_numpy(), 1e-6, None))
+            corr = float(np.corrcoef(xv, yM)[0,1])
+        (out_dir/'btfr_qc.txt').write_text(f"Pearson corr(log vflat_obs, log Mb) = {corr:.3f}\n")
+
+        # Outliers + suggestions to accelerate manual overrides
+        try:
+            btfr_outlier_report(btfr_obs_quick, out_dir/'btfr_join_outliers.csv', alpha_canon=4.0)
+        except Exception:
+            pass
+        if args.suggest_overrides:
+            try:
+                suggest_name_overrides(out_dir/'btfr_join_outliers.csv', Path('data')/'sparc_all_tables.parquet', out_dir/'galaxy_name_override_suggestions.csv', cutoff=0.95)
+            except Exception:
+                pass
+
+        # Optional guard rail for CI or scripted validation
+        if (args.btfr_min_corr is not None) and (not (math.isfinite(corr) and corr >= args.btfr_min_corr)):
+            print('BTFR quick pass failed minimum correlation threshold.', flush=True)
+            raise SystemExit(2)
+        print('BTFR quick pass complete.', flush=True)
+        raise SystemExit(0)
 
     # Narrow grids based on your prior run
     grid_logtail = [
