@@ -90,9 +90,28 @@ def _load_chain(path: Path, names_path: Path|None=None) -> pd.DataFrame:
     return df
 
 def _pick(df: pd.DataFrame, *cands: str) -> str|None:
+    cols = list(df.columns)
+    # exact first
     for c in cands:
         if c in df.columns:
             return c
+    # relaxed contains/endswith match
+    lowcols = [str(c).lower() for c in cols]
+    def _find(pred):
+        for name in lowcols:
+            if pred(name):
+                return df.columns[lowcols.index(name)]
+        return None
+    for c in cands:
+        key = c.lower()
+        # try suffix like '--s_8' or '--omega_m'
+        cand = _find(lambda n: n.endswith(f"--{key}"))
+        if cand:
+            return cand
+        # try contains anywhere
+        cand = _find(lambda n: key in n)
+        if cand:
+            return cand
     return None
 
 def _weighted_percentiles(x: np.ndarray, w: np.ndarray, qs=(16,50,84)):
@@ -110,14 +129,22 @@ def s8_from(df: pd.DataFrame) -> tuple[np.ndarray, np.ndarray]:
     Return (S8, weights). If an S8-like column exists, use it.
     Otherwise compute S8 = sigma8 * sqrt(omegam/0.3).
     """
-    w = df['weight'].to_numpy()
-    # common spellings
-    s8col = _pick(df, 's8', 's_8', 's8m', 's8z', 's8mz', 's8matter')
+    w = df['weight'].to_numpy() if 'weight' in df.columns else (df['weights'].to_numpy() if 'weights' in df.columns else np.ones(len(df)))
+    # Try direct S8 first (various spellings or nested names)
+    s8col = _pick(df, 's8', 's_8')
+    if s8col is None:
+        # sometimes appears as cosmological_parameters--s_8
+        s8col = _pick(df, 'cosmological_parameters--s_8')
     if s8col:
-        return df[s8col].to_numpy(), w
+        return pd.to_numeric(df[s8col], errors='coerce').to_numpy(), w
 
-    sig8 = _pick(df, 'sigma8', 'sig8', 'sigma_8')
+    # Derive from sigma8 and Omega_m
+    sig8 = _pick(df, 'sigma8', 'sigma_8')
+    if sig8 is None:
+        sig8 = _pick(df, 'cosmological_parameters--sigma_8')
     om   = _pick(df, 'omegam', 'omega_m', 'omega', 'om')
+    if om is None:
+        om = _pick(df, 'cosmological_parameters--omega_m')
     if not (sig8 and om):
         # cannot compute S8
         return np.full(len(df), np.nan), w
