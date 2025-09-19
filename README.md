@@ -78,7 +78,8 @@ Across 1,167 outer points, **LogTail** attains **89.98% median closeness** with 
 Cross‑validation (5‑fold, by galaxy):
 - cv_summary (out/analysis/type_breakdown/cv/cv_summary.csv) shows LogTail test medians ~88.6–91.2% across folds (train medians ~89.5–90.4%).
 - MuPhi test medians vary more (~73.5–89.2%), consistent with slightly weaker overall performance on this grid.
-- Fold details are under out/analysis/type_breakdown/cv/fold_*/summary_logtail_muphi.json (train medians and selected params per fold).
+- RAR OOS (out/analysis/type_breakdown/cv/cv_rar_summary.csv): observed curved scatter per fold ~0.136–0.181 dex; LogTail model curved scatter per fold ~0.057–0.109 dex (as expected for a deterministic theory curve fit to data).
+- Fold details are under out/analysis/type_breakdown/cv/fold_*/summary_logtail_muphi.json (train/test medians and fold-level RAR stats).
 
 > **Context:** Your earlier comparison showed MOND ≈89.8% median, Shell ≈79.2%, GR ≈63.9%, while per‑galaxy NFW fits on a subset were ≈97.7% (not apples‑to‑apples vs global models) .
 
