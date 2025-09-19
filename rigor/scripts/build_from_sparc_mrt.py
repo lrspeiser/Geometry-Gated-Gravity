@@ -90,17 +90,26 @@ def read_sparc_catalog(mrt_path: Path) -> pd.DataFrame:
 
     # If M_bary is missing, synthesize M* + 1.33*MHI from L36 with a conservative M/L
     if 'M_bary_Msun' not in out.columns:
+        # SPARC Table 1 uses 10^9 units for L[3.6] and MHI. Convert to physical Msun.
+        n = len(out)
+        Lsun = np.full(n, np.nan)
         if 'L36' in out.columns:
             L = out['L36'].to_numpy()
-            # If looks like log10(L), exponentiate
+            # If looks like log10(L), exponentiate (now in Lsun); else values are in 10^9 Lsun -> scale by 1e9
             if np.nanmax(L) < 20.0:
-                L = np.power(10.0, L)
-            Mstar = 0.5 * L  # baseline SPARC M/L_3.6 ~ 0.5
-        else:
-            Mstar = np.full(len(out), np.nan)
-        MHI = out['MHI'].to_numpy() if 'MHI' in out.columns else np.full(len(out), np.nan)
-        Mb = np.where(np.isfinite(Mstar), Mstar, 0.0) + 1.33*np.where(np.isfinite(MHI), MHI, 0.0)
-        out['M_bary_Msun'] = np.where(Mb>0, Mb, np.nan)
+                Lsun = np.power(10.0, L)
+            else:
+                Lsun = L * 1e9
+        MHI_ms = np.full(n, np.nan)
+        if 'MHI' in out.columns:
+            MHI_vals = out['MHI'].to_numpy()
+            # SPARC MHI is in 10^9 Msun -> scale by 1e9
+            MHI_ms = MHI_vals * 1e9
+        # Stellar mass with baseline SPARC M/L_3.6 ~ 0.5
+        Mstar = 0.5 * np.where(np.isfinite(Lsun), Lsun, 0.0)
+        Mb = Mstar + 1.33*np.where(np.isfinite(MHI_ms), MHI_ms, 0.0)
+        Mb = np.where(Mb>0, Mb, np.nan)
+        out['M_bary_Msun'] = Mb
 
     # Ensure expected columns exist to avoid KeyError downstream
     for c in ('gal_id','Vflat_obs_kms','M_bary_Msun'):

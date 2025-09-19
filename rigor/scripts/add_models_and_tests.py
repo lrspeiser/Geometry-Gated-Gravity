@@ -651,7 +651,18 @@ if __name__ == '__main__':
                 rows.append((gid, vflat, Mb))
             return pd.DataFrame(rows, columns=['gal_id','vflat_obs_kms','M_bary_Msun'])
 
-        btfr_obs_quick = vflat_obs_per_gal_quick(df)
+        # Prefer MRT-derived observed table if present (catalog-of-record for names and Vflat)
+        mrt_obs_path = out_dir/'btfr_observed.csv'
+        if mrt_obs_path.exists():
+            try:
+                btfr_obs_quick = pd.read_csv(mrt_obs_path)
+                # Basic sanity: ensure expected columns
+                if not {'gal_id','Vflat_obs_kms'}.issubset(btfr_obs_quick.columns):
+                    btfr_obs_quick = vflat_obs_per_gal_quick(df)
+            except Exception:
+                btfr_obs_quick = vflat_obs_per_gal_quick(df)
+        else:
+            btfr_obs_quick = vflat_obs_per_gal_quick(df)
         btfr_obs_quick.to_csv(out_dir/'btfr_observed.csv', index=False)
         fits_quick = btfr_fit_two_forms(btfr_obs_quick.rename(columns={'vflat_obs_kms':'vflat_kms'}))
         with open(out_dir/'btfr_observed_fit.json','w') as f:
