@@ -96,7 +96,28 @@ Per‑type robustness (SPARC morphological T):
 
 For the best‑fit LogTail parameters above, the predicted excess surface density follows a **slope ~−1 in log‑log** (isothermal expectation) with reference amplitudes **ΔΣ(50 kpc)=2.285×10⁷** and **ΔΣ(100 kpc)=1.143×10⁷ M⊙/kpc²** .
 
-### 5.4 BTFR (locked with SPARC‑MRT observed table)
+### 5.4 Cosmic shear amplitude (DES Y3 + KiDS‑1000 “hybrid analysis”) vs Planck CMB lensing (φφ)
+
+We reduce the DES Y3 / KiDS‑1000 hybrid cosmic‑shear chains to the **single‑parameter amplitude**
+$S_8 \equiv \sigma_8 \sqrt{\Omega_m/0.3}$ and report a **shape‑preserving shear amplitude** \(A_{\rm shear} \propto S_8^2\) relative to a reference $S_{8,\rm ref}=0.83$.
+
+Per‑chain summaries (from `out/lensingkids_b21/shear_amp_summary.json`):
+- DES+KiDS joint: S8 = 0.791 [0.774, 0.807]; A_shear = 0.908 [0.869, 0.946]
+- DES‑only:       S8 = 0.803 [0.782, 0.823]; A_shear = 0.937 [0.888, 0.983]
+- KiDS‑only:      S8 = 0.766 [0.736, 0.790]; A_shear = 0.853 [0.787, 0.906]
+
+Planck CMB lensing (φφ) amplitude (from our φφ normalization run):
+- α_φ = 1.00696 ± 0.02743 (normalized to unity on the Planck fiducial)
+
+Tension A_shear vs α_φ (σ units, using the φφ error as the yardstick):
+- DES+KiDS: |0.908−1.007| / 0.0274 ≈ **3.61σ**
+- DES‑only: |0.937−1.007| / 0.0274 ≈ **2.57σ**
+- KiDS‑only:|0.853−1.007| / 0.0274 ≈ **5.62σ**
+
+Interpretation:
+- In a **theory‑agnostic, shape‑preserving** framing, **cosmic shear prefers a lower late‑time lensing amplitude** than the φφ reconstruction. Any baryon‑only late‑time gravity proposal (including LogTail/MuPhi) that predicts **global rescalings** of the lensing kernel can be adjudicated via a **single slip dial** \(\Sigma\) (see §6 and §9.6). The present quick‑look indicates that a **scale‑independent** \(\Sigma\) would sit **below unity** if we anchored it to cosmic shear alone, while φφ favors \(\Sigma\simeq 1\). Reconciling both could require mild **scale/redshift dependence** in \(\Sigma(k,z)\) or a non‑trivial growth history.
+
+### 5.5 BTFR (locked with SPARC‑MRT observed table)
 
 We rebuilt the observed BTFR directly from the SPARC MRT (catalog‑of‑record). The quick BTFR loop on the MRT‑derived table yields:
 
@@ -118,7 +139,11 @@ A test variant with $v_0(M_b)\propto M_b^{1/4}$ underperforms the simple global 
 
 ---
 
-## 6. CMB envelope tests (TT only, Planck 2018 plik_lite)
+## 6. CMB envelope tests (TT only, Planck 2018 plik_lite) and a one‑parameter slip Σ
+
+We constructed **linear “envelope” operators** that emulate three late‑time effects in a static‑universe framing without invoking early‑time physics: a **lensing‑like peak smoothing**, a **low‑ℓ gated reweighting**, and a **high‑ℓ void envelope**. Fitting a single amplitude per template to **binned TT** with the plik_lite covariance yields **null‑consistent amplitudes** (TT‑only), i.e., **no evidence for additional smoothing or reweighting** beyond Planck’s baseline. (Exact envelope bounds live in the `out/cmb_envelopes` JSONs; methods are documented in your CMB script/readme.)
+
+We also normalize the **Planck φφ‑amplitude** so that α_φ ≈ 1 on the fiducial. To confront late‑time lensing across data sets, we introduce a **one‑parameter gravitational slip** \(\Sigma\), defined so that a **shape‑preserving rescaling** of the lensing potential maps to amplitudes α ≃ \(\Sigma\) in φφ and \(A_{\rm shear}\) ≃ \(\Sigma\) for cosmic shear (within this agnostic approximation). A first combined estimate of \(\Sigma\) can be formed by an inverse‑variance average of α_φ and \(A_{\rm shear}\) (see §9.6).
 
 We constructed **linear “envelope” operators** that emulate three late‑time effects in a static‑universe framing without invoking early‑time physics: a **lensing‑like peak smoothing**, a **low‑ℓ gated reweighting**, and a **high‑ℓ void envelope**. Fitting a single amplitude per template to **binned TT** with the plik_lite covariance yields **null‑consistent amplitudes** (TT‑only), i.e., **no evidence for additional smoothing or reweighting** beyond Planck’s baseline. (Exact envelope bounds live in the `out/cmb_envelopes` JSONs; methods are documented in your CMB script/readme.)
 
@@ -245,6 +270,53 @@ py rigor/scripts/cmb_static_expts.py \
 
 Outputs include the per‑template JSON bound, a CSV template for overlays, and optional PNGs (documented in your script/readme).
 
+### 9.5 Cosmic shear quick‑look (DES Y3 / KiDS‑1000)
+
+```bash
+# Single joint chain (DES+KiDS hybrid)
+py rigor/scripts/shear_amp_from_chains.py \
+  --chains data/lensing/kids_b21/chain_desy3_and_kids1000_hybrid_analysis.txt \
+  --out_dir out/lensingkids_b21 \
+  --s8_ref 0.83
+
+# All three chains in one summary
+py rigor/scripts/shear_amp_from_chains.py \
+  --chains data/lensing/kids_b21/chain_desy3_and_kids1000_hybrid_analysis.txt \
+           data/lensing/kids_b21/chain_desy3_hybrid_analysis.txt \
+           data/lensing/kids_b21/chain_kids1000_hybrid_analysis.txt \
+  --out_dir out/lensingkids_b21 \
+  --s8_ref 0.83
+```
+
+Artifacts: `out/lensingkids_b21/shear_amp_summary.json` (S8 percentiles, A_shear, optional comparison to φφ at `out/cmb_envelopes/cmb_lensing_amp.json`).
+
+### 9.6 One‑parameter slip Σ (combined amplitude from shear + φφ)
+
+```bash
+# Compute a combined Σ (inverse-variance average) using A_shear and α_φ
+py rigor/scripts/cmb_static_expts.py \
+  --fit_sigma_slip \
+  --shear_json out/lensingkids_b21/shear_amp_summary.json \
+  --phi_json   out/cmb_envelopes/cmb_lensing_amp.json \
+  --out_dir    out/cmb_envelopes
+```
+
+This writes `out/cmb_envelopes/sigma_slip_fit.json` with:
+- `Sigma_hat` (best estimate), `sigma` (1σ), and the inputs used.
+- sanity fields: `A_shear_median`, `A_shear_sigma`, `alpha_phi`, `alpha_phi_sigma`.
+
+Notes:
+- In the shape‑preserving approximation, both amplitudes should equal \(\Sigma\). If shear and φφ disagree at ≳3σ (as the current quick‑look suggests), a single scale‑independent \(\Sigma\) cannot reconcile them; this points to mild **scale/redshift dependence** in \(\Sigma(k,z)\) or **growth history** effects.
+
+```bash
+# Lens-like smoothing, low-ℓ gate (gk), high-ℓ void envelope (vea)
+py rigor/scripts/cmb_static_expts.py \
+  --mode lens --plik_lite_dir data/baseline/plc_3.0/hi_l/plik_lite/plik_lite_v22_TT.clik/clik/lkl_0/_external \
+  --out_dir out/cmb_envelopes
+```
+
+Outputs include the per‑template JSON bound, a CSV template for overlays, and optional PNGs (documented in your script/readme).
+
 ---
 
 ## 10. Discussion
@@ -288,7 +360,9 @@ Outputs include the per‑template JSON bound, a CSV template for overlays, and 
 - CMB envelopes (clean-slate) and lensing φφ
   - TT-only bounds: lens ≲ 0.6% (95%), gk ≲ 3.7%, vea ≲ 0.31%.
   - φφ amplitude (CMB-marginalized): α_φ ≈ 1.007 ± 0.027 (normalized).
-  - Piecewise TT per-mode JSONs emitted for lens/gk/vea; TTTEEE status: unavailable (clik not found); will run joint envelopes once clik is available.
+  - Cosmic shear (DES+KiDS quick‑look): A_shear ≈ 0.908 [0.869, 0.946] (Σ proxy < 1); φφ prefers Σ ≈ 1.
+  - Implication: a single, scale‑independent Σ underfits one of the datasets; consider Σ(k,z) or mild growth changes.
+  - Piecewise TT per‑mode JSONs emitted for lens/gk/vea; TTTEEE status: pending clik; joint TTTEEE planned once clik is available.
 
 On the rotation‑curve/RAR/lensing‑shape axes, **LogTail** (and to a lesser extent **MuPhi**) already clears the first bar for a baryon‑only alternative at **galaxy scales**, outperforming GR and approaching MOND under a **global parameter** constraint. The **BTFR** headline is **pending** a full SPARC‑MRT‑driven run; the **CMB** envelope nulls are encouraging but must be extended and tied to the models’ line‑of‑sight operators. If the remaining BTFR and lensing‑amplitude checks pass under a single parameter set, LogTail would match or exceed MOND’s empirical performance **without** introducing particle dark matter.
 
