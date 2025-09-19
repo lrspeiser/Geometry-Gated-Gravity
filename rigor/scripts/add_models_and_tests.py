@@ -304,9 +304,9 @@ def attach_observed_vflat(df: pd.DataFrame, all_tables_parquet: Path|None, audit
     need = j['Vflat_obs_kms'].isna()
     if need.any():
         # Use j's own order to avoid index alignment issues
-    ttV = tt[['_norm','Vflat_obs_kms']].dropna(subset=['_norm']).drop_duplicates('_norm')
-    j2 = j.loc[need, ['_norm']].merge(ttV, on='_norm', how='left')
-    j.loc[need, 'Vflat_obs_kms'] = j2['Vflat_obs_kms'].to_numpy()
+        ttV = tt[['_norm','Vflat_obs_kms']].dropna(subset=['_norm']).drop_duplicates('_norm')
+        j2 = j.loc[need, ['_norm']].merge(ttV, on='_norm', how='left')
+        j.loc[need, 'Vflat_obs_kms'] = j2['Vflat_obs_kms'].to_numpy()
     out = df.copy()
     out['Vflat_obs_kms'] = pd.to_numeric(j['Vflat_obs_kms'], errors='coerce')
     if audit_out is not None:
@@ -336,9 +336,9 @@ def attach_morph_type(df: pd.DataFrame, all_tables_parquet: Path|None) -> pd.Dat
     need = j['T_type'].isna()
     if need.any():
         # Use j's own order to avoid index alignment issues
-    ttT = tt[['_norm','T_type']].dropna(subset=['_norm']).drop_duplicates('_norm')
-    j2 = j.loc[need, ['_norm']].merge(ttT, on='_norm', how='left')
-    j.loc[need, 'T_type'] = j2['T_type'].to_numpy()
+        ttT = tt[['_norm','T_type']].dropna(subset=['_norm']).drop_duplicates('_norm')
+        j2 = j.loc[need, ['_norm']].merge(ttT, on='_norm', how='left')
+        j.loc[need, 'T_type'] = j2['T_type'].to_numpy()
     out = df.copy()
     out['T_type'] = pd.to_numeric(j['T_type'], errors='coerce')
     return out
