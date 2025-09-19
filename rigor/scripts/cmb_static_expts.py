@@ -417,6 +417,11 @@ def build_argparser() -> argparse.ArgumentParser:
     ap.add_argument('--phiamp', action='store_true', help='Fit Planck lensing reconstruction amplitude α_φ')
     ap.add_argument('--lensing_dir', type=str, default='data/baseline/plc_3.0/lensing/smicadx12_Dec5_ftl_mv2_ndclpp_p_teb_consext8_CMBmarged.clik_lensing/clik_lensing', help='Path to clik_lensing directory containing pp_hat, cl_fid, siginv, bins (FITS primary arrays)')
 
+    # One-parameter slip Σ fit from shear + φφ amplitudes
+    ap.add_argument('--fit_sigma_slip', action='store_true', help='Combine cosmic-shear amplitude (A_shear) and φφ amplitude (alpha_phi) into a single Σ by inverse-variance averaging')
+    ap.add_argument('--shear_json', type=str, default='out/lensingkids_b21/shear_amp_summary.json', help='Path to shear_amp_summary.json (from shear_amp_from_chains.py)')
+    ap.add_argument('--phi_json', type=str, default='out/cmb_envelopes/cmb_lensing_amp.json', help='Path to cmb_lensing_amp.json (alpha_hat, sigma)')
+
     # Piecewise envelopes
     ap.add_argument('--piecewise', action='store_true', help='Fit piecewise band amplitudes for the chosen template mode')
     ap.add_argument('--bands', type=str, default='2-50,50-250,250-800,800-1500,1500-2500', help='Comma-separated band edges like "2-50,50-250,250-800,800-1500,1500-2500"')
@@ -443,7 +448,59 @@ if __name__ == '__main__':
         except Exception as e:
             print(f"[WARN] Lensing amplitude fit failed: {e}")
 
-    # 2) Piecewise envelope amplitudes (requires plik_lite_dir and mode)
+    # 2) Σ slip (shape-preserving, combined amplitude)
+    if args.fit_sigma_slip:
+        try:
+            # Load shear summary
+            sj_path = os.path.abspath(args.shear_json)
+            pj_path = os.path.abspath(args.phi_json)
+            with open(sj_path, 'r') as f:
+                shear = json.load(f)
+            # Choose a chain: prefer DES+KiDS joint if present
+            chains = shear.get('chains', []) if isinstance(shear, dict) else []
+            pick = None
+            for c in chains:
+                path = str(c.get('chain','')).lower()
+                if 'desy3_and_kids1000' in path or 'and_kids1000' in path:
+                    pick = c; break
+            if pick is None and chains:
+                pick = chains[0]
+            if not pick:
+                raise RuntimeError('No chain entries found in shear_json')
+            Ainfo = pick.get('A_shear_from_S8', {})
+            A_med = float(Ainfo.get('median', np.nan))
+            A_p16 = float(Ainfo.get('p16', np.nan))
+            A_p84 = float(Ainfo.get('p84', np.nan))
+            A_sig = float((A_p84 - A_p16)/2.0) if np.isfinite(A_p84) and np.isfinite(A_p16) else float('nan')
+            # Load phi amp
+            with open(pj_path, 'r') as f:
+                phi = json.load(f)
+            a_phi = float(phi.get('alpha_hat', np.nan))
+            s_phi = float(phi.get('sigma', np.nan))
+            # Combine by inverse-variance average (ignore NaNs)
+            terms = []
+            if np.isfinite(A_med) and np.isfinite(A_sig) and A_sig > 0:
+                terms.append((A_med, 1.0/(A_sig*A_sig)))
+            if np.isfinite(a_phi) and np.isfinite(s_phi) and s_phi > 0:
+                terms.append((a_phi, 1.0/(s_phi*s_phi)))
+            if not terms:
+                raise RuntimeError('No finite inputs to combine for Σ')
+            wsum = sum(w for _, w in terms)
+            Sigma_hat = sum(val*w for val, w in terms) / wsum
+            Sigma_sigma = (1.0/wsum) ** 0.5
+            out = {
+                'Sigma_hat': float(Sigma_hat), 'sigma': float(Sigma_sigma),
+                'A_shear_median': float(A_med), 'A_shear_sigma': float(A_sig),
+                'alpha_phi': float(a_phi), 'alpha_phi_sigma': float(s_phi),
+                'inputs': {'shear_json': sj_path, 'phi_json': pj_path, 'picked_chain': pick.get('chain','')}
+            }
+            with open(os.path.join(args.out_dir, 'sigma_slip_fit.json'), 'w') as f:
+                json.dump(out, f, indent=2)
+            print(f"Σ_hat={Sigma_hat:.4g} ± {Sigma_sigma:.4g} (A_shear={A_med:.4g}±{A_sig:.4g}, α_φ={a_phi:.4g}±{s_phi:.4g})")
+        except Exception as e:
+            print(f"[WARN] Σ fit failed: {e}")
+
+    # 3) Piecewise envelope amplitudes (requires plik_lite_dir and mode)
     if args.piecewise:
         if not args.plik_lite_dir:
             raise SystemExit("--piecewise requires --plik_lite_dir")
