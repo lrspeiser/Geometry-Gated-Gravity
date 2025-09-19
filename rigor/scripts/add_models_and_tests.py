@@ -223,11 +223,12 @@ def join_masses_enhanced(df: pd.DataFrame,
     if mask_need.any():
         left_sub = left[mask_need].copy()
         left_sub = left_sub.reset_index().rename(columns={'index':'_idx'})
-        tmp = left_sub.merge(mm[['gal_src','M_bary_Msun']], left_on='gal_id', right_on='gal_src', how='left')
-        ok = tmp['M_bary_Msun'].notna()
+        tmp = left_sub.merge(mm[['gal_src','M_bary_Msun']], left_on='gal_id', right_on='gal_src', how='left', suffixes=('', '_src'))
+        col_mass = 'M_bary_Msun_src' if 'M_bary_Msun_src' in tmp.columns else ('M_bary_Msun' if 'M_bary_Msun' in tmp.columns else None)
+        ok = tmp[col_mass].notna() if col_mass else pd.Series(False, index=tmp.index)
         if ok.any():
             idxs = tmp.loc[ok, '_idx'].to_numpy()
-            joined_mass.loc[idxs] = tmp.loc[ok, 'M_bary_Msun'].to_numpy()
+            joined_mass.loc[idxs] = tmp.loc[ok, col_mass].to_numpy()
             audit.loc[idxs, 'join_method'] = 'exact_raw'
             audit.loc[idxs, 'match_name'] = tmp.loc[ok, 'gal_src'].to_numpy()
 
@@ -236,11 +237,12 @@ def join_masses_enhanced(df: pd.DataFrame,
     if mask_need.any():
         left_sub = left[mask_need].copy()
         left_sub = left_sub.reset_index().rename(columns={'index':'_idx'})
-        tmp = left_sub.merge(mm[['_norm','M_bary_Msun','gal_src']], on='_norm', how='left')
-        ok = tmp['M_bary_Msun'].notna()
+        tmp = left_sub.merge(mm[['_norm','M_bary_Msun','gal_src']], on='_norm', how='left', suffixes=('', '_src'))
+        col_mass = 'M_bary_Msun_src' if 'M_bary_Msun_src' in tmp.columns else ('M_bary_Msun' if 'M_bary_Msun' in tmp.columns else None)
+        ok = tmp[col_mass].notna() if col_mass else pd.Series(False, index=tmp.index)
         if ok.any():
             idxs = tmp.loc[ok, '_idx'].to_numpy()
-            joined_mass.loc[idxs] = tmp.loc[ok, 'M_bary_Msun'].to_numpy()
+            joined_mass.loc[idxs] = tmp.loc[ok, col_mass].to_numpy()
             audit.loc[idxs, 'join_method'] = 'exact_norm'
             audit.loc[idxs, 'match_name'] = tmp.loc[ok, 'gal_src'].to_numpy()
 
