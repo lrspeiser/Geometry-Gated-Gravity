@@ -1,0 +1,15 @@
+{
+  "mode": "vea",
+  "nbins": 613,
+  "sigma_A": 0.0015566970058031831,
+  "A95": 0.003051126131374239,
+  "params": {
+    "lens_sigma": null,
+    "gk_l0": null,
+    "gk_width": null,
+    "gk_power": null,
+    "vea_l0": 800.0,
+    "vea_width": 150.0,
+    "vea_alpha": 0.15
+  }
+}

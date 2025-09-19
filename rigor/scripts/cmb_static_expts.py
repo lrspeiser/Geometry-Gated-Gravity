@@ -2,7 +2,7 @@
 from __future__ import annotations
 import argparse, json, os, sys
 from dataclasses import dataclass, asdict
-from typing import Tuple, Dict
+from typing import Tuple, Dict, List
 import numpy as np
 
 try:
@@ -60,6 +60,71 @@ def read_plik_lite_tt(plik_lite_dir: str) -> Tuple[np.ndarray, np.ndarray, np.nd
         raise ValueError(f"Cov shape {cov.shape} does not match data length {len(y)}")
 
     return ell, y, ysig, cov
+
+
+def read_fits_primary_array(path: str) -> np.ndarray:
+    """Minimal FITS primary-array reader (no external deps).
+
+    Supports BITPIX = -64 (float64) arrays. Returns a numpy array with native endianness.
+    """
+    with open(path, 'rb') as f:
+        # Read header in 2880-byte blocks until 'END' card encountered
+        header = bytearray()
+        while True:
+            block = f.read(2880)
+            if not block:
+                raise RuntimeError(f"Unexpected EOF while reading FITS header: {path}")
+            header.extend(block)
+            if b'END' in block:
+                break
+        # FITS data starts at the next 2880-byte boundary
+        # The header itself is a sequence of 80-char cards, but padding may follow 'END'
+        # Compute data offset as a multiple of 2880
+        total_header_len = (len(header) // 2880) * 2880
+        # Parse minimal keywords
+        htxt = header.decode('ascii', errors='ignore')
+        # Extract BITPIX
+        def _get_kw(kw: str, default=None, cast=int):
+            i = htxt.find(kw)
+            if i == -1:
+                return default
+            # Value starts after '=' and possibly spaces
+            sub = htxt[i:i+80]
+            if '=' in sub:
+                val = sub.split('=')[1].strip()
+                # Trim comments
+                if '/' in val:
+                    val = val.split('/')[0].strip()
+                try:
+                    return cast(val)
+                except Exception:
+                    try:
+                        return cast(val.strip("' "))
+                    except Exception:
+                        return default
+            return default
+        bitpix = _get_kw('BITPIX', None, int)
+        naxis = _get_kw('NAXIS', None, int)
+        if bitpix != -64 or naxis is None:
+            raise RuntimeError(f"Unsupported FITS (need BITPIX=-64) or missing NAXIS in {path}")
+        # Determine data length
+        if naxis == 0:
+            return np.array([], dtype=np.float64)
+        # Collect NAXISn
+        lens: List[int] = []
+        for ax in range(1, naxis+1):
+            val = _get_kw(f'NAXIS{ax}', None, int)
+            if val is None:
+                raise RuntimeError(f"Missing NAXIS{ax} in FITS header: {path}")
+            lens.append(int(val))
+        count = int(np.prod(lens))
+        # Seek to data start and read count float64 big-endian values
+        # Ensure file pointer at correct multiple of 2880
+        with open(path, 'rb') as f2:
+            f2.seek(total_header_len)
+            data = f2.read(count * 8)
+        arr = np.frombuffer(data, dtype='>f8').astype(np.float64, copy=False)
+        return arr.reshape(tuple(lens), order='C')
 
 
 # ----------------------------- Templates -----------------------------
@@ -157,6 +222,72 @@ def peak_positions(ell: np.ndarray, y: np.ndarray, nmax: int = 5) -> Dict:
     }
 
 
+# ----------------------------- Lensing reconstruction amplitude -----------------------------
+
+def fit_lensing_phi_amplitude(lensing_dir: str) -> Tuple[float, float]:
+    """Fit amplitude alpha for Planck lensing reconstruction pp_hat against fiducial cl_fid.
+
+    Expects the directory to contain FITS primary-array files (no extensions):
+      - pp_hat   (Nbins,) binned C_L^{\phi\phi} estimate
+      - siginv   (Nbins^2,) inverse covariance, row-major
+      - cl_fid   (Lmax+1,) unbinned fiducial C_L^{\phi\phi}
+      - bins     (Nbins * (Lmax+1),) binning matrix to map unbinned -> binned
+
+    Returns (alpha_hat, sigma_alpha).
+    """
+    pp_hat = read_fits_primary_array(os.path.join(lensing_dir, 'pp_hat')).astype(np.float64).ravel()
+    siginv_1d = read_fits_primary_array(os.path.join(lensing_dir, 'siginv')).astype(np.float64).ravel()
+    cl_unb = read_fits_primary_array(os.path.join(lensing_dir, 'cl_fid')).astype(np.float64).ravel()
+    bins_1d = read_fits_primary_array(os.path.join(lensing_dir, 'bins')).astype(np.float64).ravel()
+
+    Nbins = pp_hat.size
+    L = cl_unb.size
+    if bins_1d.size != Nbins * L:
+        raise RuntimeError(f"bins size {bins_1d.size} != Nbins({Nbins}) * L({L})")
+    # Reshape binning to (Nbins, L) so that t_binned = B @ cl_unb
+    B = bins_1d.reshape((Nbins, L))
+    t = B @ cl_unb  # (Nbins,)
+
+    if siginv_1d.size != Nbins * Nbins:
+        raise RuntimeError(f"siginv size {siginv_1d.size} != Nbins^2({Nbins*Nbins})")
+    SigInv = siginv_1d.reshape((Nbins, Nbins))
+
+    tCt = float(t @ SigInv @ t)
+    if tCt <= 0:
+        raise RuntimeError("Non-positive t^T C^{-1} t; cannot define sigma")
+    tCd = float(t @ SigInv @ pp_hat)
+    a_hat = tCd / tCt
+    sigma_a = tCt ** -0.5
+    return a_hat, sigma_a
+
+
+# ----------------------------- Piecewise envelope fit -----------------------------
+
+def fit_piecewise_amplitudes(ell: np.ndarray, Cb_data: np.ndarray, Cov: np.ndarray, F_template: np.ndarray, band_masks: List[np.ndarray]) -> Tuple[np.ndarray, np.ndarray]:
+    """Generalized least squares for piecewise amplitudes A_j on a single template restricted to bands.
+
+    Cb_model = Cb_data + sum_j A_j * (F_template * 1_{band j})
+
+    Returns (A_hat [J,], Cov_A [J,J]).
+    """
+    # Build design matrix columns as masked templates
+    cols = []
+    for mask in band_masks:
+        v = np.where(mask, F_template, 0.0)
+        cols.append(v)
+    if not cols:
+        raise ValueError("No bands provided")
+    T = np.stack(cols, axis=1)  # (Nbins, J)
+
+    # Use pseudo-inverse for numerical stability
+    Ci = np.linalg.pinv(Cov)
+    N = T.T @ Ci @ T
+    y = T.T @ Ci @ Cb_data
+    Cov_A = np.linalg.pinv(N)
+    A_hat = Cov_A @ y
+    return A_hat, Cov_A
+
+
 # ----------------------------- Main runner -----------------------------
 
 def run_mode(plik_lite_dir: str, mode: str, out_dir: str, **kwargs):
@@ -230,8 +361,8 @@ def run_mode(plik_lite_dir: str, mode: str, out_dir: str, **kwargs):
             ax.plot(ell, y, color='k', lw=1.2, label='Planck TT (binned)')
             ax.plot(ell, y + sigA*F, color='tab:blue', alpha=0.7, lw=1.0, label='+1σ envelope')
             ax.plot(ell, y - sigA*F, color='tab:orange', alpha=0.7, lw=1.0, label='-1σ envelope')
-            ax.set_xlabel(r'$\ell_{\rm eff}$')
-            ax.set_ylabel(r'$C_\ell\;[\mu\mathrm{K}^2]$')
+            ax.set_xlabel(r'$\\ell_{\\rm eff}$')
+            ax.set_ylabel(r'$C_\\ell\\;[\\mu\\mathrm{K}^2]$')
             ax.set_title(f"Envelope test: {mode} (σ_A={sigA:.3g}, 95%={A95:.3g})")
             ax.legend(loc='best')
             ax.grid(alpha=0.2)
@@ -245,10 +376,10 @@ def run_mode(plik_lite_dir: str, mode: str, out_dir: str, **kwargs):
 
 
 def build_argparser() -> argparse.ArgumentParser:
-    ap = argparse.ArgumentParser(description="Planck plik_lite TT envelope tests (clean-slate late-time imprints)")
-    ap.add_argument('--plik_lite_dir', required=True, help='Path to plik_lite _external directory (contains cl_cmb_plik_v22.dat, c_matrix_plik_v22.dat, etc.)')
-    ap.add_argument('--out_dir', required=True, help='Where to write outputs (JSON/CSV/PNG)')
-    ap.add_argument('--mode', choices=['lens','gk','vea'], required=True, help='Template mode: lens (smoothing), gk (low-ℓ gated kernel), vea (high-ℓ void envelope)')
+    ap = argparse.ArgumentParser(description="Planck plik_lite TT/TTTEEE envelope tests and Planck lensing amplitude (dependency-light)")
+    ap.add_argument('--plik_lite_dir', required=False, help='Path to plik_lite _external directory (contains cl_cmb_plik_v22.dat, c_matrix_plik_v22.dat, etc.)')
+    ap.add_argument('--out_dir', required=False, default='out/cmb_envelopes', help='Where to write outputs (JSON/CSV/PNG)')
+    ap.add_argument('--mode', choices=['lens','gk','vea'], required=False, default=None, help='Template mode: lens (smoothing), gk (low-ℓ gated kernel), vea (high-ℓ void envelope)')
     # lens
     ap.add_argument('--lens_sigma', type=float, default=100.0, help='Gaussian smoothing width in ℓ for lensing-like template')
     # gk
@@ -259,6 +390,14 @@ def build_argparser() -> argparse.ArgumentParser:
     ap.add_argument('--vea_l0', type=float, default=800.0, help='High-ℓ gate center (transition)')
     ap.add_argument('--vea_width', type=float, default=150.0, help='High-ℓ gate width')
     ap.add_argument('--vea_alpha', type=float, default=0.15, help='High-ℓ power index: F ~ (ℓ/ℓ0)^alpha')
+
+    # Lensing φφ amplitude
+    ap.add_argument('--phiamp', action='store_true', help='Fit Planck lensing reconstruction amplitude α_φ')
+    ap.add_argument('--lensing_dir', type=str, default='data/baseline/plc_3.0/lensing/smicadx12_Dec5_ftl_mv2_ndclpp_p_teb_consext8_CMBmarged.clik_lensing/clik_lensing', help='Path to clik_lensing directory containing pp_hat, cl_fid, siginv, bins (FITS primary arrays)')
+
+    # Piecewise envelopes
+    ap.add_argument('--piecewise', action='store_true', help='Fit piecewise band amplitudes for the chosen template mode')
+    ap.add_argument('--bands', type=str, default='2-200,200-800,800-2500', help='Comma-separated band edges like "2-200,200-800,800-2500"')
     return ap
 
 
@@ -266,11 +405,67 @@ if __name__ == '__main__':
     ap = build_argparser()
     args = ap.parse_args()
 
-    run_mode(
-        plik_lite_dir=args.plik_lite_dir,
-        mode=args.mode,
-        out_dir=args.out_dir,
-        lens_sigma=args.lens_sigma,
-        gk_l0=args.gk_l0, gk_width=args.gk_width, gk_power=args.gk_power,
-        vea_l0=args.vea_l0, vea_width=args.vea_width, vea_alpha=args.vea_alpha,
-    )
+    os.makedirs(args.out_dir, exist_ok=True)
+
+    # 1) Lensing reconstruction amplitude
+    if args.phiamp:
+        try:
+            a_hat, sig = fit_lensing_phi_amplitude(args.lensing_dir)
+            with open(os.path.join(args.out_dir, 'cmb_lensing_amp.json'), 'w') as f:
+                json.dump({"alpha_hat": float(a_hat), "sigma": float(sig)}, f, indent=2)
+            print(f"Lensing φφ amplitude: alpha_hat={a_hat:.4g} ± {sig:.4g}")
+        except Exception as e:
+            print(f"[WARN] Lensing amplitude fit failed: {e}")
+
+    # 2) Piecewise envelope amplitudes (requires plik_lite_dir and mode)
+    if args.piecewise:
+        if not args.plik_lite_dir:
+            raise SystemExit("--piecewise requires --plik_lite_dir")
+        if not args.mode:
+            raise SystemExit("--piecewise requires --mode to choose the base template shape")
+        ell, y, ysig, cov = read_plik_lite_tt(args.plik_lite_dir)
+        # Build base template for the chosen mode
+        if args.mode == 'lens':
+            F = template_lens(ell, y, sigma_ell=float(args.lens_sigma))
+        elif args.mode == 'gk':
+            F = template_gk(ell, y, ell0=float(args.gk_l0), width=float(args.gk_width), power=float(args.gk_power))
+        elif args.mode == 'vea':
+            F = template_vea(ell, y, ell0=float(args.vea_l0), width=float(args.vea_width), alpha=float(args.vea_alpha))
+        else:
+            raise SystemExit("--mode must be lens, gk, or vea")
+        # Parse bands
+        bands_spec = [b.strip() for b in str(args.bands).split(',') if b.strip()]
+        bands: List[Tuple[int,int]] = []
+        for spec in bands_spec:
+            lo_s, hi_s = spec.split('-')
+            bands.append((int(float(lo_s)), int(float(hi_s))))
+        masks = [(ell >= lo) & (ell < hi) for (lo, hi) in bands]
+        try:
+            A_hat, Cov_A = fit_piecewise_amplitudes(ell, y, cov, F, masks)
+            cov_used = 'full'
+        except Exception:
+            # Fallback: diagonal covariance from provided sigmas
+            cov_diag = np.diag(ysig**2)
+            A_hat, Cov_A = fit_piecewise_amplitudes(ell, y, cov_diag, F, masks)
+            cov_used = 'diag'
+        out = {
+            "mode": args.mode,
+            "bands": [{"ell_min": int(lo), "ell_max": int(hi)} for (lo, hi) in bands],
+            "A_hat": [float(a) for a in A_hat.tolist()],
+            "Cov_A": [[float(x) for x in row] for row in Cov_A.tolist()],
+            "covariance_used": cov_used,
+        }
+        with open(os.path.join(args.out_dir, 'cmb_envelope_piecewise.json'), 'w') as f:
+            json.dump(out, f, indent=2)
+        print(f"Piecewise A_hat per band ({cov_used}): {A_hat}")
+
+    # 3) Standard single-parameter envelope run (if requested)
+    if args.mode and args.plik_lite_dir:
+        run_mode(
+            plik_lite_dir=args.plik_lite_dir,
+            mode=args.mode,
+            out_dir=args.out_dir,
+            lens_sigma=args.lens_sigma,
+            gk_l0=args.gk_l0, gk_width=args.gk_width, gk_power=args.gk_power,
+            vea_l0=args.vea_l0, vea_width=args.vea_width, vea_alpha=args.vea_alpha,
+        )
