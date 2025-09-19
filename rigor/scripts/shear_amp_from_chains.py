@@ -18,10 +18,30 @@ def _looks_like_header(path: Path) -> bool:
         pass
     return False
 
+def _read_commented_header_names(path: Path) -> list[str]|None:
+    try:
+        with path.open('r', errors='ignore') as f:
+            for ln in f:
+                if not ln.strip():
+                    continue
+                if ln.startswith('#'):
+                    hdr = ln[1:].strip()
+                    if any(ch.isalpha() or ch == '_' for ch in hdr):
+                        # split on any whitespace or tabs
+                        return hdr.split()
+                    else:
+                        return None
+                else:
+                    # first non-empty line is data, not header
+                    return None
+    except Exception:
+        return None
+
+
 def _load_chain(path: Path, names_path: Path|None=None) -> pd.DataFrame:
     """
     Robustly read a CosmoMC/GetDist-style chain. Handles:
-      - optional header row (uncommented)
+      - optional header row (commented or uncommented)
       - optional .paramnames file with 'name \t latex' rows
       - optional 'weight' column; if absent, uses unit weights
     """
@@ -35,8 +55,14 @@ def _load_chain(path: Path, names_path: Path|None=None) -> pd.DataFrame:
         except Exception:
             colnames = None
 
-    # Decide whether the file has a header row
-    has_header = _looks_like_header(path) if colnames is None else True
+    # If still unknown, see if the first line is a commented header with names
+    if colnames is None:
+        commented_names = _read_commented_header_names(path)
+        if commented_names:
+            colnames = commented_names
+
+    # Decide whether the file has an uncommented header row
+    has_header = _looks_like_header(path) if (colnames is None) else False
 
     # Read chain as whitespace-delimited; skip commented lines
     if has_header:
