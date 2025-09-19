@@ -134,6 +134,8 @@ def _norm_name(s: str) -> str:
     if s is None:
         return ""
     s = str(s).lower().strip()
+    # remove common suffix artifacts like _rotmod
+    s = re.sub(r'(?:\b|_)?rotmod\b', '', s)
     s = re.sub(r'[\s\-_\.]+', '', s)
     s = re.sub(r'[^a-z0-9]', '', s)
     for pre in ('ngc','ugc','ic','eso','ddo'):
@@ -784,6 +786,7 @@ if __name__ == '__main__':
         cv_root = out_dir / 'cv'
         cv_root.mkdir(parents=True, exist_ok=True)
         cv_summary = []
+        cv_rar_rows = []
         for i, test_ids in enumerate(folds, start=1):
             test_mask = df['gal_id'].astype(str).isin(test_ids)
             train_mask = ~test_mask
@@ -798,6 +801,10 @@ if __name__ == '__main__':
             outer_te = infer_outer_mask(dte_mp)
             med_lt_te = median_closeness(dte_mp.loc[outer_te,'v_obs_kms'], dte_mp.loc[outer_te, col_lt_te])
             med_mp_te = median_closeness(dte_mp.loc[outer_te,'v_obs_kms'], dte_mp.loc[outer_te, col_mp_te])
+            # RAR OOS stats (test fold)
+            rar_te = rar_table(dte_mp, col_lt_te)
+            rar_obs_stats = rar_curved_stats(rar_te, ycol='g_obs')
+            rar_mod_stats = rar_curved_stats(rar_te, ycol='g_mod')
             fold_dir = cv_root / f'fold_{i}'
             fold_dir.mkdir(exist_ok=True)
             with open(fold_dir/'summary_logtail_muphi.json','w') as f:
@@ -806,12 +813,19 @@ if __name__ == '__main__':
                     'train': {'LogTail': {'median': score_lt_tr, 'params': best_lt_tr},
                               'MuPhi':   {'median': score_mp_tr, 'params': best_mp_tr}},
                     'test':  {'LogTail': {'median': float(med_lt_te)}, 'MuPhi': {'median': float(med_mp_te)}},
+                    'rar_test': {'observed': rar_obs_stats, 'model': rar_mod_stats},
                     'n_train_points': int(len(dtr)), 'n_test_points': int(len(dte))
                 }, f, indent=2)
             cv_summary.append({'fold': i, 'LogTail_train_median': score_lt_tr, 'LogTail_test_median': float(med_lt_te),
                                'MuPhi_train_median': score_mp_tr, 'MuPhi_test_median': float(med_mp_te),
                                'n_train_points': int(len(dtr)), 'n_test_points': int(len(dte))})
+            cv_rar_rows.append({'fold': i,
+                                'rar_obs_scatter_dex_orth': rar_obs_stats.get('scatter_dex_orth', None),
+                                'rar_obs_r2_vs_const': rar_obs_stats.get('r2_vs_const', None),
+                                'rar_model_scatter_dex_orth': rar_mod_stats.get('scatter_dex_orth', None),
+                                'rar_model_r2_vs_const': rar_mod_stats.get('r2_vs_const', None)})
         pd.DataFrame(cv_summary).to_csv(cv_root/'cv_summary.csv', index=False)
+        pd.DataFrame(cv_rar_rows).to_csv(cv_root/'cv_rar_summary.csv', index=False)
 
     outer = infer_outer_mask(df2)
     sum_lt = dict(model='LogTail', median=median_closeness(df2.loc[outer,'v_obs_kms'], df2.loc[outer, col_lt]), params=best_logtail)
@@ -841,8 +855,16 @@ if __name__ == '__main__':
         try:
             obs_btfr = pd.read_csv(obs_path)
             obs_btfr = obs_btfr[['gal_id','M_bary_Msun']].dropna()
-            btfr_lt = btfr_lt.drop(columns=['M_bary_Msun'], errors='ignore').merge(obs_btfr, on='gal_id', how='left')
-            btfr_mp = btfr_mp.drop(columns=['M_bary_Msun'], errors='ignore').merge(obs_btfr, on='gal_id', how='left')
+            # Name-normalized merge to handle suffixes like _rotmod
+            def _add_norm(df_in, col='gal_id'):
+                d = df_in.copy(); d[col] = d[col].astype(str); d['_norm'] = d[col].map(_norm_name); return d
+            btfr_lt_n = _add_norm(btfr_lt, 'gal_id')
+            btfr_mp_n = _add_norm(btfr_mp, 'gal_id')
+            obs_n = _add_norm(obs_btfr, 'gal_id').rename(columns={'M_bary_Msun':'M_bary_Msun_obs'})
+            btfr_lt = btfr_lt_n.drop(columns=['M_bary_Msun'], errors='ignore').merge(obs_n[['_norm','M_bary_Msun_obs']], on='_norm', how='left')
+            btfr_mp = btfr_mp_n.drop(columns=['M_bary_Msun'], errors='ignore').merge(obs_n[['_norm','M_bary_Msun_obs']], on='_norm', how='left')
+            btfr_lt = btfr_lt.rename(columns={'M_bary_Msun_obs':'M_bary_Msun'}).drop(columns=['_norm'], errors='ignore')
+            btfr_mp = btfr_mp.rename(columns={'M_bary_Msun_obs':'M_bary_Msun'}).drop(columns=['_norm'], errors='ignore')
         except Exception:
             pass
     btfr_lt.to_csv(out_dir/'btfr_logtail.csv', index=False)
