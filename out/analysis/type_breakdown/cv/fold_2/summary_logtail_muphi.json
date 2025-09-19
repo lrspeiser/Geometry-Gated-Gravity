@@ -1,0 +1,32 @@
+{
+  "fold": 2,
+  "train": {
+    "LogTail": {
+      "median": 89.52179314817499,
+      "params": {
+        "v0_kms": 140,
+        "rc_kpc": 15,
+        "r0_kpc": 3,
+        "delta_kpc": 4
+      }
+    },
+    "MuPhi": {
+      "median": 87.00371875665172,
+      "params": {
+        "eps": 2.0,
+        "v_c_kms": 180,
+        "p": 3.0
+      }
+    }
+  },
+  "test": {
+    "LogTail": {
+      "median": 91.17161507003209
+    },
+    "MuPhi": {
+      "median": 73.530032255394
+    }
+  },
+  "n_train_points": 2846,
+  "n_test_points": 545
+}

@@ -62,12 +62,13 @@ def normalize_columns(df: pd.DataFrame) -> pd.DataFrame:
 def infer_outer_mask(df: pd.DataFrame) -> np.ndarray:
     if 'is_outer' in df.columns:
         return df['is_outer'].astype(bool).values
-    mask = np.zeros(len(df), dtype=bool)
+    # Build an index-aligned boolean mask to be robust to filtered subsets
+    mask = pd.Series(False, index=df.index)
     for gid, sub in df.groupby('gal_id'):
         idx = sub.sort_values('r_kpc').index
         k = max(1, int(0.3*len(idx)))
-        mask[idx[-k:]] = True
-    return mask
+        mask.loc[idx[-k:]] = True
+    return mask.values
 
 def median_closeness(v_obs, v_pred) -> float:
     v_obs = np.asarray(v_obs); v_pred = np.asarray(v_pred)
@@ -610,6 +611,8 @@ if __name__ == '__main__':
     ap.add_argument('--pred_csv', required=True)
     ap.add_argument('--out_dir', required=True)
     ap.add_argument('--do_cv', action='store_true')
+    ap.add_argument('--cv_k', type=int, default=5, help='Number of CV folds (by galaxy)')
+    ap.add_argument('--cv_seed', type=int, default=1337, help='Random seed for CV fold split')
     ap.add_argument('--sparc_master_parquet', default=str(Path('data')/'sparc_master_clean.parquet'))
     ap.add_argument('--mass_coupled_v0', action='store_true', help='Enable LogTail v0(Mb)=A*(Mb/1e10)^(1/4) grid search')
     ap.add_argument('--lensing_stack_csv', default=None, help='Optional CSV of stacked lensing to compare against')
@@ -737,6 +740,48 @@ if __name__ == '__main__':
     merged[col_mp] = df2[col_mp]
     merged.to_csv(out_dir/'predictions_with_LogTail_MuPhi.csv', index=False)
 
+    # Optional K-fold CV by galaxy: fit on 4/5, report test medians per fold
+    if getattr(args, 'do_cv', False):
+        def kfold_ids(ids: list[str], k: int, seed: int):
+            rng = np.random.default_rng(seed)
+            idx = np.arange(len(ids))
+            rng.shuffle(idx)
+            folds = np.array_split(idx, k)
+            return [ [ids[i] for i in fold] for fold in folds ]
+        gal_ids = sorted(df['gal_id'].astype(str).unique().tolist())
+        folds = kfold_ids(gal_ids, int(args.cv_k), int(args.cv_seed))
+        cv_root = out_dir / 'cv'
+        cv_root.mkdir(parents=True, exist_ok=True)
+        cv_summary = []
+        for i, test_ids in enumerate(folds, start=1):
+            test_mask = df['gal_id'].astype(str).isin(test_ids)
+            train_mask = ~test_mask
+            dtr = df.loc[train_mask]
+            dte = df.loc[test_mask]
+            # Fit on training only
+            best_lt_tr, score_lt_tr = fit_global_grid(dtr, 'LogTail', grid_logtail, outer_only=True)
+            best_mp_tr, score_mp_tr = fit_global_grid(dtr, 'MuPhi',   grid_muphi,   outer_only=True)
+            # Apply to test
+            dte_lt, col_lt_te = apply_model(dte, 'LogTail', best_lt_tr)
+            dte_mp, col_mp_te = apply_model(dte_lt, 'MuPhi', best_mp_tr)
+            outer_te = infer_outer_mask(dte_mp)
+            med_lt_te = median_closeness(dte_mp.loc[outer_te,'v_obs_kms'], dte_mp.loc[outer_te, col_lt_te])
+            med_mp_te = median_closeness(dte_mp.loc[outer_te,'v_obs_kms'], dte_mp.loc[outer_te, col_mp_te])
+            fold_dir = cv_root / f'fold_{i}'
+            fold_dir.mkdir(exist_ok=True)
+            with open(fold_dir/'summary_logtail_muphi.json','w') as f:
+                json.dump({
+                    'fold': i,
+                    'train': {'LogTail': {'median': score_lt_tr, 'params': best_lt_tr},
+                              'MuPhi':   {'median': score_mp_tr, 'params': best_mp_tr}},
+                    'test':  {'LogTail': {'median': float(med_lt_te)}, 'MuPhi': {'median': float(med_mp_te)}},
+                    'n_train_points': int(len(dtr)), 'n_test_points': int(len(dte))
+                }, f, indent=2)
+            cv_summary.append({'fold': i, 'LogTail_train_median': score_lt_tr, 'LogTail_test_median': float(med_lt_te),
+                               'MuPhi_train_median': score_mp_tr, 'MuPhi_test_median': float(med_mp_te),
+                               'n_train_points': int(len(dtr)), 'n_test_points': int(len(dte))})
+        pd.DataFrame(cv_summary).to_csv(cv_root/'cv_summary.csv', index=False)
+
     outer = infer_outer_mask(df2)
     sum_lt = dict(model='LogTail', median=median_closeness(df2.loc[outer,'v_obs_kms'], df2.loc[outer, col_lt]), params=best_logtail)
     sum_mp = dict(model='MuPhi',   median=median_closeness(df2.loc[outer,'v_obs_kms'], df2.loc[outer, col_mp]), params=best_muphi)
@@ -801,7 +846,7 @@ if __name__ == '__main__':
     with open(out_dir/'lensing_logtail_comparison.json', 'w') as f:
         json.dump(lens_cmp, f, indent=2)
 
-    # Observed BTFR (sanity check on mass join)
+    # Observed BTFR (prefer SPARC-MRT catalog-of-record if present)
     def vflat_obs_per_gal(df_in: pd.DataFrame, frac_outer=0.3) -> pd.DataFrame:
         rows = []
         for gid, sub in df_in.groupby('gal_id'):
@@ -816,21 +861,51 @@ if __name__ == '__main__':
         return pd.DataFrame(rows, columns=['gal_id','vflat_obs_kms','M_bary_Msun'])
 
     def btfr_fit_table(df_btfr: pd.DataFrame, vcol: str):
-        dtmp = df_btfr.rename(columns={vcol: 'vflat_kms'})
+        cols = set(df_btfr.columns)
+        vname = vcol
+        if vname not in cols:
+            # try alternate capitalization
+            if vcol == 'vflat_obs_kms' and 'Vflat_obs_kms' in cols:
+                vname = 'Vflat_obs_kms'
+            elif vcol == 'vflat_kms' and 'Vflat_kms' in cols:
+                vname = 'Vflat_kms'
+        dtmp = df_btfr.rename(columns={vname: 'vflat_kms'}) if vname in df_btfr.columns else df_btfr.copy()
+        if 'vflat_kms' not in dtmp.columns:
+            # As a last resort, pass through and let fit function return n:0
+            return {'n': 0}
         return btfr_fit_two_forms(dtmp)
 
-    btfr_obs = vflat_obs_per_gal(df2)
-    btfr_obs.to_csv(out_dir/'btfr_observed.csv', index=False)
+    obs_mrt = out_dir/'btfr_observed_from_mrt.csv'
+    if obs_mrt.exists():
+        try:
+            btfr_obs = pd.read_csv(obs_mrt)
+            # Ensure expected columns exist
+            need_cols = {'gal_id','Vflat_obs_kms','M_bary_Msun'}
+            if need_cols.issubset(btfr_obs.columns):
+                # keep a copy as the QC file
+                btfr_obs.to_csv(out_dir/'btfr_observed.csv', index=False)
+            else:
+                btfr_obs = vflat_obs_per_gal(df2)
+                btfr_obs.to_csv(out_dir/'btfr_observed.csv', index=False)
+        except Exception:
+            btfr_obs = vflat_obs_per_gal(df2)
+            btfr_obs.to_csv(out_dir/'btfr_observed.csv', index=False)
+    else:
+        btfr_obs = vflat_obs_per_gal(df2)
+        btfr_obs.to_csv(out_dir/'btfr_observed.csv', index=False)
+
     with open(out_dir/'btfr_observed_fit.json','w') as f:
         json.dump(btfr_fit_table(btfr_obs, 'vflat_obs_kms'), f, indent=2)
 
     # Quick QC: correlation should be positive if join is correct
     qc = btfr_obs.dropna()
     if len(qc) > 5:
-        xv = np.log10(np.clip(qc['vflat_obs_kms'].to_numpy(), 1e-6, None))
-        yM = np.log10(np.clip(qc['M_bary_Msun'].to_numpy(), 1e-6, None))
-        corr = float(np.corrcoef(xv, yM)[0,1])
-        (out_dir/'btfr_qc.txt').write_text(f"Pearson corr(log vflat_obs, log Mb) = {corr:.3f}\n")
+        vcol_obs = 'vflat_obs_kms' if 'vflat_obs_kms' in qc.columns else ('Vflat_obs_kms' if 'Vflat_obs_kms' in qc.columns else None)
+        if vcol_obs is not None:
+            xv = np.log10(np.clip(qc[vcol_obs].to_numpy(), 1e-6, None))
+            yM = np.log10(np.clip(qc['M_bary_Msun'].to_numpy(), 1e-6, None))
+            corr = float(np.corrcoef(xv, yM)[0,1])
+            (out_dir/'btfr_qc.txt').write_text(f"Pearson corr(log vflat_obs, log Mb) = {corr:.3f}\n")
     # Outlier list to quickly fix joins
     try:
         btfr_outlier_report(btfr_obs, out_dir/'btfr_join_outliers.csv', alpha_canon=4.0)
