@@ -75,6 +75,11 @@ with $|\Phi_{\rm N}|\sim v_{\rm bar}^2$ as a practical gate. This **lessens the 
 
 Across 1,167 outer points, **LogTail** attains **89.98% median closeness** with best‑fit $\{v_0, r_c, R_0, \Delta\}=\{140~{\rm km/s},\,15~{\rm kpc},\,3~{\rm kpc},\,4~{\rm kpc}\}$. **MuPhi** reaches **86.03%** with $\{\varepsilon, v_c, p\}=\{2.0,140,2\}$ (km/s for $v_c$) .
 
+Cross‑validation (5‑fold, by galaxy):
+- cv_summary (out/analysis/type_breakdown/cv/cv_summary.csv) shows LogTail test medians ~88.6–91.2% across folds (train medians ~89.5–90.4%).
+- MuPhi test medians vary more (~73.5–89.2%), consistent with slightly weaker overall performance on this grid.
+- Fold details are under out/analysis/type_breakdown/cv/fold_*/summary_logtail_muphi.json (train medians and selected params per fold).
+
 > **Context:** Your earlier comparison showed MOND ≈89.8% median, Shell ≈79.2%, GR ≈63.9%, while per‑galaxy NFW fits on a subset were ≈97.7% (not apples‑to‑apples vs global models) .
 
 ### 5.2 Radial‑acceleration relation (RAR)
@@ -173,7 +178,18 @@ py rigor/scripts/add_models_and_tests.py \
 
 This produces: `summary_logtail_muphi.json` (RC medians), `rar_*_curved_stats.json`, `btfr_*_fit.json`, and `lensing_logtail_*` artifacts. See the exact outputs and param grids in the script .
 
-### 9.2 “Quick BTFR” sanity loop (use this before publishing BTFR)
+### 9.2 Cross‑validation (5‑fold, by galaxy)
+
+```bash
+python -u rigor/scripts/add_models_and_tests.py \
+  --pred_csv out/analysis/type_breakdown/sparc_predictions_by_radius.csv \
+  --out_dir out/analysis/type_breakdown \
+  --do_cv --cv_k 5 --cv_seed 1337
+```
+
+Outputs: out/analysis/type_breakdown/cv/cv_summary.csv and per‑fold summary_logtail_muphi.json under cv/fold_*.
+
+### 9.3 “Quick BTFR” sanity loop (use this before publishing BTFR)
 
 ```bash
 # Prefer SPARC-MRT-derived observed inputs to avoid name joins
