@@ -182,8 +182,11 @@ def run_mode(plik_lite_dir: str, mode: str, out_dir: str, **kwargs):
     else:
         raise ValueError("mode must be one of: lens, gk, vea")
 
-    # Compute 1-sigma amplitude bound
+    # Compute 1-sigma amplitude bound (fallback to diagonal covariance if needed)
     sigA = sigma_amplitude(F, cov)
+    if not np.isfinite(sigA):
+        cov_alt = np.diag(ysig**2)
+        sigA = sigma_amplitude(F, cov_alt)
     A95 = 1.96 * sigA
 
     os.makedirs(out_dir, exist_ok=True)
