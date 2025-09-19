@@ -4,10 +4,24 @@ import argparse, json, math, numpy as np, pandas as pd
 from pathlib import Path
 
 # --------- small helpers ---------
+def _looks_like_header(path: Path) -> bool:
+    try:
+        with path.open('r', errors='ignore') as f:
+            for ln in f:
+                ln = ln.strip()
+                if not ln or ln.startswith('#'):
+                    continue
+                toks = ln.split()
+                # If any token contains a letter or underscore, likely a header
+                return any(any(ch.isalpha() or ch == '_' for ch in t) for t in toks)
+    except Exception:
+        pass
+    return False
+
 def _load_chain(path: Path, names_path: Path|None=None) -> pd.DataFrame:
     """
     Robustly read a CosmoMC/GetDist-style chain. Handles:
-      - optional header lines starting with '#'
+      - optional header row (uncommented)
       - optional .paramnames file with 'name \t latex' rows
       - optional 'weight' column; if absent, uses unit weights
     """
@@ -21,8 +35,15 @@ def _load_chain(path: Path, names_path: Path|None=None) -> pd.DataFrame:
         except Exception:
             colnames = None
 
+    # Decide whether the file has a header row
+    has_header = _looks_like_header(path) if colnames is None else True
+
     # Read chain as whitespace-delimited; skip commented lines
-    df = pd.read_csv(path, delim_whitespace=True, comment='#', header=None if colnames is None else 0, names=colnames, engine='python')
+    if has_header:
+        df = pd.read_csv(path, sep=r'\s+', comment='#', header=0, engine='python')
+    else:
+        df = pd.read_csv(path, sep=r'\s+', comment='#', header=None if colnames is None else 0, names=colnames, engine='python')
+
     # If there are more columns than names, drop extras; if fewer, pad
     if colnames is not None and df.shape[1] != len(colnames):
         n = min(df.shape[1], len(colnames))
