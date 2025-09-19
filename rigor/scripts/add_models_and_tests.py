@@ -303,7 +303,8 @@ def attach_observed_vflat(df: pd.DataFrame, all_tables_parquet: Path|None, audit
     j = left.merge(tt[['gal_src','Vflat_obs_kms']], left_on='gal_id', right_on='gal_src', how='left')
     need = j['Vflat_obs_kms'].isna()
     if need.any():
-        left_sub = left[need].reset_index().rename(columns={'index':'_idx'})
+        idx_missing = j.index[need]
+        left_sub = left.loc[idx_missing].reset_index().rename(columns={'index':'_idx'})
         j2 = left_sub.merge(tt[['_norm','Vflat_obs_kms']], on='_norm', how='left')
         ok = j2['Vflat_obs_kms'].notna()
         if ok.any():
@@ -337,7 +338,9 @@ def attach_morph_type(df: pd.DataFrame, all_tables_parquet: Path|None) -> pd.Dat
     j = left.merge(tt[['gal_src','T_type']], left_on='gal_id', right_on='gal_src', how='left')
     need = j['T_type'].isna()
     if need.any():
-        left_sub = left[need].reset_index().rename(columns={'index':'_idx'})
+        # Align boolean mask with left's index via j.index
+        idx_missing = j.index[need]
+        left_sub = left.loc[idx_missing].reset_index().rename(columns={'index':'_idx'})
         j2 = left_sub.merge(tt[['_norm','T_type']], on='_norm', how='left')
         ok = j2['T_type'].notna()
         if ok.any():
@@ -787,6 +790,7 @@ if __name__ == '__main__':
         cv_root.mkdir(parents=True, exist_ok=True)
         cv_summary = []
         cv_rar_rows = []
+        cv_by_T_rows = []
         for i, test_ids in enumerate(folds, start=1):
             test_mask = df['gal_id'].astype(str).isin(test_ids)
             train_mask = ~test_mask
@@ -805,6 +809,19 @@ if __name__ == '__main__':
             rar_te = rar_table(dte_mp, col_lt_te)
             rar_obs_stats = rar_curved_stats(rar_te, ycol='g_obs')
             rar_mod_stats = rar_curved_stats(rar_te, ycol='g_mod')
+            # Per-type medians in test fold
+            dte_T = attach_morph_type(dte_mp, Path('data')/'sparc_all_tables.parquet')
+            by_T = []
+            for Tval, sub in dte_T.groupby('T_type'):
+                if len(sub) < 5:
+                    continue
+                o = infer_outer_mask(sub)
+                by_T.append({'fold': i,
+                             'T_type': float(Tval) if pd.notna(Tval) else None,
+                             'LogTail_test_median': float(median_closeness(sub.loc[o,'v_obs_kms'], sub.loc[o, col_lt_te])),
+                             'MuPhi_test_median': float(median_closeness(sub.loc[o,'v_obs_kms'], sub.loc[o, col_mp_te])),
+                             'n_points': int(len(sub))})
+            # Write fold outputs
             fold_dir = cv_root / f'fold_{i}'
             fold_dir.mkdir(exist_ok=True)
             with open(fold_dir/'summary_logtail_muphi.json','w') as f:
@@ -816,6 +833,11 @@ if __name__ == '__main__':
                     'rar_test': {'observed': rar_obs_stats, 'model': rar_mod_stats},
                     'n_train_points': int(len(dtr)), 'n_test_points': int(len(dte))
                 }, f, indent=2)
+            # Save per-type CV medians for this fold
+            if by_T:
+                pd.DataFrame(by_T).to_csv(fold_dir/'cv_by_T.csv', index=False)
+                cv_by_T_rows.extend(by_T)
+            # Aggregate summaries
             cv_summary.append({'fold': i, 'LogTail_train_median': score_lt_tr, 'LogTail_test_median': float(med_lt_te),
                                'MuPhi_train_median': score_mp_tr, 'MuPhi_test_median': float(med_mp_te),
                                'n_train_points': int(len(dtr)), 'n_test_points': int(len(dte))})
@@ -826,6 +848,8 @@ if __name__ == '__main__':
                                 'rar_model_r2_vs_const': rar_mod_stats.get('r2_vs_const', None)})
         pd.DataFrame(cv_summary).to_csv(cv_root/'cv_summary.csv', index=False)
         pd.DataFrame(cv_rar_rows).to_csv(cv_root/'cv_rar_summary.csv', index=False)
+        if cv_by_T_rows:
+            pd.DataFrame(cv_by_T_rows).to_csv(cv_root/'cv_by_T_summary.csv', index=False)
 
     outer = infer_outer_mask(df2)
     sum_lt = dict(model='LogTail', median=median_closeness(df2.loc[outer,'v_obs_kms'], df2.loc[outer, col_lt]), params=best_logtail)
