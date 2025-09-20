@@ -70,7 +70,7 @@ We then applied the same LogTail modeling used for SPARC on this single‑galaxy
 
 ![Milky Way rotation curve (Gaia bins): Observed vs. GR (baryons), MOND (simple), LogTail (best), and NFW (best fit)](figs/mw_rc_compare.png)
 
-Figure MW‑1. Milky Way rotation‑curve comparison. Points show Gaia‑binned v_obs(R); curves show GR (baryons‑only V_bar), MOND (simple interpolating function, a0≈1.2×10⁻¹⁰ m/s²), LogTail (best global‑protocol fit applied to MW), and a best‑fit NFW halo added in quadrature to baryons. The MW is treated as an in‑house consistency test independent of SPARC—parameters are not re‑tuned on MW. Methods and commands are below.
+Figure MW‑1. Milky Way rotation‑curve comparison. Points show Gaia‑binned v_obs(R); curves show GR (baryons‑only V_bar), MOND (simple interpolating function, a0≈1.2×10⁻¹⁰ m/s²), LogTail (SPARC‑global: v0=140, rc=15, r0=3, Δ=4; dotted), LogTail (MW refit; solid), and a best‑fit NFW halo added in quadrature to baryons. The MW is treated as an in‑house consistency test independent of SPARC—the SPARC‑global parameters are applied without retraining, and the MW‑only refit is shown for reference. Methods and commands are below.
 
 Repro (exact commands):
 
@@ -90,10 +90,11 @@ py -u rigor/scripts/add_models_and_tests.py \
 
 py -u rigor/scripts/plot_mw_rc_compare.py \
   --pred_csv "out/mw/results_logtail_only/predictions_with_LogTail.csv" \
+  --logtail_global "v0=140,rc=15,r0=3,delta=4" \
   --out_png  "figs/mw_rc_compare.png"
 ```
 
-Caveats. The MW is not strictly axisymmetric; bar/spiral streaming can bias azimuthal speeds. For robustness we support ϕ‑wedge cross‑validation via the builder’s `--phi_bins/--phi_bin_index` flags. An optional asymmetric‑drift correction can be added in the builder if desired; we report both corrected/uncorrected variants when used.
+Caveats. The MW is not strictly axisymmetric; bar/spiral streaming can bias azimuthal speeds. For robustness we support ϕ‑wedge cross‑validation via the builder’s `--phi_bins/--phi_bin_index` flags. An optional asymmetric‑drift correction can be added in the builder if desired; we report both corrected/uncorrected variants when used. The MOND curve uses the simple analytic closure with proper a0 unit conversion (m s⁻² → (km/s)²/kpc) to avoid the common unit‑mismatch bias.
 
 ---
 

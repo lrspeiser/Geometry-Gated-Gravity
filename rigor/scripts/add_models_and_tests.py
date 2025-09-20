@@ -652,6 +652,8 @@ if __name__ == '__main__':
     ap.add_argument('--btfr_min_slope', type=float, default=None, help='If set, require CI lower bounds for alpha (Mb vs v) and beta (v vs Mb) to be >= this value; exit(2) otherwise.')
     ap.add_argument('--only_logtail', action='store_true', default=True,
                     help='If set (default), skip MuPhi and produce only LogTail outputs.')
+    ap.add_argument('--logtail_fixed', type=str, default="",
+                    help='Pin LogTail to a fixed setting (comma-separated), e.g. "v0=140,rc=15,r0=3,delta=4".')
     args = ap.parse_args()
 
     out_dir = Path(args.out_dir); out_dir.mkdir(parents=True, exist_ok=True)
@@ -753,6 +755,13 @@ if __name__ == '__main__':
         for r0 in [2, 3, 4]
         for dl in [2, 3, 4]
     ]
+    # Optional: pin LogTail to a fixed setting (e.g., SPARC-global transfer test)
+    if getattr(args, 'logtail_fixed', None):
+        try:
+            kv = dict(tok.split('=') for tok in str(args.logtail_fixed).split(',') if '=' in tok)
+            grid_logtail = [dict(v0_kms=float(kv['v0']), rc_kpc=float(kv['rc']), r0_kpc=float(kv['r0']), delta_kpc=float(kv.get('delta', kv.get('d', 0))))]
+        except Exception:
+            pass
     grid_muphi = []
     if not getattr(args, 'only_logtail', True):
         grid_muphi = [

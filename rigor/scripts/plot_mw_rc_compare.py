@@ -55,11 +55,35 @@ def fit_nfw_for_mw(R: np.ndarray, Vobs: np.ndarray, Vbar: np.ndarray) -> np.ndar
     return np.sqrt(np.maximum(Vbar**2 + Vh**2, 0.0))
 
 
+def _mond_simple_analytic(Vbar_kms: np.ndarray, R_kpc: np.ndarray, a0_si: float = 1.2e-10) -> np.ndarray:
+    # Compute MOND (simple) with explicit unit handling: a0 in m/s^2, g_N in (km/s)^2/kpc
+    # Convert a0 to (km/s)^2 per kpc
+    AUNIT = 3.2407789e-14  # (km/s)^2 per kpc per m/s^2
+    a0 = float(a0_si) / AUNIT
+    R = np.maximum(np.asarray(R_kpc, dtype=float), 1e-9)
+    vbar = np.maximum(np.asarray(Vbar_kms, dtype=float), 0.0)
+    gN = (vbar**2) / R
+    g  = 0.5*(gN + np.sqrt(np.maximum(gN*gN + 4.0*gN*a0, 0.0)))
+    return np.sqrt(np.maximum(g*R, 0.0))
+
+def _parse_fixed(s: str):
+    kv = dict(tok.split('=') for tok in s.split(',') if '=' in tok)
+    return dict(v0=float(kv['v0']), rc=float(kv['rc']), r0=float(kv['r0']), d=float(kv.get('delta', kv.get('d', 0.0))))
+
+def _logtail_predict(Vbar_kms: np.ndarray, R_kpc: np.ndarray, v0: float, rc: float, r0: float, d: float) -> np.ndarray:
+    vbar2 = np.maximum(np.asarray(Vbar_kms, dtype=float), 0.0)**2
+    R = np.maximum(np.asarray(R_kpc, dtype=float), 1e-9)
+    S = 0.5*(1.0 + np.tanh((R - float(r0))/max(float(d), 1e-6)))
+    tail = (float(v0)**2) * (R/(R + max(float(rc), 1e-6))) * S
+    V2 = vbar2 + np.maximum(tail, 0.0)
+    return np.sqrt(np.maximum(V2, 0.0))
+
 def main():
     ap = argparse.ArgumentParser(description='Plot Milky Way rotation curve: Observed vs GR(baryons) vs MOND vs LogTail vs NFW (DM).')
     ap.add_argument('--pred_csv', default=str(Path('out')/'mw'/'results_logtail_only'/'predictions_with_LogTail.csv'))
     ap.add_argument('--out_png', default=str(Path('figs')/'mw_rc_compare.png'))
     ap.add_argument('--a0', type=float, default=1.2e-10, help='MOND a0 (m/s^2)')
+    ap.add_argument('--logtail_global', type=str, default='', help='Optional SPARC-global params v0=140,rc=15,r0=3,delta=4 to overlay')
     args = ap.parse_args()
 
     df = normalize(pd.read_csv(args.pred_csv))
@@ -70,9 +94,19 @@ def main():
 
     # Baselines
     Vgr = Vbar.copy()
-    Vmond = mond_simple(Vbar, R, a0=float(args.a0))
+    # Use analytic MOND with explicit unit conversion for a0
+    Vmond = _mond_simple_analytic(Vbar, R, a0_si=float(args.a0))
     Vnfw = fit_nfw_for_mw(R, Vobs, Vbar)
-    Vlt = df['v_LogTail_kms'].to_numpy() if 'v_LogTail_kms' in df.columns else None
+    Vlt_refit = df['v_LogTail_kms'].to_numpy() if 'v_LogTail_kms' in df.columns else None
+
+    # Optional SPARC-global LogTail overlay
+    Vlt_global = None
+    if args.logtail_global:
+        try:
+            p = _parse_fixed(args.logtail_global)
+            Vlt_global = _logtail_predict(Vbar, R, p['v0'], p['rc'], p['r0'], p['d'])
+        except Exception:
+            Vlt_global = None
 
     # Plot
     fig, ax = plt.subplots(figsize=(7.5, 5.0))
@@ -81,8 +115,10 @@ def main():
     # Curves
     ax.plot(R, Vgr,  '-', color='C2', lw=2.0, label='GR (baryons)')
     ax.plot(R, Vmond,'--', color='C3', lw=2.0, label='MOND (simple)')
-    if Vlt is not None:
-        ax.plot(R, Vlt, '-', color='C0', lw=2.2, label='LogTail (best)')
+    if Vlt_refit is not None:
+        ax.plot(R, Vlt_refit, '-', color='C0', lw=2.2, label='LogTail (MW refit)')
+    if Vlt_global is not None:
+        ax.plot(R, Vlt_global, ':', color='C0', lw=2.2, label='LogTail (SPARC global)')
     if np.isfinite(Vnfw).any():
         ax.plot(R, Vnfw,'-.', color='C1', lw=2.0, label='NFW (best fit)')
 
