@@ -283,6 +283,7 @@ def main():
     ap.add_argument('--R_min', type=float, default=None)
     ap.add_argument('--R_max', type=float, default=None)
     ap.add_argument('--dR_bin', type=float, default=None, help='Alias for dr (bin width)')
+    ap.add_argument('--auto_rmax', action='store_true', help='Scan slices to set R_max to outermost distance found')
     ap.add_argument('--z_max', type=float, default=1.0)
     ap.add_argument('--sigma_v_max', type=float, default=20.0)
     ap.add_argument('--vR_max', type=float, default=None)
@@ -307,6 +308,24 @@ def main():
     files = list_slices(args.slices)
     if not files:
         raise SystemExit(f"No Parquet slices matched: {args.slices}")
+
+    # Optionally determine R_max automatically from slices
+    if args.auto_rmax:
+        try:
+            maxR = 0.0
+            for p in files:
+                try:
+                    dfR = pd.read_parquet(p, columns=['R_kpc'])
+                except Exception:
+                    dfR = pd.read_parquet(p)
+                if 'R_kpc' in dfR.columns:
+                    mR = pd.to_numeric(dfR['R_kpc'], errors='coerce').max()
+                    if pd.notna(mR):
+                        maxR = max(maxR, float(mR))
+            if maxR > 0:
+                r_max = max(r_max, maxR)
+        except Exception:
+            pass
 
     r_edges = np.arange(float(r_min), float(r_max) + float(dr_bin) + 1e-9, float(dr_bin))
     bins = stream_bins(files, r_edges, z_max=args.z_max, sigma_v_max=args.sigma_v_max, vR_max=args.vR_max,
@@ -340,6 +359,7 @@ def main():
         'r_kpc': Rg,
         'vbar_kms': Vbar,
         'v_obs_kms': Vg,
+        'v_err_kms': Eg,
         'is_outer': outer_idx,
     }
 
