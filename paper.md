@@ -67,7 +67,7 @@ We built an independent Milky Way (MW) rotation‑curve table from Gaia sky slic
 - Binning: R ∈ [0, R_max] with ΔR = 0.1 kpc (R_max auto‑detected from the slices). Each bin’s v_obs is the inverse‑variance mean of v_φ (or a provided v_obs column), and we export per‑bin 1σ uncertainties (v_err_kms).
 - Baryonic baseline V_bar(R): Miyamoto–Nagai disk + Hernquist bulge, fit only on inner radii [3, 8] kpc and held fixed for all R.
 
-We then applied the same LogTail modeling used for SPARC on this single‑galaxy table (no MuPhi). The resulting outer‑bin median closeness and the outer‑slope diagnostic (last ~30% in R) are exported alongside the predictions (`outer_slopes_logtail.csv`, `summary_logtail.json`). As a sanity check, a per‑galaxy NFW halo fit is also shown (not apples‑to‑apples to global models but useful to confirm the binning and baseline).
+We then applied the same LogTail modeling used for SPARC on this single‑galaxy table (no MuPhi). For the MW we freeze the **SPARC‑global** parameters and treat the MW as a transfer test: the 0.1‑kpc Gaia bins reach **94.63%** median outer‑bin closeness under the fixed SPARC‑global \(v_0=140, r_c=15, R_0=3, \Delta=4\). For reference (diagnostic only), a **MW‑only refit** yields **98.65%** with \(v_0=140, r_c=5, R_0=4, \Delta=4\). The outer‑slope diagnostic (last ~30% in R) and all per‑bin predictions are exported (`outer_slopes_logtail.csv`, `summary_logtail.json`). As a sanity check, a per‑galaxy NFW halo fit is also shown (not apples‑to‑apples to global models but useful to confirm the binning and baseline).
 
 ![Milky Way rotation curve (Gaia bins ±1σ): Observed vs. GR (baryons), MOND (simple), LogTail (SPARC‑global and MW refit), and NFW (best fit)](figs/mw_rc_compare.png)
 
@@ -104,6 +104,8 @@ py -u rigor/scripts/plot_mw_gr_only.py \
 ```
 
 Caveats. The MW is not strictly axisymmetric; bar/spiral streaming can bias azimuthal speeds. For robustness we support ϕ‑wedge cross‑validation via the builder’s `--phi_bins/--phi_bin_index` flags. An optional asymmetric‑drift correction can be added in the builder if desired; we report both corrected/uncorrected variants when used. The MOND curve uses the simple analytic closure with proper a0 unit conversion (m s⁻² → (km/s)²/kpc) to avoid the common unit‑mismatch bias. The NFW overlay is a per‑galaxy best fit and typically tracks the Gaia bins closely; it is included as a sanity check rather than a global baseline.
+
+Note on gates/smoothing. The SPARC‑global gate \(S(R)=\tfrac12[1+\tanh((R-R_0)/\Delta)]\) is held fixed here. The MW‑only refit suggests a preference for a slightly earlier/steeper turn‑on. If desired, one could explore alternative **smoothing functions** (e.g., logistic vs. error‑function vs. compact smoothsteps) or mild **scale‑aware** gates (e.g., tying \(R_0,\Delta\) to \(R_d\))—while keeping \(v_0\) universal. We did not require these generalizations for the headline results; the SPARC‑global setting already achieves \~95% on MW bins without any MW‑specific tuning.
 
 ---
 
