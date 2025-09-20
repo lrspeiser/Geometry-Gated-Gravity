@@ -71,7 +71,7 @@ def plot_rotation_curve_overlays():
     if not path.exists():
         return None
     df = pd.read_csv(path)
-    need = ["galaxy","R_kpc","Vobs_kms","Vbar_kms","v_LogTail_kms","v_MuPhi_kms"]
+    need = ["galaxy","R_kpc","Vobs_kms","Vbar_kms","v_LogTail_kms"]
     if not ensure_cols(df, need):
         return None
     galaxies = pick_example_galaxies(df, n=6)
@@ -85,7 +85,6 @@ def plot_rotation_curve_overlays():
         vobs = sub["Vobs_kms"].to_numpy()
         vbar = sub["Vbar_kms"].to_numpy()
         vlog = sub["v_LogTail_kms"].to_numpy()
-        vmuphi = sub["v_MuPhi_kms"].to_numpy()
         # MOND (simple mu) from baryons
         vmond = mond_velocity_simple(r, vbar)
         # DM-like isothermal: use outer 30% observed median as constant
@@ -98,7 +97,6 @@ def plot_rotation_curve_overlays():
         if np.isfinite(vhalo):
             ax.plot([r.min(), r.max()], [vhalo, vhalo], lw=2, ls=":", c="#9467bd", label="DM-like (isothermal)")
         ax.plot(r, vlog, lw=2.5, c="#d62728", label="LogTail")
-        ax.plot(r, vmuphi, lw=2.0, c="#ff7f0e", label="MuPhi")
         ax.set_title(str(gal))
         ax.set_xlabel("R (kpc)")
         ax.set_ylabel("v (km/s)")
@@ -106,7 +104,7 @@ def plot_rotation_curve_overlays():
     # One shared legend
     handles, labels = axes[0].get_legend_handles_labels()
     fig.legend(handles, labels, loc="lower center", ncol=5, frameon=False)
-    fig.suptitle("Rotation curves: observed vs GR(baryons), MOND, DM-like, LogTail, MuPhi")
+    fig.suptitle("Rotation curves: observed vs GR(baryons), MOND, DM-like, LogTail")
     savefig(FIG_DIR / "rc_overlays_examples.png")
 
 
@@ -246,14 +244,12 @@ def plot_cv_medians():
     d = pd.read_csv(path)
     fig, ax = plt.subplots(figsize=(8,5.5))
     x = np.arange(len(d))
-    width = 0.35
-    ax.bar(x - width/2, d["LogTail_test_median"], width, label="LogTail test")
-    ax.bar(x + width/2, d["MuPhi_test_median"], width, label="MuPhi test")
+    ax.bar(x, d["LogTail_test_median"], width=0.6, label="LogTail test", color="#d62728")
     ax.set_xticks(x)
     ax.set_xticklabels([f"Fold {i}" for i in d["fold"]])
     ax.set_ylim(0, 100)
     ax.set_ylabel("Median closeness (%)")
-    ax.set_title("5-fold CV: test medians by fold")
+    ax.set_title("5-fold CV: LogTail test medians by fold")
     ax.legend(frameon=False)
     savefig(FIG_DIR / "cv_medians_bar.png")
 
@@ -331,7 +327,30 @@ def plot_cmb_envelope_summary():
     savefig(FIG_DIR / "cmb_tttee_envelope.png")
 
 
+def write_logtail_only_artifacts():
+    # Create LogTail-only summary and predictions for clean paper references
+    try:
+        s_path = OUT_DIR / "summary_logtail_muphi.json"
+        if s_path.exists():
+            sj = json.loads(s_path.read_text())
+            lt = sj.get("LogTail", None)
+            if lt is not None:
+                (OUT_DIR / "summary_logtail.json").write_text(json.dumps(lt, indent=2))
+    except Exception:
+        pass
+    try:
+        p_path = OUT_DIR / "predictions_with_LogTail_MuPhi.csv"
+        if p_path.exists():
+            df = pd.read_csv(p_path)
+            keep = [c for c in ["galaxy","R_kpc","Vobs_kms","Vbar_kms","is_outer","v_LogTail_kms"] if c in df.columns]
+            if keep:
+                df[keep].to_csv(OUT_DIR / "predictions_with_LogTail.csv", index=False)
+    except Exception:
+        pass
+
+
 def main():
+    write_logtail_only_artifacts()
     plot_rotation_curve_overlays()
     plot_rar_obs_vs_model()
     plot_btfr_two_panel()
