@@ -214,3 +214,60 @@ Note: data/shell_run/* contains a single snapshot of outputs from a prior run; s
 - Parquet schemas are read from file metadata (pyarrow). MRT, DAT, SFB, and DENS formats include header rows or byte-by-byte descriptions that define columns and units.
 - opt_shell and shell_run directories contain many parameterized runs; for brevity we document the schema once and reference it for all matching filenames.
 - If you add a new dataset, please add it to this catalog with its columns and a short description.
+
+---
+
+## Cluster datasets (ACCEPT/ABELL) and schema mapping
+
+New cluster profile sources added under `data/`:
+
+- data/ACCEPT.dat — multi-cluster radial thermodynamic profiles (ACCEPT-style)
+- data/ABELL_0426_profiles.dat.txt — single-cluster profile (Perseus; ABELL_0426) in the same column format as ACCEPT
+- data/ABELL_1689_profiles.dat.txt — single-cluster profile (ABELL_1689) in the same column format as ACCEPT
+- data/COMA-JAA694A216.txt — VizieR stub containing an error message (“No catalogue or table was specified or found.”); not a usable data table
+
+Columns and units (shared by ACCEPT/ABELL profile tables):
+- Name — cluster identifier
+- Rin [Mpc] — inner radius of annulus (3D shell proxy)
+- Rout [Mpc] — outer radius of annulus
+- nelec [cm^-3] — electron number density (n_e)
+- neerr [cm^-3] — 1σ uncertainty on n_e
+- Kitpl, Kflat, Kerr [keV cm^2] — entropy estimators and uncertainty
+- Pitpl, Pflat, Perr [dyne cm^-2] — pressure estimators and uncertainty
+- Mgrav, Merr [M_solar] — enclosed mass estimate and uncertainty (method-dependent; document per source if used)
+- Tx, Txerr [keV] — spectroscopic temperature and 1σ uncertainty
+- Lambda [erg cm^3 s^-1] — emissivity/cooling function (catalog definition)
+- tcool5/2, t52err [Gyr] — cooling time estimate and uncertainty (5/2 definition)
+- tcool3/2, t32err [Gyr] — cooling time estimate and uncertainty (3/2 definition)
+
+Schema mapping to rigor/scripts/cluster_logtail_test.py (expected CSVs):
+- Derive mid-radius in kpc for profiles: r_mid_kpc = 0.5 × (Rin + Rout) × 1000.
+- Gas density input (Option B in the script):
+  - gas_profile.csv columns:
+    - r_kpc = r_mid_kpc
+    - n_e_cm3 = nelec
+- Temperature input (optional but recommended):
+  - temp_profile.csv columns:
+    - r_kpc = r_mid_kpc
+    - kT_keV = Tx
+    - kT_err_keV = Txerr (if available)
+- Stellar/ICL density (optional; not present in these tables):
+  - stars_profile.csv columns:
+    - r_kpc
+    - rho_stars_Msun_per_kpc3
+
+Notes:
+- The script converts n_e to mass density with ρ_gas = μ_e m_p n_e (μ_e ≈ 1.17), so providing n_e_cm3 is sufficient; you do not need to pre-convert to Msun/kpc^3.
+- Lensing comparisons (M(<r) or ΔΣ) require separate inputs (e.g., CLASH/LoCuSS). These are not included in the ACCEPT/ABELL profile files above.
+
+Current sufficiency for cluster tests:
+- ABELL_0426 and ABELL_1689: tables above are sufficient to build gas_profile.csv and temp_profile.csv and run hydrostatic kT predictions and LogTail mass predictions (gas-only). Stellar/ICL and lensing inputs are not provided here.
+- COMA: the present file is a VizieR error stub; obtain a valid COMA profile table (e.g., ACCEPT-like or XMM/Chandra deprojections) to build gas/temp CSVs, and add lensing mass if you want mass comparisons.
+
+Example per-cluster directory layout (after conversion):
+- data/clusters/ABELL_0426/
+  - gas_profile.csv (r_kpc, n_e_cm3)
+  - temp_profile.csv (r_kpc, kT_keV[, kT_err_keV])
+  - stars_profile.csv (optional)
+  - lensing_mass.csv (optional)
+- data/clusters/ABELL_1689/ (same pattern)
