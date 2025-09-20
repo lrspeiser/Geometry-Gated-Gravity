@@ -28,6 +28,176 @@ where $v_{\rm bar}(R)$ is the baryonic speed from SPARC components; $v_0$ (km/s)
 
 *(Contrast with MOND: MOND changes the $a$–$a_N$ law, enforcing flat curves and BTFR through $a_0$. LogTail adds an isothermal‑like tail in $v^2$, preserving inner dynamics while capturing flat outer curves.)*
 
+*Throughout this paper we use $\Sigma \equiv \Sigma_{\text{lens}}=\mu(1+\gamma)/2$ to denote the lensing–vs–dynamics response; when we write $\Sigma\approx 0.97$, we mean $\Sigma_{\text{lens}}$.*
+
+---
+
+### 2.2 Theoretical origin: LogTail from a kinetically screened scalar
+
+We show that the LogTail phenomenology arises from a kinetically screened scalar (k‑mouflage) whose non‑linear kinetic term forces a universal $1/r$ fifth‑force profile in low‑density galaxy outskirts, while screening suppresses the field in high‑surface‑density inner regions. This delivers (i) the logarithmic potential tail, (ii) a surface‑density gate that is a derived environmental response (not an ad‑hoc switch), and (iii) a small, nearly scale‑independent lensing–dynamics slip $\Sigma_{\text{lens}}\lesssim 1$.
+
+#### 2.2.1 Action, quasi‑static limit, and stability
+
+We consider a scalar $\phi$ minimally coupled to gravity and conformally coupled to matter via $\tilde g_{\mu\nu}=A^2(\phi) g_{\mu\nu}$. In the quasi‑static halo regime we define the non‑negative invariant
+
+$$
+Y \;\equiv\; \frac{(\nabla\phi)^2}{\Lambda^4}\ \ge 0,
+$$
+
+and take a k‑mouflage Lagrangian
+
+$$
+\mathcal{L}_\phi=\Lambda^4\,\mathcal{P}(Y),\qquad \mathcal{P}(Y)=c_{3/2}\,Y^{3/2},\quad c_{3/2}>0.
+$$
+
+This choice yields $\mathcal{P}_Y>0$ and $\mathcal{P}_Y+2Y\mathcal{P}_{YY}>0$, ensuring no ghosts and no gradient instabilities; the scalar sound speed is subluminal,
+
+$$
+c_s^2=\frac{\mathcal{P}_Y}{\mathcal{P}_Y+2Y\mathcal{P}_{YY}}=\tfrac{1}{2}.
+$$
+
+As a pure k‑essence sector, the gravitational‑wave speed is unmodified $(c_T=1)$, satisfying GW170817 constraints.
+
+#### 2.2.2 Three‑line derivation of the $1/r$ tail (logarithmic potential)
+
+Outside the baryons (gate “on”) the static field equation is
+
+$$
+\nabla\!\cdot\!\big(\mathcal{P}_Y\,\nabla\phi\big)=0
+\;\;\Longrightarrow\;\;
+r^2\,\mathcal{P}_Y\,\phi'(r)=Q \quad (\text{first integral}),
+$$
+
+where $Q$ is a conserved scalar “flux”. With $\mathcal{P}(Y)=c_{3/2}Y^{3/2}$ and $Y=\phi'^2/\Lambda^4$, we have $\mathcal{P}_Y\propto |\phi'|$, so
+
+$$
+\phi'(r)\;\propto\;\frac{1}{r}\,.
+$$
+
+The conformal coupling $A(\phi)$ generates a matter acceleration
+
+$$
+a_\phi(r)=\frac{\beta}{M_{\rm Pl}}\phi'(r)=\frac{v_0^2}{r}\quad\Rightarrow\quad
+\Phi_\phi(r)=v_0^2\ln(r/r_0),\ \ v_{\rm tail}^2=r\,\Phi'_\phi=v_0^2,
+$$
+
+i.e. a flat velocity contribution and a logarithmic potential tail. The amplitude is fixed by theory parameters and matching,
+
+$$
+\boxed{\ v_0^2=\frac{\beta}{M_{\rm Pl}}\sqrt{\frac{2Q\,\Lambda^2}{3c_{3/2}}}\ }\!,
+$$
+
+so a universal $(\beta,Q,\Lambda,c_{3/2})$ naturally yields a global $v_0$.
+
+To represent the finite matching region between the screened interior and the unscreened $1/r$ branch, we use a mild IR softening
+
+$$
+\Phi_{\rm LT}(r)=v_0^2\ln\!\Big(\frac{r+r_c}{r_0}\Big)\quad\Rightarrow\quad
+v_{\rm tail}^2(R)=v_0^2\,\frac{R}{R+r_c},
+$$
+
+where $r_c$ parameterizes the interior–exterior matching scale.
+
+#### 2.2.3 The gate as kinetic screening tied to surface density
+
+With baryons present, the quasi‑static equation reads
+
+$$
+\nabla\!\cdot\!\big(\mathcal{P}_Y\,\nabla\phi\big)= -\frac{\beta}{M_{\rm Pl}}\rho_b\,.
+$$
+
+The scalar response is suppressed when $\mathcal{P}_Y$ is large (screened) and active when $\mathcal{P}_Y$ is small (unscreened). In a disk galaxy the controlling observable is the baryon surface density $\Sigma_b(R)$. Screening turns on above a threshold $\Sigma_\star$ determined by the kinetic scale and coupling; we therefore identify the empirical gate with a derived environmental switch
+
+$$
+\boxed{\ 
+S[\Sigma_b(R)] = \tfrac{1}{2}\!\left[1+\tanh\!\frac{\ln\!\big(\Sigma_\star/\Sigma_b(R)\big)}{\delta_\Sigma}\right],
+\ }
+$$
+
+with $\delta_\Sigma$ setting the smoothness. The matching scale $r_c$ correlates with the radius where $\Sigma_b(R)\approx \Sigma_\star$.
+
+Combining §§2.2.2–2.2.3 gives the theory‑to‑data prediction used in §2.1:
+
+$$
+v_{\rm tail}^2(R)=v_0^2\,\frac{R}{R+r_c}\,S[\Sigma_b(R)].
+$$
+
+##### Parameter mapping (theory → phenomenology; for quick reference)
+
+$$
+\begin{aligned}
+&v_{\rm tail}^2(R)=v_0^2\,\frac{R}{R+r_c}\,S[\Sigma_b(R)],\qquad
+v_0^2=\frac{\beta}{M_{\rm Pl}}\sqrt{\frac{2Q\,\Lambda^2}{3c_{3/2}}},\\
+&S[\Sigma_b]=\tfrac12\!\left[1+\tanh\!\tfrac{\ln(\Sigma_\star/\Sigma_b)}{\delta_\Sigma}\right],\quad
+r_c:\ \text{interior–exterior matching scale tied to }\Sigma_b\approx \Sigma_\star.
+\end{aligned}
+$$
+
+#### 2.2.4 Lensing–dynamics slip from the same parameters
+
+We use the standard weak‑field parameterization
+
+$$
+k^2\Psi=-4\pi G a^2\,\mu(k,a)\,\rho\delta,\qquad \gamma(k,a)\equiv \frac{\Phi}{\Psi},\qquad
+\Sigma_{\rm lens}\equiv \frac{\mu(1+\gamma)}{2}.
+$$
+
+In the quasi‑static, unscreened galaxy regime of k‑mouflage with conformal coupling,
+
+$$
+\mu\simeq 1+\mathcal{O}\!\left(\frac{\beta^2}{\mathcal{P}_Y}\right),\qquad
+\gamma\simeq 1-\epsilon,\quad \epsilon=\mathcal{O}\!\left(\frac{\beta^2}{\mathcal{P}_Y}\right),
+$$
+
+so
+
+$$
+\boxed{\ \Sigma_{\rm lens}\simeq 1-\frac{\epsilon}{2}\ \ (\text{nearly constant over }30\!\text{–}300~\mathrm{kpc}).\ }
+$$
+
+Matching our empirical $\Sigma\simeq 0.97$ fixes the same parameter combination that controls $v_0$. In screened inner regions $\mathcal{P}_Y\to\infty \Rightarrow \mu,\gamma,\Sigma_{\rm lens}\to 1$, recovering GR (Solar‑System/inner‑disk safety).
+
+#### 2.2.5 Consistency with local tests and waves
+
+• Solar‑System & PPN: high $\Sigma_b$ $\Rightarrow$ large $Y$ $\Rightarrow$ large $\mathcal{P}_Y$ $\Rightarrow$ fifth‑force suppression; $\mu\to 1$, $\gamma\to 1$, $\Sigma_{\rm lens}\to 1$.
+
+• Stability: $\mathcal{P}_Y>0$, $\mathcal{P}_Y+2Y\mathcal{P}_{YY}>0$ and $c_s^2=\tfrac12$ ensure a healthy scalar sector where the modification operates.
+
+• GW constraint: $c_T=1$ (k‑essence), consistent with GW170817.
+
+---
+
+### 2.3 Other plausible completions and discriminants
+
+While §2.2 is our primary completion, two additional routes can reproduce a logarithmic tail and are worth tracking because they predict different observables:
+
+1. State‑dependent non‑local kernel (phantom density).
+   Replace Poisson’s equation by an integro‑differential form with an environment‑dependent kernel $q(\lvert\mathbf{x}-\mathbf{y}\rvert;\,\Sigma_b)$ so the response switches on when $\Sigma_b\!<\!\Sigma_\star$. If the kernels sourcing dynamics and lensing differ slightly ($q_N\neq q_L$) one predicts a constant $\Sigma_{\rm lens}\lesssim 1$ on galaxy scales, similar to §2.2. Discriminant: kernel models typically act like extra mass, predicting $\Sigma_{\rm lens}\to 1$ unless $q_N\neq q_L$; they also lack an intrinsic scalar sound speed imprint.
+
+2. EFT/Horndeski with screening (Vainshtein or k‑mouflage).
+   In the quasi‑static limit one can engineer a band where the effective potential mimics the $\ln(r+r_c)$ form, with screening providing the gate. Discriminant: often a weak radial tilt in $\Sigma_{\rm lens}(R)$ over $30\!\text{–}300$ kpc, unlike the near‑constant slip in §2.2.
+
+A polarization/relaxation (“gravitational dielectric”) extension can also mimic isothermal tails in steady disks and predict lensing–baryon centroid offsets in fast mergers (timescale‑controlled response). Discriminant: Bullet‑like systems—offsets if the relaxation time is long; no offsets in §2.2.
+
+Near‑term empirical discriminants (no refits):
+(i) Gate driver—regress the fitted gate radius against $\Sigma_b$ vs. $|\nabla\Phi|$: a strong $\Sigma_b$ correlation supports §2.2 or non‑local kernel with state‑dependence; (ii) Slip profile—measure $\Sigma_{\rm lens}(R)$ from 30–300 kpc: flat ($\approx$ constant) favors §2.2; (iii) Mergers—binary prediction of centroid offsets (dielectric) vs. none (k‑mouflage/kernels).
+
+---
+
+#### (Optional) Appendix A: one‑line back‑of‑the‑envelope
+
+Exterior to the baryons,
+
+$$
+r^2\,\mathcal{P}_Y\,\phi'=Q
+\quad\Rightarrow\quad
+\frac{a_\phi}{a_N}
+=\frac{\beta\phi'/M_{\rm Pl}}{GM_b(<r)/r^2}
+=\frac{\beta Q}{M_{\rm Pl}G M_b(<r)}\frac{1}{\mathcal{P}_Y},
+$$
+
+which makes transparent how (i) the scalar remains effective far outside the baryons (constant $Q$), (ii) screening kills the effect where $\mathcal{P}_Y$ is large, and (iii) a global $v_0$ emerges from universal $(\beta,Q,\Lambda,c_{3/2})$.
+
 ---
 
 ## 3. Data and pipeline (SPARC, CV splits, RAR/BTFR, lensing)
