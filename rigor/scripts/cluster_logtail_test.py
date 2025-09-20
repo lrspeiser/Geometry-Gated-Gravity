@@ -22,7 +22,23 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from pathlib import Path
 from scipy.interpolate import interp1d, UnivariateSpline
-from scipy.integrate import cumtrapz
+try:
+    # SciPy >= 1.4 provides cumulative_trapezoid
+    from scipy.integrate import cumulative_trapezoid as _cumtrapz
+    def cumtrapz(y, x, initial=0.0):
+        return _cumtrapz(y, x, initial=initial)
+except Exception:  # fallback for older/newer API changes
+    try:
+        from scipy.integrate import cumtrapz as _cumtrapz
+        def cumtrapz(y, x, initial=0.0):
+            return _cumtrapz(y, x, initial=initial)
+    except Exception:
+        import numpy as _np
+        def cumtrapz(y, x, initial=0.0):
+            y = _np.asarray(y, float)
+            x = _np.asarray(x, float)
+            area = 0.5 * (y[1:] + y[:-1]) * (x[1:] - x[:-1])
+            return _np.concatenate(([initial], _np.cumsum(area)))
 
 # constants
 G = 4.300917270e-6  # (kpc km^2 s^-2 Msun^-1)
@@ -88,12 +104,12 @@ def load_stars(path_dir: Path):
     return r, rho
 
 # ---- physics helpers ----
-def enclosed_mass_from_rho(r_kpc, rho_msun_kpc3):
-    r = np.asarray(r_kpc, float); rho = np.asarray(rho_msun_kpc3, float)
-    integrand = 4.0*np.pi*(r**2)*rho
-    return cumtrapz(integrand, r, initial=0.0)
-
-def smooth_log_derivative(x, y, s=0.0, k=3):
+def enclosed_mass_from_rho(r_kpc, rho_Msun_kpc3):
+    r = np.asarray(r_kpc, float)
+    rho = np.asarray(rho_Msun_kpc3, float)
+    integrand = 4.0*np.pi*(r**2)*rho   # Msun/kpc
+    M = cumtrapz(integrand, r, initial=0.0)
+    return M  # Msun
     mask = np.isfinite(x) & np.isfinite(y) & (x>0) & (y>0)
     xs, ys = x[mask], y[mask]
     if xs.size < (k+2):
