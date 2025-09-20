@@ -62,12 +62,39 @@ def list_slices(glob_pattern: str) -> List[Path]:
     return [Path(f) for f in files]
 
 
+def _phi_degrees_from_df(df: pd.DataFrame) -> np.ndarray | None:
+    # Try to find a phi column; support 'phi_rad', 'phi_deg', 'phi'
+    cols = set(df.columns)
+    phi_col = None
+    for c in ('phi_rad','phi_deg','phi','Phi','PHI'):
+        if c in cols:
+            phi_col = c
+            break
+    if phi_col is None:
+        return None
+    phi_vals = pd.to_numeric(df[phi_col], errors='coerce').to_numpy()
+    # Heuristically infer units: if values exceed ~2π in magnitude, treat as degrees
+    finite = phi_vals[np.isfinite(phi_vals)]
+    if finite.size == 0:
+        return None
+    if np.nanmax(np.abs(finite)) > 6.5:
+        phi_deg = phi_vals  # already degrees
+    else:
+        phi_deg = np.degrees(phi_vals)
+    # Normalize into [0,360)
+    phi_deg = np.mod(phi_deg, 360.0)
+    phi_deg[phi_deg < 0] += 360.0
+    return phi_deg
+
+
 def stream_bins(files: List[Path],
                 r_edges: np.ndarray,
                 z_max: float,
                 sigma_v_max: float,
                 vR_max: float | None = None,
-                prefer_v_obs: bool = True) -> Dict[str, Any]:
+                prefer_v_obs: bool = True,
+                phi_bins: int = 1,
+                phi_bin_index: int | None = None) -> Dict[str, Any]:
     n_bins = len(r_edges) - 1
     sum_w = np.zeros(n_bins)
     sum_wx = np.zeros(n_bins)
@@ -75,22 +102,34 @@ def stream_bins(files: List[Path],
 
     used_files = []
 
+    # Precompute wedge bounds if requested
+    use_wedge = (phi_bins is not None) and (phi_bins > 1) and (phi_bin_index is not None)
+    if use_wedge:
+        wedge_width = 360.0 / float(phi_bins)
+        phi0 = wedge_width * int(phi_bin_index)
+        phi1 = phi0 + wedge_width
+
     for p in files:
         try:
             # Read only necessary columns, fallback gracefully
-            cols_try = ['R_kpc','z_kpc','v_phi_kms','sigma_v','v_obs','quality_flag','v_R_kms']
-            df = pd.read_parquet(p, columns=[c for c in cols_try if c in pd.read_parquet(p, engine='pyarrow').columns])
-        except Exception:
+            cols_try = ['R_kpc','z_kpc','v_phi_kms','sigma_v','v_obs','quality_flag','v_R_kms','phi_rad','phi_deg','phi']
+            # Get available columns quickly
             try:
-                df = pd.read_parquet(p)
+                available = pd.read_parquet(p, engine='pyarrow').columns
             except Exception:
-                continue
+                available = None
+            if available is not None:
+                df = pd.read_parquet(p, columns=[c for c in cols_try if c in available])
+            else:
+                df = pd.read_parquet(p)
+        except Exception:
+            continue
 
         # Normalize column names that may vary
         cols = set(df.columns)
         col_R = 'R_kpc' if 'R_kpc' in cols else next((c for c in cols if c.lower() == 'r_kpc'), None)
         col_z = 'z_kpc' if 'z_kpc' in cols else next((c for c in cols if c.lower() == 'z_kpc'), None)
-        col_vphi = 'v_phi_kms' if 'v_phi_kms' in cols else next((c for c in cols if c.lower() in ('vphi_kms','v_phi')), None)
+        col_vphi = 'v_phi_kms' if 'v_phi_kms' in cols else next((c for c in cols if c.lower() in ('vphi_kms','v_phi','vphi')), None)
         col_vobs = 'v_obs' if 'v_obs' in cols else next((c for c in cols if c.lower() in ('vobs','v_obs_kms')), None)
         col_sv = 'sigma_v' if 'sigma_v' in cols else next((c for c in cols if c.lower() in ('sigma','sigma_v_kms','sigmav')), None)
         col_q = 'quality_flag' if 'quality_flag' in cols else next((c for c in cols if 'quality' in c.lower() and 'flag' in c.lower()), None)
@@ -102,6 +141,12 @@ def stream_bins(files: List[Path],
         R = pd.to_numeric(df[col_R], errors='coerce').to_numpy()
         z = pd.to_numeric(df[col_z], errors='coerce').to_numpy() if (col_z in cols) else np.zeros_like(R)
         sv = pd.to_numeric(df[col_sv], errors='coerce').to_numpy()
+        # ϕ wedge if available
+        if use_wedge:
+            phi_deg = _phi_degrees_from_df(df)
+        else:
+            phi_deg = None
+
         x_raw = None
         if prefer_v_obs and (col_vobs in cols):
             x_raw = pd.to_numeric(df[col_vobs], errors='coerce').to_numpy()
@@ -123,6 +168,8 @@ def stream_bins(files: List[Path],
         if (vR_max is not None) and (col_vR in cols):
             vR = pd.to_numeric(df[col_vR], errors='coerce').to_numpy()
             mask &= (np.abs(vR) <= float(vR_max))
+        if use_wedge and (phi_deg is not None):
+            mask &= (phi_deg >= phi0) & (phi_deg < phi1)
 
         Rm = R[mask]; Xm = x_raw[mask]; Svm = sv[mask]
         if Rm.size == 0:
@@ -228,12 +275,19 @@ def main():
     ap.add_argument('--slices', default=str(Path('data')/'gaia_sky_slices'/'processed_*.parquet'), help='Glob for Gaia slice Parquet files')
     ap.add_argument('--out_csv', default=str(Path('out')/'mw'/'mw_predictions_by_radius.csv'))
     ap.add_argument('--meta_out', default=str(Path('out')/'mw'/'mw_predictions_by_radius.meta.json'))
-    ap.add_argument('--r_min', type=float, default=3.0)
-    ap.add_argument('--r_max', type=float, default=25.0)
-    ap.add_argument('--dr', type=float, default=0.5)
+    ap.add_argument('--gal_id', default='MilkyWay')
+    # radius range (accept lowercase and uppercase synonyms)
+    ap.add_argument('--r_min', type=float, default=None)
+    ap.add_argument('--r_max', type=float, default=None)
+    ap.add_argument('--dr', type=float, default=None)
+    ap.add_argument('--R_min', type=float, default=None)
+    ap.add_argument('--R_max', type=float, default=None)
+    ap.add_argument('--dR_bin', type=float, default=None, help='Alias for dr (bin width)')
     ap.add_argument('--z_max', type=float, default=1.0)
     ap.add_argument('--sigma_v_max', type=float, default=20.0)
     ap.add_argument('--vR_max', type=float, default=None)
+    ap.add_argument('--phi_bins', type=int, default=1, help='Number of azimuthal wedges (ϕ). If >1, use with --phi_bin_index to select one wedge.')
+    ap.add_argument('--phi_bin_index', type=int, default=None, help='Index of wedge [0..phi_bins-1] to include')
     ap.add_argument('--inner_fit_min', type=float, default=3.0)
     ap.add_argument('--inner_fit_max', type=float, default=8.0)
     ap.add_argument('--min_bin_count', type=int, default=20)
@@ -242,14 +296,22 @@ def main():
     ap.add_argument('--rc', type=float, default=15.0)
     ap.add_argument('--R0', type=float, default=8.0)
     ap.add_argument('--dR', type=float, default=3.0, help='LogTail gate width (Δ)')
+    ap.add_argument('--write_meta', action='store_true', help='If set, write meta JSON (default on)')
     args = ap.parse_args()
+
+    # Resolve range args with synonyms
+    r_min = args.r_min if args.r_min is not None else (args.R_min if args.R_min is not None else 3.0)
+    r_max = args.r_max if args.r_max is not None else (args.R_max if args.R_max is not None else 25.0)
+    dr_bin = args.dr if args.dr is not None else (args.dR_bin if args.dR_bin is not None else 0.5)
 
     files = list_slices(args.slices)
     if not files:
         raise SystemExit(f"No Parquet slices matched: {args.slices}")
 
-    r_edges = np.arange(float(args.r_min), float(args.r_max) + float(args.dr) + 1e-9, float(args.dr))
-    bins = stream_bins(files, r_edges, z_max=args.z_max, sigma_v_max=args.sigma_v_max, vR_max=args.vR_max)
+    r_edges = np.arange(float(r_min), float(r_max) + float(dr_bin) + 1e-9, float(dr_bin))
+    bins = stream_bins(files, r_edges, z_max=args.z_max, sigma_v_max=args.sigma_v_max, vR_max=args.vR_max,
+                       phi_bins=int(args.phi_bins) if args.phi_bins is not None else 1,
+                       phi_bin_index=int(args.phi_bin_index) if args.phi_bin_index is not None else None)
 
     R = bins['r_centers']
     Vobs = bins['v_obs']
@@ -274,7 +336,7 @@ def main():
         outer_idx = np.zeros(0, dtype=bool)
 
     data = {
-        'gal_id': ['MilkyWay'] * len(Rg),
+        'gal_id': [str(args.gal_id)] * len(Rg),
         'r_kpc': Rg,
         'vbar_kms': Vbar,
         'v_obs_kms': Vg,
@@ -293,21 +355,26 @@ def main():
     meta = {
         'slices_glob': args.slices,
         'used_files': bins['used_files'],
-        'r_min': float(args.r_min), 'r_max': float(args.r_max), 'dr': float(args.dr),
+        'r_min': float(r_min), 'r_max': float(r_max), 'dr': float(dr_bin),
         'z_max': float(args.z_max), 'sigma_v_max': float(args.sigma_v_max), 'vR_max': None if args.vR_max is None else float(args.vR_max),
+        'phi_bins': int(args.phi_bins) if args.phi_bins is not None else 1,
+        'phi_bin_index': None if args.phi_bin_index is None else int(args.phi_bin_index),
         'inner_fit_min': float(args.inner_fit_min), 'inner_fit_max': float(args.inner_fit_max), 'min_bin_count': int(args.min_bin_count),
         'fit_params': pars,
         'logtail_preview': {
             'enabled': bool(args.compute_logtail_preview),
             'v0': float(args.v0), 'rc': float(args.rc), 'R0': float(args.R0), 'dR': float(args.dR),
         },
+        'gal_id': str(args.gal_id),
     }
     meta_path = Path(args.meta_out)
-    meta_path.parent.mkdir(parents=True, exist_ok=True)
-    meta_path.write_text(json.dumps(meta, indent=2))
+    if args.write_meta or True:
+        meta_path.parent.mkdir(parents=True, exist_ok=True)
+        meta_path.write_text(json.dumps(meta, indent=2))
 
     print(f"Wrote {out_path} (rows={len(out_df)})")
-    print(f"Meta: {meta_path}")
+    if args.write_meta or True:
+        print(f"Meta: {meta_path}")
 
 
 if __name__ == '__main__':
