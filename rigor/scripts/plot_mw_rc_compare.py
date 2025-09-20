@@ -111,7 +111,13 @@ def main():
     # Plot
     fig, ax = plt.subplots(figsize=(7.5, 5.0))
     # Observed points
-    ax.scatter(R, Vobs, s=26, color='k', alpha=0.8, label='Observed (Gaia bins)')
+    # Observed points with error bars if available
+    Verr = df['v_err_kms'].to_numpy() if 'v_err_kms' in df.columns else None
+    if Verr is not None and np.isfinite(Verr).any():
+        ax.errorbar(R, Vobs, yerr=Verr, fmt='o', ms=3.5, lw=0.8, elinewidth=0.8, capsize=2.0,
+                    color='k', alpha=0.9, label='Observed (Gaia bins ±1σ)')
+    else:
+        ax.scatter(R, Vobs, s=26, color='k', alpha=0.8, label='Observed (Gaia bins)')
     # Curves
     ax.plot(R, Vgr,  '-', color='C2', lw=2.0, label='GR (baryons)')
     ax.plot(R, Vmond,'--', color='C3', lw=2.0, label='MOND (simple)')
@@ -131,6 +137,27 @@ def main():
     Path(args.out_png).parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(args.out_png, dpi=180)
     print(f'Wrote {args.out_png}')
+
+    # Write a provenance JSON sidecar to confirm data sources (no placeholders)
+    prov = {
+        'pred_csv_used': str(Path(args.pred_csv).resolve()),
+        'columns_used': {
+            'observed': 'v_obs_kms',
+            'observed_err': 'v_err_kms' if ('v_err_kms' in df.columns) else None,
+            'baryons_GR': 'vbar_kms',
+            'logtail_refit': 'v_LogTail_kms' if ('v_LogTail_kms' in df.columns) else None,
+            'mond': 'computed from vbar_kms and r_kpc with a0(m/s^2) converted to (km/s)^2/kpc',
+            'nfw': 'best-fit to (r_kpc, v_obs_kms, vbar_kms) on the same bins'
+        },
+        'logtail_global_overlay': args.logtail_global or None,
+        'a0_si_m_s2': float(args.a0),
+    }
+    prov_path = Path(args.out_png).with_suffix('.provenance.json')
+    try:
+        import json
+        prov_path.write_text(json.dumps(prov, indent=2), encoding='utf-8')
+    except Exception:
+        pass
 
 
 if __name__ == '__main__':
