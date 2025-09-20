@@ -1,0 +1,9 @@
+{
+  "pred_csv_used": "C:\\Users\\henry\\dev\\GravityCalculator\\out\\mw\\mw_predictions_by_radius_0p1_full.csv",
+  "columns_used": {
+    "observed": "v_obs_kms",
+    "observed_err": "v_err_kms (if present)",
+    "baryons_GR": "vbar_kms"
+  },
+  "note": "Observed bins and vbar_kms come directly from the Gaia-binned CSV; no modeled curves are included."
+}
