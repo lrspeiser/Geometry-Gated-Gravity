@@ -69,9 +69,9 @@ We built an independent Milky Way (MW) rotation‑curve table from Gaia sky slic
 
 We then applied the same LogTail modeling used for SPARC on this single‑galaxy table (no MuPhi). For the MW we freeze the **SPARC‑global** parameters and treat the MW as a transfer test: the 0.1‑kpc Gaia bins reach **94.63%** median outer‑bin closeness under the fixed SPARC‑global \(v_0=140, r_c=15, R_0=3, \Delta=4\). For reference (diagnostic only), a **MW‑only refit** yields **98.65%** with \(v_0=140, r_c=5, R_0=4, \Delta=4\). The outer‑slope diagnostic (last ~30% in R) and all per‑bin predictions are exported (`outer_slopes_logtail.csv`, `summary_logtail.json`). As a sanity check, a per‑galaxy NFW halo fit is also shown (not apples‑to‑apples to global models but useful to confirm the binning and baseline).
 
-![Milky Way rotation curve (Gaia bins ±1σ): Observed vs. GR (baryons), MOND (simple), LogTail (SPARC‑global and MW refit), and NFW (best fit)](figs/mw_rc_compare.png)
+![Milky Way rotation curve (Gaia bins ±1σ): Observed vs. GR (baryons), MOND (simple), LogTail (SPARC‑global), and NFW (best fit)](figs/mw_rc_compare.png)
 
-Figure MW‑1. Milky Way rotation‑curve comparison at ΔR = 0.1 kpc. Points show Gaia‑binned v_obs(R) with ±1σ error bars; curves show GR (baryons‑only V_bar), MOND (simple interpolating function, a0≈1.2×10⁻¹⁰ m/s² with proper unit conversion), LogTail (SPARC‑global: v0=140, rc=15, r0=3, Δ=4; dotted), LogTail (MW refit; solid), and a best‑fit NFW halo added in quadrature to baryons. The MW is treated as an in‑house consistency test independent of SPARC—the SPARC‑global parameters are applied without retraining, and the MW‑only refit is shown for reference. A GR‑only panel is available in `figs/mw_gr_only.png`.
+Figure MW‑1. Milky Way rotation‑curve comparison at ΔR = 0.1 kpc. Points show Gaia‑binned v_obs(R) with ±1σ error bars; curves show GR (baryons‑only V_bar; recomputed from the fitted MN+Hern parameters), MOND (simple interpolating function, a0≈1.2×10⁻¹⁰ m/s² with proper unit conversion), LogTail (SPARC‑global: v0=140, rc=15, r0=3, Δ=4), and a best‑fit NFW halo. All curves are extrapolated from R=0 to slightly beyond the last star (ΔR=0.1 kpc spacing). A GR‑only panel is available in `figs/mw_gr_only.png`.
 
 Repro (exact commands):
 
