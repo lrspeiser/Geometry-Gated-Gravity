@@ -4,6 +4,8 @@ from pathlib import Path
 import argparse
 import matplotlib.pyplot as plt
 
+from root_m.common import v_tail2_rootm_soft as v_tail2_soft
+
 # constants
 G = 4.300917270e-6  # (kpc km^2 s^-2 Msun^-1)
 MU = 0.61
@@ -50,16 +52,16 @@ def hydrostatic_kT_keV(r_kpc, n_e_cm3, g_tot_kms2_per_kpc):
     return kT_keV, potential_kms2
 
 
-def g_total_rootm(r_kpc, M_b_enclosed_Msun, A_kms=140.0, Mref_Msun=6.0e10):
+def g_total_rootm_soft(r_kpc, M_b_enclosed_Msun, A_kms=140.0, Mref_Msun=6.0e10, rc_kpc=15.0):
     r = np.asarray(r_kpc)
     Mb = np.asarray(M_b_enclosed_Msun)
     g_b = G * Mb / np.maximum(r**2, 1e-12)
-    v_tail2 = (A_kms**2) * np.sqrt(np.clip(Mb / Mref_Msun, 0.0, None))
+    v_tail2 = v_tail2_soft(r, Mb, A_kms=A_kms, Mref=Mref_Msun, rc_kpc=rc_kpc)
     g_tail = v_tail2 / np.maximum(r, 1e-12)
     return g_b + g_tail
 
 
-def run_cluster(cluster, base='data/clusters', outdir='root-m/out/clusters', A_kms=140.0, Mref_Msun=6.0e10):
+def run_cluster(cluster, base='data/clusters', outdir='root-m/out/clusters', A_kms=140.0, Mref_Msun=6.0e10, rc_kpc=15.0):
     cdir = Path(base)/cluster
     g = pd.read_csv(cdir/'gas_profile.csv')
     t = pd.read_csv(cdir/'temp_profile.csv')
@@ -83,7 +85,7 @@ def run_cluster(cluster, base='data/clusters', outdir='root-m/out/clusters', A_k
 
     rho_b = rho_gas + rho_star
     Mb = enclosed_mass(r, rho_b)
-    g_t = g_total_rootm(r, Mb, A_kms=A_kms, Mref_Msun=Mref_Msun)
+    g_t = g_total_rootm_soft(r, Mb, A_kms=A_kms, Mref_Msun=Mref_Msun, rc_kpc=rc_kpc)
 
     kT_pred, phi_eff = hydrostatic_kT_keV(r, ne, g_t)
     M_pred = (r**2) * g_t / G
@@ -102,8 +104,9 @@ def run_cluster(cluster, base='data/clusters', outdir='root-m/out/clusters', A_k
             'Mref_Msun': Mref_Msun,
             'r_kpc_min': float(r.min()),
             'r_kpc_max': float(r.max()),
-            'n_r': int(len(r)),
-            'temp_median_frac_err': med_frac
+'n_r': int(len(r)),
+            'temp_median_frac_err': med_frac,
+            'rc_kpc': rc_kpc
         }, f, indent=2)
 
     # plot
@@ -135,8 +138,9 @@ def cli():
     ap.add_argument('--outdir', default='root-m/out/clusters')
     ap.add_argument('--A_kms', type=float, default=140.0)
     ap.add_argument('--Mref', type=float, default=6.0e10)
+    ap.add_argument('--rc_kpc', type=float, default=15.0)
     args = ap.parse_args()
-    run_cluster(cluster=args.cluster, base=args.base, outdir=args.outdir, A_kms=args.A_kms, Mref_Msun=args.Mref)
+    run_cluster(cluster=args.cluster, base=args.base, outdir=args.outdir, A_kms=args.A_kms, Mref_Msun=args.Mref, rc_kpc=args.rc_kpc)
 
 if __name__ == '__main__':
     cli()
