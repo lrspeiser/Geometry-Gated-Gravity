@@ -131,6 +131,7 @@ def main():
     ap.add_argument('--only_global', action='store_true', help='If set, suppress MW-refit LogTail curve')
     ap.add_argument('--meta_json', type=str, default=str(Path('out')/'mw'/'mw_predictions_by_radius.meta.json'), help='Meta JSON with baryon fit params (MN+Hern)')
     ap.add_argument('--extrap_frac', type=float, default=1.1, help='Extend curves to extrap_frac * R_max')
+    ap.add_argument('--rmin_kpc', type=float, default=1.0, help='Plot/extrapolate starting radius (kpc), default 1.0')
     args = ap.parse_args()
 
     df = normalize(pd.read_csv(args.pred_csv))
@@ -142,7 +143,8 @@ def main():
 
     # Extended R grid
     Rmax = float(np.nanmax(R_bins)) if np.isfinite(R_bins).any() else 20.0
-    R_ext = np.arange(0.0, max(0.1, args.extrap_frac*Rmax) + 1e-9, 0.1)
+    Rmin = max(0.0, float(args.rmin_kpc))
+    R_ext = np.arange(Rmin, max(Rmin+0.1, args.extrap_frac*Rmax) + 1e-9, 0.1)
 
     # Recompute Vbar on extended grid if meta is available
     meta_path = Path(args.meta_json) if args.meta_json else None
@@ -195,7 +197,7 @@ def main():
     ax.set_xlabel('R (kpc)')
     ax.set_ylabel('v (km/s)')
     ax.set_title('Milky Way rotation curve (Gaia bins) — SPARC-global LogTail')
-    ax.set_xlim(0, R_ext[-1])
+    ax.set_xlim(R_ext[0], R_ext[-1])
     ax.grid(alpha=0.25)
     ax.legend(frameon=False)
     fig.tight_layout()
