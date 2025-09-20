@@ -4,7 +4,13 @@ from pathlib import Path
 import argparse
 import matplotlib.pyplot as plt
 
-from root_m.common import v_tail2_rootm_soft as v_tail2_soft
+# local import of common.py (folder has a hyphen, so not a Python package)
+import importlib.util as _ilu
+from pathlib import Path as _P
+_spec = _ilu.spec_from_file_location('rootm_common', str((_P(__file__).resolve().parent / 'common.py')))
+_rootm_common = _ilu.module_from_spec(_spec)
+_spec.loader.exec_module(_rootm_common)
+v_tail2_soft = _rootm_common.v_tail2_rootm_soft
 
 # constants
 G = 4.300917270e-6  # (kpc km^2 s^-2 Msun^-1)

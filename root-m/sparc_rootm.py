@@ -6,7 +6,14 @@ from pathlib import Path
 import argparse
 from typing import List, Tuple
 
-from root_m.common import v_tail2_rootm_soft as v_tail2_soft  # safe import path
+# local import of common.py (folder has a hyphen, so not a Python package)
+import importlib.util, sys
+from pathlib import Path as _P
+_common_path = _P(__file__).resolve().parent / 'common.py'
+spec = importlib.util.spec_from_file_location('rootm_common', str(_common_path))
+rootm_common = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(rootm_common)
+v_tail2_soft = rootm_common.v_tail2_rootm_soft
 
 # G in (kpc km^2 s^-2 Msun^-1)
 G = 4.300917270e-6
