@@ -124,6 +124,33 @@ The model’s RAR is necessarily tighter than the data (it is a deterministic cu
 
 ---
 
+## 5.5 Clusters (out‑of‑sample testbed; data pending)
+
+We prepared a no‑refit cluster testbed that applies the **same SPARC‑global LogTail law** to clusters using only baryonic inputs (gas + stars). The script `rigor/scripts/cluster_logtail_test.py` ingests deprojected hot‑gas density (ρ_gas or n_e), stellar/ICL mass density (ρ_⋆), and optional X‑ray temperature and lensing mass profiles; it computes
+
+- baryonic mass profile M_b(<r) from ρ_b(r),
+- total acceleration g_tot(r) = G M_b/r² + v_tail²(r)/r with LogTail fixed to (v0=140, rc=15, R0=3, Δ=4),
+- predicted hydrostatic kT(r) via a local slope estimator, and
+- comparison plots against observed kT(r) and M(<r) if present.
+
+Folder schema per cluster (example `data/clusters/COMA/`):
+- `gas_profile.csv` with (r_kpc, rho_gas_Msun_per_kpc3) or (r_kpc, n_e_cm3),
+- `stars_profile.csv` with (r_kpc, rho_stars_Msun_per_kpc3),
+- optional `temp_profile.csv` with (r_kpc, kT_keV[, kT_err_keV]),
+- optional `lensing_mass.csv` with (r_kpc, M_enclosed_Msun),
+- or `gas_params.json` if a β‑model is preferred for gas.
+
+Run (no refit; SPARC‑global frozen):
+
+```bash
+py -u rigor/scripts/cluster_logtail_test.py \
+  --cluster_dir data/clusters/COMA \
+  --out_dir out/clusters/COMA \
+  --logtail "v0=140,rc=15,r0=3,delta=4"
+```
+
+Outputs: `out/clusters/<NAME>/cluster_logtail_results.png` (mass + temperature) and `cluster_logtail_metrics.json` (residual summaries). With the galaxy‑calibrated tail, the mass contribution at Mpc scales is roughly linear in r with coefficient ≈ v0²/G ≈ 4.6×10⁹ Msun/kpc; this underpredicts typical cluster masses by orders of magnitude unless an environment‑aware amplitude emerges from the baryon map. These falsifiable nulls motivate strictly **universal** extensions (e.g., many‑body superposition or weak mass‑coupling) without per‑cluster fits.
+
 ## 6. Baryonic Tully–Fisher relation (BTFR)
 
 Using catalog‑anchored baryonic masses (MRT‑based build) and model $v_{\rm flat}$, the two‑form BTFR fits yield slopes in the expected range. (Fit code in the analysis utilities; the MRT anchoring and name‑normalization prevented the negative‑slope artifacts seen in early, fragile joins.)&#x20;
