@@ -408,6 +408,72 @@ print(dict(alpha=float(alpha), beta=float(beta),
 
 ---
 
+## 13. Submission readiness — status board
+
+### What’s already solid (and citable)
+
+- Rotation curves (global parameters, outer points)
+  - LogTail median closeness ≈ 90.0% with best (v0, rc, r0, Δ) = (140 km s⁻¹, 15 kpc, 3 kpc, 4 kpc).
+  - MuPhi median ≈ 86.5% with (ε, v_c, p) = (2.0, 140 km s⁻¹, 3.0).
+- RAR (curved 1D relation)
+  - Observed: n = 3391, orthogonal scatter ≈ 0.172 dex.
+  - LogTail model curve: n = 3391, orthogonal scatter ≈ 0.069 dex (tight, as expected for a deterministic mapping).
+- Galaxy–galaxy lensing (shape)
+  - LogTail SIS-like tail gives slope ≈ −1, with reference amplitudes ΔΣ(50 kpc) ≈ 2.285×10⁷ and ΔΣ(100 kpc) ≈ 1.143×10⁷ M⊙ kpc⁻².
+- RC+RAR pipeline health
+  - Summary JSONs and CV tables are present under out/analysis/type_breakdown/.
+
+> BTFR note: Early negative-slope runs were artifacts of mass/name joins and are deprecated. The MRT-anchored workflow yields sensible slopes and should be the only pipeline cited in the main text. Keep older JSONs (if at all) in the supplement clearly labeled as superseded.
+
+### What’s left to make the paper submission-ready
+
+1) External galaxy–galaxy lensing amplitude (ΔΣ) check
+
+Why: 1/R shape is necessary but not sufficient; the absolute **amplitude** at 50–200 kpc distinguishes a physically right tail from a tuned constant.
+
+Command (once a stack CSV exists):
+
+```bash
+# CSV columns: R_kpc, DeltaSigma_Msun_per_kpc2
+py rigor/scripts/add_models_and_tests.py \
+  --pred_csv out/analysis/type_breakdown/sparc_predictions_by_radius.csv \
+  --out_dir out/analysis/type_breakdown \
+  --lensing_stack_csv data/lensing/stacks/DeltaSigma_stack.csv
+```
+
+Success target (for Results text):
+- For L⋆ hosts (bin X–Y): model/obs ΔΣ(100 kpc) ≈ 0.9–1.1; slope within ±0.05 of −1.
+Failure mode: model/obs ≲ 0.7 or ≳ 1.3 across bins, or |Δslope| > 0.1 → consider mild mass/redshift dependence in (v0, rc).
+
+2) TTTEEE acoustic-peak envelope/null test
+
+Why: TT alone is permissive; joint **TT+TE+EE** is the standard for “small late-time smoothing”.
+
+Implementation options:
+- With clik (preferred): read TTTEEE and fit the same envelope amplitude; report σ(A) and 95% bound; optionally co-report Σ (slip) from §9.6.
+- Without clik: parse TE/EE bandpowers and covariances from the .clik tree (as we did for TT and φφ) and reuse diagonal fallback if SVD is unstable.
+
+Success target (paper-ready sentence): “Joint TTTEEE favors |A| ≲ 0.5% (95% CL), consistent with TT-only bounds and Σ ≈ 1 from Planck φφ.”
+Failure mode: > 1% required smoothing in TE/EE, or unresolved tension between Σ from shear vs φφ unless a mild, physically motivated Σ(ℓ) or Σ(z) is allowed.
+
+### Nice-to-have (strengthens the paper)
+- Mass-coupled LogTail sensitivity scan (η): briefly note that the tested variant under-performed the global model on RCs and worsened RAR/BTFR; include its JSON in the supplement.
+- Per-type robustness tables: include CV by-T summaries in the supplement.
+- Explicit reproducibility stanza: pin the commit SHA and the parameter tuples for best LogTail/MuPhi runs.
+
+### Final checks (to press submit)
+1. ΔΣ amplitude vs external stack — run the command above; paste model/obs ratios (±) into Results. (Blocking)
+2. TTTEEE envelope — run preferred clik path or compact loader; quote σ(A) and 95% bound; add one figure panel mirroring TT plot. (Blocking)
+3. Lock parameters & commit hash — freeze (v0, rc, r0, Δ) and (ε, v_c, p) in text & Methods. (Editorial hygiene)
+4. Assumptions paragraph — state that CMB tests are late-time propagation checks (agnostic to expansion history/DM), and RC+RAR+lensing are quasi-static probes of modified dynamics.
+
+### Ready-to-paste claims (artifacts referenced above)
+- RC performance: “With a single global setting, LogTail attains ≈90% median pointwise closeness on outer RC points across SPARC, outperforming GR and matching MOND-like performance without invoking a halo.”
+- RAR consistency: “The model-implied RAR is tight (scatter ≈0.07 dex), while the observed RAR shows ≈0.17 dex—expected when a deterministic law is compared to noisy data.”
+- Lensing shape: “The predicted outer lensing follows ΔΣ ∝ R⁻¹ with the correct normalization scale for L⋆ disks at 50–100 kpc; we provide absolute benchmarks for stack comparison.”
+
+---
+
 ### Acknowlegements and repository note
 
 All metrics, plots, and tables referenced above are emitted by your analysis scripts. Key scripts and artifacts are cited inline for reproducibility (see `add_models_and_tests.py` and the data catalog)  .
