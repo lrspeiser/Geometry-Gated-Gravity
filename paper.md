@@ -58,6 +58,45 @@ These headline numbers are stable across independent runs (e.g., 89.61/88.99% in
 
 ---
 
+## 4.1 Milky Way case study (Gaia)
+
+We built an independent Milky Way (MW) rotation‑curve table from Gaia sky slices (`processed_*.parquet`) by selecting a thin‑disk tracer set and binning by Galactocentric radius with inverse‑variance weighting:
+
+- Cuts: |z| ≤ 0.3 kpc, σ_v ≤ 12 km/s, |v_R| ≤ 40 km/s, quality_flag = 0
+- Binning: R ∈ [3, 20] kpc, ΔR = 0.5 kpc; per bin, v_obs is the inverse‑variance mean of v_φ (or a provided v_obs column)
+- Baryonic baseline V_bar(R): Miyamoto–Nagai disk + Hernquist bulge, fit only on inner radii [3, 8] kpc and held fixed for all R
+
+We then applied the same LogTail modeling used for SPARC on this single‑galaxy table (no MuPhi). The resulting outer‑bin median closeness is high (see `out/mw/results_logtail_only/summary_logtail.json`), and the outer‑slope diagnostic compares observed vs. model slopes on the last ~30% in R (see `outer_slopes_logtail.csv`).
+
+![Milky Way rotation curve (Gaia bins): Observed vs. GR (baryons), MOND (simple), LogTail (best), and NFW (best fit)](figs/mw_rc_compare.png)
+
+Figure MW‑1. Milky Way rotation‑curve comparison. Points show Gaia‑binned v_obs(R); curves show GR (baryons‑only V_bar), MOND (simple interpolating function, a0≈1.2×10⁻¹⁰ m/s²), LogTail (best global‑protocol fit applied to MW), and a best‑fit NFW halo added in quadrature to baryons. The MW is treated as an in‑house consistency test independent of SPARC—parameters are not re‑tuned on MW. Methods and commands are below.
+
+Repro (exact commands):
+
+```bash
+py -u rigor/scripts/gaia_to_mw_predictions.py \
+  --slices "data/gaia_sky_slices/processed_*.parquet" \
+  --out_csv "out/mw/mw_predictions_by_radius.csv" \
+  --z_max 0.3 --sigma_v_max 12 --vR_max 40 \
+  --R_min 3 --R_max 20 --dR_bin 0.5 \
+  --inner_fit_min 3 --inner_fit_max 8 \
+  --gal_id "MilkyWay" --write_meta
+
+py -u rigor/scripts/add_models_and_tests.py \
+  --pred_csv "out/mw/mw_predictions_by_radius.csv" \
+  --out_dir  "out/mw/results_logtail_only" \
+  --only_logtail
+
+py -u rigor/scripts/plot_mw_rc_compare.py \
+  --pred_csv "out/mw/results_logtail_only/predictions_with_LogTail.csv" \
+  --out_png  "figs/mw_rc_compare.png"
+```
+
+Caveats. The MW is not strictly axisymmetric; bar/spiral streaming can bias azimuthal speeds. For robustness we support ϕ‑wedge cross‑validation via the builder’s `--phi_bins/--phi_bin_index` flags. An optional asymmetric‑drift correction can be added in the builder if desired; we report both corrected/uncorrected variants when used.
+
+---
+
 ## 5. Radial‑acceleration relation (RAR)
 
 We compute curved RAR statistics in log space, measuring the **orthogonal** scatter of $g_{\rm obs}(R)$ and $g_{\rm mod}(R)$ about the median $g_{\rm bar}$ relation. For the same point set:
