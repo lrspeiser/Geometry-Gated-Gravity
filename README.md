@@ -73,6 +73,12 @@ with $|\Phi_{\rm N}|\sim v_{\rm bar}^2$ as a practical gate. This **lessens the 
 
 ### 5.1 Rotation curves (outer points; one universal setting per model)
 
+Transfer tests (for transparency)
+- MW with SPARC‑global (fixed, no re‑fit; ΔR=0.1 kpc bins from R=0): median closeness ≈ 94.63% (v0=140, rc=15, r0=3, Δ=4). Artifacts: `out/mw/results_0p1_global/summary_logtail.json`.
+- SPARC with MW gates (fixed, no re‑fit): median closeness ≈ 69.61% (v0=140, rc=5, r0=2, Δ=2). Artifacts: `out/sparc/mw_gates/summary_logtail.json`.
+
+Interpretation: The SPARC‑global tail (later/shallow gate) still does well on MW bins, but the early/sharp MW gate under‑performs on the diverse SPARC set—consistent with earlier observations that overly early gates hurt global medians.
+
 Across 1,167 outer points, **LogTail** attains **89.98% median closeness** with best‑fit $\{v_0, r_c, R_0, \Delta\}=\{140~{\rm km/s},\,15~{\rm kpc},\,3~{\rm kpc},\,4~{\rm kpc}\}$. **MuPhi** reaches **86.03%** with $\{\varepsilon, v_c, p\}=\{2.0,140,2\}$ (km/s for $v_c$) .
 
 Cross‑validation (5‑fold, by galaxy):
