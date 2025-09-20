@@ -110,13 +110,18 @@ def enclosed_mass_from_rho(r_kpc, rho_Msun_kpc3):
     integrand = 4.0*np.pi*(r**2)*rho   # Msun/kpc
     M = cumtrapz(integrand, r, initial=0.0)
     return M  # Msun
-    mask = np.isfinite(x) & np.isfinite(y) & (x>0) & (y>0)
+
+
+def smooth_log_derivative(x, y, s=None, k=3):
+    x = np.asarray(x, float)
+    y = np.asarray(y, float)
+    mask = np.isfinite(x) & np.isfinite(y) & (x > 0) & (y > 0)
     xs, ys = x[mask], y[mask]
-    if xs.size < (k+2):
-        # fallback finite diff
-        xs = xs; d = np.gradient(np.log(ys), xs)
+    if xs.size < (k + 2):
+        # fallback finite diff if too few points for spline
+        d = np.gradient(np.log(ys), xs)
         return xs, d
-    spl = UnivariateSpline(xs, np.log(ys), s=s, k=k)
+    spl = UnivariateSpline(xs, np.log(ys), s=(0.0 if s is None else s), k=k)
     return xs, spl.derivative(1)(xs)
 
 def kT_keV_from_g_and_dlnrho(g_tot, dlnrho_dr, mu=MU):
@@ -132,7 +137,12 @@ def run_cluster(cluster_dir, out_dir, logtail_params, r_min=1.0, r_max=3000.0, n
 
     gas_df = load_gas(cdir)
     r_g, rho_g = gas_density_msun_kpc3(gas_df)
-    r_s, rho_s = load_stars(cdir)
+    try:
+        r_s, rho_s = load_stars(cdir)
+    except FileNotFoundError:
+        # No stars provided; treat stars as zero density across gas range
+        r_s = np.array([float(np.nanmin(r_g)), float(np.nanmax(r_g))])
+        rho_s = np.zeros_like(r_s)
 
     r_lo = max(r_min, float(np.nanmin([np.nanmin(r_g), np.nanmin(r_s)])))
     r_hi = min(r_max, float(np.nanmax([np.nanmax(r_g), np.nanmax(r_s)])))
@@ -189,8 +199,9 @@ def run_cluster(cluster_dir, out_dir, logtail_params, r_min=1.0, r_max=3000.0, n
     plt.tight_layout(); plt.savefig(png, dpi=160); plt.close()
 
     metrics = {"logtail_params": logtail_params, "files": {
-        "gas": str(gas_df.columns.tolist()),
-        "stars_file": str((Path(cluster_dir)/"stars_profile.csv").resolve()),
+        "cluster_dir": str(Path(cluster_dir).resolve()),
+        "gas_file": str((cdir/"gas_profile.csv").resolve()) if (cdir/"gas_profile.csv").exists() else str((cdir/"gas_params.json").resolve()),
+        "stars_file": str((cdir/"stars_profile.csv").resolve()) if (cdir/"stars_profile.csv").exists() else None,
         "temp_file": str((temp_p.resolve())) if temp_p.exists() else None,
         "lens_mass_file": str((lens_p.resolve())) if lens_p.exists() else None
     }, "grid": {"r_min_kpc": float(r.min()), "r_max_kpc": float(r.max()), "n_r": int(n_r)}, "png": str(png)}
