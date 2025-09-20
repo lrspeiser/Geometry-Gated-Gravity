@@ -650,6 +650,8 @@ if __name__ == '__main__':
     ap.add_argument('--btfr_quick_only', action='store_true', help='Run only the mass join + observed BTFR + audits/suggestions, then exit.')
     ap.add_argument('--btfr_min_corr', type=float, default=None, help='If set, require Pearson corr(log vflat_obs, log Mb) >= this value; exit(2) otherwise.')
     ap.add_argument('--btfr_min_slope', type=float, default=None, help='If set, require CI lower bounds for alpha (Mb vs v) and beta (v vs Mb) to be >= this value; exit(2) otherwise.')
+    ap.add_argument('--only_logtail', action='store_true', default=True,
+                    help='If set (default), skip MuPhi and produce only LogTail outputs.')
     args = ap.parse_args()
 
     out_dir = Path(args.out_dir); out_dir.mkdir(parents=True, exist_ok=True)
@@ -751,23 +753,36 @@ if __name__ == '__main__':
         for r0 in [2, 3, 4]
         for dl in [2, 3, 4]
     ]
-    grid_muphi = [
-        dict(eps=eps, v_c_kms=vc, p=p)
-        for eps in [1.0, 1.5, 2.0]
-        for vc in [140, 160, 180]
-        for p  in [2.0, 3.0, 4.0]
-    ]
+    grid_muphi = []
+    if not getattr(args, 'only_logtail', True):
+        grid_muphi = [
+            dict(eps=eps, v_c_kms=vc, p=p)
+            for eps in [1.0, 1.5, 2.0]
+            for vc in [140, 160, 180]
+            for p  in [2.0, 3.0, 4.0]
+        ]
 
     best_logtail, score_lt = fit_global_grid(df, 'LogTail', grid_logtail, outer_only=True)
-    best_muphi,   score_mp = fit_global_grid(df, 'MuPhi',   grid_muphi,   outer_only=True)
+    if grid_muphi:
+        best_muphi,   score_mp = fit_global_grid(df, 'MuPhi',   grid_muphi,   outer_only=True)
+    else:
+        best_muphi, score_mp = None, None
 
     df1, col_lt = apply_model(df, 'LogTail', best_logtail)
-    df2, col_mp = apply_model(df1, 'MuPhi', best_muphi)
+    if grid_muphi:
+        df2, col_mp = apply_model(df1, 'MuPhi', best_muphi)
+    else:
+        df2, col_mp = df1, None
     # Merge back with original columns to preserve any extra fields
-    merged = raw.copy()
-    merged[col_lt] = df2[col_lt]
-    merged[col_mp] = df2[col_mp]
-    merged.to_csv(out_dir/'predictions_with_LogTail_MuPhi.csv', index=False)
+    merged_lt = raw.copy()
+    merged_lt[col_lt] = df2[col_lt]
+    # Always write LogTail-only predictions
+    merged_lt.to_csv(out_dir/'predictions_with_LogTail.csv', index=False)
+    # Back-compat file: include MuPhi column only if computed
+    merged_bc = merged_lt.copy()
+    if col_mp is not None:
+        merged_bc[col_mp] = df2[col_mp]
+    merged_bc.to_csv(out_dir/'predictions_with_LogTail_MuPhi.csv', index=False)
 
     # Optional K-fold CV by galaxy: fit on 4/5, report test medians per fold
     if getattr(args, 'do_cv', False):
@@ -789,21 +804,18 @@ if __name__ == '__main__':
             train_mask = ~test_mask
             dtr = df.loc[train_mask]
             dte = df.loc[test_mask]
-            # Fit on training only
+            # Fit on training only (LogTail only)
             best_lt_tr, score_lt_tr = fit_global_grid(dtr, 'LogTail', grid_logtail, outer_only=True)
-            best_mp_tr, score_mp_tr = fit_global_grid(dtr, 'MuPhi',   grid_muphi,   outer_only=True)
             # Apply to test
             dte_lt, col_lt_te = apply_model(dte, 'LogTail', best_lt_tr)
-            dte_mp, col_mp_te = apply_model(dte_lt, 'MuPhi', best_mp_tr)
-            outer_te = infer_outer_mask(dte_mp)
-            med_lt_te = median_closeness(dte_mp.loc[outer_te,'v_obs_kms'], dte_mp.loc[outer_te, col_lt_te])
-            med_mp_te = median_closeness(dte_mp.loc[outer_te,'v_obs_kms'], dte_mp.loc[outer_te, col_mp_te])
+            outer_te = infer_outer_mask(dte_lt)
+            med_lt_te = median_closeness(dte_lt.loc[outer_te,'v_obs_kms'], dte_lt.loc[outer_te, col_lt_te])
             # RAR OOS stats (test fold)
-            rar_te = rar_table(dte_mp, col_lt_te)
+            rar_te = rar_table(dte_lt, col_lt_te)
             rar_obs_stats = rar_curved_stats(rar_te, ycol='g_obs')
             rar_mod_stats = rar_curved_stats(rar_te, ycol='g_mod')
             # Per-type medians in test fold
-            dte_T = attach_morph_type(dte_mp, Path('data')/'sparc_all_tables.parquet')
+            dte_T = attach_morph_type(dte_lt, Path('data')/'sparc_all_tables.parquet')
             by_T = []
             for Tval, sub in dte_T.groupby('T_type'):
                 if len(sub) < 5:
@@ -812,27 +824,27 @@ if __name__ == '__main__':
                 by_T.append({'fold': i,
                              'T_type': float(Tval) if pd.notna(Tval) else None,
                              'LogTail_test_median': float(median_closeness(sub.loc[o,'v_obs_kms'], sub.loc[o, col_lt_te])),
-                             'MuPhi_test_median': float(median_closeness(sub.loc[o,'v_obs_kms'], sub.loc[o, col_mp_te])),
                              'n_points': int(len(sub))})
             # Write fold outputs
             fold_dir = cv_root / f'fold_{i}'
             fold_dir.mkdir(exist_ok=True)
-            with open(fold_dir/'summary_logtail_muphi.json','w') as f:
+            with open(fold_dir/'summary_logtail.json','w') as f:
                 json.dump({
                     'fold': i,
-                    'train': {'LogTail': {'median': score_lt_tr, 'params': best_lt_tr},
-                              'MuPhi':   {'median': score_mp_tr, 'params': best_mp_tr}},
-                    'test':  {'LogTail': {'median': float(med_lt_te)}, 'MuPhi': {'median': float(med_mp_te)}},
+                    'train': {'LogTail': {'median': score_lt_tr, 'params': best_lt_tr}},
+                    'test':  {'LogTail': {'median': float(med_lt_te)}},
                     'rar_test': {'observed': rar_obs_stats, 'model': rar_mod_stats},
                     'n_train_points': int(len(dtr)), 'n_test_points': int(len(dte))
                 }, f, indent=2)
+            # Back-compat file name with only LogTail content
+            with open(fold_dir/'summary_logtail_muphi.json','w') as f:
+                json.dump({'LogTail': {'median': float(med_lt_te), 'params': best_lt_tr}}, f, indent=2)
             # Save per-type CV medians for this fold
             if by_T:
                 pd.DataFrame(by_T).to_csv(fold_dir/'cv_by_T.csv', index=False)
                 cv_by_T_rows.extend(by_T)
             # Aggregate summaries
             cv_summary.append({'fold': i, 'LogTail_train_median': score_lt_tr, 'LogTail_test_median': float(med_lt_te),
-                               'MuPhi_train_median': score_mp_tr, 'MuPhi_test_median': float(med_mp_te),
                                'n_train_points': int(len(dtr)), 'n_test_points': int(len(dte))})
             cv_rar_rows.append({'fold': i,
                                 'rar_obs_scatter_dex_orth': rar_obs_stats.get('scatter_dex_orth', None),
@@ -846,13 +858,15 @@ if __name__ == '__main__':
 
     outer = infer_outer_mask(df2)
     sum_lt = dict(model='LogTail', median=median_closeness(df2.loc[outer,'v_obs_kms'], df2.loc[outer, col_lt]), params=best_logtail)
-    sum_mp = dict(model='MuPhi',   median=median_closeness(df2.loc[outer,'v_obs_kms'], df2.loc[outer, col_mp]), params=best_muphi)
+    # Primary summary file (LogTail only)
+    with open(out_dir/'summary_logtail.json', 'w') as f:
+        json.dump(sum_lt, f, indent=2)
+    # Back-compat summary filename with only LogTail content
     with open(out_dir/'summary_logtail_muphi.json', 'w') as f:
-        json.dump({'LogTail': sum_lt, 'MuPhi': sum_mp}, f, indent=2)
+        json.dump({'LogTail': sum_lt}, f, indent=2)
 
-    # BTFR and RAR exports (with masses attached if available)
+    # BTFR and RAR exports (with masses attached if available) — LogTail only
     btfr_lt = v_flat_per_gal(df2, col_lt)
-    btfr_mp = v_flat_per_gal(df2, col_mp)
     # If an observed BTFR table exists (from SPARC MRT), prefer its masses for model BTFRs
     def _find_btfr_obs(pred_csv_path: Path, out_dir_path: Path) -> Path|None:
         cand1 = out_dir_path/'btfr_observed.csv'
@@ -876,26 +890,18 @@ if __name__ == '__main__':
             def _add_norm(df_in, col='gal_id'):
                 d = df_in.copy(); d[col] = d[col].astype(str); d['_norm'] = d[col].map(_norm_name); return d
             btfr_lt_n = _add_norm(btfr_lt, 'gal_id')
-            btfr_mp_n = _add_norm(btfr_mp, 'gal_id')
             obs_n = _add_norm(obs_btfr, 'gal_id').rename(columns={'M_bary_Msun':'M_bary_Msun_obs'})
             btfr_lt = btfr_lt_n.drop(columns=['M_bary_Msun'], errors='ignore').merge(obs_n[['_norm','M_bary_Msun_obs']], on='_norm', how='left')
-            btfr_mp = btfr_mp_n.drop(columns=['M_bary_Msun'], errors='ignore').merge(obs_n[['_norm','M_bary_Msun_obs']], on='_norm', how='left')
             btfr_lt = btfr_lt.rename(columns={'M_bary_Msun_obs':'M_bary_Msun'}).drop(columns=['_norm'], errors='ignore')
-            btfr_mp = btfr_mp.rename(columns={'M_bary_Msun_obs':'M_bary_Msun'}).drop(columns=['_norm'], errors='ignore')
         except Exception:
             pass
     btfr_lt.to_csv(out_dir/'btfr_logtail.csv', index=False)
-    btfr_mp.to_csv(out_dir/'btfr_muphi.csv', index=False)
-    # Fit BTFR slope/scatter for LogTail and MuPhi in both forms (with CIs)
+    # Fit BTFR slope/scatter (with CIs)
     with open(out_dir/'btfr_logtail_fit.json', 'w') as f:
         json.dump(btfr_fit_two_forms(btfr_lt), f, indent=2)
-    with open(out_dir/'btfr_muphi_fit.json', 'w') as f:
-        json.dump(btfr_fit_two_forms(btfr_mp), f, indent=2)
 
     rar_lt = rar_table(df2, col_lt)
-    rar_mp = rar_table(df2, col_mp)
     rar_lt.to_csv(out_dir/'rar_logtail.csv', index=False)
-    rar_mp.to_csv(out_dir/'rar_muphi.csv', index=False)
 
     # Curved RAR stats (data/obs vs g_bar, and LogTail vs g_bar)
     with open(out_dir/'rar_obs_curved_stats.json', 'w') as f:
@@ -913,7 +919,6 @@ if __name__ == '__main__':
         outer_sub = infer_outer_mask(sub)
         rc_by_T[str(Tval)] = {
             'LogTail_median': float(median_closeness(sub.loc[outer_sub,'v_obs_kms'], sub.loc[outer_sub, col_lt])),
-            'MuPhi_median':   float(median_closeness(sub.loc[outer_sub,'v_obs_kms'], sub.loc[outer_sub, col_mp])),
             'n_points': int(len(sub))
         }
     with open(out_dir/'rc_medians_by_T.json','w') as f:
