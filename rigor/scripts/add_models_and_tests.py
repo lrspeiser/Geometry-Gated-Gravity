@@ -652,9 +652,13 @@ if __name__ == '__main__':
     ap.add_argument('--btfr_min_slope', type=float, default=None, help='If set, require CI lower bounds for alpha (Mb vs v) and beta (v vs Mb) to be >= this value; exit(2) otherwise.')
     ap.add_argument('--only_logtail', action='store_true', default=True,
                     help='If set (default), skip MuPhi and produce only LogTail outputs.')
+    ap.add_argument('--with_muphi', action='store_true', help='Include MuPhi alongside LogTail (sets only_logtail=False).')
     ap.add_argument('--logtail_fixed', type=str, default="",
                     help='Pin LogTail to a fixed setting (comma-separated), e.g. "v0=140,rc=15,r0=3,delta=4".')
     args = ap.parse_args()
+    # Back-compat: allow enabling MuPhi without changing the default-only flag
+    if getattr(args, 'with_muphi', False):
+        setattr(args, 'only_logtail', False)
 
     out_dir = Path(args.out_dir); out_dir.mkdir(parents=True, exist_ok=True)
     raw = pd.read_csv(args.pred_csv)
