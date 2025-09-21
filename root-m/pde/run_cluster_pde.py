@@ -102,6 +102,10 @@ def main():
         rho_r = np.asarray(g['rho_gas_Msun_per_kpc3'], float)
     else:
         rho_r = ne_to_rho(np.asarray(g['n_e_cm3'], float))
+    # Ensure ascending radius for stable integration
+    order = np.argsort(r_obs)
+    r_obs = r_obs[order]
+    rho_r = rho_r[order]
     # cumulative mass integral
     integrand = 4.0*np.pi * (r_obs**2) * rho_r
     M = np.concatenate(([0.0], np.cumsum(0.5*(integrand[1:]+integrand[:-1]) * np.diff(r_obs))))
@@ -126,6 +130,8 @@ def main():
         # if only rho_gas is present, approximate n_e via rho_gas/(mu_e m_p)
         MU_E = 1.17; M_P_G = 1.67262192369e-24; KPC_CM = 3.0856775814913673e21; MSUN_G = 1.988409870698051e33
         ne_obs = (np.asarray(g['rho_gas_Msun_per_kpc3'], float) * MSUN_G / (KPC_CM**3)) / (MU_E * M_P_G)
+    # Match ordering to r_obs ascending
+    ne_obs = ne_obs[order]
     ne_R = np.interp(R, r_obs, ne_obs, left=ne_obs[0], right=ne_obs[-1])
 
     kT_pred = kT_from_ne_and_gtot(R, ne_R, g_tot_R)
