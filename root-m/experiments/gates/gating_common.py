@@ -41,6 +41,8 @@ def v_tail2_rootm_rhoaware(r_kpc, Mb_encl_Msun, rho_b_Msun_kpc3,
     r = np.asarray(r_kpc, float)
     Mb = np.clip(np.asarray(Mb_encl_Msun, float), 0.0, None)
     rho = np.clip(np.asarray(rho_b_Msun_kpc3, float), 0.0, None)
+    L = min(r.size, Mb.size, rho.size)
+    r = r[:L]; Mb = Mb[:L]; rho = rho[:L]
     rho_sm = smooth_profile(r, rho, s_kpc)
     dens_fac = (rho0_Msun_kpc3 / (rho_sm + rho0_Msun_kpc3))**float(q)
     base = (A_kms**2) * np.sqrt(Mb / Mref_Msun) * (r / (r + rc_kpc))
@@ -57,6 +59,8 @@ def v_tail2_rootm_gradaware(r_kpc, Mb_encl_Msun, rho_b_Msun_kpc3,
     r = np.asarray(r_kpc, float)
     Mb = np.clip(np.asarray(Mb_encl_Msun, float), 0.0, None)
     rho = np.clip(np.asarray(rho_b_Msun_kpc3, float), 0.0, None)
+    L = min(r.size, Mb.size, rho.size)
+    r = r[:L]; Mb = Mb[:L]; rho = rho[:L]
     rho_sm = smooth_profile(r, rho, s_kpc)
     with np.errstate(divide='ignore', invalid='ignore'):
         dlnrho = np.gradient(np.log(rho_sm + EPS), np.log(np.maximum(r, EPS)))
@@ -76,6 +80,8 @@ def v_tail2_rootm_pressaware(r_kpc, Mb_encl_Msun, ne_cm3, kT_keV,
     Mb = np.clip(np.asarray(Mb_encl_Msun, float), 0.0, None)
     ne = np.clip(np.asarray(ne_cm3, float), 0.0, None)
     T = np.clip(np.asarray(kT_keV, float), 0.0, None)
+    L = min(r.size, Mb.size, ne.size, T.size)
+    r = r[:L]; Mb = Mb[:L]; ne = ne[:L]; T = T[:L]
     P = smooth_profile(r, ne, s_kpc) * smooth_profile(r, T, s_kpc)
     with np.errstate(divide='ignore', invalid='ignore'):
         dlnP = np.gradient(np.log(P + EPS), np.log(np.maximum(r, EPS)))
