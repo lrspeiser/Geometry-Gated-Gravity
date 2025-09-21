@@ -69,11 +69,11 @@ def main():
     g = pd.read_csv(cdir/'gas_profile.csv')
     r_obs = np.asarray(g['r_kpc'], float)
     # simple cumulative mass from the input spherical rho we used
-    from .baryon_maps import ne_to_rho_gas_Msun_kpc3
+    ne_to_rho = _maps.ne_to_rho_gas_Msun_kpc3
     if 'rho_gas_Msun_per_kpc3' in g.columns:
         rho_r = np.asarray(g['rho_gas_Msun_per_kpc3'], float)
     else:
-        rho_r = ne_to_rho_gas_Msun_kpc3(np.asarray(g['n_e_cm3'], float))
+        rho_r = ne_to_rho(np.asarray(g['n_e_cm3'], float))
     # cumulative mass integral
     integrand = 4.0*np.pi * (r_obs**2) * rho_r
     M = np.concatenate(([0.0], np.cumsum(0.5*(integrand[1:]+integrand[:-1]) * np.diff(r_obs))))
