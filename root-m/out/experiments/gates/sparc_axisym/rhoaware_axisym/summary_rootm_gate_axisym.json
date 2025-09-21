@@ -4,68 +4,68 @@
   "rho0_Msun_kpc3": 10000000.0,
   "q": 1.0,
   "hz_kpc": 0.3,
-  "outer_median": 76.10361408966885,
-  "global_all_median": 80.24703253089854,
+  "outer_median": 72.82233828829959,
+  "global_all_median": 78.9094903207029,
   "per_galaxy": [
     {
       "galaxy": "CamB",
       "N": 9,
-      "outer_median_percent_close": 65.71025411960079
+      "outer_median_percent_close": 68.64594333818428
     },
     {
       "galaxy": "D631-7",
       "N": 16,
-      "outer_median_percent_close": 66.62562813362253
+      "outer_median_percent_close": 60.202325817392804
     },
     {
       "galaxy": "DDO154",
       "N": 12,
-      "outer_median_percent_close": 65.53551085077748
+      "outer_median_percent_close": 59.835939840121725
     },
     {
       "galaxy": "DDO161",
       "N": 31,
-      "outer_median_percent_close": 97.83484923269708
+      "outer_median_percent_close": 88.52469616872476
     },
     {
       "galaxy": "ESO079-G014",
       "N": 15,
-      "outer_median_percent_close": 95.87738448340401
+      "outer_median_percent_close": 90.59067543558203
     },
     {
       "galaxy": "ESO116-G012",
       "N": 15,
-      "outer_median_percent_close": 78.41772649246101
+      "outer_median_percent_close": 72.82233828829959
     },
     {
       "galaxy": "ESO563-G021",
       "N": 30,
-      "outer_median_percent_close": 94.73609404248124
+      "outer_median_percent_close": 88.77585101907403
     },
     {
       "galaxy": "F563-1",
       "N": 17,
-      "outer_median_percent_close": 67.91859709681573
+      "outer_median_percent_close": 61.785079584890745
     },
     {
       "galaxy": "F563-V2",
       "N": 10,
-      "outer_median_percent_close": 68.00614837087723
+      "outer_median_percent_close": 63.885962024237735
     },
     {
       "galaxy": "F568-1",
       "N": 12,
-      "outer_median_percent_close": 62.46406484700448
+      "outer_median_percent_close": 58.82443727735339
     },
     {
       "galaxy": "F568-3",
       "N": 18,
-      "outer_median_percent_close": 87.8157319466782
+      "outer_median_percent_close": 80.69716807847189
     },
     {
       "galaxy": "F571-8",
       "N": 13,
-      "outer_median_percent_close": 68.94268378010223
+      "outer_median_percent_close": 62.88840104945848
     }
   ],
   "files": {

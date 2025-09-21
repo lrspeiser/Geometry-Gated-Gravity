@@ -1,13 +1,13 @@
 {
   "cluster": "ABELL_1689",
   "model": "pressaware",
-  "A_kms": 160.0,
-  "rc_kpc": 10.0,
+  "A_kms": 140.0,
+  "rc_kpc": 20.0,
   "rho0": 10000000.0,
   "q": 1.0,
   "qg": 0.8,
   "m": 1.0,
-  "eta": 0.5,
-  "smooth_kpc": 75.0,
-  "temp_median_frac_err": 7.118522096599046
+  "eta": 1.0,
+  "smooth_kpc": 150.0,
+  "temp_median_frac_err": 7.678534824484366
 }

@@ -52,6 +52,7 @@ def main():
     ap.add_argument('--S0', type=float, default=1.0e-7)
     ap.add_argument('--rc_kpc', type=float, default=15.0)
     ap.add_argument('--g0_kms2_per_kpc', type=float, default=1000.0)
+    ap.add_argument('--m_exp', type=float, default=1.0)
     args = ap.parse_args()
 
     cdir = Path(args.base)/args.cluster
@@ -73,7 +74,7 @@ def main():
     rho = rho * (wZ * wR)
 
     # Solve PDE
-    params = SolverParams(S0=args.S0, rc_kpc=args.rc_kpc, g0_kms2_per_kpc=args.g0_kms2_per_kpc)
+    params = SolverParams(S0=args.S0, rc_kpc=args.rc_kpc, g0_kms2_per_kpc=args.g0_kms2_per_kpc, m_exp=args.m_exp)
     phi, gR, gZ = solve_axisym(R, Z, rho, params)
 
     # Equatorial extraction for g_phi and HSE

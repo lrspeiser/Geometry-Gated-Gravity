@@ -35,6 +35,7 @@ class SolverParams:
     S0: float = 1.0e-7   # amplitude scaling [km^2 s^-2 kpc Msun^-1]
     rc_kpc: float = 15.0 # global soft length [kpc]
     g0_kms2_per_kpc: float = 1000.0 # dimensional scale for A(|∇φ|)=|∇φ|/g0 to fix units
+    m_exp: float = 1.0   # exponent in A(|∇φ|)=(|∇φ|/g0)^m
     max_iter: int = 2000
     tol: float = 1e-5
     omega: float = 0.6   # relaxation
@@ -82,7 +83,7 @@ def solve_axisym(R: np.ndarray, Z: np.ndarray, rho_Msun_kpc3: np.ndarray, params
         # compute gradients and coefficient A = |∇φ|_eff
         gR, gZ = _grad_RZ(phi, dR, dZ)
         grad_mag = np.sqrt(gR*gR + gZ*gZ + eps*eps)
-        A = grad_mag / max(params.g0_kms2_per_kpc, 1e-12)
+        A = (grad_mag / max(params.g0_kms2_per_kpc, 1e-12))**max(params.m_exp, 1e-6)
 
         # precompute interface A at half indices
         A_Rp = np.zeros_like(A); A_Rm = np.zeros_like(A)

@@ -52,6 +52,8 @@ def main():
     ap.add_argument('--S0', type=float, default=1.0e-7)
     ap.add_argument('--rc_kpc', type=float, default=15.0)
     ap.add_argument('--g0_kms2_per_kpc', type=float, default=1000.0)
+    ap.add_argument('--m_exp', type=float, default=1.0)
+    ap.add_argument('--m_grid', type=str, default=None, help='Comma-separated m exponents for CV, e.g., 0.7,1.0,1.3')
     ap.add_argument('--axisym_maps', action='store_true')
     ap.add_argument('--rotmod_parquet', default='data/sparc_rotmod_ltg.parquet')
     ap.add_argument('--galaxy', default=None)
@@ -88,6 +90,7 @@ def main():
             return vals
         S0s = _parse_grid(args.S0_grid) or [args.S0]
         rcs = _parse_grid(args.rc_grid) or [args.rc_kpc]
+        ms  = _parse_grid(args.m_grid)  or [args.m_exp]
 
         # galaxies available in both CSV and rotmod parquet
         rot = pd.read_parquet(Path(args.rotmod_parquet))
@@ -118,8 +121,46 @@ def main():
         grid_results = []
         for S0 in S0s:
             for rc in rcs:
-                fold_meds = []
-                for fi in range(k):
+                for mm in ms:
+                    fold_meds = []
+                    for fi in range(k):
+                        val_gals = folds[fi]
+                        med_outer_vals = []
+                        for gname in val_gals:
+                            Rlast = per_gal[gname]['R_last']
+                            R_max = args.Rmax if (args.Rmax and args.Rmax > 0) else 3.0*Rlast
+                            Z_max = args.Zmax if (args.Zmax and args.Zmax > 0) else R_max
+                            key = (gname, S0, rc, mm, R_max, Z_max, args.NR, args.NZ, args.hz_kpc)
+                            if key not in cache:
+                                Zg, Rg, rho = axisym.axisym_map_from_rotmod_parquet(Path(args.rotmod_parquet), gname,
+                                                                                    R_max=R_max, Z_max=Z_max,
+                                                                                    NR=args.NR, NZ=args.NZ,
+                                                                                    hz_kpc=args.hz_kpc,
+                                                                                    bulge_model='hernquist',
+                                                                                    bulge_a_fallback_kpc=0.7)
+                                params = SolverParams(S0=float(S0), rc_kpc=float(rc), g0_kms2_per_kpc=float(args.g0_kms2_per_kpc), m_exp=float(mm), max_iter=int(args.cv_max_iter), tol=float(args.cv_tol))
+                                phi, gR, gZ = solve_axisym(Rg, Zg, rho, params)
+                                r_eval = per_gal[gname]['r']
+                                vbar = per_gal[gname]['vbar']
+                                vobs = per_gal[gname]['vobs']
+                                v_pred, _, _ = predict_v_from_phi_equatorial(Rg, gR, r_eval, vbar)
+                                is_outer = per_gal[gname]['is_outer']
+                                if not np.any(is_outer):
+                                    idx = np.argsort(r_eval)[-3:]
+                                else:
+                                    idx = np.where(is_outer)[0]
+                                err = 100.0 * np.abs(v_pred[idx] - vobs[idx]) / np.maximum(vobs[idx], 1e-9)
+                                med_outer = float(np.median(100.0 - err))
+                                cache[key] = med_outer
+                            med_outer_vals.append(cache[key])
+                    if med_outer_vals:
+                        fold_meds.append(float(np.median(med_outer_vals)))
+                    else:
+                        fold_meds.append(float('nan'))
+                    # aggregate for this (S0, rc, m)
+                    fold_meds_arr = np.array([fm for fm in fold_meds if np.isfinite(fm)], float)
+                    agg = float(np.median(fold_meds_arr)) if fold_meds_arr.size else float('nan')
+                    grid_results.append({'S0': float(S0), 'rc_kpc': float(rc), 'm_exp': float(mm), 'fold_medians': fold_meds, 'cv_median': agg})
                     val_gals = folds[fi]
                     med_outer_vals = []
                     for gname in val_gals:
@@ -187,7 +228,7 @@ def main():
         Z, R, rho = sparc_map_from_predictions(in_path, R_max=args.Rmax, Z_max=args.Zmax, NR=args.NR, NZ=args.NZ)
 
     # Solve PDE
-    params = SolverParams(S0=args.S0, rc_kpc=args.rc_kpc, g0_kms2_per_kpc=args.g0_kms2_per_kpc)
+    params = SolverParams(S0=args.S0, rc_kpc=args.rc_kpc, g0_kms2_per_kpc=args.g0_kms2_per_kpc, m_exp=args.m_exp)
     phi, gR, gZ = solve_axisym(R, Z, rho, params)
 
     # Predict v(R) at observed radii
