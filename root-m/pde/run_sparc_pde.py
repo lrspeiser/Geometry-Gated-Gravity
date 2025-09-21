@@ -77,6 +77,14 @@ def main():
     ap.add_argument('--q_slope', type=float, default=1.0)
     ap.add_argument('--chi', type=float, default=0.0)
     ap.add_argument('--h_aniso_kpc', type=float, default=0.3)
+    # NEW A1/A2 global controls
+    ap.add_argument('--use_saturating_mobility', action='store_true')
+    ap.add_argument('--gsat_kms2_per_kpc', type=float, default=2000.0)
+    ap.add_argument('--n_sat', type=float, default=2.0)
+    ap.add_argument('--use_ambient_boost', action='store_true')
+    ap.add_argument('--beta_env', type=float, default=0.0)
+    ap.add_argument('--rho_ref_Msun_per_kpc3', type=float, default=1.0e6)
+    ap.add_argument('--env_L_kpc', type=float, default=150.0)
     args = ap.parse_args()
 
     in_path = Path(args.in_path)
@@ -158,6 +166,13 @@ def main():
                                                        eta=float(args.eta), Mref_Msun=float(args.Mref),
                                                        kappa=float(args.kappa), q_slope=float(args.q_slope),
                                                        chi=float(args.chi), h_aniso_kpc=float(args.h_aniso_kpc),
+                                                       use_saturating_mobility=bool(args.use_saturating_mobility),
+                                                       gsat_kms2_per_kpc=float(args.gsat_kms2_per_kpc),
+                                                       n_sat=float(args.n_sat),
+                                                       use_ambient_boost=bool(args.use_ambient_boost),
+                                                       beta_env=float(args.beta_env),
+                                                       rho_ref_Msun_per_kpc3=float(args.rho_ref_Msun_per_kpc3),
+                                                       env_L_kpc=float(args.env_L_kpc),
                                                        max_iter=int(args.cv_max_iter), tol=float(args.cv_tol))
                                 phi, gR, gZ = solve_axisym(Rg, Zg, rho, params)
                                 r_eval = per_gal[gname]['r']
@@ -260,7 +275,14 @@ def main():
     params = SolverParams(S0=args.S0, rc_kpc=args.rc_kpc, g0_kms2_per_kpc=args.g0_kms2_per_kpc, m_exp=args.m_exp,
                           eta=float(args.eta), Mref_Msun=float(args.Mref),
                           kappa=float(args.kappa), q_slope=float(args.q_slope),
-                          chi=float(args.chi), h_aniso_kpc=float(args.h_aniso_kpc))
+                          chi=float(args.chi), h_aniso_kpc=float(args.h_aniso_kpc),
+                          use_saturating_mobility=bool(args.use_saturating_mobility),
+                          gsat_kms2_per_kpc=float(args.gsat_kms2_per_kpc),
+                          n_sat=float(args.n_sat),
+                          use_ambient_boost=bool(args.use_ambient_boost),
+                          beta_env=float(args.beta_env),
+                          rho_ref_Msun_per_kpc3=float(args.rho_ref_Msun_per_kpc3),
+                          env_L_kpc=float(args.env_L_kpc))
     phi, gR, gZ = solve_axisym(R, Z, rho, params)
 
     # Predict v(R) at observed radii

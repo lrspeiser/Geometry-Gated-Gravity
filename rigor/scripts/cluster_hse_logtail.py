@@ -86,7 +86,8 @@ def run_cluster(cluster="ABELL_1689",
                 logtail=LogTail(),
                 mass_coupled=False,
                 A_kms: float = 160.0,
-                Mb_for_masscouple: Optional[float]=None):
+                Mb_for_masscouple: Optional[float]=None,
+                clump_profile_csv: Optional[str]=None):
     cdir = Path(base)/cluster
     g = load_csv(cdir/"gas_profile.csv", ["r_kpc","n_e_cm3"])
     t = load_csv(cdir/"temp_profile.csv", ["r_kpc","kT_keV"])
@@ -102,6 +103,16 @@ def run_cluster(cluster="ABELL_1689",
 
     # interpolate n_e and optional rho_star
     ne = np.interp(r, g["r_kpc"], g["n_e_cm3"])
+    # Optional radial clumping profile: n_e -> sqrt(C(r)) * n_e
+    if clump_profile_csv is not None:
+        try:
+            cp = pd.read_csv(clump_profile_csv)
+            r_cp = np.asarray(cp['r_kpc'], float)
+            C_cp = np.asarray(cp['C'], float)
+            C_interp = np.interp(r, r_cp, C_cp, left=C_cp[0], right=C_cp[-1])
+            ne = np.sqrt(np.maximum(C_interp, 1.0)) * ne
+        except Exception as e:
+            print(f"[LogTail-HSE] Warning: failed to apply clump_profile_csv ({e}); proceeding without profile")
     rho_gas = ne_to_rho_gas_Msun_kpc3(ne)
     if s is not None and "rho_star_Msun_per_kpc3" in s.columns:
         rho_star = np.interp(r, s["r_kpc"], s["rho_star_Msun_per_kpc3"])
@@ -177,9 +188,12 @@ if __name__ == "__main__":
     ap.add_argument("--outdir", default="out/clusters")
     ap.add_argument("--mass_coupled", action="store_true")
     ap.add_argument("--A_kms", type=float, default=160.0, help="A for v0(Mb)=A*(Mb/1e10)^(1/4)")
+    ap.add_argument("--clump_profile_csv", type=str, default=None,
+                    help="CSV with columns r_kpc,C; applies n_e -> sqrt(C(r)) * n_e")
     args = ap.parse_args()
 
     lt = LogTail(v0=140.0, rc=15.0, r0=3.0, delta=4.0,
                  mass_coupled_A=(args.A_kms if args.mass_coupled else None))
     run_cluster(cluster=args.cluster, base=args.base, outdir=args.outdir,
-                logtail=lt, mass_coupled=args.mass_coupled, A_kms=args.A_kms)
+                logtail=lt, mass_coupled=args.mass_coupled, A_kms=args.A_kms,
+                clump_profile_csv=args.clump_profile_csv)

@@ -30,21 +30,42 @@ from __future__ import annotations
 import numpy as np
 from dataclasses import dataclass
 
+# Optional smoothing for ambient-density boost
+try:
+    from scipy.ndimage import gaussian_filter  # type: ignore
+except Exception:  # pragma: no cover
+    gaussian_filter = None
+
 @dataclass
 class SolverParams:
     S0: float = 1.0e-7   # amplitude scaling [km^2 s^-2 kpc Msun^-1]
     rc_kpc: float = 15.0 # global soft length [kpc]
-    g0_kms2_per_kpc: float = 1000.0 # dimensional scale for A(|∇φ|)=|∇φ|/g0 to fix units
+    g0_kms2_per_kpc: float = 1000.0 # dimensional scale for A(|∇φ|)=(|∇φ|/g0)^m
     m_exp: float = 1.0   # exponent in A(|∇φ|)=(|∇φ|/g0)^m
-    # Mass-aware source (A1)
+
+    # Mass-aware source (existing)
     eta: float = 0.0     # global mass-coupling exponent; if 0, disabled
     Mref_Msun: float = 6.0e10
-    # Curvature-aware mobility (A2)
+
+    # Curvature-aware mobility (existing)
     kappa: float = 0.0   # weight for |d ln rho / d ln r|; if 0, disabled
     q_slope: float = 1.0 # exponent on curvature term
-    # Anisotropic in-plane mobility (A3)
+
+    # Anisotropic in-plane mobility (existing)
     chi: float = 0.0     # in-plane boost amplitude near mid-plane; if 0, disabled
     h_aniso_kpc: float = 0.3  # exponential decay scale in z for anisotropy
+
+    # NEW A1: saturating mobility cap
+    use_saturating_mobility: bool = False
+    gsat_kms2_per_kpc: float = 2000.0
+    n_sat: float = 2.0
+
+    # NEW A2: ambient-density boost (multiplies S0 locally)
+    use_ambient_boost: bool = False
+    beta_env: float = 0.0
+    rho_ref_Msun_per_kpc3: float = 1.0e6
+    env_L_kpc: float = 150.0
+
     # Solver
     max_iter: int = 2000
     tol: float = 1e-5
@@ -107,6 +128,18 @@ def solve_axisym(R: np.ndarray, Z: np.ndarray, rho_Msun_kpc3: np.ndarray, params
     else:
         S_eff = np.full((NZ, NR), params.S0, dtype=float)
 
+    # Ambient-density boost to source (A2-new)
+    if params.use_ambient_boost and params.beta_env != 0.0:
+        if gaussian_filter is not None:
+            # sigma specified in grid cells; array is (NZ, NR) so (sigma_Z, sigma_R)
+            sigma_Z = max(params.env_L_kpc / max(dZ, 1e-9), 1.0)
+            sigma_R = max(params.env_L_kpc / max(dR, 1e-9), 1.0)
+            rho_env = gaussian_filter(rho_Msun_kpc3, sigma=(sigma_Z, sigma_R), mode="nearest")
+            boost = 1.0 + params.beta_env * np.sqrt(np.clip(rho_env / max(params.rho_ref_Msun_per_kpc3, 1e-30), 0.0, None))
+        else:
+            boost = 1.0
+        S_eff = S_eff * boost
+
     # Precompute curvature factor s = r * |d ln rho / dr| (A2)
     if params.kappa and params.kappa != 0.0:
         rho_floor = 1e-30
@@ -126,6 +159,9 @@ def solve_axisym(R: np.ndarray, Z: np.ndarray, rho_Msun_kpc3: np.ndarray, params
         gR, gZ = _grad_RZ(phi, dR, dZ)
         grad_mag = np.sqrt(gR*gR + gZ*gZ + eps*eps)
         A = (grad_mag / max(params.g0_kms2_per_kpc, 1e-12))**max(params.m_exp, 1e-6)
+        # NEW A1: saturating mobility cap
+        if params.use_saturating_mobility and params.gsat_kms2_per_kpc > 0.0:
+            A = A / (1.0 + np.power(np.maximum(grad_mag / params.gsat_kms2_per_kpc, 0.0), params.n_sat))
         if s_dimless is not None:
             A = A * np.power(1.0 + params.kappa * s_dimless, params.q_slope)
 
