@@ -89,12 +89,34 @@ def main():
                           chi=float(args.chi), h_aniso_kpc=float(args.h_aniso_kpc))
     phi, gR, gZ = solve_axisym(R, Z, rho, params)
 
-    # Equatorial extraction for g_phi and HSE
-    z0_idx = len(Z)//2
-    # Additional centripetal acceleration magnitude along midplane
-    g_phi_R = np.abs(gR[z0_idx, :])
+    # Spherical radial projection of PDE field onto shells r = const
+    NZ, NR = gR.shape
+    dR = float(np.mean(np.diff(R))) if R.size > 1 else 1.0
+    dZ = float(np.mean(np.diff(Z))) if Z.size > 1 else 1.0
+    R2D = np.broadcast_to(R.reshape(1,-1), (NZ, NR))
+    Z2D = np.broadcast_to(Z.reshape(-1,1), (NZ, NR))
+    r_cell = np.sqrt(R2D*R2D + Z2D*Z2D)
+    # radial unit components
+    r_hat_R = np.divide(R2D, np.maximum(r_cell, 1e-9))
+    r_hat_Z = np.divide(Z2D, np.maximum(r_cell, 1e-9))
+    g_r_field = gR * r_hat_R + gZ * r_hat_Z
+    g_phi_R = np.zeros_like(R)
+    dr = 0.5*max(dR, dZ)
+    for i, rsh in enumerate(R):
+        if rsh <= 0:
+            # Small ball around origin
+            mask = (r_cell <= max(dr, 1e-6))
+        else:
+            mask = (np.abs(r_cell - rsh) <= dr)
+        if np.any(mask):
+            # Use mean of absolute radial component on the shell
+            g_phi_R[i] = float(np.mean(np.abs(g_r_field[mask])))
+        else:
+            # Fallback to midplane value at same cylindrical R
+            z0_idx = len(Z)//2
+            g_phi_R[i] = float(np.abs(gR[z0_idx, i]))
 
-    # Build g_N along z=0 using M(<R)=∫ 4πr^2ρ dr (spherical approx)
+    # Build g_N along r using M(<r)=∫ 4πr^2ρ dr (spherical approx)
     # integrate rho over spherical shells from cluster CSV (consistent with generator)
     g = pd.read_csv(cdir/'gas_profile.csv')
     r_obs = np.asarray(g['r_kpc'], float)
