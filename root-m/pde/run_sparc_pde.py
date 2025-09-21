@@ -65,6 +65,13 @@ def main():
     ap.add_argument('--gal_subset', type=str, default=None, help='Comma-separated subset of galaxy names for CV')
     ap.add_argument('--cv_max_iter', type=int, default=400, help='Max solver iterations per galaxy during CV')
     ap.add_argument('--cv_tol', type=float, default=5e-5, help='Solver tolerance during CV')
+    # New physics knobs
+    ap.add_argument('--eta', type=float, default=0.0)
+    ap.add_argument('--Mref', type=float, default=6.0e10)
+    ap.add_argument('--kappa', type=float, default=0.0)
+    ap.add_argument('--q_slope', type=float, default=1.0)
+    ap.add_argument('--chi', type=float, default=0.0)
+    ap.add_argument('--h_aniso_kpc', type=float, default=0.3)
     args = ap.parse_args()
 
     in_path = Path(args.in_path)
@@ -138,7 +145,11 @@ def main():
                                                                                     hz_kpc=args.hz_kpc,
                                                                                     bulge_model='hernquist',
                                                                                     bulge_a_fallback_kpc=0.7)
-                                params = SolverParams(S0=float(S0), rc_kpc=float(rc), g0_kms2_per_kpc=float(args.g0_kms2_per_kpc), m_exp=float(mm), max_iter=int(args.cv_max_iter), tol=float(args.cv_tol))
+                                params = SolverParams(S0=float(S0), rc_kpc=float(rc), g0_kms2_per_kpc=float(args.g0_kms2_per_kpc), m_exp=float(mm),
+                                                       eta=float(args.eta), Mref_Msun=float(args.Mref),
+                                                       kappa=float(args.kappa), q_slope=float(args.q_slope),
+                                                       chi=float(args.chi), h_aniso_kpc=float(args.h_aniso_kpc),
+                                                       max_iter=int(args.cv_max_iter), tol=float(args.cv_tol))
                                 phi, gR, gZ = solve_axisym(Rg, Zg, rho, params)
                                 r_eval = per_gal[gname]['r']
                                 vbar = per_gal[gname]['vbar']
@@ -175,7 +186,11 @@ def main():
                                                                                 hz_kpc=args.hz_kpc,
                                                                                 bulge_model='hernquist',
                                                                                 bulge_a_fallback_kpc=0.7)
-                            params = SolverParams(S0=float(S0), rc_kpc=float(rc), g0_kms2_per_kpc=float(args.g0_kms2_per_kpc), max_iter=int(args.cv_max_iter), tol=float(args.cv_tol))
+                            params = SolverParams(S0=float(S0), rc_kpc=float(rc), g0_kms2_per_kpc=float(args.g0_kms2_per_kpc),
+                                                  eta=float(args.eta), Mref_Msun=float(args.Mref),
+                                                  kappa=float(args.kappa), q_slope=float(args.q_slope),
+                                                  chi=float(args.chi), h_aniso_kpc=float(args.h_aniso_kpc),
+                                                  max_iter=int(args.cv_max_iter), tol=float(args.cv_tol))
                             phi, gR, gZ = solve_axisym(Rg, Zg, rho, params)
                             r_eval = per_gal[gname]['r']
                             vbar = per_gal[gname]['vbar']
@@ -228,7 +243,10 @@ def main():
         Z, R, rho = sparc_map_from_predictions(in_path, R_max=args.Rmax, Z_max=args.Zmax, NR=args.NR, NZ=args.NZ)
 
     # Solve PDE
-    params = SolverParams(S0=args.S0, rc_kpc=args.rc_kpc, g0_kms2_per_kpc=args.g0_kms2_per_kpc, m_exp=args.m_exp)
+    params = SolverParams(S0=args.S0, rc_kpc=args.rc_kpc, g0_kms2_per_kpc=args.g0_kms2_per_kpc, m_exp=args.m_exp,
+                          eta=float(args.eta), Mref_Msun=float(args.Mref),
+                          kappa=float(args.kappa), q_slope=float(args.q_slope),
+                          chi=float(args.chi), h_aniso_kpc=float(args.h_aniso_kpc))
     phi, gR, gZ = solve_axisym(R, Z, rho, params)
 
     # Predict v(R) at observed radii
