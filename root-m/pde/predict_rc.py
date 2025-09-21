@@ -32,8 +32,8 @@ def predict_v_from_phi_equatorial(R_grid: np.ndarray, gR_grid: np.ndarray,
     gR0 = gR_grid[z0_idx, :]
     # In this convention, additional centripetal acceleration magnitude is |g_R| at z=0.
     g_phi = np.interp(R_eval, R_grid, gR0, left=gR0[0], right=gR0[-1])
-    # ensure non-negative contribution (numerical noise near z=0 can flip signs locally)
-    g_phi = np.maximum(g_phi, 0.0)
+    # use magnitude for centripetal contribution
+    g_phi = np.abs(g_phi)
     g_N = (vbar_kms**2) / np.maximum(R_eval, 1e-9)
     v2 = np.clip(vbar_kms**2 + g_phi * R_eval, 0.0, None)
     return np.sqrt(v2), g_phi, g_N

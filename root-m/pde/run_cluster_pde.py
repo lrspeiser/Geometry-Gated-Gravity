@@ -51,6 +51,7 @@ def main():
     ap.add_argument('--NZ', type=int, default=128)
     ap.add_argument('--S0', type=float, default=1.0e-7)
     ap.add_argument('--rc_kpc', type=float, default=15.0)
+    ap.add_argument('--g0_kms2_per_kpc', type=float, default=1000.0)
     args = ap.parse_args()
 
     cdir = Path(args.base)/args.cluster
@@ -72,13 +73,13 @@ def main():
     rho = rho * (wZ * wR)
 
     # Solve PDE
-    params = SolverParams(S0=args.S0, rc_kpc=args.rc_kpc)
+    params = SolverParams(S0=args.S0, rc_kpc=args.rc_kpc, g0_kms2_per_kpc=args.g0_kms2_per_kpc)
     phi, gR, gZ = solve_axisym(R, Z, rho, params)
 
     # Equatorial extraction for g_phi and HSE
     z0_idx = len(Z)//2
     # Additional centripetal acceleration magnitude along midplane
-    g_phi_R = np.maximum(gR[z0_idx, :], 0.0)
+    g_phi_R = np.abs(gR[z0_idx, :])
 
     # Build g_N along z=0 using M(<R)=∫ 4πr^2ρ dr (spherical approx)
     # integrate rho over spherical shells from cluster CSV (consistent with generator)
@@ -99,9 +100,13 @@ def main():
     M_R = np.interp(R, r_obs, M, left=M[0], right=M[-1])
     g_N_R = G * M_R / np.maximum(R**2, 1e-9)
     g_tot_R = g_N_R + g_phi_R
-    # Diagnostics
-    med_ratio = float(np.median(g_phi_R / np.maximum(g_N_R, 1e-12)))
-    print(f"[PDE-Cluster] {args.cluster}: median g_phi/g_N = {med_ratio:.3g}")
+    # Diagnostics (restrict to observed temperature radii)
+    t = pd.read_csv(cdir/'temp_profile.csv')
+    rT = np.asarray(t['r_kpc'], float)
+    g_phi_on_obs = np.interp(rT, R, g_phi_R)
+    g_N_on_obs = np.interp(rT, R, g_N_R)
+    med_ratio = float(np.median(g_phi_on_obs / np.maximum(g_N_on_obs, 1e-12)))
+    print(f"[PDE-Cluster] {args.cluster}: median g_phi/g_N on kT radii = {med_ratio:.3g}")
 
     # HSE prediction (interpolate n_e onto R grid)
     if 'n_e_cm3' in g.columns:

@@ -51,6 +51,7 @@ def main():
     ap.add_argument('--NZ', type=int, default=128)
     ap.add_argument('--S0', type=float, default=1.0e-7)
     ap.add_argument('--rc_kpc', type=float, default=15.0)
+    ap.add_argument('--g0_kms2_per_kpc', type=float, default=1000.0)
     ap.add_argument('--axisym_maps', action='store_true')
     ap.add_argument('--rotmod_parquet', default='data/sparc_rotmod_ltg.parquet')
     ap.add_argument('--galaxy', default=None)
@@ -133,7 +134,7 @@ def main():
                                                                                 hz_kpc=args.hz_kpc,
                                                                                 bulge_model='hernquist',
                                                                                 bulge_a_fallback_kpc=0.7)
-                            params = SolverParams(S0=float(S0), rc_kpc=float(rc), max_iter=int(args.cv_max_iter), tol=float(args.cv_tol))
+                            params = SolverParams(S0=float(S0), rc_kpc=float(rc), g0_kms2_per_kpc=float(args.g0_kms2_per_kpc), max_iter=int(args.cv_max_iter), tol=float(args.cv_tol))
                             phi, gR, gZ = solve_axisym(Rg, Zg, rho, params)
                             r_eval = per_gal[gname]['r']
                             vbar = per_gal[gname]['vbar']
@@ -186,7 +187,7 @@ def main():
         Z, R, rho = sparc_map_from_predictions(in_path, R_max=args.Rmax, Z_max=args.Zmax, NR=args.NR, NZ=args.NZ)
 
     # Solve PDE
-    params = SolverParams(S0=args.S0, rc_kpc=args.rc_kpc)
+    params = SolverParams(S0=args.S0, rc_kpc=args.rc_kpc, g0_kms2_per_kpc=args.g0_kms2_per_kpc)
     phi, gR, gZ = solve_axisym(R, Z, rho, params)
 
     # Predict v(R) at observed radii
