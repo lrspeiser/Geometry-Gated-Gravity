@@ -24,8 +24,10 @@ from pathlib import Path as _P
 _pkg_dir = _P(__file__).resolve().parent
 
 def _load_local(modname: str, filename: str):
+    import sys as _sys
     spec = _ilu.spec_from_file_location(modname, str(_pkg_dir/filename))
     mod = _ilu.module_from_spec(spec)
+    _sys.modules[modname] = mod  # register for dataclasses and relative references
     spec.loader.exec_module(mod)
     return mod
 _solve = _load_local('solve_phi', 'solve_phi.py')
