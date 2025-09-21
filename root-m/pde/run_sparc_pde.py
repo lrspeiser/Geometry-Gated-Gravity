@@ -59,6 +59,7 @@ def main():
     ap.add_argument('--cv', type=int, default=0, help='If >0, perform K-fold CV across galaxies to choose (S0, rc)')
     ap.add_argument('--S0_grid', type=str, default=None, help='Comma-separated S0 grid, e.g., 3e-7,1e-6,3e-6')
     ap.add_argument('--rc_grid', type=str, default=None, help='Comma-separated rc grid in kpc, e.g., 10,15,20')
+    ap.add_argument('--gal_subset', type=str, default=None, help='Comma-separated subset of galaxy names for CV')
     args = ap.parse_args()
 
     in_path = Path(args.in_path)
@@ -89,8 +90,11 @@ def main():
         rot = pd.read_parquet(Path(args.rotmod_parquet))
         gals_rot = set(rot['galaxy'].unique())
         gals_df = sorted([g for g in df['galaxy'].unique() if g in gals_rot])
+        if args.gal_subset:
+            req = [s.strip() for s in str(args.gal_subset).split(',') if s.strip()]
+            gals_df = [g for g in gals_df if g in set(req)]
         if not gals_df:
-            raise SystemExit('No overlapping galaxies between predictions CSV and rotmod parquet')
+            raise SystemExit('No overlapping galaxies between predictions CSV and rotmod parquet (or subset empty)')
 
         k = max(2, int(args.cv))
         # round-robin split for determinism
