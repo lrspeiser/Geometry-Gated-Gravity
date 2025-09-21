@@ -1,0 +1,1 @@
+Pearson corr(log vflat_obs, log Mb) = -0.060

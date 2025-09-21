@@ -1,0 +1,32 @@
+{
+  "chains": [
+    {
+      "chain": "C:\\Users\\henry\\dev\\GravityCalculator\\data\\lensing\\kids_b21\\chain_desy3_and_kids1000_hybrid_analysis.txt",
+      "n_samples": 11032,
+      "S8_percentiles": {
+        "p16": 0.7737091028604399,
+        "p50": 0.7909056875341748,
+        "p84": 0.8070696164530977
+      },
+      "A_shear_from_S8": {
+        "median": 0.9080153963912119,
+        "p16": 0.8689588849602363,
+        "p84": 0.945509313110394,
+        "S8_ref": 0.83
+      },
+      "phi_amp": {
+        "alpha_hat": 1.0069608598114206,
+        "sigma": 0.02743408982413429
+      },
+      "A_over_phi": {
+        "A_shear_median": 0.9080153963912119,
+        "alpha_phi": 1.0069608598114206,
+        "tension_sigma": 3.606661057629275
+      }
+    }
+  ],
+  "combined": {
+    "n_chains": 1,
+    "S8_median_mean": 0.7909056875341748
+  }
+}

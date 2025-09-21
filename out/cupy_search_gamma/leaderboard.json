@@ -1,0 +1,110 @@
+[
+  {
+    "xi": "combined_radius_density",
+    "gating": "fixed",
+    "avg_mean_off": 25.30783954056867,
+    "avg_rmse": 34.28439058843407,
+    "avg_pct_close_90": 22.64772482419541,
+    "galaxies": 143,
+    "outer_points": 1167
+  },
+  {
+    "xi": "shell_logistic_radius",
+    "gating": "learned_compact",
+    "avg_mean_off": 25.31126165263624,
+    "avg_rmse": 34.36980133519328,
+    "avg_pct_close_90": 22.796767700511015,
+    "galaxies": 143,
+    "outer_points": 1167
+  },
+  {
+    "xi": "combined_radius_density_gamma",
+    "gating": "learned_compact",
+    "avg_mean_off": 25.31167856800855,
+    "avg_rmse": 34.43538697481627,
+    "avg_pct_close_90": 23.058450462193772,
+    "galaxies": 143,
+    "outer_points": 1167
+  },
+  {
+    "xi": "combined_radius_density_gamma",
+    "gating": "learned",
+    "avg_mean_off": 25.311877205343528,
+    "avg_rmse": 34.48527817870167,
+    "avg_pct_close_90": 23.064207137530865,
+    "galaxies": 143,
+    "outer_points": 1167
+  },
+  {
+    "xi": "shell_logistic_radius",
+    "gating": "fixed",
+    "avg_mean_off": 25.313058188340225,
+    "avg_rmse": 34.44421144739375,
+    "avg_pct_close_90": 23.005473136489172,
+    "galaxies": 143,
+    "outer_points": 1167
+  },
+  {
+    "xi": "combined_radius_density",
+    "gating": "learned",
+    "avg_mean_off": 25.313322175815195,
+    "avg_rmse": 34.39432212659981,
+    "avg_pct_close_90": 22.92441782816114,
+    "galaxies": 143,
+    "outer_points": 1167
+  },
+  {
+    "xi": "combined_radius_density_gamma",
+    "gating": "fixed",
+    "avg_mean_off": 25.313380825655884,
+    "avg_rmse": 34.39734068920302,
+    "avg_pct_close_90": 23.040967944711255,
+    "galaxies": 143,
+    "outer_points": 1167
+  },
+  {
+    "xi": "shell_logistic_radius",
+    "gating": "learned",
+    "avg_mean_off": 25.31389061375338,
+    "avg_rmse": 34.35290741614423,
+    "avg_pct_close_90": 22.796767700511015,
+    "galaxies": 143,
+    "outer_points": 1167
+  },
+  {
+    "xi": "combined_radius_density",
+    "gating": "learned_compact",
+    "avg_mean_off": 25.314071992537365,
+    "avg_rmse": 34.49471374593331,
+    "avg_pct_close_90": 23.164107237430965,
+    "galaxies": 143,
+    "outer_points": 1167
+  },
+  {
+    "xi": "logistic_density",
+    "gating": "fixed",
+    "avg_mean_off": 36.07730059129616,
+    "avg_rmse": 42.064803871885836,
+    "avg_pct_close_90": 9.3975918679476,
+    "galaxies": 143,
+    "outer_points": 1167
+  },
+  {
+    "xi": "logistic_density",
+    "gating": "learned",
+    "avg_mean_off": 36.07730059129616,
+    "avg_rmse": 42.064803871885836,
+    "avg_pct_close_90": 9.3975918679476,
+    "galaxies": 143,
+    "outer_points": 1167
+  },
+  {
+    "xi": "logistic_density",
+    "gating": "learned_compact",
+    "avg_mean_off": 36.07730059129616,
+    "avg_rmse": 42.064803871885836,
+    "avg_pct_close_90": 9.3975918679476,
+    "galaxies": 143,
+    "outer_points": 1167
+  }
+]

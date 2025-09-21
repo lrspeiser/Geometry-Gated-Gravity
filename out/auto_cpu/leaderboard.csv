@@ -1,0 +1,7 @@
+xi,gating,avg_mean_off,outer_points,galaxies,seconds
+shell_logistic_radius,none,,,,
+shell_logistic_radius,fixed,,,,
+shell_logistic_radius,learned,,,,
+logistic_density,none,,,,
+logistic_density,fixed,,,,
+logistic_density,learned,,,,

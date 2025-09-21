@@ -1,0 +1,17 @@
+{
+  "A_kms": 160.0,
+  "rc_kpc": 10.0,
+  "Mref_Msun": 60000000000.0,
+  "cv_folds": 5,
+  "cv_median_percent_close_outer": 84.8628046776125,
+  "files": {
+    "input": "data\\sparc_predictions_by_radius.csv",
+    "predictions_by_radius_rootm_soft": "root-m\\out\\sparc_soft\\sparc_predictions_by_radius_rootm_soft.csv",
+    "predictions_by_galaxy_rootm_soft": "root-m\\out\\sparc_soft\\sparc_predictions_by_galaxy_rootm_soft.csv",
+    "summary_by_type_rootm_soft": "root-m\\out\\sparc_soft\\sparc_summary_by_type_rootm_soft.csv"
+  },
+  "global": {
+    "median_percent_close_rootm_soft_all": 82.20624740672616,
+    "mean_percent_close_rootm_soft_all": 77.6612628144415
+  }
+}

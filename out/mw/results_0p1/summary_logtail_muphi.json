@@ -1,0 +1,12 @@
+{
+  "LogTail": {
+    "model": "LogTail",
+    "median": 98.65179042221177,
+    "params": {
+      "v0_kms": 140,
+      "rc_kpc": 5,
+      "r0_kpc": 4,
+      "delta_kpc": 4
+    }
+  }
+}

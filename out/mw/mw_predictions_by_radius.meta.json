@@ -1,0 +1,43 @@
+{
+  "slices_glob": "data\\gaia_sky_slices\\processed_*.parquet",
+  "used_files": [
+    "data\\gaia_sky_slices\\processed_L000-030.parquet",
+    "data\\gaia_sky_slices\\processed_L030-060.parquet",
+    "data\\gaia_sky_slices\\processed_L060-090.parquet",
+    "data\\gaia_sky_slices\\processed_L090-120.parquet",
+    "data\\gaia_sky_slices\\processed_L120-150.parquet",
+    "data\\gaia_sky_slices\\processed_L150-180.parquet",
+    "data\\gaia_sky_slices\\processed_L180-210.parquet",
+    "data\\gaia_sky_slices\\processed_L210-240.parquet",
+    "data\\gaia_sky_slices\\processed_L240-270.parquet",
+    "data\\gaia_sky_slices\\processed_L270-300.parquet",
+    "data\\gaia_sky_slices\\processed_L300-330.parquet",
+    "data\\gaia_sky_slices\\processed_L330-360.parquet"
+  ],
+  "r_min": 0.0,
+  "r_max": 25.0,
+  "dr": 0.1,
+  "z_max": 0.3,
+  "sigma_v_max": 12.0,
+  "vR_max": 40.0,
+  "phi_bins": 1,
+  "phi_bin_index": null,
+  "inner_fit_min": 3.0,
+  "inner_fit_max": 8.0,
+  "min_bin_count": 1,
+  "fit_params": {
+    "M_d_Msun": 110300562443.55064,
+    "a_d_kpc": 4.002817768428082,
+    "b_d_kpc": 0.0972010757498584,
+    "M_b_Msun": 12929238562.6289,
+    "a_b_kpc": 0.21460790499839125
+  },
+  "logtail_preview": {
+    "enabled": false,
+    "v0": 140.0,
+    "rc": 15.0,
+    "R0": 8.0,
+    "dR": 3.0
+  },
+  "gal_id": "MilkyWay"
+}

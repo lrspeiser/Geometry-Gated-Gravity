@@ -1,0 +1,44 @@
+[
+  {
+    "xi": "shell_logistic_radius",
+    "gating": "learned",
+    "avg_mean_off": 25.312952695176747,
+    "galaxies": 143,
+    "outer_points": 1167
+  },
+  {
+    "xi": "combined_radius_density",
+    "gating": "fixed",
+    "avg_mean_off": 25.313931354671517,
+    "galaxies": 143,
+    "outer_points": 1167
+  },
+  {
+    "xi": "combined_radius_density",
+    "gating": "learned",
+    "avg_mean_off": 25.31597499101543,
+    "galaxies": 143,
+    "outer_points": 1167
+  },
+  {
+    "xi": "shell_logistic_radius",
+    "gating": "fixed",
+    "avg_mean_off": 25.317038967955547,
+    "galaxies": 143,
+    "outer_points": 1167
+  },
+  {
+    "xi": "logistic_density",
+    "gating": "fixed",
+    "avg_mean_off": 36.07730059129616,
+    "galaxies": 143,
+    "outer_points": 1167
+  },
+  {
+    "xi": "logistic_density",
+    "gating": "learned",
+    "avg_mean_off": 36.07730059129616,
+    "galaxies": 143,
+    "outer_points": 1167
+  }
+]

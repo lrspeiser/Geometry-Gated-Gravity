@@ -1,21 +1,21 @@
 {
   "LogTail": {
     "model": "LogTail",
-    "median": 89.9821414191499,
+    "median": 88.86985454367105,
     "params": {
       "v0_kms": 140,
       "rc_kpc": 15,
-      "r0_kpc": 3,
+      "r0_kpc": 4,
       "delta_kpc": 4
     }
   },
   "MuPhi": {
     "model": "MuPhi",
-    "median": 86.0266546710267,
+    "median": 83.61769594000576,
     "params": {
       "eps": 2.0,
       "v_c_kms": 140,
-      "p": 2.0
+      "p": 3.0
     }
   }
 }

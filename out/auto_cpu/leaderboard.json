@@ -1,0 +1,32 @@
+[
+  {
+    "xi": "shell_logistic_radius",
+    "gating": "none",
+    "error": "Cannot find valid initial parameters. Please check your model again."
+  },
+  {
+    "xi": "shell_logistic_radius",
+    "gating": "fixed",
+    "error": "Cannot find valid initial parameters. Please check your model again."
+  },
+  {
+    "xi": "shell_logistic_radius",
+    "gating": "learned",
+    "error": "sub got incompatible shapes for broadcasting: (143, 115), (143, 143)."
+  },
+  {
+    "xi": "logistic_density",
+    "gating": "none",
+    "error": "Cannot find valid initial parameters. Please check your model again."
+  },
+  {
+    "xi": "logistic_density",
+    "gating": "fixed",
+    "error": "Cannot find valid initial parameters. Please check your model again."
+  },
+  {
+    "xi": "logistic_density",
+    "gating": "learned",
+    "error": "sub got incompatible shapes for broadcasting: (143, 115), (143, 143)."
+  }
+]

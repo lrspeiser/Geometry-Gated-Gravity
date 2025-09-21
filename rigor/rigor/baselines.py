@@ -48,11 +48,23 @@ def burkert_velocity_kms(R_kpc, rho0, r0_kpc):
     G = 4.30091e-6  # kpc * (km/s)^2 / Msun
     r = np.maximum(R_kpc, 1e-6)
     x = r/np.maximum(r0_kpc, 1e-6)
-    term1 = 0.5*np.log(1+x**2) + np.log(1+x) - np.arctan(x)
+    # Adopt a common analytic approximation for enclosed mass in Burkert
     M = np.pi * (r0_kpc**3) * rho0 * (np.log(1+x) + 0.5*np.log(1+x**2) - np.arctan(x))
-    # Some literature differ in constants; we adopt a widely used form; robustness test later.
     V2 = G * M / r
     return np.sqrt(np.maximum(V2,0.0))
+
+def nfw_velocity_kms(R_kpc, rho_s, r_s_kpc):
+    """NFW halo circular speed (km/s) at radius R_kpc for parameters (rho_s, r_s_kpc).
+    Uses M(r) = 4*pi*rho_s*r_s^3 * [ln(1+x) - x/(1+x)] with x = r/r_s and V^2 = G*M(r)/r.
+    rho_s in Msun/kpc^3, r_s_kpc in kpc.
+    """
+    G = 4.30091e-6  # kpc * (km/s)^2 / Msun
+    r = np.maximum(R_kpc, 1e-6)
+    x = r/np.maximum(r_s_kpc, 1e-6)
+    m = np.log(1.0 + x) - (x/(1.0 + x))
+    M = 4.0 * np.pi * rho_s * (r_s_kpc**3) * m
+    V2 = G * M / r
+    return np.sqrt(np.maximum(V2, 0.0))
 
 def gr_baseline(Vbar_kms):
     return Vbar_kms  # in our notation, GR ==> xi=1

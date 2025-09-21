@@ -1,0 +1,22 @@
+# Percent closeness to actuals (outer region)
+
+All outer points: mean=75.5%  median=79.2%  (N=1167)
+Excluding outliers: mean=78.5%  median=81.3%  (N=1004)
+
+Excluded outliers and data confidence (SPARC Q):
+- IC4202: confidence=High (Q=1)
+- NGC0801: confidence=High (Q=1)
+- NGC0891: confidence=High (Q=1)
+- NGC2841: confidence=High (Q=1)
+- NGC2955: confidence=High (Q=1)
+- NGC3521: confidence=High (Q=1)
+- NGC3877: confidence=Medium (Q=2)
+- NGC3953: confidence=High (Q=1)
+- NGC4088: confidence=High (Q=1)
+- NGC5005: confidence=High (Q=1)
+- NGC5371: confidence=High (Q=1)
+- NGC6195: confidence=High (Q=1)
+- UGC05253: confidence=Medium (Q=2)
+- UGC06973: confidence=Low (Q=3)
+- UGC11455: confidence=High (Q=1)
+- UGC11914: confidence=High (Q=1)

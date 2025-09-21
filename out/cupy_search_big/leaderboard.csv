@@ -1,0 +1,7 @@
+xi,gating,avg_mean_off,outer_points,galaxies
+shell_logistic_radius,learned,25.312952695176747,1167,143
+combined_radius_density,fixed,25.313931354671517,1167,143
+combined_radius_density,learned,25.31597499101543,1167,143
+shell_logistic_radius,fixed,25.317038967955547,1167,143
+logistic_density,fixed,36.07730059129616,1167,143
+logistic_density,learned,36.07730059129616,1167,143

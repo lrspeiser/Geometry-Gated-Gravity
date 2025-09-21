@@ -1,0 +1,52 @@
+# Rotation-curve overlays
+
+Input dir: `data`
+
+## DDO154
+
+![DDO154](DDO154.png)
+
+## IC2574
+
+![IC2574](IC2574.png)
+
+## NGC2403
+
+![NGC2403](NGC2403.png)
+
+## NGC3198
+
+![NGC3198](NGC3198.png)
+
+## NGC6503
+
+![NGC6503](NGC6503.png)
+
+## ESO079-G014
+
+![ESO079-G014](ESO079-G014.png)
+
+## NGC6946
+
+![NGC6946](NGC6946.png)
+
+## UGC06983
+
+![UGC06983](UGC06983.png)
+
+## NGC0055
+
+![NGC0055](NGC0055.png)
+
+## NGC7793
+
+![NGC7793](NGC7793.png)
+
+## NGC2903
+
+![NGC2903](NGC2903.png)
+
+## UGC07524
+
+![UGC07524](UGC07524.png)
+

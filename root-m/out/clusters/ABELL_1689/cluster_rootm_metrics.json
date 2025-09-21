@@ -1,0 +1,9 @@
+{
+  "cluster": "ABELL_1689",
+  "A_kms": 140.0,
+  "Mref_Msun": 60000000000.0,
+  "r_kpc_min": 7.64,
+  "r_kpc_max": 909.17,
+  "n_r": 60,
+  "temp_median_frac_err": 4.634569987991441
+}

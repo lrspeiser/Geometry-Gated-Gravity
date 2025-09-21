@@ -1,0 +1,14 @@
+{
+  "A_kms": 140.0,
+  "Mref_Msun": 60000000000.0,
+  "files": {
+    "input": "data\\sparc_predictions_by_radius.csv",
+    "predictions_by_radius_rootm": "root-m\\out\\sparc\\sparc_predictions_by_radius_rootm.csv",
+    "predictions_by_galaxy_rootm": "root-m\\out\\sparc\\sparc_predictions_by_galaxy_rootm.csv",
+    "summary_by_type_rootm": "root-m\\out\\sparc\\sparc_summary_by_type_rootm.csv"
+  },
+  "global": {
+    "median_percent_close_rootm_all": 80.12613078893396,
+    "mean_percent_close_rootm_all": 72.37363109499505
+  }
+}

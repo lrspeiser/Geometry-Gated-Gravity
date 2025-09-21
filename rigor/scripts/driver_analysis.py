@@ -82,7 +82,10 @@ def main():
     clos = pd.read_csv(args.closeness_per_galaxy)
 
     # Merge
-    df = df_feat.merge(per_gal_pred, on='galaxy', how='left').merge(clos, on='galaxy', how='left', suffixes=('',''))
+    # Avoid overlapping column names by renaming before merge
+    per_gal_pred = per_gal_pred.rename(columns={'outer_points':'outer_points_pred'})
+    clos = clos.rename(columns={'outer_points':'outer_points_scored'})
+    df = df_feat.merge(per_gal_pred, on='galaxy', how='left').merge(clos, on='galaxy', how='left')
 
     # Correlations (Pearson & Spearman) for targets vs features
     targets = ['mean_pct_close', 'median_pct_close', 'rmse_outer', 'bias_outer']

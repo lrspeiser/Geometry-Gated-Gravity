@@ -94,6 +94,10 @@ def main():
         vobs = np.asarray(dfg['Vobs_kms'], float)
     else:
         vobs = np.asarray(df['Vobs_kms'], float)
+
+    # Logging for diagnostics
+    print(f"[PDE] axisym_maps={args.axisym_maps} galaxy={args.galaxy} n_eval={len(r_eval)} n_obs={len(vobs)} n_bar={len(vbar)} grid_NR={R.shape[0]} grid_NZ={Z.shape[0]} rho_shape={rho.shape}")
+
     err = 100.0 * np.abs(v_pred - vobs) / np.maximum(vobs, 1e-9)
     med = float(np.median(100.0 - err))
 
@@ -109,7 +113,7 @@ def main():
 
     # plot
     plt.figure(figsize=(6,4))
-    plt.plot(r_eval, df['Vobs_kms'], 'k.', ms=3, label='obs')
+    plt.plot(r_eval, vobs, 'k.', ms=3, label='obs')
     plt.plot(r_eval, vbar, 'c--', lw=1.2, label='baryon')
     plt.plot(r_eval, v_pred, 'r-', lw=1.2, label='PDE pred')
     plt.xlabel('R [kpc]'); plt.ylabel('V [km/s]'); plt.legend(); plt.grid(True, alpha=0.3)

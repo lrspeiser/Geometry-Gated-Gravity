@@ -1,0 +1,16 @@
+{
+  "params": {
+    "xi_max": 2.150334296724374,
+    "lnR0_base": 0.5624773298788688,
+    "width": 0.05,
+    "alpha_M": 0.29912698481521655,
+    "lnR_gate_base": -0.11202018132644681,
+    "width_gate": 0.05,
+    "alpha_gate_M": -0.5728034079707215
+  },
+  "summary": {
+    "avg_mean_off": 25.31611844245945,
+    "galaxies": 143,
+    "outer_points": 1167
+  }
+}

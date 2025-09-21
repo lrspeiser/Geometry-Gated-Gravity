@@ -1,13 +1,19 @@
 {
-  "pred_csv_used": "C:\\Users\\henry\\dev\\GravityCalculator\\out\\mw\\results_0p1\\predictions_with_LogTail.csv",
+  "pred_csv_used": "C:\\Users\\henry\\dev\\GravityCalculator\\out\\mw\\mw_predictions_by_radius_0p1_full.csv",
+  "meta_json": "C:\\Users\\henry\\dev\\GravityCalculator\\out\\mw\\mw_predictions_by_radius.meta.json",
   "columns_used": {
     "observed": "v_obs_kms",
     "observed_err": null,
-    "baryons_GR": "vbar_kms",
-    "logtail_refit": "v_LogTail_kms",
-    "mond": "computed from vbar_kms and r_kpc with a0(m/s^2) converted to (km/s)^2/kpc",
-    "nfw": "best-fit to (r_kpc, v_obs_kms, vbar_kms) on the same bins"
+    "baryons_GR": "recomputed from MN+Hern params in meta, else interp(vbar_kms)",
+    "logtail_global": "v0=140,rc=15,r0=3,delta=4",
+    "logtail_refit": null,
+    "mond": "computed from vbar(R) with a0(m/s^2) converted to (km/s)^2/kpc",
+    "nfw": "best-fit (rho_s, r_s) on bins, then evaluated on R_ext"
   },
-  "logtail_global_overlay": "v0=140,rc=15,r0=3,delta=4",
+  "extrapolation": {
+    "R_max_bins": 14.75,
+    "R_max_plotted": 16.200000000000014,
+    "step_kpc": 0.1
+  },
   "a0_si_m_s2": 1.2e-10
 }

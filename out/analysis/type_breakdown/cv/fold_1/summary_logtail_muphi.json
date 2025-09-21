@@ -2,29 +2,41 @@
   "fold": 1,
   "train": {
     "LogTail": {
-      "median": 89.96670293024674,
+      "median": 89.14591679348665,
       "params": {
-        "v0_kms": 140,
+        "v0_kms": 120,
         "rc_kpc": 15,
         "r0_kpc": 3,
         "delta_kpc": 4
       }
     },
     "MuPhi": {
-      "median": 86.12633649731008,
+      "median": 84.58042021872683,
       "params": {
         "eps": 2.0,
-        "v_c_kms": 160,
+        "v_c_kms": 140,
         "p": 3.0
       }
     }
   },
   "test": {
     "LogTail": {
-      "median": 90.01469669557488
+      "median": 87.4493280456633
     },
     "MuPhi": {
-      "median": 82.50756864856106
+      "median": 79.52755351284317
+    }
+  },
+  "rar_test": {
+    "observed": {
+      "n": 681,
+      "scatter_dex_orth": 0.1815409730041639,
+      "r2_vs_const": 0.8624222287351275
+    },
+    "model": {
+      "n": 681,
+      "scatter_dex_orth": 0.051237269084963115,
+      "r2_vs_const": 0.9917538747316709
     }
   },
   "n_train_points": 2710,
