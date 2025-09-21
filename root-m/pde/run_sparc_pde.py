@@ -51,31 +51,57 @@ def main():
     ap.add_argument('--NZ', type=int, default=128)
     ap.add_argument('--S0', type=float, default=1.0e-7)
     ap.add_argument('--rc_kpc', type=float, default=15.0)
+    ap.add_argument('--axisym_maps', action='store_true')
+    ap.add_argument('--rotmod_parquet', default='data/sparc_rotmod_ltg.parquet')
+    ap.add_argument('--galaxy', default=None)
     args = ap.parse_args()
 
     in_path = Path(args.in_path)
     df = pd.read_csv(in_path)
 
-    # PDE map from spherical-equivalent rho_b
-    Z, R, rho = sparc_map_from_predictions(in_path, R_max=args.Rmax, Z_max=args.Zmax, NR=args.NR, NZ=args.NZ)
+    if args.axisym_maps:
+        # build axisymmetric map for a single galaxy
+        if not args.galaxy:
+            raise SystemExit('Please supply --galaxy when using --axisym_maps')
+        # dynamic load axisym builder
+        import importlib.util as _ilu
+        pkg = _P(__file__).resolve().parent
+        spec = _ilu.spec_from_file_location('baryon_maps_axisym', str(pkg/'baryon_maps_axisym.py'))
+        axisym = _ilu.module_from_spec(spec); spec.loader.exec_module(axisym)
+        Z, R, rho = axisym.axisym_map_from_rotmod_parquet(Path(args.rotmod_parquet), args.galaxy,
+                                                          R_max=args.Rmax, Z_max=args.Zmax, NR=args.NR, NZ=args.NZ, hz_kpc=0.3)
+    else:
+        # PDE map from spherical-equivalent rho_b
+        Z, R, rho = sparc_map_from_predictions(in_path, R_max=args.Rmax, Z_max=args.Zmax, NR=args.NR, NZ=args.NZ)
 
     # Solve PDE
     params = SolverParams(S0=args.S0, rc_kpc=args.rc_kpc)
     phi, gR, gZ = solve_axisym(R, Z, rho, params)
 
     # Predict v(R) at observed radii
-    r_eval = np.asarray(df['R_kpc'], float)
-    vbar = np.asarray(df['Vbar_kms'], float)
+    if args.axisym_maps:
+        dfg = df[df['galaxy'] == args.galaxy].copy()
+        if dfg.empty:
+            raise SystemExit(f'No rows for galaxy {args.galaxy} in {in_path}')
+        r_eval = np.asarray(dfg['R_kpc'], float)
+        vbar = np.asarray(dfg['Vbar_kms'], float)
+    else:
+        r_eval = np.asarray(df['R_kpc'], float)
+        vbar = np.asarray(df['Vbar_kms'], float)
     v_pred, gphi, gN = predict_v_from_phi_equatorial(R, gR, r_eval, vbar)
 
-    err = 100.0 * np.abs(v_pred - df['Vobs_kms']) / np.maximum(df['Vobs_kms'], 1e-9)
+    if args.axisym_maps:
+        vobs = np.asarray(dfg['Vobs_kms'], float)
+    else:
+        vobs = np.asarray(df['Vobs_kms'], float)
+    err = 100.0 * np.abs(v_pred - vobs) / np.maximum(vobs, 1e-9)
     med = float(np.median(100.0 - err))
 
     od = Path(args.outdir)/args.tag
     od.mkdir(parents=True, exist_ok=True)
     # save RC table
     out_csv = od/'rc_pde_predictions.csv'
-    pd.DataFrame({'R_kpc': r_eval, 'Vobs_kms': df['Vobs_kms'], 'Vbar_kms': vbar,
+    pd.DataFrame({'R_kpc': r_eval, 'Vobs_kms': vobs, 'Vbar_kms': vbar,
                   'Vpred_pde_kms': v_pred, 'percent_close': (100.0 - err)}).to_csv(out_csv, index=False)
     # metrics
     (od/'summary.json').write_text(json.dumps({'S0': args.S0, 'rc_kpc': args.rc_kpc,
