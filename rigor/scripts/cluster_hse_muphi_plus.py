@@ -24,10 +24,11 @@ KMS2_TO_KEV = (MU * M_P * KM2_PER_S2_TO_J_PER_KG) / J_PER_KEV
 @dataclass
 class MuPhiPlus:
     eps: float = 2.0         # dimensionless amplitude multiplier
-    v_c_kms: float = 140.0   # km/s, sqrt(Phi_c)
+    v_c_kms: float = 140.0   # km/s, sqrt(Phi_c); used when alpha_compact is None or <=0
     p: float = 2.0           # shape exponent in f(x) = 1 / (1 + x^p)
-    eta: float = 0.20        # weak global mass-coupling exponent
+    eta: float = 0.20        # mass-coupling exponent
     Mref_Msun: float = 6.0e10  # reference mass for mass-coupling
+    alpha_compact: float | None = None  # if set > 0, use Phi_c = alpha * G * M_tot / R_half (compactness-aware)
 
     def f(self, x: np.ndarray) -> np.ndarray:
         return 1.0 / (1.0 + np.power(np.clip(x, 0.0, None), self.p))
@@ -118,12 +119,32 @@ def run_cluster(cluster: str = "ABELL_1689",
     # Newtonian potential depth from baryons-only: Phi_N(r) = \int_r^{Rmax} g_N(r') dr' (km^2/s^2)
     Phi_N = reversed_cumtrapz(r, g_N)
 
-    # MuPhi+ response
-    Phi_c = params.v_c_kms**2
-    x = np.abs(Phi_N) / max(Phi_c, 1e-12)
-    f = params.f(x)
-    mass_boost = np.power(np.clip(Mb / max(params.Mref_Msun, 1e-30), 1e-30, None), params.eta)
-    mu = 1.0 + params.eps * f * mass_boost
+    # Compactness-aware Phi_c and mass-coupling
+    use_compact = (params.alpha_compact is not None) and (params.alpha_compact > 0)
+    if use_compact:
+        M_tot = float(Mb[-1]) if Mb.size else 0.0
+        # Half-mass radius R_half from Mb(r)
+        try:
+            R_half = float(np.interp(0.5*M_tot, Mb, r)) if (M_tot > 0 and np.all(np.diff(Mb) >= 0)) else float('nan')
+        except Exception:
+            R_half = float('nan')
+        if (not math.isfinite(R_half)) or (R_half <= 0):
+            # Fallback: median radius as a rough scale
+            R_half = float(np.median(r))
+        Phi_c = params.alpha_compact * G * max(M_tot, 0.0) / max(R_half, 1e-6)
+        x = np.abs(Phi_N) / max(Phi_c, 1e-12)
+        f = params.f(x)
+        # Global mass-coupling with total baryon mass (constant across r)
+        mass_boost = np.power(max(M_tot, 1e-30) / max(params.Mref_Msun, 1e-30), params.eta)
+        mu = 1.0 + params.eps * f
+        mu = mu * mass_boost
+    else:
+        # Fixed-threshold mode (original MuPhi+): Phi_c from v_c, with radial mass boost (Mb(r)/Mref)^eta
+        Phi_c = params.v_c_kms**2
+        x = np.abs(Phi_N) / max(Phi_c, 1e-12)
+        f = params.f(x)
+        mass_boost = np.power(np.clip(Mb / max(params.Mref_Msun, 1e-30), 1e-30, None), params.eta)
+        mu = 1.0 + params.eps * f * mass_boost
 
     # total acceleration
     g_tot = g_N * mu
@@ -144,12 +165,27 @@ def run_cluster(cluster: str = "ABELL_1689",
     od = Path(outdir)/cluster
     od.mkdir(parents=True, exist_ok=True)
     with open(od/"cluster_muphi_plus_metrics.json","w") as f:
+        out_params = {
+            "eps": params.eps,
+            "p": params.p,
+            "eta": params.eta,
+            "Mref_Msun": params.Mref_Msun,
+        }
+        mode = "compact" if use_compact else "fixed_vc"
+        if use_compact:
+            out_params.update({
+                "alpha_compact": params.alpha_compact,
+                "Phi_c_kms2": float(Phi_c),
+            })
+        else:
+            out_params.update({
+                "v_c_kms": params.v_c_kms,
+                "Phi_c_kms2": float(params.v_c_kms**2),
+            })
         json.dump({
             "cluster": cluster,
-            "params": {
-                "eps": params.eps, "v_c_kms": params.v_c_kms, "p": params.p,
-                "eta": params.eta, "Mref_Msun": params.Mref_Msun
-            },
+            "mode": mode,
+            "params": out_params,
             "r_kpc_min": float(r.min()), "r_kpc_max": float(r.max()), "n_r": int(len(r)),
             "temp_median_frac_err": med_frac
         }, f, indent=2)
@@ -192,7 +228,8 @@ if __name__ == "__main__":
     ap.add_argument("--p", type=float, default=2.0)
     ap.add_argument("--eta", type=float, default=0.20)
     ap.add_argument("--Mref_Msun", type=float, default=6.0e10)
+    ap.add_argument("--alpha_compact", type=float, default=None, help="If set (>0), use compactness-aware Phi_c = alpha * G * M_tot / R_half")
     args = ap.parse_args()
 
-    mp = MuPhiPlus(eps=args.eps, v_c_kms=args.v_c_kms, p=args.p, eta=args.eta, Mref_Msun=args.Mref_Msun)
+    mp = MuPhiPlus(eps=args.eps, v_c_kms=args.v_c_kms, p=args.p, eta=args.eta, Mref_Msun=args.Mref_Msun, alpha_compact=args.alpha_compact)
     run_cluster(cluster=args.cluster, base=args.base, outdir=args.outdir, params=mp)
