@@ -18,9 +18,24 @@ import argparse
 import json
 import matplotlib.pyplot as plt
 
-from .solve_phi import SolverParams, solve_axisym
-from .baryon_maps import sparc_map_from_predictions
-from .predict_rc import predict_v_from_phi_equatorial
+# Local imports (folder is not a Python package)
+import importlib.util as _ilu
+from pathlib import Path as _P
+_pkg_dir = _P(__file__).resolve().parent
+
+def _load_local(modname: str, filename: str):
+    spec = _ilu.spec_from_file_location(modname, str(_pkg_dir/filename))
+    mod = _ilu.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+_solve = _load_local('solve_phi', 'solve_phi.py')
+_maps  = _load_local('baryon_maps', 'baryon_maps.py')
+_prc   = _load_local('predict_rc', 'predict_rc.py')
+
+SolverParams = _solve.SolverParams
+solve_axisym = _solve.solve_axisym
+sparc_map_from_predictions = _maps.sparc_map_from_predictions
+predict_v_from_phi_equatorial = _prc.predict_v_from_phi_equatorial
 
 
 def main():

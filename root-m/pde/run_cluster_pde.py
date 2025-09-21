@@ -16,9 +16,24 @@ import argparse
 import json
 import matplotlib.pyplot as plt
 
-from .solve_phi import SolverParams, solve_axisym
-from .baryon_maps import cluster_map_from_csv
-from .predict_hse import kT_from_ne_and_gtot
+# Local imports (folder is not a Python package)
+import importlib.util as _ilu
+from pathlib import Path as _P
+_pkg_dir = _P(__file__).resolve().parent
+
+def _load_local(modname: str, filename: str):
+    spec = _ilu.spec_from_file_location(modname, str(_pkg_dir/filename))
+    mod = _ilu.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+_solve = _load_local('solve_phi', 'solve_phi.py')
+_maps  = _load_local('baryon_maps', 'baryon_maps.py')
+_phse  = _load_local('predict_hse', 'predict_hse.py')
+
+SolverParams = _solve.SolverParams
+solve_axisym = _solve.solve_axisym
+cluster_map_from_csv = _maps.cluster_map_from_csv
+kT_from_ne_and_gtot = _phse.kT_from_ne_and_gtot
 
 G = 4.300917270e-6  # (kpc km^2 s^-2 Msun^-1)
 
