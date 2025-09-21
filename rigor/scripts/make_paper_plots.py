@@ -304,6 +304,37 @@ def plot_shear_amp_vs_phiphi():
     ax.legend(frameon=False)
     savefig(FIG_DIR / "shear_vs_phiphi.png")
 
+if __name__ == "__main__":
+    # Generate all standard paper figures if inputs exist; each function is no-op if missing.
+    try:
+        plot_rotation_curve_overlays()
+    except Exception:
+        pass
+    try:
+        plot_rar_obs_vs_model()
+    except Exception:
+        pass
+    try:
+        plot_btfr_two_panel()
+    except Exception:
+        pass
+    try:
+        plot_lensing_shapes()
+    except Exception:
+        pass
+    try:
+        plot_cv_medians()
+    except Exception:
+        pass
+    try:
+        plot_outer_slopes_hist()
+    except Exception:
+        pass
+    try:
+        plot_shear_amp_vs_phiphi()
+    except Exception:
+        pass
+
 
 def plot_cmb_envelope_summary():
     cmb = ROOT / "out" / "cmb_envelopes_tttee" / "cmb_envelope_lens.json"
