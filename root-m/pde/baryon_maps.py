@@ -40,15 +40,19 @@ def spherical_from_radial_profile(r_kpc: np.ndarray, rho_r: np.ndarray,
 
 
 def cluster_map_from_csv(cluster_dir: Path, R_max: float=1500.0, Z_max: float=1500.0,
-                         NR: int=128, NZ: int=128):
+                         NR: int=128, NZ: int=128,
+                         clump: float = 1.0):
     cdir = Path(cluster_dir)
     g = pd.read_csv(cdir/"gas_profile.csv")
     r = np.asarray(g['r_kpc'], float)
     if 'rho_gas_Msun_per_kpc3' in g.columns:
         rho_gas = np.asarray(g['rho_gas_Msun_per_kpc3'], float)
+        # apply clumping correction as sqrt(C)
+        rho_gas = rho_gas * float(np.sqrt(max(clump, 1.0)))
     else:
         ne = np.asarray(g['n_e_cm3'], float)
-        rho_gas = ne_to_rho_gas_Msun_kpc3(ne)
+        ne_eff = ne * float(np.sqrt(max(clump, 1.0)))
+        rho_gas = ne_to_rho_gas_Msun_kpc3(ne_eff)
 
     # stars (optional)
     rho_star = None

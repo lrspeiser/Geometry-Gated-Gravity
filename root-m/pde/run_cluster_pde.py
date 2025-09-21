@@ -60,10 +60,12 @@ def main():
     ap.add_argument('--q_slope', type=float, default=1.0)
     ap.add_argument('--chi', type=float, default=0.0)
     ap.add_argument('--h_aniso_kpc', type=float, default=0.3)
+    # B-input levers
+    ap.add_argument('--clump', type=float, default=1.0, help='Gas clumping factor C; uses n_e_eff = sqrt(C) n_e')
     args = ap.parse_args()
 
     cdir = Path(args.base)/args.cluster
-    Z, R, rho = cluster_map_from_csv(cdir, R_max=args.Rmax, Z_max=args.Zmax, NR=args.NR, NZ=args.NZ)
+    Z, R, rho = cluster_map_from_csv(cdir, R_max=args.Rmax, Z_max=args.Zmax, NR=args.NR, NZ=args.NZ, clump=float(args.clump))
     # Guard taper near boundaries to reduce reflection/suppression
     def _taper_1d(x, frac=0.1):
         xmax = float(np.max(np.abs(x)))

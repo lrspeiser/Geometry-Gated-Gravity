@@ -59,6 +59,7 @@ def main():
     ap.add_argument('--galaxy', default=None)
     # axisym vertical scale height and CV controls
     ap.add_argument('--hz_kpc', type=float, default=0.3)
+    ap.add_argument('--hz_gamma', type=float, default=0.0)
     ap.add_argument('--cv', type=int, default=0, help='If >0, perform K-fold CV across galaxies to choose (S0, rc)')
     ap.add_argument('--S0_grid', type=str, default=None, help='Comma-separated S0 grid, e.g., 3e-7,1e-6,3e-6')
     ap.add_argument('--rc_grid', type=str, default=None, help='Comma-separated rc grid in kpc, e.g., 10,15,20')
@@ -142,7 +143,7 @@ def main():
                                 Zg, Rg, rho = axisym.axisym_map_from_rotmod_parquet(Path(args.rotmod_parquet), gname,
                                                                                     R_max=R_max, Z_max=Z_max,
                                                                                     NR=args.NR, NZ=args.NZ,
-                                                                                    hz_kpc=args.hz_kpc,
+                                                                                    hz_kpc=args.hz_kpc, hz_gamma=args.hz_gamma,
                                                                                     bulge_model='hernquist',
                                                                                     bulge_a_fallback_kpc=0.7)
                                 params = SolverParams(S0=float(S0), rc_kpc=float(rc), g0_kms2_per_kpc=float(args.g0_kms2_per_kpc), m_exp=float(mm),
@@ -237,7 +238,8 @@ def main():
         axisym = _ilu.module_from_spec(spec); spec.loader.exec_module(axisym)
         Z, R, rho = axisym.axisym_map_from_rotmod_parquet(Path(args.rotmod_parquet), args.galaxy,
                                                           R_max=args.Rmax, Z_max=args.Zmax, NR=args.NR, NZ=args.NZ,
-                                                          hz_kpc=args.hz_kpc, bulge_model='hernquist', bulge_a_fallback_kpc=0.7)
+                                                          hz_kpc=args.hz_kpc, hz_gamma=args.hz_gamma,
+                                                          bulge_model='hernquist', bulge_a_fallback_kpc=0.7)
     else:
         # PDE map from spherical-equivalent rho_b
         Z, R, rho = sparc_map_from_predictions(in_path, R_max=args.Rmax, Z_max=args.Zmax, NR=args.NR, NZ=args.NZ)

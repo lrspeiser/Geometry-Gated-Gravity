@@ -34,16 +34,20 @@ def sigma_from_M_of_R(R_kpc: np.ndarray, M_enc: np.ndarray) -> np.ndarray:
 
 
 def axisym_rho_from_sigma(R_grid: np.ndarray, Z_grid: np.ndarray, R_samp: np.ndarray,
-                          Sigma_R: np.ndarray, hz_kpc: float) -> np.ndarray:
-    """Build rho(R,z) = Sigma(R)/(2hz) * exp(-|z|/hz) on (Z,R) grid from tabulated Sigma(R)."""
+                          Sigma_R: np.ndarray, hz_kpc: float, hz_gamma: float = 0.0) -> np.ndarray:
+    """Build rho(R,z) = Sigma(R)/(2hz(R)) * exp(-|z|/hz(R)) on (Z,R) grid from tabulated Sigma(R).
+    If hz_gamma>0, apply mild linear flaring: hz(R) = hz_kpc * (1 + hz_gamma * R/R_max).
+    """
     R = np.asarray(R_grid)
     Z = np.asarray(Z_grid)
     Sigma_on_grid = np.interp(R, R_samp, Sigma_R, left=Sigma_R[0], right=Sigma_R[-1])
     # shape to 2D
     Sigma2D = np.broadcast_to(Sigma_on_grid.reshape(1, -1), (Z.size, R.size))
     Z2D = np.broadcast_to(Z.reshape(-1, 1), (Z.size, R.size))
-    hz = max(hz_kpc, 1e-3)
-    rho = (Sigma2D / (2.0 * hz)) * np.exp(-np.abs(Z2D) / hz)
+    Rmax = max(float(np.max(R)), 1e-6)
+    hz_line = float(max(hz_kpc, 1e-3)) * (1.0 + float(max(hz_gamma, 0.0)) * (R / Rmax))
+    hz2D = np.broadcast_to(hz_line.reshape(1, -1), (Z.size, R.size))
+    rho = (Sigma2D / (2.0 * hz2D)) * np.exp(-np.abs(Z2D) / hz2D)
     return rho
 
 
@@ -101,6 +105,7 @@ def axisym_map_from_rotmod_parquet(parquet_path: Path, galaxy: str,
                                    R_max: float=80.0, Z_max: float=80.0,
                                    NR: int=128, NZ: int=128,
                                    hz_kpc: float=0.3,
+                                   hz_gamma: float=0.0,
                                    bulge_model: str = 'hernquist',
                                    bulge_a_fallback_kpc: float = 0.7) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
@@ -133,7 +138,7 @@ def axisym_map_from_rotmod_parquet(parquet_path: Path, galaxy: str,
     Rg = np.linspace(0.0, R_max, NR)
     Zg = np.linspace(-Z_max, Z_max, NZ)
 
-    rho = axisym_rho_from_sigma(Rg, Zg, R, Ssum, hz_kpc)
+    rho = axisym_rho_from_sigma(Rg, Zg, R, Ssum, hz_kpc, hz_gamma=hz_gamma)
 
     # Optional spherical Hernquist bulge
     if bulge_model.lower() == 'hernquist':
