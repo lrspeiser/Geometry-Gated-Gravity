@@ -1,0 +1,16 @@
+{
+  "cluster": "ABELL_0426",
+  "mode": "compact",
+  "params": {
+    "eps": 2.0,
+    "p": 2.0,
+    "eta": 0.25,
+    "Mref_Msun": 60000000000.0,
+    "alpha_compact": 1.4,
+    "Phi_c_kms2": 465960.4728713374
+  },
+  "r_kpc_min": 0.895,
+  "r_kpc_max": 115.445,
+  "n_r": 65,
+  "temp_median_frac_err": 0.9720917978868906
+}
