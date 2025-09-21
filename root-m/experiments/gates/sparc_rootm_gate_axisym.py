@@ -37,6 +37,29 @@ def spherical_M_from_vbar(R_kpc, Vbar_kms):
     return (v*v) * r / G
 
 
+def M_from_axisym_density(Rg, Zg, rho, R_eval):
+    """Compute M(<R) via cylindrical integration of axisymmetric rho(R,z):
+    M(R) = 2π ∫_0^R [ R' ∫ rho(R',z) dz ] dR'
+    Use simple trapezoids on the (Z,R) grid and interpolate onto R_eval.
+    """
+    Rg = np.asarray(Rg, float)
+    Zg = np.asarray(Zg, float)
+    rho = np.asarray(rho, float)
+    # integrate rho over Z for each R column
+    if Zg.size < 2 or Rg.size < 2:
+        return np.interp(R_eval, Rg, np.zeros_like(Rg))
+    dZ = float(np.mean(np.diff(Zg)))
+    col_int = np.trapz(rho, Zg, axis=0)  # ∫ rho dz at each R
+    # now cumulative over R: 2π ∫ R' col_int dR'
+    dR = float(np.mean(np.diff(Rg)))
+    integrand = 2.0*np.pi * Rg * col_int
+    M_R = np.cumsum(integrand) * dR
+    # ensure non-decreasing and non-negative
+    M_R = np.maximum.accumulate(np.clip(M_R, 0.0, None))
+    # interpolate onto R_eval
+    return np.interp(R_eval, Rg, M_R)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--in', dest='in_path', default='data/sparc_predictions_by_radius.csv')
@@ -81,7 +104,7 @@ def main():
         z0_idx = len(Zg)//2
         rho_mid = rho[z0_idx, :]
         rho_at_eval = np.interp(r_eval, Rg, rho_mid, left=rho_mid[0], right=rho_mid[-1])
-        Mb = spherical_M_from_vbar(r_eval, vbar)
+        Mb = M_from_axisym_density(Rg, Zg, rho, r_eval)
         # Direct rho-aware gate at evaluation radii (no extra smoothing to preserve lengths)
         dens_fac = (args.rho0 / (rho_at_eval + args.rho0))**(args.q)
         v2_tail = (args.A_kms**2) * np.sqrt(Mb / 6e10) * dens_fac * (r_eval / (r_eval + args.rc_kpc))
