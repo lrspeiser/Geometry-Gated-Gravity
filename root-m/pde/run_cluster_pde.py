@@ -55,6 +55,21 @@ def main():
 
     cdir = Path(args.base)/args.cluster
     Z, R, rho = cluster_map_from_csv(cdir, R_max=args.Rmax, Z_max=args.Zmax, NR=args.NR, NZ=args.NZ)
+    # Guard taper near boundaries to reduce reflection/suppression
+    def _taper_1d(x, frac=0.1):
+        xmax = float(np.max(np.abs(x)))
+        xabs = np.abs(x)
+        x0 = (1.0 - frac) * xmax
+        w = np.ones_like(xabs)
+        mask = xabs > x0
+        if np.any(mask):
+            xi = (xabs[mask] - x0) / (xmax - x0 + 1e-12)
+            w[mask] = 0.5 * (1.0 + np.cos(np.pi * xi))  # cosine to zero at edge
+        return w
+    import numpy as np
+    wZ = _taper_1d(Z, frac=0.1).reshape(-1,1)
+    wR = _taper_1d(R, frac=0.1).reshape(1,-1)
+    rho = rho * (wZ * wR)
 
     # Solve PDE
     params = SolverParams(S0=args.S0, rc_kpc=args.rc_kpc)
@@ -62,7 +77,8 @@ def main():
 
     # Equatorial extraction for g_phi and HSE
     z0_idx = len(Z)//2
-    g_phi_R = gR[z0_idx, :]
+    # Additional centripetal acceleration magnitude along midplane
+    g_phi_R = np.maximum(gR[z0_idx, :], 0.0)
 
     # Build g_N along z=0 using M(<R)=∫ 4πr^2ρ dr (spherical approx)
     # integrate rho over spherical shells from cluster CSV (consistent with generator)
@@ -83,6 +99,9 @@ def main():
     M_R = np.interp(R, r_obs, M, left=M[0], right=M[-1])
     g_N_R = G * M_R / np.maximum(R**2, 1e-9)
     g_tot_R = g_N_R + g_phi_R
+    # Diagnostics
+    med_ratio = float(np.median(g_phi_R / np.maximum(g_N_R, 1e-12)))
+    print(f"[PDE-Cluster] {args.cluster}: median g_phi/g_N = {med_ratio:.3g}")
 
     # HSE prediction (interpolate n_e onto R grid)
     if 'n_e_cm3' in g.columns:
