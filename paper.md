@@ -226,7 +226,7 @@ These headline numbers are stable across independent runs (e.g., 89.61/88.99% in
 
 **Cross‑validation.** Five‑fold test medians track the full‑sample results (details in your CV tables), supporting generalization beyond the galaxies used to pick global parameters.
 
-![Rotation curves: observed and model overlays for six representative SPARC galaxies](figs/rc_overlays_examples.png)
+![Rotation curves: observed and model overlays for six representative SPARC galaxies](figs/rc_overlays_examples_v2.png)
 
 *Figure 1. Observed star speeds vs radius with line estimates from GR (baryons), MOND (simple interpolating function), a DM-like isothermal flat line (outer median), and our LogTail model. Data and model curves come from `out/analysis/type_breakdown/predictions_with_LogTail.csv`.*
 
@@ -243,7 +243,7 @@ We built an independent Milky Way (MW) rotation‑curve table from Gaia sky slic
 
 We then applied the same LogTail modeling used for SPARC on this single‑galaxy table (no MuPhi). For the MW we freeze the **SPARC‑global** parameters and treat the MW as a transfer test: the 0.1‑kpc Gaia bins reach **94.63%** median outer‑bin closeness under the fixed SPARC‑global \(v_0=140, r_c=15, R_0=3, \Delta=4\). For reference (diagnostic only), a **MW‑only refit** yields **98.65%** with \(v_0=140, r_c=5, R_0=4, \Delta=4\). The outer‑slope diagnostic (last ~30% in R) and all per‑bin predictions are exported (`outer_slopes_logtail.csv`, `summary_logtail.json`). As a sanity check, a per‑galaxy NFW halo fit is also shown (not apples‑to‑apples to global models but useful to confirm the binning and baseline).
 
-![Milky Way rotation curve (Gaia bins ±1σ): Observed vs. GR (baryons), MOND (simple), LogTail (SPARC‑global), and NFW (best fit)](figs/mw_rc_compare.png)
+![Milky Way rotation curve (Gaia bins ±1σ): Observed vs. GR (baryons), MOND (simple), LogTail (SPARC‑global), and NFW (best fit)](figs/mw_rc_compare_v2.png)
 
 Figure MW‑1. Milky Way rotation‑curve comparison at ΔR = 0.1 kpc. Points show Gaia‑binned v_obs(R) with ±1σ error bars; curves show GR (baryons‑only V_bar; recomputed from the fitted MN+Hern parameters), MOND (simple interpolating function, a0≈1.2×10⁻¹⁰ m/s² with proper unit conversion), LogTail (SPARC‑global: v0=140, rc=15, r0=3, Δ=4), and a best‑fit NFW halo. All curves are extrapolated from R=0 to slightly beyond the last star (ΔR=0.1 kpc spacing). A GR‑only panel is available in `figs/mw_gr_only.png`.
 
@@ -269,7 +269,7 @@ py -u rigor/scripts/add_models_and_tests.py \
 py -u rigor/scripts/plot_mw_rc_compare.py \
   --pred_csv "out/mw/results_0p1/predictions_with_LogTail.csv" \
   --logtail_global "v0=140,rc=15,r0=3,delta=4" \
-  --out_png  "figs/mw_rc_compare.png"
+  --out_png  "figs/mw_rc_compare_v2.png"
 
 # GR-only sanity plot
 py -u rigor/scripts/plot_mw_gr_only.py \
@@ -292,7 +292,7 @@ We compute curved RAR statistics in log space, measuring the **orthogonal** scat
 
 The model’s RAR is necessarily tighter than the data (it is a deterministic curve with no measurement noise), but the **shape and curvature are consistent** with the observed locus. The method and bins are documented in the analysis utility.&#x20;
 
-![RAR: observed vs model with median curves](figs/rar_obs_vs_model.png)
+![RAR: observed vs model with median curves](figs/rar_obs_vs_model_v2.png)
 
 *Figure 2. Radial‑acceleration relation. Grey hexes: observed $(\log g_\mathrm{bar},\log g_\mathrm{obs})$; blue: observed median; red: LogTail median for $(\log g_\mathrm{bar},\log g_\mathrm{mod})$. Source: `out/analysis/type_breakdown/rar_logtail.csv` and curved‑scatter utilities.*
 
@@ -313,7 +313,7 @@ Using catalog‑anchored baryonic masses (MRT‑based build) and model $v_{\rm f
 
 *(Reviewer note: the BTFR JSONs in the current run are produced by the corrected, MRT‑anchored pipeline; the two‑form protocol reports both $\alpha$ and $\alpha_{\rm from\,\beta}$ with bootstrap CIs.)*
 
-![BTFR: observed vs LogTail (two panels with fitted slopes)](figs/btfr_two_panel.png)
+![BTFR: observed vs LogTail (two panels with fitted slopes)](figs/btfr_two_panel_v2.png)
 
 *Figure 3. BTFR using catalog‑anchored $M_b$. Left: observed $v_\mathrm{flat}$; right: LogTail $v_\mathrm{flat}$. Lines show the fitted $\log M_b = \alpha\,\log v + \beta$ relation with slopes from the JSON artifacts.*
 
@@ -328,11 +328,11 @@ The LogTail tail reproduces a **$1/R$** excess surface density with physically r
 
 These values are computed from the best‑fit LogTail parameters and are available in the lensing comparison JSON; the code supports direct amplitude ratio tests against stacked datasets when provided.&#x20;
 
-![LogTail lensing shape and amplitudes](figs/lensing_logtail_shape.png)
+![LogTail lensing shape and amplitudes](figs/lensing_logtail_shape_v2.png)
 
 *Figure 4. Predicted $\\Delta\\Sigma(R)$ for the LogTail tail (log–log). Points at 50 and 100 kpc indicate amplitudes reported in the JSON comparison file.*
 
-![Shear vs CMB lensing amplitude](figs/shear_vs_phiphi.png)
+![Shear vs CMB lensing amplitude](figs/shear_vs_phiphi_v2.png)
 
 *Figure 5. DES/KiDS shear amplitude proxy $A_\\mathrm{shear}$ vs. Planck $\\phi\\phi$ amplitude with uncertainties. Source: `out/lensing/kids_b21/combined/shear_amp_summary.json`.*
 
@@ -348,7 +348,7 @@ Treating Planck 2018 TT bandpowers agnostically, we fit three orthogonal “enve
 
 The CMB‑marginalized **lensing reconstruction amplitude** is consistent with unity after proper normalization (fiducial $L^4C_L^{\\phi\\phi}/2\\pi$ conversion prior to binning), $\\alpha_{\\phi}\\approx 1$ with a few‑percent uncertainty (JSON artifact alongside the envelopes).
 
-![TTTEEE envelope null summary](figs/cmb_tttee_envelope.png)
+![TTTEEE envelope null summary](figs/cmb_tttee_envelope_v2.png)
 
 *Figure 6. TTTEEE envelope lensing‑like amplitude: gaussian width depiction with $\\sigma_A$ and $\\approx 95\%$ band (2$\\sigma$), with $A_{95}$ markers. Source: `out/cmb_envelopes_tttee/cmb_envelope_lens.json`.*
 
@@ -371,9 +371,9 @@ The CMB‑marginalized **lensing reconstruction amplitude** is consistent with u
 * **Outer slopes:** Per‑galaxy $ {\rm d}\ln v / {\rm d}\ln R$ in the outer fraction reflects flatness under LogTail (exported in the *outer\_slopes* table).
 * **Lensing slope:** $-1$ exactly within numerical precision for the tail component.&#x20;
 
-![5-fold CV test medians](figs/cv_medians_bar.png)
+![5-fold CV test medians](figs/cv_medians_bar_v2.png)
 
-![Outer slope distribution](figs/outer_slopes_hist.png)
+![Outer slope distribution](figs/outer_slopes_hist_v2.png)
 
 *(Implementation of the RAR and lensing diagnostics is in the analysis utilities.)*&#x20;
 

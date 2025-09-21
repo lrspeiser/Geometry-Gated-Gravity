@@ -129,7 +129,7 @@ def plot_rotation_curve_overlays():
     handles, labels = axes[0].get_legend_handles_labels()
     fig.legend(handles, labels, loc="lower center", ncol=5, frameon=False)
     fig.suptitle("Rotation curves: observed vs GR(baryons), MOND, DM-like, LogTail")
-    savefig(FIG_DIR / "rc_overlays_examples.png")
+    savefig(FIG_DIR / "rc_overlays_examples_v2.png")
 
 
 def plot_rar_obs_vs_model():
@@ -169,7 +169,7 @@ def plot_rar_obs_vs_model():
     ax.set_ylabel(r"log10 g (same units)")
     ax.set_title("RAR: observed vs model")
     ax.legend(frameon=False)
-    savefig(FIG_DIR / "rar_obs_vs_model.png")
+    savefig(FIG_DIR / "rar_obs_vs_model_v2.png")
 
 
 def plot_btfr_two_panel():
@@ -226,7 +226,7 @@ def plot_btfr_two_panel():
     ax2.set_title(f"LogTail BTFR (slope α≈{a2:.2f})")
     ax2.set_xlabel("log10 v_flat (km/s)")
 
-    savefig(FIG_DIR / "btfr_two_panel.png")
+    savefig(FIG_DIR / "btfr_two_panel_v2.png")
 
 
 def plot_lensing_shapes():
@@ -258,7 +258,7 @@ def plot_lensing_shapes():
     ax.set_ylabel(r"ΔΣ (Msun/kpc²)")
     ax.set_title("Galaxy–galaxy lensing shape (LogTail tail)")
     ax.legend(frameon=False)
-    savefig(FIG_DIR / "lensing_logtail_shape.png")
+    savefig(FIG_DIR / "lensing_logtail_shape_v2.png")
 
 
 def plot_cv_medians():
@@ -275,7 +275,7 @@ def plot_cv_medians():
     ax.set_ylabel("Median closeness (%)")
     ax.set_title("5-fold CV: LogTail test medians by fold")
     ax.legend(frameon=False)
-    savefig(FIG_DIR / "cv_medians_bar.png")
+    savefig(FIG_DIR / "cv_medians_bar_v2.png")
 
 
 def plot_outer_slopes_hist():
@@ -292,7 +292,7 @@ def plot_outer_slopes_hist():
     ax.set_ylabel("Count")
     ax.set_title("Outer slope distribution")
     ax.legend(frameon=False)
-    savefig(FIG_DIR / "outer_slopes_hist.png")
+    savefig(FIG_DIR / "outer_slopes_hist_v2.png")
 
 
 def plot_shear_amp_vs_phiphi():
@@ -326,7 +326,7 @@ def plot_shear_amp_vs_phiphi():
     except Exception:
         pass
     ax.legend(frameon=False)
-    savefig(FIG_DIR / "shear_vs_phiphi.png")
+    savefig(FIG_DIR / "shear_vs_phiphi_v2.png")
 
 if __name__ == "__main__":
     # Generate all standard paper figures if inputs exist; each function is no-op if missing.
@@ -379,7 +379,7 @@ def plot_cmb_envelope_summary():
     ax.set_yticks([])
     ax.set_title(f"TTTEEE envelope null: σ_A≈{sigma_A:.4f}, 95%≈±{A95:.4f}")
     ax.legend(frameon=False)
-    savefig(FIG_DIR / "cmb_tttee_envelope.png")
+    savefig(FIG_DIR / "cmb_tttee_envelope_v2.png")
 
 
 def write_logtail_only_artifacts():

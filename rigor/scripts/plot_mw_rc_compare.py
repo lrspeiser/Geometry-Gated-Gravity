@@ -125,7 +125,7 @@ def _fit_nfw_params(R: np.ndarray, Vobs: np.ndarray, Vbar: np.ndarray) -> tuple[
 def main():
     ap = argparse.ArgumentParser(description='Plot Milky Way rotation curve: Observed vs GR(baryons) vs MOND vs LogTail vs NFW (DM).')
     ap.add_argument('--pred_csv', default=str(Path('out')/'mw'/'results_logtail_only'/'predictions_with_LogTail.csv'))
-    ap.add_argument('--out_png', default=str(Path('figs')/'mw_rc_compare.png'))
+    ap.add_argument('--out_png', default=str(Path('figs')/'mw_rc_compare_v2.png'))
     ap.add_argument('--a0', type=float, default=1.2e-10, help='MOND a0 (m/s^2)')
     ap.add_argument('--logtail_global', type=str, default='', help='SPARC-global params v0=...,rc=...,r0=...,delta=... (required)')
     ap.add_argument('--logtail_alt', type=str, default='', help='Alternate LogTail params (e.g., cluster-friendly) v0=...,rc=...,r0=...,delta=...')
