@@ -128,6 +128,7 @@ def main():
     ap.add_argument('--out_png', default=str(Path('figs')/'mw_rc_compare.png'))
     ap.add_argument('--a0', type=float, default=1.2e-10, help='MOND a0 (m/s^2)')
     ap.add_argument('--logtail_global', type=str, default='', help='SPARC-global params v0=...,rc=...,r0=...,delta=... (required)')
+    ap.add_argument('--logtail_alt', type=str, default='', help='Alternate LogTail params (e.g., cluster-friendly) v0=...,rc=...,r0=...,delta=...')
     ap.add_argument('--only_global', action='store_true', help='If set, suppress MW-refit LogTail curve')
     ap.add_argument('--meta_json', type=str, default=str(Path('out')/'mw'/'mw_predictions_by_radius.meta.json'), help='Meta JSON with baryon fit params (MN+Hern)')
     ap.add_argument('--extrap_frac', type=float, default=1.1, help='Extend curves to extrap_frac * R_max')
@@ -174,6 +175,13 @@ def main():
             Vlt_global = _logtail_predict(Vbar_ext, R_ext, p['v0'], p['rc'], p['r0'], p['d'])
         except Exception:
             Vlt_global = None
+    Vlt_alt = None
+    if args.logtail_alt:
+        try:
+            p2 = _parse_fixed(args.logtail_alt)
+            Vlt_alt = _logtail_predict(Vbar_ext, R_ext, p2['v0'], p2['rc'], p2['r0'], p2['d'])
+        except Exception:
+            Vlt_alt = None
 
     # Plot
     fig, ax = plt.subplots(figsize=(7.8, 5.2))
@@ -188,6 +196,8 @@ def main():
     ax.plot(R_ext, Vmond_ext,'--', color='C3', lw=2.0, label='MOND (simple)')
     if Vlt_global is not None:
         ax.plot(R_ext, Vlt_global, '-', color='C0', lw=2.2, label='LogTail (SPARC global)')
+    if Vlt_alt is not None:
+        ax.plot(R_ext, Vlt_alt,  '--', color='C0', lw=2.0, alpha=0.9, label='LogTail (alt)')
     if (Vnfw_ext is not None) and np.isfinite(Vnfw_ext).any():
         ax.plot(R_ext, Vnfw_ext,'-.', color='C1', lw=2.0, label='NFW (best fit)')
     # Optionally show MW refit on bins only (suppressed by --only_global)
