@@ -60,6 +60,7 @@ def main():
     ap.add_argument('--q_slope', type=float, default=1.0)
     ap.add_argument('--chi', type=float, default=0.0)
     ap.add_argument('--h_aniso_kpc', type=float, default=0.3)
+    ap.add_argument('--bc_robin_lambda', type=float, default=0.0, help='Robin BC strength (1/kpc); 0 disables')
     # NEW A1/A2 global controls
     ap.add_argument('--use_saturating_mobility', action='store_true')
     ap.add_argument('--gsat_kms2_per_kpc', type=float, default=2000.0)
@@ -69,11 +70,16 @@ def main():
     ap.add_argument('--rho_ref_Msun_per_kpc3', type=float, default=1.0e6)
     ap.add_argument('--env_L_kpc', type=float, default=150.0)
     # B-input levers
-    ap.add_argument('--clump', type=float, default=1.0, help='Gas clumping factor C; uses n_e_eff = sqrt(C) n_e')
+    ap.add_argument('--clump', type=float, default=1.0, help='Uniform gas clumping C; applies n_e -> sqrt(C) * n_e if profile not given')
+    ap.add_argument('--clump_profile_csv', type=str, default=None, help='CSV with r_kpc,C for radial clumping; overrides uniform --clump')
+    ap.add_argument('--stars_csv', type=str, default=None, help='Optional stars_profile.csv path (r_kpc,rho_star_Msun_per_kpc3); default: data/clusters/<CL>/stars_profile.csv if present')
     args = ap.parse_args()
 
     cdir = Path(args.base)/args.cluster
-    Z, R, rho = cluster_map_from_csv(cdir, R_max=args.Rmax, Z_max=args.Zmax, NR=args.NR, NZ=args.NZ, clump=float(args.clump))
+    Z, R, rho = cluster_map_from_csv(cdir, R_max=args.Rmax, Z_max=args.Zmax, NR=args.NR, NZ=args.NZ,
+                                     clump=float(args.clump),
+                                     clump_profile_csv=Path(args.clump_profile_csv) if args.clump_profile_csv else None,
+                                     stars_csv=Path(args.stars_csv) if args.stars_csv else None)
     # Guard taper near boundaries to reduce reflection/suppression
     def _taper_1d(x, frac=0.1):
         xmax = float(np.max(np.abs(x)))
@@ -101,7 +107,8 @@ def main():
                           use_ambient_boost=bool(args.use_ambient_boost),
                           beta_env=float(args.beta_env),
                           rho_ref_Msun_per_kpc3=float(args.rho_ref_Msun_per_kpc3),
-                          env_L_kpc=float(args.env_L_kpc))
+                          env_L_kpc=float(args.env_L_kpc),
+                          bc_robin_lambda=float(args.bc_robin_lambda))
     phi, gR, gZ = solve_axisym(R, Z, rho, params)
 
     # Spherical radial projection of PDE field onto shells r = const

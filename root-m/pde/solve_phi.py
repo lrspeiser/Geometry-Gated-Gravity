@@ -72,6 +72,9 @@ class SolverParams:
     omega: float = 0.6   # relaxation
     floor_kms2: float = 50.0  # sets ε via ε = floor_kms2^2/rc
 
+    # Optional Robin boundary condition strength (1/kpc). If 0, disabled.
+    bc_robin_lambda: float = 0.0
+
 
 def _grad_RZ(phi: np.ndarray, dR: float, dZ: float):
     # central differences, Neumann at boundaries (zero-gradient)
@@ -205,6 +208,16 @@ def solve_axisym(R: np.ndarray, Z: np.ndarray, rho_Msun_kpc3: np.ndarray, params
 
                 phi_new = rhs / diag
                 phi[j, i] = (1.0 - params.omega)*phi[j, i] + params.omega*phi_new
+
+        # Optional Robin boundary update (∂n φ + λ φ = 0) on outer box
+        if params.bc_robin_lambda and params.bc_robin_lambda > 0.0:
+            lam = float(params.bc_robin_lambda)
+            # R = Rmax (right edge)
+            phi[:, -1] = phi[:, -2] / (1.0 + lam * dR)
+            # Z = +Zmax (top)
+            phi[-1, :] = phi[-2, :] / (1.0 + lam * dZ)
+            # Z = -Zmax (bottom)
+            phi[0, :]  = phi[1, :]  / (1.0 + lam * dZ)
 
         # check residual (L2 norm of update)
         diff = np.linalg.norm(phi - phi_old) / (np.linalg.norm(phi_old) + 1e-12)

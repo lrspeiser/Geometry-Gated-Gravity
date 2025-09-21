@@ -77,6 +77,7 @@ def main():
     ap.add_argument('--q_slope', type=float, default=1.0)
     ap.add_argument('--chi', type=float, default=0.0)
     ap.add_argument('--h_aniso_kpc', type=float, default=0.3)
+    ap.add_argument('--bc_robin_lambda', type=float, default=0.0, help='Robin BC strength (1/kpc); 0 disables')
     # NEW A1/A2 global controls
     ap.add_argument('--use_saturating_mobility', action='store_true')
     ap.add_argument('--gsat_kms2_per_kpc', type=float, default=2000.0)
@@ -282,7 +283,8 @@ def main():
                           use_ambient_boost=bool(args.use_ambient_boost),
                           beta_env=float(args.beta_env),
                           rho_ref_Msun_per_kpc3=float(args.rho_ref_Msun_per_kpc3),
-                          env_L_kpc=float(args.env_L_kpc))
+                          env_L_kpc=float(args.env_L_kpc),
+                          bc_robin_lambda=float(args.bc_robin_lambda))
     phi, gR, gZ = solve_axisym(R, Z, rho, params)
 
     # Predict v(R) at observed radii
