@@ -65,7 +65,6 @@ def main():
     ap.add_argument('--rd_to_hz', type=float, default=0.1)
     ap.add_argument('--hz_floor_kpc', type=float, default=0.3)
     ap.add_argument('--cv', type=int, default=0, help='If >0, perform K-fold CV across galaxies to choose (S0, rc)')
-    ap.add_argument('--cv', type=int, default=0, help='If >0, perform K-fold CV across galaxies to choose (S0, rc)')
     ap.add_argument('--S0_grid', type=str, default=None, help='Comma-separated S0 grid, e.g., 3e-7,1e-6,3e-6')
     ap.add_argument('--rc_grid', type=str, default=None, help='Comma-separated rc grid in kpc, e.g., 10,15,20')
     ap.add_argument('--gal_subset', type=str, default=None, help='Comma-separated subset of galaxy names for CV')
