@@ -13,7 +13,14 @@ import argparse
 
 G = 4.300917270e-6  # (kpc km^2 s^-2 Msun^-1)
 
-from .gating_common import v_tail2_rootm_rhoaware
+import importlib.util as _ilu, sys as _sys
+from pathlib import Path as _P
+_pkg_dir = _P(__file__).resolve().parent
+_spec = _ilu.spec_from_file_location('gating_common', str(_pkg_dir/'gating_common.py'))
+_gm = _ilu.module_from_spec(_spec); _sys.modules['gating_common'] = _gm
+_spec.loader.exec_module(_gm)
+
+v_tail2_rootm_rhoaware = _gm.v_tail2_rootm_rhoaware
 
 
 def spherical_rho_from_vbar(R_kpc, Vbar_kms):

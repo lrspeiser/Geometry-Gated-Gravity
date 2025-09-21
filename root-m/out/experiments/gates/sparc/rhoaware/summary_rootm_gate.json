@@ -1,0 +1,11 @@
+{
+  "A_kms": 160.0,
+  "rc_kpc": 10.0,
+  "rho0_Msun_kpc3": 10000000.0,
+  "q": 1.0,
+  "global_all_median": 80.83961627226753,
+  "outer_median": 73.58126073988701,
+  "files": {
+    "predictions_by_radius_rootm_gate": "root-m\\out\\experiments\\gates\\sparc\\rhoaware\\sparc_predictions_by_radius_rootm_gate.csv"
+  }
+}

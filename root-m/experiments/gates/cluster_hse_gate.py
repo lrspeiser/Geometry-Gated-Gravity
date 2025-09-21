@@ -14,11 +14,16 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 import argparse
 
-from .gating_common import (
-    v_tail2_rootm_rhoaware,
-    v_tail2_rootm_gradaware,
-    v_tail2_rootm_pressaware,
-)
+import importlib.util as _ilu, sys as _sys
+from pathlib import Path as _P
+_pkg_dir = _P(__file__).resolve().parent
+_spec = _ilu.spec_from_file_location('gating_common', str(_pkg_dir/'gating_common.py'))
+_gm = _ilu.module_from_spec(_spec); _sys.modules['gating_common'] = _gm
+_spec.loader.exec_module(_gm)
+
+v_tail2_rootm_rhoaware = _gm.v_tail2_rootm_rhoaware
+v_tail2_rootm_gradaware = _gm.v_tail2_rootm_gradaware
+v_tail2_rootm_pressaware = _gm.v_tail2_rootm_pressaware
 
 # constants
 G = 4.300917270e-6  # (kpc km^2 s^-2 Msun^-1)
@@ -88,7 +93,10 @@ def run_cluster(cluster: str, base: Path, outbase: Path, model: str,
         rho_star = np.zeros_like(r)
 
     rho_b = rho_gas + rho_star
+    # ensure rho_b and Mb align to same r sampling for tails
     Mb = enclosed_mass(r, rho_b)
+    # resample rho_b on r where Mb defined (already same length), but guard any edge effects
+    rho_b = np.interp(r, r, rho_b)
 
     # Choose gating model
     if model == 'rhoaware':

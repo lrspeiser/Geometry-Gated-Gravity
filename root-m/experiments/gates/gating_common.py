@@ -12,12 +12,11 @@ EPS = 1e-30
 
 def _moving_avg(y, win):
     win = max(1, int(win))
-    if win <= 1:
-        return np.asarray(y, float)
-    k = win // 2
-    pad = np.pad(y, (k, k), mode='edge')
-    c = np.cumsum(pad, dtype=float)
-    return (c[win:] - c[:-win]) / win
+    y = np.asarray(y, float)
+    if win <= 1 or y.size == 0:
+        return y
+    kernel = np.ones(win, dtype=float) / float(win)
+    return np.convolve(y, kernel, mode='same')
 
 
 def smooth_profile(r_kpc, y, s_kpc=50.0):
