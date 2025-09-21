@@ -82,9 +82,9 @@ def main():
         rho_mid = rho[z0_idx, :]
         rho_at_eval = np.interp(r_eval, Rg, rho_mid, left=rho_mid[0], right=rho_mid[-1])
         Mb = spherical_M_from_vbar(r_eval, vbar)
-        v2_tail = v_tail2_rootm_rhoaware(r_eval, Mb, rho_at_eval,
-                                         A_kms=args.A_kms, Mref_Msun=6e10, rc_kpc=args.rc_kpc,
-                                         rho0_Msun_kpc3=args.rho0, q=args.q, s_kpc=5.0)
+        # Direct rho-aware gate at evaluation radii (no extra smoothing to preserve lengths)
+        dens_fac = (args.rho0 / (rho_at_eval + args.rho0))**(args.q)
+        v2_tail = (args.A_kms**2) * np.sqrt(Mb / 6e10) * dens_fac * (r_eval / (r_eval + args.rc_kpc))
         vpred = np.sqrt(np.clip(vbar**2 + v2_tail, 0.0, None))
         err_pct = 100.0 * np.abs(vpred - vobs) / np.maximum(vobs, 1e-9)
         pct_close = 100.0 - err_pct
