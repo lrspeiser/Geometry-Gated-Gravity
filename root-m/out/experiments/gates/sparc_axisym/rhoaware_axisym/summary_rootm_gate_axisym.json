@@ -1,0 +1,74 @@
+{
+  "A_kms": 160.0,
+  "rc_kpc": 10.0,
+  "rho0_Msun_kpc3": 10000000.0,
+  "q": 1.0,
+  "hz_kpc": 0.3,
+  "outer_median": 76.10361408966885,
+  "global_all_median": 80.24703253089854,
+  "per_galaxy": [
+    {
+      "galaxy": "CamB",
+      "N": 9,
+      "outer_median_percent_close": 65.71025411960079
+    },
+    {
+      "galaxy": "D631-7",
+      "N": 16,
+      "outer_median_percent_close": 66.62562813362253
+    },
+    {
+      "galaxy": "DDO154",
+      "N": 12,
+      "outer_median_percent_close": 65.53551085077748
+    },
+    {
+      "galaxy": "DDO161",
+      "N": 31,
+      "outer_median_percent_close": 97.83484923269708
+    },
+    {
+      "galaxy": "ESO079-G014",
+      "N": 15,
+      "outer_median_percent_close": 95.87738448340401
+    },
+    {
+      "galaxy": "ESO116-G012",
+      "N": 15,
+      "outer_median_percent_close": 78.41772649246101
+    },
+    {
+      "galaxy": "ESO563-G021",
+      "N": 30,
+      "outer_median_percent_close": 94.73609404248124
+    },
+    {
+      "galaxy": "F563-1",
+      "N": 17,
+      "outer_median_percent_close": 67.91859709681573
+    },
+    {
+      "galaxy": "F563-V2",
+      "N": 10,
+      "outer_median_percent_close": 68.00614837087723
+    },
+    {
+      "galaxy": "F568-1",
+      "N": 12,
+      "outer_median_percent_close": 62.46406484700448
+    },
+    {
+      "galaxy": "F568-3",
+      "N": 18,
+      "outer_median_percent_close": 87.8157319466782
+    },
+    {
+      "galaxy": "F571-8",
+      "N": 13,
+      "outer_median_percent_close": 68.94268378010223
+    }
+  ],
+  "files": {
+    "predictions_by_radius_rootm_gate_axisym": "root-m\\out\\experiments\\gates\\sparc_axisym\\rhoaware_axisym\\sparc_predictions_by_radius_rootm_gate_axisym.csv"
+  }
+}

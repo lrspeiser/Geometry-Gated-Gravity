@@ -41,16 +41,15 @@ def main():
         pass
     report['previous'] = prev
 
-    # New gated clusters (rho-aware)
+    # New gated clusters (rho-aware/gradaware/pressaware)
     gated = {}
-    try:
-        gated['ABELL_0426_rhoaware'] = load_json('root-m/out/experiments/gates/rhoaware/ABELL_0426/metrics.json')
-    except Exception:
-        pass
-    try:
-        gated['ABELL_1689_rhoaware'] = load_json('root-m/out/experiments/gates/rhoaware/ABELL_1689/metrics.json')
-    except Exception:
-        pass
+    for model in ['rhoaware','gradaware','pressaware']:
+        for cluster in ['ABELL_0426','ABELL_1689']:
+            p = f'root-m/out/experiments/gates/{model}/{cluster}/metrics.json'
+            try:
+                gated[f'{cluster}_{model}'] = load_json(p)
+            except Exception:
+                pass
     report['gated'] = gated
 
     # SPARC baselines and gated
@@ -65,6 +64,10 @@ def main():
         pass
     try:
         sparc['gated_rhoaware'] = load_json('root-m/out/experiments/gates/sparc/rhoaware/summary_rootm_gate.json')
+    except Exception:
+        pass
+    try:
+        sparc['gated_rhoaware_axisym'] = load_json('root-m/out/experiments/gates/sparc_axisym/rhoaware_axisym/summary_rootm_gate_axisym.json')
     except Exception:
         pass
     report['sparc'] = sparc
