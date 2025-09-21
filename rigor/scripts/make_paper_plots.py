@@ -76,6 +76,24 @@ def plot_rotation_curve_overlays():
         return None
     galaxies = pick_example_galaxies(df, n=6)
 
+    # Optional alternate LogTail params for overlay
+    alt_cfg = FIG_DIR / "logtail_alt.json"
+    alt = None
+    if alt_cfg.exists():
+        try:
+            alt = json.loads(alt_cfg.read_text())
+            # expect keys: v0, rc, r0, delta
+            _ = (float(alt.get('v0')), float(alt.get('rc')), float(alt.get('r0')), float(alt.get('delta')))
+        except Exception:
+            alt = None
+
+    def _vlog(r, vbar, p):
+        vbar2 = np.maximum(np.asarray(vbar), 0.0)**2
+        rr = np.maximum(np.asarray(r), 1e-9)
+        S = 0.5*(1.0 + np.tanh((rr - float(p['r0']))/max(float(p['delta']), 1e-6)))
+        tail = (float(p['v0'])**2) * (rr/(rr + max(float(p['rc']), 1e-6))) * S
+        return np.sqrt(np.maximum(vbar2 + np.maximum(tail, 0.0), 0.0))
+
     fig, axes = plt.subplots(2, 3, figsize=(16, 9), sharex=False, sharey=False)
     axes = axes.ravel()
 
@@ -96,7 +114,13 @@ def plot_rotation_curve_overlays():
         ax.plot(r, vmond, lw=2, ls="-.", c="#2ca02c", label="MOND (simple)")
         if np.isfinite(vhalo):
             ax.plot([r.min(), r.max()], [vhalo, vhalo], lw=2, ls=":", c="#9467bd", label="DM-like (isothermal)")
-        ax.plot(r, vlog, lw=2.5, c="#d62728", label="LogTail")
+        ax.plot(r, vlog, lw=2.5, c="#d62728", label="LogTail (SPARC global)")
+        if alt is not None:
+            try:
+                v2 = _vlog(r, vbar, alt)
+                ax.plot(r, v2, lw=2.0, ls='--', c="#d62728", alpha=0.9, label="LogTail (alt)")
+            except Exception:
+                pass
         ax.set_title(str(gal))
         ax.set_xlabel("R (kpc)")
         ax.set_ylabel("v (km/s)")
