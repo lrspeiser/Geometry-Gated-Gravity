@@ -107,7 +107,11 @@ def axisym_map_from_rotmod_parquet(parquet_path: Path, galaxy: str,
                                    hz_kpc: float=0.3,
                                    hz_gamma: float=0.0,
                                    bulge_model: str = 'hernquist',
-                                   bulge_a_fallback_kpc: float = 0.7) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+                                   bulge_a_fallback_kpc: float = 0.7,
+                                   all_tables_parquet: Path | None = None,
+                                   hz_from_rd: bool = False,
+                                   rd_to_hz: float = 0.1,
+                                   hz_floor_kpc: float = 0.3) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     Build axisymmetric rho_b(R,z) for a single SPARC galaxy from rotmod components in a parquet file.
     The parquet is expected to have: galaxy, R_kpc, Vgas_kms, Vdisk_kms, Vbul_kms
@@ -138,7 +142,23 @@ def axisym_map_from_rotmod_parquet(parquet_path: Path, galaxy: str,
     Rg = np.linspace(0.0, R_max, NR)
     Zg = np.linspace(-Z_max, Z_max, NZ)
 
-    rho = axisym_rho_from_sigma(Rg, Zg, R, Ssum, hz_kpc, hz_gamma=hz_gamma)
+    # Determine hz from Rd if requested
+    hz_eff = float(hz_kpc)
+    if hz_from_rd and all_tables_parquet is not None:
+        try:
+            tt = pd.read_parquet(all_tables_parquet)
+            # Accept several possible column names for Rd
+            name_col = next((c for c in ('galaxy','Galaxy','name','Name','gal_name') if c in tt.columns), None)
+            rd_col = next((c for c in ('Rdisk','Rd','R_d_kpc','Rd_kpc') if c in tt.columns), None)
+            if name_col is not None and rd_col is not None:
+                rows = tt[tt[name_col] == galaxy]
+                if not rows.empty and pd.notnull(rows.iloc[0][rd_col]):
+                    Rd = float(rows.iloc[0][rd_col])
+                    hz_eff = max(float(hz_floor_kpc), float(rd_to_hz) * Rd)
+        except Exception:
+            pass
+
+    rho = axisym_rho_from_sigma(Rg, Zg, R, Ssum, hz_eff, hz_gamma=hz_gamma)
 
     # Optional spherical Hernquist bulge
     if bulge_model.lower() == 'hernquist':
