@@ -60,6 +60,8 @@ def main():
     ap.add_argument('--S0_grid', type=str, default=None, help='Comma-separated S0 grid, e.g., 3e-7,1e-6,3e-6')
     ap.add_argument('--rc_grid', type=str, default=None, help='Comma-separated rc grid in kpc, e.g., 10,15,20')
     ap.add_argument('--gal_subset', type=str, default=None, help='Comma-separated subset of galaxy names for CV')
+    ap.add_argument('--cv_max_iter', type=int, default=400, help='Max solver iterations per galaxy during CV')
+    ap.add_argument('--cv_tol', type=float, default=5e-5, help='Solver tolerance during CV')
     args = ap.parse_args()
 
     in_path = Path(args.in_path)
@@ -131,7 +133,7 @@ def main():
                                                                                 hz_kpc=args.hz_kpc,
                                                                                 bulge_model='hernquist',
                                                                                 bulge_a_fallback_kpc=0.7)
-                            params = SolverParams(S0=float(S0), rc_kpc=float(rc))
+                            params = SolverParams(S0=float(S0), rc_kpc=float(rc), max_iter=int(args.cv_max_iter), tol=float(args.cv_tol))
                             phi, gR, gZ = solve_axisym(Rg, Zg, rho, params)
                             r_eval = per_gal[gname]['r']
                             vbar = per_gal[gname]['vbar']
