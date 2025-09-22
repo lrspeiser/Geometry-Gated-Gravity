@@ -18,7 +18,7 @@ We explore a different lever: **leave GR’s inner regime intact and add a *gate
 
 ## 2. Models
 
-### 2.0 Geometry‑Gated Gravity (G³): field law and geometry response
+### 2.0 Geometry‑Gated Gravity G³: field law and geometry response
 
 We model a baryon‑sourced scalar field obeying
 
@@ -49,7 +49,7 @@ $$
 
 Here $f_{\rm nt}(r)=\min\{f_0 (r/r_{500})^n, f_{\rm nt}^{\max}\}$ is optional non‑thermal pressure support (defaults off).
 
-### 2.2 LogTail (disk surrogate; additive tail in $v^2$)
+### 2.2 LogTail disk surrogate
 
 We parameterize the predicted circular speed as
 
@@ -65,7 +65,7 @@ Throughout this paper we use $\Sigma \equiv \Sigma_{\mathrm{lens}}=\mu(1+\gamma)
 
 ---
 
-### 2.3 Theory and relation to LogTail (optional background)
+### 2.3 Theory and relation to LogTail
 
 We show that the LogTail phenomenology arises from a kinetically screened scalar (k‑mouflage) whose non‑linear kinetic term forces a universal $1/r$ fifth‑force profile in low‑density galaxy outskirts, while screening suppresses the field in high‑surface‑density inner regions. This delivers (i) the logarithmic potential tail, (ii) a surface‑density gate that is a derived environmental response (not an ad‑hoc switch), and (iii) a small, nearly scale‑independent lensing–dynamics slip $\Sigma_{\text{lens}}\lesssim 1$.
 
@@ -139,7 +139,7 @@ $$
 \nabla\!\cdot\!\big(\mathcal{P}_Y\,\nabla\phi\big)= -\frac{\beta}{M_{\rm Pl}}\rho_b\,.
 $$
 
-The scalar response is suppressed when $\mathcal{P}_Y$ is large (screened) and active when $\mathcal{P}_Y$ is small (unscreened). In a disk galaxy the controlling observable is the baryon surface density $\Sigma_b(R)$. Screening turns on above a threshold $\Sigma_\star$ determined by the kinetic scale and coupling; we therefore identify the empirical gate with a derived environmental switch
+The scalar response is suppressed when P_Y is large (screened) and active when P_Y is small (unscreened). In a disk galaxy the controlling observable is the baryon surface density Sigma_b(R). Screening turns on above a threshold Sigma_star determined by the kinetic scale and coupling; we therefore identify the empirical gate with a derived environmental switch
 
 $$
 \boxed{\ 
@@ -192,11 +192,9 @@ Matching our empirical $\Sigma\simeq 0.97$ fixes the same parameter combination 
 
 #### 2.2.5 Consistency with local tests and waves
 
-• Solar‑System & PPN: high $\Sigma_b$ $\Rightarrow$ large $Y$ $\Rightarrow$ large $\mathcal{P}_Y$ $\Rightarrow$ fifth‑force suppression; $\mu\to 1$, $\gamma\to 1$, $\Sigma_{\rm lens}\to 1$.
-
-• Stability: $\mathcal{P}_Y>0$, $\mathcal{P}_Y+2Y\mathcal{P}_{YY}>0$ and $c_s^2=\tfrac12$ ensure a healthy scalar sector where the modification operates.
-
-• GW constraint: $c_T=1$ (k‑essence), consistent with GW170817.
+- Solar-System & PPN: high Sigma_b => large Y => large P_Y => fifth-force suppression; mu -> 1, gamma -> 1, Sigma_lens -> 1.
+- Stability: P_Y > 0, and P_Y + 2Y P_YY > 0; scalar sound speed c_s^2 ≈ 1/2 (healthy sector where modification operates).
+- GW constraint: c_T = 1 (k-essence), consistent with GW170817.
 
 ---
 
@@ -216,20 +214,6 @@ Near‑term empirical discriminants (no refits):
 (i) Gate driver—regress the fitted gate radius against $\Sigma_b$ vs. $|\nabla\Phi|$: a strong $\Sigma_b$ correlation supports §2.2 or non‑local kernel with state‑dependence; (ii) Slip profile—measure $\Sigma_{\rm lens}(R)$ from 30–300 kpc: flat ($\approx$ constant) favors §2.2; (iii) Mergers—binary prediction of centroid offsets (dielectric) vs. none (k‑mouflage/kernels).
 
 ---
-
-#### (Optional) Appendix A: one‑line back‑of‑the‑envelope
-
-Exterior to the baryons,
-
-$$
-r^2\,\mathcal{P}_Y\,\phi'=Q
-\quad\Rightarrow\quad
-\frac{a_\phi}{a_N}
-=\frac{\beta\phi'/M_{\rm Pl}}{GM_b(<r)/r^2}
-=\frac{\beta Q}{M_{\rm Pl}G M_b(<r)}\frac{1}{\mathcal{P}_Y},
-$$
-
-which makes transparent how (i) the scalar remains effective far outside the baryons (constant $Q$), (ii) screening kills the effect where $\mathcal{P}_Y$ is large, and (iii) a global $v_0$ emerges from universal $(\beta,Q,\Lambda,c_{3/2})$.
 
 ---
 
@@ -352,7 +336,7 @@ Artifacts and plots live under `root-m/out/pde_clusters/<CLUSTER>/` (metrics.jso
 
 Using catalog‑anchored baryonic masses (MRT‑based build) and model $v_{\rm flat}$, the two‑form BTFR fits yield slopes in the expected range. (Fit code in the analysis utilities; the MRT anchoring and name‑normalization prevented the negative‑slope artifacts seen in early, fragile joins.)&#x20;
 
-*(Reviewer note: the BTFR JSONs in the current run are produced by the corrected, MRT‑anchored pipeline; the two‑form protocol reports both $\alpha$ and $\alpha_{\rm from\,\beta}$ with bootstrap CIs.)*
+Reviewer note: the BTFR JSONs in the current run are produced by the corrected, MRT-anchored pipeline; the two-form protocol reports both alpha and alpha_from_beta with bootstrap CIs.
 
 ![BTFR: observed vs LogTail (two panels with fitted slopes)](figs/btfr_two_panel_v2.png)
 
@@ -365,7 +349,7 @@ Using catalog‑anchored baryonic masses (MRT‑based build) and model $v_{\rm f
 The G³ disk surrogate reproduces a **$1/R$** excess surface density with physically reasonable amplitudes:
 
 * **Slope:** $\\mathrm{d}\\log_{10}\\Delta\\Sigma/\\mathrm{d}\\log_{10}R \\approx -1.00$.
-* **Amplitudes:** $\\Delta\\Sigma(50~{\\rm kpc}) \\simeq 2.29\\times 10^7~M_\\odot/{\\rm kpc}^2$, $\\Delta\\Sigma(100~{\\rm kpc}) \\simeq 1.14\\times 10^7$.&#x20;
+* **Amplitudes:** DeltaSigma(50 kpc) ≈ 2.29×10^7 Msun/kpc^2, DeltaSigma(100 kpc) ≈ 1.14×10^7. 
 
 These values are computed from the best‑fit LogTail parameters and are available in the lensing comparison JSON; the code supports direct amplitude ratio tests against stacked datasets when provided.&#x20;
 
@@ -386,7 +370,7 @@ These values are computed from the best‑fit LogTail parameters and are availab
 
 ## 8. CMB bandpower envelopes and lensing $\phi\phi$
 
-Treating Planck 2018 TT bandpowers agnostically, we fit three orthogonal “envelopes”—a lensing‑like smoothing template, a low‑$\ell$ gated kernel, and a high‑$\ell$ void‑envelope. TT alone gives:
+Treating Planck 2018 TT bandpowers agnostically, we fit three orthogonal envelopes — a lensing-like smoothing template, a low-ell gated kernel, and a high-ell void-envelope.
 
 * **Lensing‑like smoothing envelope:** $\\sigma_A\\approx 0.0029$ $\\Rightarrow$ **95% CL $\\lesssim 0.006$** (TT‑only).&#x20;
 * **Low‑$\\ell$ gate:** 95% CL $\\sim 0.037$.&#x20;
@@ -472,10 +456,9 @@ MRT‑anchored pipeline and two‑form fitting in the utilities; outputs `btfr_*
 
 ---
 
-## 15. Methods (condensed)
----
+## 15. Methods
 
-## 14. Figures & tables (recommended)
+## 14. Figures & tables
 
 * Fig. 1: Schematic of the G³ mechanism (geometry‑gated field; additive tail in v^2 in the disk limit).
 * Fig. 2: Outer rotation‑curve medians across galaxies (G³ surrogate vs GR); bar chart of median closeness (from the model summary JSON).
