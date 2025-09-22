@@ -27,8 +27,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-RE_TABLE_LINE = re.compile(r"^\s*(\d+)\s*&\s*\+?\d\d:\d\d:\d\d\.\d+\s*&\s*[-\d:]+\s*&\s*\$([\d\.]+)\\pm[\d\.]+\$\s*&\s*\$([\d\.]+)\\pm[\d\.]+\$\s*&\s*\$([\d\.]+)\\pm[\d\.]+\$")
-# Captures: ID, m_AB, n_ser, Re_kpc
+RE_TABLE_LINE = re.compile(r"^\s*(\d+)\s*&.*\$([\d\.]+)\\pm[\d\.]+\$\s*&\s*\$([\d\.]+)\\pm[\d\.]+\$\s*&\s*\$([\d\.]+)\\pm[\d\.]+\$")
+# Captures: ID, m_AB, n_ser, Re_kpc (more permissive)
 
 G = 4.300917270e-6  # (kpc km^2 s^-2 Msun^-1)
 
@@ -42,13 +42,30 @@ def parse_brightest_from_tex(tex_path: Path) -> dict:
     best = None
     with open(tex_path, 'r', encoding='utf-8', errors='ignore') as f:
         for ln in f:
-            m = RE_TABLE_LINE.search(ln)
-            if not m:
+            if '&' not in ln or '$' not in ln:
                 continue
-            obj_id = int(m.group(1))
-            m_ab = float(m.group(2))
-            n_ser = float(m.group(3))
-            Re_kpc = float(m.group(4))
+            # Use robust split-by-& parsing
+            parts = [p.strip() for p in ln.split('&')]
+            if len(parts) < 6:
+                continue
+            try:
+                obj_id = int(parts[0])
+            except Exception:
+                continue
+            try:
+                m_ab_tok = parts[3]
+                n_ser_tok = parts[4]
+                Re_tok = parts[5]
+                def _val(tok: str) -> float:
+                    tok = tok.replace('$','')
+                    if '\\pm' in tok:
+                        tok = tok.split('\\pm')[0]
+                    return float(tok)
+                m_ab = _val(m_ab_tok)
+                n_ser = _val(n_ser_tok)
+                Re_kpc = _val(Re_tok)
+            except Exception:
+                continue
             rec = dict(id=obj_id, m_ab=m_ab, n_ser=n_ser, Re_kpc=Re_kpc)
             if (best is None) or (m_ab < best['m_ab']):
                 best = rec

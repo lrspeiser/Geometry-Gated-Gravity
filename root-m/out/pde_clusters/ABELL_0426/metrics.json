@@ -1,6 +1,10 @@
 {
   "cluster": "ABELL_0426",
-  "S0": 8e-06,
-  "rc_kpc": 20.0,
-  "temp_median_frac_err": 0.695490181339745
+  "S0_input": 0.00014,
+  "rc_input_kpc": 22.0,
+  "S0_eff": 0.00015432101058976159,
+  "rc_eff_kpc": 35.88643986230288,
+  "r_half_kpc": 79.82458053661247,
+  "sigma_bar_Msun_pc2": 56.639711046557984,
+  "temp_median_frac_err": 0.2791407974161888
 }
