@@ -53,6 +53,11 @@ def main():
     ap.add_argument('--rc_kpc', type=float, default=15.0)
     ap.add_argument('--g0_kms2_per_kpc', type=float, default=1000.0)
     ap.add_argument('--m_exp', type=float, default=1.0)
+    # Geometry-aware global knobs (shape and mild amplitude)
+    ap.add_argument('--rc_gamma', type=float, default=0.0, help='Exponent for rc_eff = rc * (r_half/rc_ref_kpc)^rc_gamma')
+    ap.add_argument('--rc_ref_kpc', type=float, default=30.0, help='Reference size for rc_gamma scaling')
+    ap.add_argument('--sigma_beta', type=float, default=0.0, help='Exponent for S0_eff = S0 * (sigma0/sigma_bar)^sigma_beta')
+    ap.add_argument('--sigma0_Msun_pc2', type=float, default=150.0, help='Reference surface density for sigma_beta (Msun/pc^2)')
     # New physics knobs
     ap.add_argument('--eta', type=float, default=0.0)
     ap.add_argument('--Mref', type=float, default=6.0e10)
@@ -106,8 +111,17 @@ def main():
     wR = _taper_1d(R, frac=0.1).reshape(1,-1)
     rho = rho * (wZ * wR)
 
+    # Geometry scalars from spherical mass built above
+    M_tot = float(M[-1]) if len(M) else 0.0
+    r_half = float(np.interp(0.5*M_tot, M, r_obs)) if M_tot > 0 else float(R[len(R)//4])
+    sigma_bar_kpc2 = (0.5*M_tot) / (np.pi * max(r_half, 1e-9)**2) if r_half > 0 else 0.0
+    sigma_bar_pc2 = sigma_bar_kpc2 / 1.0e6
+    # Effective rc and S0
+    rc_eff = float(args.rc_kpc) * (max(r_half, 1e-12) / max(args.rc_ref_kpc, 1e-12))**float(args.rc_gamma)
+    S0_eff = float(args.S0) * (max(args.sigma0_Msun_pc2, 1e-12) / max(sigma_bar_pc2, 1e-12))**float(args.sigma_beta)
+
     # Solve PDE
-    params = SolverParams(S0=args.S0, rc_kpc=args.rc_kpc, g0_kms2_per_kpc=args.g0_kms2_per_kpc, m_exp=args.m_exp,
+    params = SolverParams(S0=S0_eff, rc_kpc=rc_eff, g0_kms2_per_kpc=args.g0_kms2_per_kpc, m_exp=args.m_exp,
                           eta=float(args.eta), Mref_Msun=float(args.Mref),
                           kappa=float(args.kappa), q_slope=float(args.q_slope),
                           chi=float(args.chi), h_aniso_kpc=float(args.h_aniso_kpc),
@@ -217,7 +231,13 @@ def main():
     od = Path(args.outdir)/args.cluster
     od.mkdir(parents=True, exist_ok=True)
     with open(od/'metrics.json','w') as f:
-        json.dump({'cluster': args.cluster, 'S0': args.S0, 'rc_kpc': args.rc_kpc,
+        json.dump({'cluster': args.cluster,
+                   'S0_input': args.S0,
+                   'rc_input_kpc': args.rc_kpc,
+                   'S0_eff': S0_eff,
+                   'rc_eff_kpc': rc_eff,
+                   'r_half_kpc': r_half,
+                   'sigma_bar_Msun_pc2': sigma_bar_pc2,
                    'temp_median_frac_err': float(frac)}, f, indent=2)
 
     plt.figure(figsize=(11,5))
