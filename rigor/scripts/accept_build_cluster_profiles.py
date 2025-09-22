@@ -125,12 +125,16 @@ def hernquist_rho(r_kpc: np.ndarray, Mtot_Msun: float, a_kpc: float) -> np.ndarr
     return (Mtot_Msun * a_kpc) / (2.0 * np.pi * np.maximum(r, 1e-12) * np.power(r + a_kpc, 3))
 
 
-def write_stars(outdir: Path, r_kpc: np.ndarray, Mtot_Msun: float, a_kpc: float, overwrite: bool=False) -> None:
+def write_stars(outdir: Path, r_kpc: np.ndarray, Mtot_Msun: float, a_kpc: float,
+                overwrite: bool=False,
+                M2_Msun: float=0.0, a2_kpc: float=0.0) -> None:
     sp = outdir / 'stars_profile.csv'
     if sp.exists() and not overwrite:
         print(f"[accept_build] exists, skip stars: {sp}")
         return
     rho = hernquist_rho(r_kpc, Mtot_Msun=Mtot_Msun, a_kpc=a_kpc)
+    if (M2_Msun is not None) and (a2_kpc is not None) and (float(M2_Msun) > 0.0) and (float(a2_kpc) > 0.0):
+        rho = rho + hernquist_rho(r_kpc, Mtot_Msun=float(M2_Msun), a_kpc=float(a2_kpc))
     pd.DataFrame({'r_kpc': r_kpc, 'rho_star_Msun_per_kpc3': rho}).to_csv(sp, index=False)
     print(f"[accept_build] wrote {sp}")
 
@@ -149,6 +153,8 @@ def main():
     # Stars params
     ap.add_argument('--stars_Mtot_Msun', type=float, default=1.5e12)
     ap.add_argument('--stars_a_kpc', type=float, default=30.0)
+    ap.add_argument('--stars2_Mtot_Msun', type=float, default=0.0, help='Optional second Hernquist component mass (ICL)')
+    ap.add_argument('--stars2_a_kpc', type=float, default=0.0, help='Optional second Hernquist component scale radius (kpc)')
     args = ap.parse_args()
 
     outdir = Path(args.base) / args.cluster
@@ -186,7 +192,9 @@ def main():
     # Write clump and stars
     write_clump(outdir, r_kpc, C_inner=args.clump_inner, C_outer=args.clump_outer,
                 r0_kpc=args.clump_r0_kpc, alpha=args.clump_alpha, overwrite=args.overwrite)
-    write_stars(outdir, r_kpc, Mtot_Msun=args.stars_Mtot_Msun, a_kpc=args.stars_a_kpc, overwrite=args.overwrite)
+    write_stars(outdir, r_kpc, Mtot_Msun=args.stars_Mtot_Msun, a_kpc=args.stars_a_kpc,
+                overwrite=args.overwrite,
+                M2_Msun=float(args.stars2_Mtot_Msun), a2_kpc=float(args.stars2_a_kpc))
 
 if __name__ == '__main__':
     main()
