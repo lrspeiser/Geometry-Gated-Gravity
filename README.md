@@ -1,7 +1,7 @@
 # Geometry-Gated Gravity (G³) — a one-law, baryon-only route to flat galaxy curves and hot-cluster support
 
-> **Plain-English summary for non-specialists.**
-> This repository is a *research landing page*, not a typical “pip install” code library. It tells the story, shows the evidence, and ships the exact analysis used in our paper.
+## 📄 Full Paper
+**Geometry-Gated Gravity (G³)** — [Read paper.md](./paper.md)
 
 ---
 
