@@ -11,6 +11,7 @@ import pandas as pd
 import matplotlib
 matplotlib.use("Agg")  # non-interactive backend
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 try:
     import seaborn as sns  # type: ignore
     sns.set_context("talk")
@@ -94,8 +95,18 @@ def plot_rotation_curve_overlays():
         tail = (float(p['v0'])**2) * (rr/(rr + max(float(p['rc']), 1e-6))) * S
         return np.sqrt(np.maximum(vbar2 + np.maximum(tail, 0.0), 0.0))
 
-    fig, axes = plt.subplots(2, 3, figsize=(16, 9), sharex=False, sharey=False)
+    fig, axes = plt.subplots(2, 3, figsize=(16.5, 9.5), sharex=False, sharey=False)
     axes = axes.ravel()
+
+    # Proxies to ensure a complete legend regardless of per-panel presence
+    legend_proxies = [
+        Line2D([0], [0], marker='o', linestyle='None', color="#444444", label="Observed"),
+        Line2D([0], [0], linestyle='--', color="#1f77b4", label="GR (baryons)"),
+        Line2D([0], [0], linestyle='-.', color="#2ca02c", label="MOND (simple)"),
+        Line2D([0], [0], linestyle=':', color="#9467bd", label="Isothermal plateau (outer median)"),
+        Line2D([0], [0], linestyle='-', color="#d62728", label="G³ (global)"),
+        Line2D([0], [0], linestyle='--', color="#d62728", label="G³ (alt)"),
+    ]
 
     for ax, gal in zip(axes, galaxies):
         sub = df[df["galaxy"] == gal].sort_values("R_kpc")
@@ -113,22 +124,32 @@ def plot_rotation_curve_overlays():
         ax.plot(r, vbar, lw=2, ls="--", c="#1f77b4", label="GR (baryons)")
         ax.plot(r, vmond, lw=2, ls="-.", c="#2ca02c", label="MOND (simple)")
         if np.isfinite(vhalo):
-            ax.plot([r.min(), r.max()], [vhalo, vhalo], lw=2, ls=":", c="#9467bd", label="DM-like (isothermal)")
-        ax.plot(r, vlog, lw=2.5, c="#d62728", label="LogTail (SPARC global)")
+            ax.plot([np.nanmin(r), np.nanmax(r)], [vhalo, vhalo], lw=2, ls=":", c="#9467bd", label="Isothermal plateau (outer median)")
+        ax.plot(r, vlog, lw=2.5, c="#d62728", label="G³ (global)")
         if alt is not None:
             try:
                 v2 = _vlog(r, vbar, alt)
-                ax.plot(r, v2, lw=2.0, ls='--', c="#d62728", alpha=0.9, label="LogTail (alt)")
+                ax.plot(r, v2, lw=2.0, ls='--', c="#d62728", alpha=0.9, label="G³ (alt)")
             except Exception:
                 pass
         ax.set_title(str(gal))
         ax.set_xlabel("R (kpc)")
         ax.set_ylabel("v (km/s)")
+        # Start axes just above zero
+        try:
+            xmin = float(np.nanmin(r))
+            ax.set_xlim(left=max(1e-3, xmin))
+            ymin = float(np.nanmin([np.nanmin(v) for v in [vobs, vbar, vmond, vlog] if np.isfinite(np.nanmin(v))]))
+            ax.set_ylim(bottom=max(1.0, 0.8*ymin))
+        except Exception:
+            pass
 
-    # One shared legend
-    handles, labels = axes[0].get_legend_handles_labels()
-    fig.legend(handles, labels, loc="lower center", ncol=5, frameon=False)
-    fig.suptitle("Rotation curves: observed vs GR(baryons), MOND, DM-like, G³ (disk surrogate LogTail)")
+    # Shared legend outside the plot area to avoid overlap
+    fig.subplots_adjust(bottom=0.18)
+    fig.legend(handles=legend_proxies,
+               labels=[h.get_label() for h in legend_proxies],
+               loc="lower center", ncol=3, frameon=False, bbox_to_anchor=(0.5, 0.06))
+    fig.suptitle("Rotation curves: observed vs GR(baryons), MOND, Isothermal plateau, and G³ (disk surrogate)")
     savefig(FIG_DIR / "rc_overlays_examples_v2.png")
 
 
@@ -237,6 +258,9 @@ def plot_lensing_shapes():
     d = pd.read_csv(shp)
     R = d.iloc[:,0].to_numpy(dtype=float)
     DS = d.iloc[:,1].to_numpy(dtype=float)
+    # filter strictly positive to avoid log(0)
+    msk = (R > 0) & (DS > 0)
+    R = R[msk]; DS = DS[msk]
     fig, ax = plt.subplots(figsize=(7,6))
     ax.loglog(R, DS, lw=2.5, c="#d62728", label="G³ ΔΣ (disk surrogate)")
     # annotate slope
@@ -404,7 +428,6 @@ def write_logtail_only_artifacts():
         pass
 
 
-def annotate_cluster_paper_figs():
     """Overlay median |ΔT|/T and a small G³ tuple note onto cached cluster paper figures if present."""
     import json
     from pathlib import Path
@@ -456,7 +479,6 @@ def main():
     plot_outer_slopes_hist()
     plot_shear_amp_vs_phiphi()
     plot_cmb_envelope_summary()
-    annotate_cluster_paper_figs()
 
 
 if __name__ == "__main__":

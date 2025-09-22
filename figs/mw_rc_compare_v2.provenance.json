@@ -5,7 +5,7 @@
     "observed": "v_obs_kms",
     "observed_err": null,
     "baryons_GR": "recomputed from MN+Hern params in meta, else interp(vbar_kms)",
-    "logtail_global": null,
+    "logtail_global": "v0=140,rc=15,r0=3,delta=4",
     "logtail_refit": null,
     "mond": "computed from vbar(R) with a0(m/s^2) converted to (km/s)^2/kpc",
     "nfw": "best-fit (rho_s, r_s) on bins, then evaluated on R_ext"

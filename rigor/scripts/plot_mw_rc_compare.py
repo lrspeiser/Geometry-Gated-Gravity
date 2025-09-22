@@ -195,21 +195,31 @@ def main():
     ax.plot(R_ext, Vgr_ext,  '-', color='C2', lw=2.0, label='GR (baryons)')
     ax.plot(R_ext, Vmond_ext,'--', color='C3', lw=2.0, label='MOND (simple)')
     if Vlt_global is not None:
-        ax.plot(R_ext, Vlt_global, '-', color='C0', lw=2.2, label='LogTail (SPARC global)')
+        ax.plot(R_ext, Vlt_global, '-', color='C0', lw=2.2, label='G³ (global)')
     if Vlt_alt is not None:
-        ax.plot(R_ext, Vlt_alt,  '--', color='C0', lw=2.0, alpha=0.9, label='LogTail (alt)')
+        ax.plot(R_ext, Vlt_alt,  '--', color='C0', lw=2.0, alpha=0.9, label='G³ (alt)')
     if (Vnfw_ext is not None) and np.isfinite(Vnfw_ext).any():
         ax.plot(R_ext, Vnfw_ext,'-.', color='C1', lw=2.0, label='NFW (best fit)')
     # Optionally show MW refit on bins only (suppressed by --only_global)
     if (not args.only_global) and (Vlt_refit is not None):
-        ax.plot(R_bins, Vlt_refit, ':', color='C0', lw=1.8, label='LogTail (MW refit)')
+        ax.plot(R_bins, Vlt_refit, ':', color='C0', lw=1.8, label='G³ (MW refit)')
 
     ax.set_xlabel('R (kpc)')
     ax.set_ylabel('v (km/s)')
-    ax.set_title('Milky Way rotation curve (Gaia bins) — SPARC-global LogTail')
+    ax.set_title('Milky Way rotation curve (Gaia bins) — SPARC-global G³ (disk surrogate)')
     ax.set_xlim(R_ext[0], R_ext[-1])
+    # Start just above zero on y-axis
+    try:
+        ymins = []
+        for arr in [Vgr_ext, Vmond_ext, Vlt_global if Vlt_global is not None else np.array([]), Vnfw_ext if Vnfw_ext is not None else np.array([])]:
+            if arr is not None and np.size(arr)>0 and np.isfinite(arr).any():
+                ymins.append(float(np.nanmin(arr)))
+        if ymins:
+            ax.set_ylim(bottom=max(1.0, 0.8*min(ymins)))
+    except Exception:
+        pass
     ax.grid(alpha=0.25)
-    ax.legend(frameon=False)
+    ax.legend(frameon=False, loc='best')
     fig.tight_layout()
     Path(args.out_png).parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(args.out_png, dpi=180)

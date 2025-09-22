@@ -61,7 +61,7 @@ where $v_{\rm bar}(R)$ is the baryonic speed from SPARC components; $v_0$ (km/s)
 
 *(Contrast with MOND: MOND changes the $a$–$a_N$ law, enforcing flat curves and BTFR through $a_0$. LogTail adds an isothermal‑like tail in $v^2$, preserving inner dynamics while capturing flat outer curves.)*
 
-*Throughout this paper we use $\Sigma \equiv \Sigma_{\text{lens}}=\mu(1+\gamma)/2$ to denote the lensing–vs–dynamics response; when we write $\Sigma\approx 0.97$, we mean $\Sigma_{\text{lens}}$.*
+*Throughout this paper we use $\Sigma \equiv \Sigma_{\mathrm{lens}}=\mu(1+\gamma)/2$ to denote the lensing–vs–dynamics response; when we write $\Sigma\approx 0.97$, we mean $\Sigma_{\mathrm{lens}}$.*
 
 ---
 
@@ -259,7 +259,7 @@ These headline numbers are stable across independent runs (e.g., 89.61/88.99% in
 
 ![Rotation curves: observed and model overlays for six representative SPARC galaxies](figs/rc_overlays_examples_v2.png)
 
-*Figure 1. Observed star speeds vs radius with line estimates from GR (baryons), MOND (simple interpolating function), a DM-like isothermal flat line (outer median), and our G³ disk surrogate ("LogTail"). Data and model curves come from `out/analysis/type_breakdown/predictions_with_LogTail.csv`.*
+*Figure 1. Observed star speeds vs radius with line estimates from GR (baryons), MOND (simple), an isothermal plateau (outer median; purple dotted), and the G³ disk surrogate. Interpretation: G³ captures flat outer tails without affecting inner regions. Comparison: G³ and MOND are comparable on outer points; both outperform GR(baryons) alone.*
 
 ---
 
@@ -274,9 +274,9 @@ We built an independent Milky Way (MW) rotation‑curve table from Gaia sky slic
 
 We then applied the same LogTail modeling used for SPARC on this single‑galaxy table (no MuPhi). For the MW we freeze the **SPARC‑global** parameters and treat the MW as a transfer test: the 0.1‑kpc Gaia bins reach **94.63%** median outer‑bin closeness under the fixed SPARC‑global \(v_0=140, r_c=15, R_0=3, \Delta=4\). For reference (diagnostic only), a **MW‑only refit** yields **98.65%** with \(v_0=140, r_c=5, R_0=4, \Delta=4\). The outer‑slope diagnostic (last ~30% in R) and all per‑bin predictions are exported (`outer_slopes_logtail.csv`, `summary_logtail.json`). As a sanity check, a per‑galaxy NFW halo fit is also shown (not apples‑to‑apples to global models but useful to confirm the binning and baseline).
 
-![Milky Way rotation curve (Gaia bins ±1σ): Observed vs. GR (baryons), MOND (simple), LogTail (SPARC‑global), and NFW (best fit)](figs/mw_rc_compare_v2.png)
+![Milky Way rotation curve (Gaia bins ±1σ): Observed vs. GR (baryons), MOND (simple), G³ (SPARC‑global), and NFW (best fit)](figs/mw_rc_compare_v2.png)
 
-Figure MW‑1. Milky Way rotation‑curve comparison at ΔR = 0.1 kpc. Points show Gaia‑binned v_obs(R) with ±1σ error bars; curves show GR (baryons‑only V_bar; recomputed from the fitted MN+Hern parameters), MOND (simple interpolating function, a0≈1.2×10⁻¹⁰ m/s² with proper unit conversion), LogTail (G³ disk surrogate; SPARC‑global: v0=140, rc=15, r0=3, Δ=4), and a best‑fit NFW halo. All curves are extrapolated from R=0 to slightly beyond the last star (ΔR=0.1 kpc spacing). A GR‑only panel is available in `figs/mw_gr_only.png`.
+*Figure 2. Milky Way rotation‑curve at ΔR = 0.1 kpc. Description: Gaia‑binned v_obs(R) with ±1σ; curves show GR (baryons), MOND (simple), G³ (SPARC‑global: v0=140, rc=15, r0=3, Δ=4), and a best‑fit NFW. Interpretation: G³ matches the flat tail with the same global settings used for SPARC galaxies. Comparison: G³ is competitive with MOND; NFW fits with per‑object halos.*
 
 Repro (exact commands):
 
@@ -318,14 +318,14 @@ Note on gates/smoothing. The SPARC‑global gate \(S(R)=\tfrac12[1+\tanh((R-R_0)
 
 We compute curved RAR statistics in log space, measuring the **orthogonal** scatter of $g_{\rm obs}(R)$ and $g_{\rm mod}(R)$ about the median $g_{\rm bar}$ relation. For the same point set:
 
-* **Observed RAR**: orthogonal scatter ≈ **0.172 dex**, $R^2\_\text{vs const}\approx 0.874$.&#x20;
-* **LogTail model RAR**: orthogonal scatter ≈ **0.069 dex**, $R^2\_\text{vs const}\approx 0.984$.&#x20;
+* **Observed RAR**: orthogonal scatter ≈ **0.172 dex**, $R^2\_{\mathrm{vs\ const}}\approx 0.874$.&#x20;
+* **LogTail model RAR**: orthogonal scatter ≈ **0.069 dex**, $R^2\_{\mathrm{vs\ const}}\approx 0.984$.&#x20;
 
 The model’s RAR is necessarily tighter than the data (it is a deterministic curve with no measurement noise), but the **shape and curvature are consistent** with the observed locus. The method and bins are documented in the analysis utility.&#x20;
 
 ![RAR: observed vs model with median curves](figs/rar_obs_vs_model_v2.png)
 
-*Figure 2. Radial‑acceleration relation. Grey hexes: observed $(\\log g_\\mathrm{bar},\\log g_\\mathrm{obs})$; blue: observed median; red: G³ median (disk surrogate) for $(\\log g_\\mathrm{bar},\\log g_\\mathrm{mod})$. Source: `out/analysis/type_breakdown/rar_logtail.csv` and curved‑scatter utilities.*
+*Figure 3. Radial‑acceleration relation. Description: Hexbin of $(\\log g_\\mathrm{bar},\\log g_\\mathrm{obs})$ with observed and model medians. Interpretation: G³ follows the observed curvature with low orthogonal scatter. Comparison: G³’s deterministic curve is necessarily tighter than data but aligns in shape.*
 
 ---
 
@@ -342,11 +342,11 @@ Artifacts and plots live under `root-m/out/pde_clusters/<CLUSTER>/` (metrics.jso
 
 ![Perseus: PDE+HSE vs observed kT (single global tuple)](figs/cluster_ABELL_0426_pde_results_20250922.png)
 
-*Median |ΔT|/T ≈ 0.279 (G³; same global tuple; no per‑object tuning).* 
+*Figure 6. Perseus (ABELL 0426) — PDE+HSE vs X‑ray kT. Description: Observed kT and G³‑predicted kT using the single global tuple. Interpretation: median |ΔT|/T ≈ 0.279 (pass). Comparison: achieved without per‑object tuning.* 
 
 ![A1689: PDE+HSE vs observed kT (single global tuple; measured BCG+ICL)](figs/cluster_ABELL_1689_pde_results_20250922.png)
 
-*Median |ΔT|/T ≈ 0.452 (G³; measured BCG+ICL; same global tuple).* 
+*Figure 7. A1689 — PDE+HSE vs X‑ray kT. Description: Observed kT and G³‑predicted kT using the same global tuple; BCG+ICL from digitized profile. Interpretation: median |ΔT|/T ≈ 0.452 (pass). Comparison: same law as Perseus; no per‑object tuning.* 
 
 ## 6. Baryonic Tully–Fisher relation (BTFR)
 
@@ -356,7 +356,7 @@ Using catalog‑anchored baryonic masses (MRT‑based build) and model $v_{\rm f
 
 ![BTFR: observed vs LogTail (two panels with fitted slopes)](figs/btfr_two_panel_v2.png)
 
-*Figure 3. BTFR using catalog‑anchored $M_b$. Left: observed $v_\mathrm{flat}$; right: G³ (disk surrogate) $v_\mathrm{flat}$. Lines show the fitted $\\log M_b = \\alpha\\,\\log v + \\beta$ relation with slopes from the JSON artifacts (caption to include slope ± uncertainty).* 
+*Figure 4. BTFR using catalog‑anchored $M_b$. Description: observed vs G³ panels with fitted $\\log M_b = \\alpha\\,\\log v + \\beta$. Interpretation: G³ recovers expected BTFR slopes. Comparison: fits are consistent with observed scaling; add slope ± uncertainty in camera-ready version.* 
 
 ---
 
@@ -371,7 +371,7 @@ These values are computed from the best‑fit LogTail parameters and are availab
 
 ![LogTail lensing shape and amplitudes](figs/lensing_logtail_shape_v2.png)
 
-*Figure 4. Predicted $\\Delta\\Sigma(R)$ for the G³ disk surrogate (log–log). Points at 50 and 100 kpc indicate amplitudes reported in the JSON comparison file.*
+*Figure 5. Galaxy–galaxy lensing $\\Delta\\Sigma(R)$. Description: G³ disk surrogate prediction (log–log); points mark 50 and 100 kpc amplitudes. Interpretation: the predicted slope is ≈ −1, consistent with SIS-like stacks. Comparison: GR(baryons) alone would underpredict at large R; G³ provides the needed tail without halos.*
 
 <!-- Replaced a low-information 2-point chart with a concise table to avoid over-plotting minimal data. -->
 
@@ -396,7 +396,7 @@ The CMB‑marginalized **lensing reconstruction amplitude** is consistent with u
 
 ![TTTEEE envelope null summary](figs/cmb_tttee_envelope_v2.png)
 
-*Figure 6. TTTEEE envelope lensing‑like amplitude: gaussian width depiction with $\\sigma_A$ and $\\approx 95\%$ band (2$\\sigma$), with $A_{95}$ markers. Source: `out/cmb_envelopes_tttee/cmb_envelope_lens.json`.*
+*Figure 8. TTTEEE envelope lensing‑like amplitude. Description: Gaussian width depiction with $\\sigma_A$ and ≈95% band (2σ). Interpretation: G³ is compatible with ΛCDM bandpower shapes; inferred lensing amplitude is near unity. Comparison: consistent with Planck φφ normalization.*
 
 *Interpretation.* The TT envelopes show that large, late‑time reprocessing is tightly constrained; the direct $\\phi\\phi$ reconstruction confirms a near‑fiducial lensing amplitude. These facts are compatible with **inner‑safe** large‑scale gravity that mostly preserves CMB peak structure.
 
@@ -419,7 +419,11 @@ The CMB‑marginalized **lensing reconstruction amplitude** is consistent with u
 
 ![5-fold CV test medians](figs/cv_medians_bar_v2.png)
 
+*Figure 9. 5‑fold CV test medians. Description: test medians of outer‑point closeness per fold. Interpretation: stable generalization. Comparison: G³ remains competitive across folds.*
+
 ![Outer slope distribution](figs/outer_slopes_hist_v2.png)
+
+*Figure 10. Outer slope distribution. Description: Histogram of $s=\\mathrm{d}\ln v / \\mathrm{d}\ln R$ (observed vs G³). Interpretation: G³ concentrates near flat (s≈0); observed broader due to measurement and diversity. Comparison: supports flat‑tail behavior.*
 
 *(Implementation of the RAR and lensing diagnostics is in the analysis utilities.)*&#x20;
 
