@@ -59,6 +59,9 @@ def main():
     ap.add_argument('--rc_ref_kpc', type=float, default=30.0)
     ap.add_argument('--sigma_beta', type=float, default=0.0)
     ap.add_argument('--sigma0_Msun_pc2', type=float, default=150.0)
+    # CV grids for geometry-aware knobs
+    ap.add_argument('--rc_gamma_grid', type=str, default=None, help='Comma-separated rc_gamma grid for CV, e.g., 0.0,0.25,0.5')
+    ap.add_argument('--sigma_beta_grid', type=str, default=None, help='Comma-separated sigma_beta grid for CV, e.g., 0.0,0.1')
     ap.add_argument('--axisym_maps', action='store_true')
     ap.add_argument('--rotmod_parquet', default='data/sparc_rotmod_ltg.parquet')
     ap.add_argument('--galaxy', default=None)
@@ -117,6 +120,8 @@ def main():
         S0s = _parse_grid(args.S0_grid) or [args.S0]
         rcs = _parse_grid(args.rc_grid) or [args.rc_kpc]
         ms  = _parse_grid(args.m_grid)  or [args.m_exp]
+        gammas = _parse_grid(args.rc_gamma_grid) or [args.rc_gamma]
+        betas  = _parse_grid(args.sigma_beta_grid) or [args.sigma_beta]
 
         # galaxies available in both CSV and rotmod parquet
         rot = pd.read_parquet(Path(args.rotmod_parquet))
@@ -148,7 +153,9 @@ def main():
         for S0 in S0s:
             for rc in rcs:
                 for mm in ms:
-                    fold_meds = []
+                    for gamma in gammas:
+                        for beta in betas:
+                            fold_meds = []
                     for fi in range(k):
                         val_gals = folds[fi]
                         med_outer_vals = []
@@ -184,8 +191,8 @@ def main():
                                 r_half = float(np.interp(0.5*M_tot, M_cum, r_sorted)) if M_tot > 0 else float(Rg[len(Rg)//4])
                                 sigma_bar_kpc2 = (0.5*M_tot) / (np.pi * max(r_half, 1e-9)**2) if r_half > 0 else 0.0
                                 sigma_bar_pc2 = sigma_bar_kpc2 / 1.0e6
-                                rc_eff = float(rc) * (max(r_half, 1e-12) / max(args.rc_ref_kpc, 1e-12))**float(args.rc_gamma)
-                                S0_eff = float(S0) * (max(args.sigma0_Msun_pc2, 1e-12) / max(sigma_bar_pc2, 1e-12))**float(args.sigma_beta)
+                                rc_eff = float(rc) * (max(r_half, 1e-12) / max(args.rc_ref_kpc, 1e-12))**float(gamma)
+                                S0_eff = float(S0) * (max(args.sigma0_Msun_pc2, 1e-12) / max(sigma_bar_pc2, 1e-12))**float(beta)
                                 params = SolverParams(S0=S0_eff, rc_kpc=rc_eff, g0_kms2_per_kpc=float(args.g0_kms2_per_kpc), m_exp=float(mm),
                                                        eta=float(args.eta), Mref_Msun=float(args.Mref),
                                                        kappa=float(args.kappa), q_slope=float(args.q_slope),
@@ -216,10 +223,10 @@ def main():
                         fold_meds.append(float(np.median(med_outer_vals)))
                     else:
                         fold_meds.append(float('nan'))
-                    # aggregate for this (S0, rc, m)
+                    # aggregate for this (S0, rc, m, gamma, beta)
                     fold_meds_arr = np.array([fm for fm in fold_meds if np.isfinite(fm)], float)
                     agg = float(np.median(fold_meds_arr)) if fold_meds_arr.size else float('nan')
-                    grid_results.append({'S0': float(S0), 'rc_kpc': float(rc), 'm_exp': float(mm), 'fold_medians': fold_meds, 'cv_median': agg})
+                    grid_results.append({'S0': float(S0), 'rc_kpc': float(rc), 'm_exp': float(mm), 'rc_gamma': float(gamma), 'sigma_beta': float(beta), 'fold_medians': fold_meds, 'cv_median': agg})
                     val_gals = folds[fi]
                     med_outer_vals = []
                     for gname in val_gals:
