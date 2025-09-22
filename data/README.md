@@ -271,3 +271,27 @@ Example per-cluster directory layout (after conversion):
   - stars_profile.csv (optional)
   - lensing_mass.csv (optional)
 - data/clusters/ABELL_1689/ (same pattern)
+
+---
+
+## External references, imagery, and paper sources (recent additions)
+
+- data/Halkola-abell-paper-sources/
+  - Contents: LaTeX source (halkola_a1689_strong_lensing.tex, .bbl) and PostScript/EPS figures for the Halkola et al. strong-lensing analysis of Abell 1689.
+  - Subdirectories: figs/, figs/enfw_img/, figs/nsie_img/
+  - Example figure files: A1689_gbbs_kappa.ps, A1689_gbbs_crit.ps, mass_xray.ps; plus many image/source panels in en-few and NSIE model folders under enfw_img/ and nsie_img/.
+  - Use: citation figures, lensing mass model context, and visual overlays. Convert .ps/.eps to .png/.pdf as needed for notebooks or documentation.
+
+- data/mast-abell-1689.jpg, data/mast-abell-1689.pdf
+  - HST/MAST public imagery of Abell 1689 for qualitative visualization and overlays. Retain appropriate MAST/NASA/ESA credits if used externally.
+
+- data/mgc-1275-image.jpg
+  - Image of NGC 1275 (Perseus cluster BCG; ABELL 0426). Use for context figures; include attribution/credits if published.
+
+- data/Andersson_2009_ApJ_696_1029.pdf
+  - Andersson et al. (2009), ApJ 696, 1029 — cluster thermodynamics/scaling reference for X-ray analyses. Cite properly when referenced.
+
+Notes and usage
+- These assets are not consumed by the code directly; they support research communication (figures) and literature cross-reference.
+- If you add new external assets, list them here with a one-line description and intended research usage.
+- For figure format conversions (.ps/.eps), use ps2pdf or ImageMagick (e.g., convert/input options) or import via matplotlib as appropriate.
