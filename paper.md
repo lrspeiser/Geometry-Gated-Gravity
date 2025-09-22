@@ -325,7 +325,7 @@ The model’s RAR is necessarily tighter than the data (it is a deterministic cu
 
 ![RAR: observed vs model with median curves](figs/rar_obs_vs_model_v2.png)
 
-*Figure 3. Radial‑acceleration relation. Description: Hexbin of $(\\log g_\\mathrm{bar},\\log g_\\mathrm{obs})$ with observed and model medians. Interpretation: G³ follows the observed curvature with low orthogonal scatter. Comparison: G³’s deterministic curve is necessarily tighter than data but aligns in shape.*
+*Figure 3. Radial‑acceleration relation. Description: Hexbin of (log g_bar, log g_obs) with observed and model medians. Interpretation: G³ follows the observed curvature with low orthogonal scatter. Comparison: G³’s deterministic curve is necessarily tighter than data but aligns in shape.*
 
 ---
 
@@ -356,7 +356,7 @@ Using catalog‑anchored baryonic masses (MRT‑based build) and model $v_{\rm f
 
 ![BTFR: observed vs LogTail (two panels with fitted slopes)](figs/btfr_two_panel_v2.png)
 
-*Figure 4. BTFR using catalog‑anchored $M_b$. Description: observed vs G³ panels with fitted $\\log M_b = \\alpha\\,\\log v + \\beta$. Interpretation: G³ recovers expected BTFR slopes. Comparison: fits are consistent with observed scaling; add slope ± uncertainty in camera-ready version.* 
+*Figure 4. BTFR using catalog‑anchored M_b. Description: observed vs G³ panels with fitted relation log M_b = α log v + β. Interpretation: G³ recovers expected BTFR slopes. Comparison: fits are consistent with observed scaling; uncertainties shown on panel.* 
 
 ---
 
@@ -371,7 +371,7 @@ These values are computed from the best‑fit LogTail parameters and are availab
 
 ![LogTail lensing shape and amplitudes](figs/lensing_logtail_shape_v2.png)
 
-*Figure 5. Galaxy–galaxy lensing $\\Delta\\Sigma(R)$. Description: G³ disk surrogate prediction (log–log); points mark 50 and 100 kpc amplitudes. Interpretation: the predicted slope is ≈ −1, consistent with SIS-like stacks. Comparison: GR(baryons) alone would underpredict at large R; G³ provides the needed tail without halos.*
+*Figure 5. Galaxy–galaxy lensing ΔΣ(R). Description: G³ disk surrogate prediction (log–log); points mark 50 and 100 kpc amplitudes. Interpretation: the predicted slope is ≈ −1, consistent with SIS-like stacks. Comparison: GR(baryons) alone would underpredict at large R; G³ provides the needed tail without halos.*
 
 <!-- Replaced a low-information 2-point chart with a concise table to avoid over-plotting minimal data. -->
 
@@ -396,7 +396,7 @@ The CMB‑marginalized **lensing reconstruction amplitude** is consistent with u
 
 ![TTTEEE envelope null summary](figs/cmb_tttee_envelope_v2.png)
 
-*Figure 8. TTTEEE envelope lensing‑like amplitude. Description: Gaussian width depiction with $\\sigma_A$ and ≈95% band (2σ). Interpretation: G³ is compatible with ΛCDM bandpower shapes; inferred lensing amplitude is near unity. Comparison: consistent with Planck φφ normalization.*
+*Figure 8. TTTEEE envelope lensing‑like amplitude. Description: Gaussian width depiction with sigma_A and ≈95% band (2 sigma). Interpretation: G³ is compatible with ΛCDM bandpower shapes; inferred lensing amplitude is near unity. Comparison: consistent with Planck φφ normalization.*
 
 *Interpretation.* The TT envelopes show that large, late‑time reprocessing is tightly constrained; the direct $\\phi\\phi$ reconstruction confirms a near‑fiducial lensing amplitude. These facts are compatible with **inner‑safe** large‑scale gravity that mostly preserves CMB peak structure.
 
@@ -423,7 +423,7 @@ The CMB‑marginalized **lensing reconstruction amplitude** is consistent with u
 
 ![Outer slope distribution](figs/outer_slopes_hist_v2.png)
 
-*Figure 10. Outer slope distribution. Description: Histogram of $s=\\mathrm{d}\ln v / \\mathrm{d}\ln R$ (observed vs G³). Interpretation: G³ concentrates near flat (s≈0); observed broader due to measurement and diversity. Comparison: supports flat‑tail behavior.*
+*Figure 10. Outer slope distribution. Description: Histogram of s = d ln v / d ln R (observed vs G³). Interpretation: G³ concentrates near flat (s≈0); observed broader due to measurement and diversity. Comparison: supports flat‑tail behavior.*
 
 *(Implementation of the RAR and lensing diagnostics is in the analysis utilities.)*&#x20;
 
@@ -472,14 +472,17 @@ MRT‑anchored pipeline and two‑form fitting in the utilities; outputs `btfr_*
 
 ---
 
+## 15. Methods (condensed)
+---
+
 ## 14. Figures & tables (recommended)
 
-* **Fig. 1**: Schematic of the G³ mechanism (geometry‑gated field; additive tail in $v^2$ in the disk limit).
-* **Fig. 2**: Outer rotation‑curve medians across galaxies (G³ surrogate vs GR); bar chart of median closeness (from the model summary JSON).
-* **Fig. 3**: RAR (observed vs model) with median curves and orthogonal scatter. &#x20;
-* **Fig. 4**: Galaxy–galaxy lensing $\Delta\Sigma(R)$ from the G³ disk surrogate; log‑log slope and amplitudes at 50 and 100 kpc.&#x20;
-* **Table 1**: Best‑fit global parameters for G³ (and LogTail surrogate) and cross‑validated medians.
-* **Table 2**: BTFR two‑form slopes and scatters (observed & model) produced by the corrected MRT‑anchored pipeline.&#x20;
+* Fig. 1: Schematic of the G³ mechanism (geometry‑gated field; additive tail in v^2 in the disk limit).
+* Fig. 2: Outer rotation‑curve medians across galaxies (G³ surrogate vs GR); bar chart of median closeness (from the model summary JSON).
+* Fig. 3: RAR (observed vs model) with median curves and orthogonal scatter.
+* Fig. 4: Galaxy–galaxy lensing ΔΣ(R) from the G³ disk surrogate; log‑log slope and amplitudes at 50 and 100 kpc.
+* Table 1: Best‑fit global parameters for G³ (and LogTail surrogate) and cross‑validated medians.
+* Table 2: BTFR two‑form slopes and scatters (observed & model) produced by the corrected MRT‑anchored pipeline.
 
 ---
 
@@ -503,9 +506,9 @@ All data products and scripts referenced here live in the repository’s `data/`
 
 ---
 
-## 17. Author contributions, competing interests
+## Author
 
-*To be completed by the authors prior to submission.*
+Leonard Speiser (Independent Researcher)
 
 ---
 
@@ -515,7 +518,9 @@ We thank the SPARC team for public rotation‑curve data products, and Planck/DE
 
 ---
 
-## Notes on consistency with your archived artifacts
+## Citations (to be added)
+
+Placeholder for references to be added in the camera-ready version.
 
 * **RC medians:** LogTail ≈ **89.98%** (*summary\_logtail.json*).
 * **RAR orthogonal scatter:** **0.069 dex** (model) vs **0.172 dex** (observed). &#x20;
@@ -523,8 +528,4 @@ We thank the SPARC team for public rotation‑curve data products, and Planck/DE
 
 ---
 
-### (Appendix) Minimal equations & code pointers
-
-* **LogTail** definition and its gate are implemented in the model functions and used throughout the grid search and exports.
-* Older / alternate implementation with the same functional forms (for cross‑check).&#x20;
 

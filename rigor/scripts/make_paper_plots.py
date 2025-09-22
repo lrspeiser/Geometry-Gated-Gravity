@@ -103,7 +103,6 @@ def plot_rotation_curve_overlays():
         Line2D([0], [0], marker='o', linestyle='None', color="#444444", label="Observed"),
         Line2D([0], [0], linestyle='--', color="#1f77b4", label="GR (baryons)"),
         Line2D([0], [0], linestyle='-.', color="#2ca02c", label="MOND (simple)"),
-        Line2D([0], [0], linestyle=':', color="#9467bd", label="Isothermal plateau (outer median)"),
         Line2D([0], [0], linestyle='-', color="#d62728", label="G³ (global)"),
         Line2D([0], [0], linestyle='--', color="#d62728", label="G³ (alt)"),
     ]
@@ -116,15 +115,9 @@ def plot_rotation_curve_overlays():
         vlog = sub["v_LogTail_kms"].to_numpy()
         # MOND (simple mu) from baryons
         vmond = mond_velocity_simple(r, vbar)
-        # DM-like isothermal: use outer 30% observed median as constant
-        k = max(3, int(0.3*len(sub)))
-        vhalo = float(np.median(sub.tail(k)["Vobs_kms"])) if len(sub) else np.nan
-
         ax.scatter(r, vobs, s=12, c="#444444", alpha=0.7, label="Observed")
         ax.plot(r, vbar, lw=2, ls="--", c="#1f77b4", label="GR (baryons)")
         ax.plot(r, vmond, lw=2, ls="-.", c="#2ca02c", label="MOND (simple)")
-        if np.isfinite(vhalo):
-            ax.plot([np.nanmin(r), np.nanmax(r)], [vhalo, vhalo], lw=2, ls=":", c="#9467bd", label="Isothermal plateau (outer median)")
         ax.plot(r, vlog, lw=2.5, c="#d62728", label="G³ (global)")
         if alt is not None:
             try:
@@ -145,11 +138,17 @@ def plot_rotation_curve_overlays():
             pass
 
     # Shared legend outside the plot area to avoid overlap
-    fig.subplots_adjust(bottom=0.18)
-    fig.legend(handles=legend_proxies,
+    fig.subplots_adjust(bottom=0.24)
+    leg = fig.legend(handles=legend_proxies,
                labels=[h.get_label() for h in legend_proxies],
-               loc="lower center", ncol=3, frameon=False, bbox_to_anchor=(0.5, 0.06))
-    fig.suptitle("Rotation curves: observed vs GR(baryons), MOND, Isothermal plateau, and G³ (disk surrogate)")
+               loc="lower center", ncol=3, frameon=True, fancybox=True, bbox_to_anchor=(0.5, 0.06))
+    frame = leg.get_frame()
+    try:
+        frame.set_edgecolor('#333333')
+        frame.set_linewidth(0.8)
+    except Exception:
+        pass
+    fig.suptitle("Rotation curves: observed vs GR(baryons), MOND, and G³ (disk surrogate)")
     savefig(FIG_DIR / "rc_overlays_examples_v2.png")
 
 
