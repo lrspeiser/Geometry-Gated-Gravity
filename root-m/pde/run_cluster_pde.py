@@ -69,6 +69,11 @@ def main():
     ap.add_argument('--beta_env', type=float, default=0.0)
     ap.add_argument('--rho_ref_Msun_per_kpc3', type=float, default=1.0e6)
     ap.add_argument('--env_L_kpc', type=float, default=150.0)
+    # Optional non-thermal pressure in HSE
+    ap.add_argument('--fnt0', type=float, default=0.0, help='Non-thermal pressure fraction at r=r500 (dimensionless); 0 disables')
+    ap.add_argument('--fnt_n', type=float, default=0.8, help='Radial power for f_nt(r) = fnt0 * (r/r500)^n')
+    ap.add_argument('--r500_kpc', type=float, default=1000.0, help='Characteristic r500 in kpc for f_nt radial scaling')
+    ap.add_argument('--fnt_max', type=float, default=0.3, help='Max cap for f_nt (dimensionless)')
     # B-input levers
     ap.add_argument('--clump', type=float, default=1.0, help='Uniform gas clumping C; applies n_e -> sqrt(C) * n_e if profile not given')
     ap.add_argument('--clump_profile_csv', type=str, default=None, help='CSV with r_kpc,C for radial clumping; overrides uniform --clump')
@@ -180,7 +185,17 @@ def main():
     ne_obs = ne_obs[order]
     ne_R = np.interp(R, r_obs, ne_obs, left=ne_obs[0], right=ne_obs[-1])
 
-    kT_pred = kT_from_ne_and_gtot(R, ne_R, g_tot_R)
+    # Non-thermal pressure fraction profile (optional)
+    f_nt = None
+    if float(args.fnt0) > 0.0:
+        r_abs = np.asarray(R, float)
+        # simple power-law in radius relative to r500, capped at fnt_max
+        f_nt = np.clip(float(args.fnt0) * np.power(np.maximum(r_abs, 0.0) / max(float(args.r500_kpc), 1e-9), float(args.fnt_n)), 0.0, float(args.fnt_max))
+    kT_pred = kT_from_ne_and_gtot(R, ne_R, g_tot_R, f_nt)
+
+    # Save field summary for downstream lensing overlays
+    import pandas as _pd
+    _pd.DataFrame({'R_kpc': R, 'g_phi_R': g_phi_R, 'g_N_R': g_N_R, 'g_tot_R': g_tot_R}).to_csv((Path(args.outdir)/args.cluster/'field_summary.csv'), index=False)
 
     # Observational T
     t = pd.read_csv(cdir/'temp_profile.csv')
