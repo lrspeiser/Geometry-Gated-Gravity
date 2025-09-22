@@ -66,8 +66,13 @@ def main():
         plt.grid(True, which='both', alpha=0.3); plt.legend()
         plt.tight_layout(); plt.savefig(out_dir/'cluster_lensing_overlay.png', dpi=140); plt.close()
     else:
-        # No observed lensing mass provided; just save the model mass curve
+        # No observed lensing mass provided; save the model mass curve and plot
         pd.DataFrame({'R_kpc': R, 'M_model_Msun': M_pred}).to_csv(out_dir/'M_model_only.csv', index=False)
+        plt.figure(figsize=(6,4))
+        plt.loglog(R, M_pred, 'r-', lw=1.6, label='PDE (from g_tot)')
+        plt.xlabel('r [kpc]'); plt.ylabel('M(<r) [Msun]'); plt.title(args.cluster)
+        plt.grid(True, which='both', alpha=0.3); plt.legend()
+        plt.tight_layout(); plt.savefig(out_dir/'M_model_only.png', dpi=140); plt.close()
 
 
 if __name__ == '__main__':
