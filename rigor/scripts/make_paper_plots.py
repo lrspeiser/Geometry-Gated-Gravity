@@ -218,9 +218,9 @@ def plot_btfr_two_panel():
     def do_panel(ax, df, vcol, fit_json):
         d = df.dropna(subset=[vcol, "M_bary_Msun"]).copy()
         d = d[(d[vcol] > 0) & (d["M_bary_Msun"] > 0)]
-        x = np.log10(d[vcol]); y = np.log10(d["M_bary_Msun"])
+        x = np.log10(d[vcol].to_numpy(dtype=float)); y = np.log10(d["M_bary_Msun"].to_numpy(dtype=float))
         ax.scatter(x, y, s=16, alpha=0.6)
-        # Fit line
+        # Fit line (OLS), then bootstrap sigma
         alpha = None; beta = None
         if fit_json and fit_json.exists():
             try:
@@ -230,21 +230,35 @@ def plot_btfr_two_panel():
             except Exception:
                 pass
         if alpha is None or not math.isfinite(alpha):
-            # OLS
             A = np.vstack([x, np.ones_like(x)]).T
             alpha, beta = np.linalg.lstsq(A, y, rcond=None)[0]
+        # bootstrap slope uncertainty
+        n = len(x)
+        if n >= 8:
+            rng = np.random.default_rng(12345)
+            boots = []
+            for _ in range(500):
+                idx = rng.integers(0, n, size=n)
+                xb = x[idx]; yb = y[idx]
+                A = np.vstack([xb, np.ones_like(xb)]).T
+                a_b, _b = np.linalg.lstsq(A, yb, rcond=None)[0]
+                if math.isfinite(a_b):
+                    boots.append(a_b)
+            a_sigma = float(np.std(boots)) if boots else float('nan')
+        else:
+            a_sigma = float('nan')
         xv = np.linspace(x.min(), x.max(), 50)
         yv = alpha*xv + beta
         ax.plot(xv, yv, c="#d62728", lw=2.5)
-        return alpha
+        return alpha, a_sigma
 
-    a1 = do_panel(ax1, obs, v_obs_col or "vflat_kms", fit_obs)
-    ax1.set_title(f"Observed BTFR (slope α≈{a1:.2f})")
+    a1, s1 = do_panel(ax1, obs, v_obs_col or "vflat_kms", fit_obs)
+    ax1.set_title(f"Observed BTFR (slope α≈{a1:.2f}±{(s1 if math.isfinite(s1) else float('nan')):.2f})")
     ax1.set_xlabel("log10 v_flat (km/s)")
     ax1.set_ylabel("log10 M_b (Msun)")
 
-    a2 = do_panel(ax2, mod, v_mod_col, fit_mod)
-    ax2.set_title(f"G³ BTFR (disk surrogate; slope α≈{a2:.2f})")
+    a2, s2 = do_panel(ax2, mod, v_mod_col, fit_mod)
+    ax2.set_title(f"G³ BTFR (disk surrogate; slope α≈{a2:.2f}±{(s2 if math.isfinite(s2) else float('nan')):.2f})")
     ax2.set_xlabel("log10 v_flat (km/s)")
 
     savefig(FIG_DIR / "btfr_two_panel_v2.png")
@@ -253,6 +267,8 @@ def plot_btfr_two_panel():
 def plot_lensing_shapes():
     shp = OUT_DIR / "lensing_logtail_shapes.csv"
     cmp = OUT_DIR / "lensing_logtail_comparison.json"
+    gr_path = OUT_DIR / "lensing_gr_shapes.csv"
+    mond_path = OUT_DIR / "lensing_mond_shapes.csv"
     if not shp.exists():
         return None
     d = pd.read_csv(shp)
@@ -263,7 +279,24 @@ def plot_lensing_shapes():
     R = R[msk]; DS = DS[msk]
     fig, ax = plt.subplots(figsize=(7,6))
     ax.loglog(R, DS, lw=2.5, c="#d62728", label="G³ ΔΣ (disk surrogate)")
-    # annotate slope
+    # Optional overlays if present
+    if gr_path.exists():
+        try:
+            g = pd.read_csv(gr_path)
+            Rg = g.iloc[:,0].to_numpy(dtype=float); DSg = g.iloc[:,1].to_numpy(dtype=float)
+            mm = (Rg>0) & (DSg>0)
+            ax.loglog(Rg[mm], DSg[mm], lw=2.0, ls='--', c='C2', label='GR(baryons) ΔΣ')
+        except Exception:
+            pass
+    if mond_path.exists():
+        try:
+            mdf = pd.read_csv(mond_path)
+            Rm = mdf.iloc[:,0].to_numpy(dtype=float); DSm = mdf.iloc[:,1].to_numpy(dtype=float)
+            mm = (Rm>0) & (DSm>0)
+            ax.loglog(Rm[mm], DSm[mm], lw=2.0, ls='-.', c='C3', label='MOND ΔΣ')
+        except Exception:
+            pass
+    # annotate slope (G³)
     x = np.log10(R); y = np.log10(DS)
     m, b = np.polyfit(x, y, 1)
     ax.text(0.05, 0.05, f"slope ≈ {m:.2f}", transform=ax.transAxes)

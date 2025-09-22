@@ -59,9 +59,9 @@ $$
 
 where $v_{\rm bar}(R)$ is the baryonic speed from SPARC components; $v_0$ (km/s) and $r_c$ (kpc) set the tail’s amplitude and turnover; and $S(R)=\tfrac{1}{2}\left[1+\tanh\!\big((R-R_0)/\Delta\big)\right]$ gates the tail on at large radii to preserve inner dynamics. This is an **additive** correction in $v^2$; equivalently, it is a logarithmic potential tail. Implementation details (grids, gating) appear in the analysis script.&#x20;
 
-*(Contrast with MOND: MOND changes the $a$–$a_N$ law, enforcing flat curves and BTFR through $a_0$. LogTail adds an isothermal‑like tail in $v^2$, preserving inner dynamics while capturing flat outer curves.)*
+Contrast with MOND: MOND changes the $a$–$a_N$ law, enforcing flat curves and BTFR through $a_0$. G³ (disk surrogate) adds an isothermal‑like tail in $v^2$, preserving inner dynamics while capturing flat outer curves.
 
-*Throughout this paper we use $\Sigma \equiv \Sigma_{\mathrm{lens}}=\mu(1+\gamma)/2$ to denote the lensing–vs–dynamics response; when we write $\Sigma\approx 0.97$, we mean $\Sigma_{\mathrm{lens}}$.*
+Throughout this paper we use $\Sigma \equiv \Sigma_{\mathrm{lens}}=\mu(1+\gamma)/2$ to denote the lensing–vs–dynamics response; when we write $\Sigma\approx 0.97$, we mean $\Sigma_{\mathrm{lens}}$.
 
 ---
 
