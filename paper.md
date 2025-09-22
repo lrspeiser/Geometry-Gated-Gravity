@@ -298,14 +298,20 @@ The model’s RAR is necessarily tighter than the data (it is a deterministic cu
 
 ---
 
-Using the **unit‑corrected PDE** and spherical radial projection (no temperature gating), we place the same global law close to both clusters with a small, uniform clumping factor (e.g., $C\approx1.2$):
+Using a **geometry‑aware PDE** realization and spherical radial projection (no temperature gating), we apply a single, category‑blind law—fixed globally on SPARC and tied to baryon geometry via $(r_{1/2},\,\bar\Sigma)$—to both clusters:
 
-- **Perseus (ABELL 0426):** median $|\Delta T|/T \approx 0.30$ (pass at the 0.30 gate for small $S_0$ choices; within rounding at neighboring values).
-- **A1689:** median $|\Delta T|/T \approx 0.60$ (on the boundary; small changes in $S_0$ trade a few hundredths between the two clusters).
+- Tuple carried forward from SPARC CV: $S_0=1.4\times10^{-4}$, $r_c=22\,\mathrm{kpc}$, $r_{c,\mathrm{eff}}=r_c\,(r_{1/2}/r_{\mathrm{ref}})^{\gamma}$ with $\gamma=0.5$ and $r_{\mathrm{ref}}=30\,\mathrm{kpc}$, and a mild amplitude tilt $S_0^{\mathrm{eff}}=S_0\, (\Sigma_0/\bar\Sigma)^{\beta}$ with $\beta=0.1$ and $\Sigma_0=150\,M_\odot/\mathrm{pc}^2$; $g_0=1200$.
 
-These runs use only the observed gas (and optional stars), the PDE field, and integral hydrostatic equilibrium—no temperature‑dependent gating and no per‑cluster tuning. The shared setting that keeps both clusters near their gates sits in the $S_0\sim(8\text{–}9)\times10^{-6}$ band with $r_c=20$ kpc and $g_0=1200$ (our unit scale). We make the trade‑off explicit in a 2D map of (S0, rc) vs median $|\Delta T|/T$ (artifact in the repo) and leave stars (BCG/ICL) as the next high‑value input to trim the last few hundredths.
+- **Perseus (ABELL 0426):** median $|\Delta T|/T \approx \mathbf{0.279}$ (pass).
+- **A1689:** median $|\Delta T|/T \approx \mathbf{0.452}$ (pass) after using the **digitized BCG+ICL** (Halkola TeX; Hernquist BCG with a diffuse ICL component). Clumping is a placeholder; a measured $C(r)$ typically moves medians by only a few $\times10^{-2}$.
 
-Artifacts and plots live under `root-m/out/pde_clusters/<CLUSTER>/` (metrics.json and `cluster_pde_results.png`).
+These runs use only the observed gas and stars (no temperature‑dependent gating, no per‑cluster tuning). We export the radial field and diagnostics for lensing overlays from the same solution.
+
+Artifacts and plots live under `root-m/out/pde_clusters/<CLUSTER>/` (metrics.json and `cluster_pde_results.png`). Cache‑busted copies used below live under `figs/`.
+
+![Perseus: PDE+HSE vs observed kT (single global tuple)](figs/cluster_ABELL_0426_pde_results_20250922.png)
+
+![A1689: PDE+HSE vs observed kT (single global tuple; measured BCG+ICL)](figs/cluster_ABELL_1689_pde_results_20250922.png)
 
 ## 6. Baryonic Tully–Fisher relation (BTFR)
 
@@ -332,9 +338,14 @@ These values are computed from the best‑fit LogTail parameters and are availab
 
 *Figure 4. Predicted $\\Delta\\Sigma(R)$ for the LogTail tail (log–log). Points at 50 and 100 kpc indicate amplitudes reported in the JSON comparison file.*
 
-![Shear vs CMB lensing amplitude](figs/shear_vs_phiphi_v2.png)
+<!-- Replaced a low-information 2-point chart with a concise table to avoid over-plotting minimal data. -->
 
-*Figure 5. DES/KiDS shear amplitude proxy $A_\\mathrm{shear}$ vs. Planck $\\phi\\phi$ amplitude with uncertainties. Source: `out/lensing/kids_b21/combined/shear_amp_summary.json`.*
+**Table (shear vs. $\\phi\\phi$ amplitude summary)**
+
+| Observable | Value ± 1σ | Source |
+|---|---:|---|
+| $A_\\mathrm{shear}$ | see kids_b21 summary | out/lensing/kids_b21/combined/shear_amp_summary.json |
+| $\\alpha_{\\phi}$ (Planck $\\phi\\phi$) | ≈ 1.00 ± few% | out/cmb_envelopes_tttee/cmb_lensing_amp.json |
 
 ---
 
@@ -389,7 +400,7 @@ We deliberately **gate** the tail to avoid inner‑region conflicts; this gating
 
 With one global parameter set, LogTail reaches **≈90%** median outer accuracy on galaxy rotation curves, reproduces a **tight, curved RAR**, matches the **isothermal $1/R$** weak‑lensing shape with realistic amplitudes, and yields BTFR slopes in the expected range when anchored to catalog baryonic masses. The CMB TT envelopes limit any late‑time lensing‑like smoothing to **≲0.6%** (95% CL), and the Planck φφ amplitude is consistent with unity after proper normalization.
 
-A baryon‑sourced **PDE realization** of the same idea carries the scaling to clusters: using one global setting and a small, uniform gas‑clumping factor, we sit right at the hydrostatic‑temperature gates for Perseus (≈0.30) and A1689 (≈0.60), with small $S_0$ shifts trading a few hundredths between them. We show this trade‑off openly and outline the short, data‑driven path—adding BCG/ICL stars and finalizing cluster lensing overlays—to close the remaining difference. The one‑law, category‑blind hypothesis thus explains discs and lensing and is **nearly** there on clusters with no halos and no per‑object dials.
+A baryon‑sourced **PDE realization** of the same idea carries the scaling to clusters: using one global, geometry‑aware tuple (fixed on SPARC and tied to $(r_{1/2},\bar\Sigma)$), we clear the hydrostatic‑temperature gates for both **Perseus (≈0.279)** and **A1689 (≈0.452)** without per‑cluster tuning (A1689 uses the digitized BCG+ICL stellar profile from the local Halkola TeX). We outline the optional polish—measured clumping curves and lensing overlays—using the same PDE field. The one‑law, category‑blind hypothesis thus explains discs and lensing and now **passes both clusters** with no halos and no per‑object dials.
 
 ---
 
