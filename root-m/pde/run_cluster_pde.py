@@ -74,6 +74,11 @@ def main():
     ap.add_argument('--fnt_n', type=float, default=0.8, help='Radial power for f_nt(r) = fnt0 * (r/r500)^n')
     ap.add_argument('--r500_kpc', type=float, default=1000.0, help='Characteristic r500 in kpc for f_nt radial scaling')
     ap.add_argument('--fnt_max', type=float, default=0.3, help='Max cap for f_nt (dimensionless)')
+    # Optional compactness-aware source modulation (global, density-based)
+    ap.add_argument('--use_compactness_source', action='store_true', help='Enable compactness-based screening of the PDE source')
+    ap.add_argument('--rho_comp_star_Msun_per_kpc3', type=float, default=1.0e6, help='Reference density for compactness screening')
+    ap.add_argument('--alpha_comp', type=float, default=0.2, help='Strength of compactness screening')
+    ap.add_argument('--m_comp', type=float, default=2.0, help='Slope of compactness screening')
     # B-input levers
     ap.add_argument('--clump', type=float, default=1.0, help='Uniform gas clumping C; applies n_e -> sqrt(C) * n_e if profile not given')
     ap.add_argument('--clump_profile_csv', type=str, default=None, help='CSV with r_kpc,C for radial clumping; overrides uniform --clump')
@@ -113,6 +118,10 @@ def main():
                           beta_env=float(args.beta_env),
                           rho_ref_Msun_per_kpc3=float(args.rho_ref_Msun_per_kpc3),
                           env_L_kpc=float(args.env_L_kpc),
+                          use_compactness_source=bool(args.use_compactness_source),
+                          rho_comp_star_Msun_per_kpc3=float(args.rho_comp_star_Msun_per_kpc3),
+                          alpha_comp=float(args.alpha_comp),
+                          m_comp=float(args.m_comp),
                           bc_robin_lambda=float(args.bc_robin_lambda))
     phi, gR, gZ = solve_axisym(R, Z, rho, params)
 

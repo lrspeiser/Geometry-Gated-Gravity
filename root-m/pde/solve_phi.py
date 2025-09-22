@@ -66,6 +66,12 @@ class SolverParams:
     rho_ref_Msun_per_kpc3: float = 1.0e6
     env_L_kpc: float = 150.0
 
+    # NEW: compactness-aware source modulation (global, density-based screening)
+    use_compactness_source: bool = False
+    rho_comp_star_Msun_per_kpc3: float = 1.0e6
+    alpha_comp: float = 0.2
+    m_comp: float = 2.0
+
     # Solver
     max_iter: int = 2000
     tol: float = 1e-5
@@ -114,19 +120,23 @@ def solve_axisym(R: np.ndarray, Z: np.ndarray, rho_Msun_kpc3: np.ndarray, params
     R2D = np.broadcast_to(R.reshape(1,-1), (NZ, NR))
     Z2D = np.broadcast_to(Z.reshape(-1,1), (NZ, NR))
 
-    # Precompute mass-aware source factor S_eff (A1)
-    if params.eta and params.eta != 0.0:
+    # Precompute mass-aware source factor S_eff (A1) and/or compactness needs Menc
+    need_Menc = bool(params.eta and params.eta != 0.0) or bool(params.use_compactness_source)
+    if need_Menc:
         # Cell volumes for axisym: dV = 2π R dR dZ
         dV = (2.0 * np.pi) * R2D * dR * dZ
         mass_cells = np.clip(rho_Msun_kpc3, 0.0, None) * dV
-        r_cell = np.sqrt(R2D*R2D + Z2D*Z2D).reshape(-1)
+        r_cell = np.sqrt(R2D*R2D + Z2D*Z2D)
+        r_flat = r_cell.reshape(-1)
         mass_flat = mass_cells.reshape(-1)
-        order = np.argsort(r_cell)
+        order = np.argsort(r_flat)
         mass_cum = np.cumsum(mass_flat[order])
         # Menc at each cell via cumulative mass up to its radius
         Menc_flat = np.zeros_like(mass_flat)
         Menc_flat[order] = mass_cum
         Menc = Menc_flat.reshape(NZ, NR)
+    # Base source factor from mass-aware term (if enabled)
+    if params.eta and params.eta != 0.0:
         S_eff = params.S0 * (1.0 + np.power(np.clip(Menc / max(params.Mref_Msun, 1e-30), 1e-30, None), params.eta))
     else:
         S_eff = np.full((NZ, NR), params.S0, dtype=float)
@@ -142,6 +152,18 @@ def solve_axisym(R: np.ndarray, Z: np.ndarray, rho_Msun_kpc3: np.ndarray, params
         else:
             boost = 1.0
         S_eff = S_eff * boost
+
+    # Compactness-aware modulation of source (density-based screening)
+    if params.use_compactness_source:
+        # Use spherical mean enclosed density at each cell radius
+        # rho_bar = 3 Menc / (4π r^3); avoid r=0 singularity with small floor
+        r_eps = 1e-9
+        r_cell = np.sqrt(R2D*R2D + Z2D*Z2D)
+        rho_bar = (3.0 * Menc) / (4.0 * np.pi * np.maximum(r_cell, r_eps)**3)
+        x = rho_bar / max(params.rho_comp_star_Msun_per_kpc3, 1e-30)
+        m = max(params.m_comp, 1e-9)
+        f_comp = np.power(1.0 + np.power(np.clip(x, 0.0, None), m), -params.alpha_comp / m)
+        S_eff = S_eff * f_comp
 
     # Precompute curvature factor s = r * |d ln rho / dr| (A2)
     if params.kappa and params.kappa != 0.0:
