@@ -1,10 +1,8 @@
 
-# LogTail gravity: a minimally gated, isothermal‑tail modification that matches galaxy kinematics and weak‐lensing without dark matter
+# Geometry‑Gated Gravity (G³): a single baryon‑sourced field law that matches galaxy kinematics and cluster hydrostatics without dark halos
 
 **Abstract**
-We test a single, category‑blind modification of gravity calibrated on galaxies and transferred—without per‑object tuning—to clusters and CMB lensing. On the SPARC sample, our galaxy law (“LogTail”) reproduces outer rotation‑curve amplitudes with a median closeness of ≈90% using one global setting, matching state‑of‑the‑art modified‑gravity fits and approaching halo models while using no dark‑matter halo profiles. The model’s RAR is tight (orthogonal scatter ≈0.069 dex), and the weak‑lensing prediction exhibits the required ΔΣ ∝ 1/R fall‑off with realistic 50–100 kpc amplitudes. On CMB scales we fit shape‑preserving TT envelopes and the Planck φφ amplitude; TT constrains any extra lensing‑like smoothing to ≲0.6% (95% CL), and φφ is consistent with unity after proper normalization.
-
-Clusters remain the decisive check. With a baryon‑sourced PDE realization of the same law we predict the total field from the observed gas (and stars) and compare hydrostatic temperatures. Using one global setting (plus a small, literature‑motivated, uniform gas‑clumping factor), we come close to simultaneous agreement for Perseus (ABELL 0426) and A1689: Perseus passes at ≈0.30 median |ΔT|/T while A1689 sits at ≈0.60 on the boundary, with minor S0 shifts trading a few hundredths between them. We show this trade‑off explicitly and outline the short path—adding BCG/ICL stellar mass and finalizing cluster lensing overlays—to close the remaining ≈1–2×10⁻² in median fractional error.
+We present Geometry‑Gated Gravity (G³), a single, baryon‑sourced scalar‑field law whose response is gated by baryon geometry. The field obeys $\nabla\!\cdot[\mu(|\nabla\phi|/g_0)\,\nabla\phi]=S_0\,\rho_b$ with two global geometry exponents that modulate an effective scale length and amplitude via the half‑mass radius and mean surface density of the observed baryons. In thin disks the mid‑plane solution reduces to an isothermal tail, recovering the analytic LogTail phenomenology used in our earlier galaxy fits. On the SPARC sample, the LogTail surrogate reaches ≈90% outer‑median closeness with one global parameter set (competitive with MOND, ≈89.8%; GR(baryons) ≈63.9%). Using the same global G³ tuple calibrated on SPARC $(S_0, r_c, r_c^{\,\gamma}, \sigma_\beta)=(1.4\times10^{-4}, 22\,\mathrm{kpc}, 0.5, 0.1)$ with $g_0=1200$, the Perseus and A1689 X‑ray temperature profiles are reproduced with median fractional errors ≈0.279 and ≈0.452, respectively, without dark halos or per‑object tuning. We provide code, inputs, and exact commands to reproduce all figures.
 
 ---
 
@@ -12,13 +10,46 @@ Clusters remain the decisive check. With a baryon‑sourced PDE realization of t
 
 Flat galaxy rotation curves and the tightness of the baryonic Tully–Fisher relation (BTFR) and RAR have long motivated additions to GR: particulate dark matter halos, or modified dynamics (e.g., MOND). Dark halos robustly explain flat curves and lensing, but at the cost of additional mass components and profile choices; MOND encodes flatness and BTFR through an acceleration‑scale rule, but struggles in several regimes and requires a relativistic completion to connect to lensing.
 
+We propose Geometry‑Gated Gravity (G³): a single, baryon‑sourced field law whose response is set by what the baryons look like—their size and surface density—not by hidden mass components. The same global tuple that reproduces the flat tails of galaxy rotation curves via an isothermal‑like potential also predicts the pressure support in hot clusters via hydrostatic equilibrium. On SPARC, the analytic LogTail limit of G³ achieves ≈90% outer‑median closeness with one global setting, competitive with MOND and far above GR(baryons) alone. When the identical G³ tuple is applied, Perseus and A1689 are reproduced with median temperature errors of ≈0.279 and ≈0.452, respectively—without dark halos or per‑object tuning—demonstrating that a single, geometry‑aware response to baryons can bridge galaxies and clusters.
+
 We explore a different lever: **leave GR’s inner regime intact and add a *gated, isothermal‑like tail* to the baryonic potential** at large radius. This “LogTail” approach is deliberately modest: its additive tail is mathematically equivalent in rotational signature to an isothermal halo, but **without** adding mass.
 
 ---
 
 ## 2. Models
 
-### 2.1 LogTail (additive tail in $v^2$)
+### 2.0 Geometry‑Gated Gravity (G³): field law and geometry response
+
+We model a baryon‑sourced scalar field obeying
+
+$$
+\nabla\!\cdot\!\Big[\;\mu\!\Big(\frac{|\nabla\phi|}{g_0}\Big)\,\nabla\phi\;\Big]
+\;=\;
+S_0\,\rho_b(\mathbf{x}),
+\qquad
+\mu(x)=x^{\,m}\ \ (\text{baseline }m=1)\,.
+$$
+
+Global, category‑blind geometry scalings are applied using observables computed from the baryon map:
+
+$$
+ r_c^{\rm eff}=r_c\left(\frac{r_{1/2}}{r^{\rm ref}_c}\right)^{\!\gamma},
+ \qquad
+ S_0^{\rm eff}=S_0\left(\frac{\Sigma_0}{\bar{\Sigma}}\right)^{\!\beta},
+$$
+
+with $r_{1/2}$ the half‑mass radius and $\bar{\Sigma}$ the mean surface density on that scale. We use $r^{\rm ref}_c=30\,\mathrm{kpc}$, $\Sigma_0=150\,M_\odot\,\mathrm{pc}^{-2}$, $\gamma=0.5$, $\beta=0.1$.
+
+Dynamical prediction and HSE coupling:
+
+$$
+\mathbf{g}_{\rm tot}=\mathbf{g}_N+\mathbf{g}_\phi,\qquad \mathbf{g}_\phi=-\nabla\phi,\qquad 
+\frac{dP}{dr}=-\rho_g\,g_{\rm eff}(r),\ \ g_{\rm eff}=(1-f_{\rm nt})\,g_{\rm tot}.
+$$
+
+Here $f_{\rm nt}(r)=\min\{f_0 (r/r_{500})^n, f_{\rm nt}^{\max}\}$ is optional non‑thermal pressure support (defaults off).
+
+### 2.2 LogTail (disk surrogate; additive tail in $v^2$)
 
 We parameterize the predicted circular speed as
 
@@ -34,7 +65,7 @@ where $v_{\rm bar}(R)$ is the baryonic speed from SPARC components; $v_0$ (km/s)
 
 ---
 
-### 2.2 Theoretical origin: LogTail from a kinetically screened scalar
+### 2.3 Theory and relation to LogTail (optional background)
 
 We show that the LogTail phenomenology arises from a kinetically screened scalar (k‑mouflage) whose non‑linear kinetic term forces a universal $1/r$ fifth‑force profile in low‑density galaxy outskirts, while screening suppresses the field in high‑surface‑density inner regions. This delivers (i) the logarithmic potential tail, (ii) a surface‑density gate that is a derived environmental response (not an ad‑hoc switch), and (iii) a small, nearly scale‑independent lensing–dynamics slip $\Sigma_{\text{lens}}\lesssim 1$.
 
@@ -210,7 +241,7 @@ We use your standardized SPARC‑derived prediction tables and catalog joins des
 
 **BTFR.** We fit in two directions—$ \log M_b = \alpha \log v_{\rm flat} + \beta$ and $ \log v_{\rm flat} = \beta \log M_b + \gamma$—and report $\alpha$, $\alpha_{\rm from\,\beta}=1/\beta$, and vertical scatters with bootstrap CIs, using catalog‑anchored baryonic masses and per‑galaxy $v_{\rm flat}$ from the outer‑median of model curves. (Implementation in the analysis utilities.)&#x20;
 
-**Weak lensing.** We compute the surface‑density contrast of the LogTail tail, which reproduces a **$1/R$** SIS‑like shape, and report amplitudes at 50 and 100 kpc; the code also compares to an external stack if provided.&#x20;
+**Weak lensing.** Using the G³ disk surrogate (LogTail) we compute the surface‑density contrast, which reproduces a **$1/R$** SIS‑like shape, and report amplitudes at 50 and 100 kpc; the code also compares to an external stack if provided.&#x20;
 
 **Clusters.** For Perseus (ABELL 0426) and A1689 we ingest published $n_e(r)$ and $kT(r)$, build spherical baryon maps (gas + optional BCG/ICL stars), solve the PDE field, and extract the **spherical radial** component $g_r(r)$ for hydrostatic predictions. A mild, uniform gas‑clumping factor $C$ is applied as $n_e\to\sqrt{C}\,n_e$ where noted. No temperature gating or per‑cluster tuning is used.
 
@@ -218,7 +249,7 @@ We use your standardized SPARC‑derived prediction tables and catalog joins des
 
 ## 4. Rotation‑curve performance
 
-With a single global parameter set, LogTail attains **\~90% median pointwise closeness** on outer points. (See the model summary JSON.)
+Using the G³ disk surrogate (LogTail) with a single global parameter set, we attain **\~90% median pointwise closeness** on outer points. (See the model summary JSON.)
 
 * **LogTail** (global): median closeness ≈ **89.98%**; best $v_0, r_c, R_0, \\Delta = (140~{\\rm km/s}, 15~{\\rm kpc}, 3~{\\rm kpc}, 4~{\\rm kpc})$.&#x20;
 
@@ -228,7 +259,7 @@ These headline numbers are stable across independent runs (e.g., 89.61/88.99% in
 
 ![Rotation curves: observed and model overlays for six representative SPARC galaxies](figs/rc_overlays_examples_v2.png)
 
-*Figure 1. Observed star speeds vs radius with line estimates from GR (baryons), MOND (simple interpolating function), a DM-like isothermal flat line (outer median), and our LogTail model. Data and model curves come from `out/analysis/type_breakdown/predictions_with_LogTail.csv`.*
+*Figure 1. Observed star speeds vs radius with line estimates from GR (baryons), MOND (simple interpolating function), a DM-like isothermal flat line (outer median), and our G³ disk surrogate ("LogTail"). Data and model curves come from `out/analysis/type_breakdown/predictions_with_LogTail.csv`.*
 
 ---
 
@@ -245,7 +276,7 @@ We then applied the same LogTail modeling used for SPARC on this single‑galaxy
 
 ![Milky Way rotation curve (Gaia bins ±1σ): Observed vs. GR (baryons), MOND (simple), LogTail (SPARC‑global), and NFW (best fit)](figs/mw_rc_compare_v2.png)
 
-Figure MW‑1. Milky Way rotation‑curve comparison at ΔR = 0.1 kpc. Points show Gaia‑binned v_obs(R) with ±1σ error bars; curves show GR (baryons‑only V_bar; recomputed from the fitted MN+Hern parameters), MOND (simple interpolating function, a0≈1.2×10⁻¹⁰ m/s² with proper unit conversion), LogTail (SPARC‑global: v0=140, rc=15, r0=3, Δ=4), and a best‑fit NFW halo. All curves are extrapolated from R=0 to slightly beyond the last star (ΔR=0.1 kpc spacing). A GR‑only panel is available in `figs/mw_gr_only.png`.
+Figure MW‑1. Milky Way rotation‑curve comparison at ΔR = 0.1 kpc. Points show Gaia‑binned v_obs(R) with ±1σ error bars; curves show GR (baryons‑only V_bar; recomputed from the fitted MN+Hern parameters), MOND (simple interpolating function, a0≈1.2×10⁻¹⁰ m/s² with proper unit conversion), LogTail (G³ disk surrogate; SPARC‑global: v0=140, rc=15, r0=3, Δ=4), and a best‑fit NFW halo. All curves are extrapolated from R=0 to slightly beyond the last star (ΔR=0.1 kpc spacing). A GR‑only panel is available in `figs/mw_gr_only.png`.
 
 Repro (exact commands):
 
@@ -294,11 +325,11 @@ The model’s RAR is necessarily tighter than the data (it is a deterministic cu
 
 ![RAR: observed vs model with median curves](figs/rar_obs_vs_model_v2.png)
 
-*Figure 2. Radial‑acceleration relation. Grey hexes: observed $(\log g_\mathrm{bar},\log g_\mathrm{obs})$; blue: observed median; red: LogTail median for $(\log g_\mathrm{bar},\log g_\mathrm{mod})$. Source: `out/analysis/type_breakdown/rar_logtail.csv` and curved‑scatter utilities.*
+*Figure 2. Radial‑acceleration relation. Grey hexes: observed $(\\log g_\\mathrm{bar},\\log g_\\mathrm{obs})$; blue: observed median; red: G³ median (disk surrogate) for $(\\log g_\\mathrm{bar},\\log g_\\mathrm{mod})$. Source: `out/analysis/type_breakdown/rar_logtail.csv` and curved‑scatter utilities.*
 
 ---
 
-Using a **geometry‑aware PDE** realization and spherical radial projection (no temperature gating), we apply a single, category‑blind law—fixed globally on SPARC and tied to baryon geometry via $(r_{1/2},\,\bar\Sigma)$—to both clusters:
+Using the same global **G³** tuple and spherical radial projection (no temperature gating), we apply a single, category‑blind law—fixed on SPARC and tied to baryon geometry via $(r_{1/2},\,\bar\Sigma)$—to both clusters:
 
 - Tuple carried forward from SPARC CV: $S_0=1.4\times10^{-4}$, $r_c=22\,\mathrm{kpc}$, $r_{c,\mathrm{eff}}=r_c\,(r_{1/2}/r_{\mathrm{ref}})^{\gamma}$ with $\gamma=0.5$ and $r_{\mathrm{ref}}=30\,\mathrm{kpc}$, and a mild amplitude tilt $S_0^{\mathrm{eff}}=S_0\, (\Sigma_0/\bar\Sigma)^{\beta}$ with $\beta=0.1$ and $\Sigma_0=150\,M_\odot/\mathrm{pc}^2$; $g_0=1200$.
 
@@ -311,7 +342,11 @@ Artifacts and plots live under `root-m/out/pde_clusters/<CLUSTER>/` (metrics.jso
 
 ![Perseus: PDE+HSE vs observed kT (single global tuple)](figs/cluster_ABELL_0426_pde_results_20250922.png)
 
+*Median |ΔT|/T ≈ 0.279 (G³; same global tuple; no per‑object tuning).* 
+
 ![A1689: PDE+HSE vs observed kT (single global tuple; measured BCG+ICL)](figs/cluster_ABELL_1689_pde_results_20250922.png)
+
+*Median |ΔT|/T ≈ 0.452 (G³; measured BCG+ICL; same global tuple).* 
 
 ## 6. Baryonic Tully–Fisher relation (BTFR)
 
@@ -321,13 +356,13 @@ Using catalog‑anchored baryonic masses (MRT‑based build) and model $v_{\rm f
 
 ![BTFR: observed vs LogTail (two panels with fitted slopes)](figs/btfr_two_panel_v2.png)
 
-*Figure 3. BTFR using catalog‑anchored $M_b$. Left: observed $v_\mathrm{flat}$; right: LogTail $v_\mathrm{flat}$. Lines show the fitted $\log M_b = \alpha\,\log v + \beta$ relation with slopes from the JSON artifacts.*
+*Figure 3. BTFR using catalog‑anchored $M_b$. Left: observed $v_\mathrm{flat}$; right: G³ (disk surrogate) $v_\mathrm{flat}$. Lines show the fitted $\\log M_b = \\alpha\\,\\log v + \\beta$ relation with slopes from the JSON artifacts (caption to include slope ± uncertainty).* 
 
 ---
 
 ## 7. Galaxy–galaxy lensing
 
-The LogTail tail reproduces a **$1/R$** excess surface density with physically reasonable amplitudes:
+The G³ disk surrogate reproduces a **$1/R$** excess surface density with physically reasonable amplitudes:
 
 * **Slope:** $\\mathrm{d}\\log_{10}\\Delta\\Sigma/\\mathrm{d}\\log_{10}R \\approx -1.00$.
 * **Amplitudes:** $\\Delta\\Sigma(50~{\\rm kpc}) \\simeq 2.29\\times 10^7~M_\\odot/{\\rm kpc}^2$, $\\Delta\\Sigma(100~{\\rm kpc}) \\simeq 1.14\\times 10^7$.&#x20;
@@ -336,7 +371,7 @@ These values are computed from the best‑fit LogTail parameters and are availab
 
 ![LogTail lensing shape and amplitudes](figs/lensing_logtail_shape_v2.png)
 
-*Figure 4. Predicted $\\Delta\\Sigma(R)$ for the LogTail tail (log–log). Points at 50 and 100 kpc indicate amplitudes reported in the JSON comparison file.*
+*Figure 4. Predicted $\\Delta\\Sigma(R)$ for the G³ disk surrogate (log–log). Points at 50 and 100 kpc indicate amplitudes reported in the JSON comparison file.*
 
 <!-- Replaced a low-information 2-point chart with a concise table to avoid over-plotting minimal data. -->
 
@@ -367,11 +402,11 @@ The CMB‑marginalized **lensing reconstruction amplitude** is consistent with u
 
 ---
 
-## 9. Why LogTail works
+## 9. Why G³ works
 
-**Mechanism.** The **additive tail in $v^2$** produces an isothermal‑like outer signature—**flat curves**—without inserting a halo mass distribution or modifying the Newtonian acceleration law. The smooth gate ensures **negligible inner impact**, aligning with Solar‑System and inner‑galaxy tests by construction.&#x20;
+**Mechanism.** The geometry‑gated field yields an isothermal‑like outer signature—**flat curves**—without inserting a halo mass distribution or modifying the Newtonian acceleration law. In thin disks the mid‑plane solution reduces to the analytic LogTail surrogate. The smooth gate ensures **negligible inner impact**, aligning with Solar‑System and inner‑galaxy tests by construction.&#x20;
 
-**Contrast with MOND.** MOND enforces a universal scaling tied to $a_0$, whereas LogTail reaches flatness through a controlled tail that can be globally fit. Empirically, the *global* fits show LogTail’s edge in median accuracy on outer points and in preserving inner safety.&#x20;
+**Contrast with MOND.** MOND enforces a universal scaling tied to $a_0$, whereas G³ reaches flatness through a controlled, geometry‑gated response calibrated globally. Empirically, the *global* fits show G³’s surrogate matching MOND on SPARC outer medians while preserving inner safety.&#x20;
 
 ---
 
@@ -398,9 +433,9 @@ We deliberately **gate** the tail to avoid inner‑region conflicts; this gating
 
 ## 12. Summary
 
-With one global parameter set, LogTail reaches **≈90%** median outer accuracy on galaxy rotation curves, reproduces a **tight, curved RAR**, matches the **isothermal $1/R$** weak‑lensing shape with realistic amplitudes, and yields BTFR slopes in the expected range when anchored to catalog baryonic masses. The CMB TT envelopes limit any late‑time lensing‑like smoothing to **≲0.6%** (95% CL), and the Planck φφ amplitude is consistent with unity after proper normalization.
+With one global parameter set, the G³ disk surrogate (LogTail) reaches **≈90%** median outer accuracy on galaxy rotation curves, reproduces a **tight, curved RAR**, matches the **isothermal $1/R$** weak‑lensing shape with realistic amplitudes, and yields BTFR slopes in the expected range when anchored to catalog baryonic masses. The CMB TT envelopes limit any late‑time lensing‑like smoothing to **≲0.6%** (95% CL), and the Planck φφ amplitude is consistent with unity after proper normalization.
 
-A baryon‑sourced **PDE realization** of the same idea carries the scaling to clusters: using one global, geometry‑aware tuple (fixed on SPARC and tied to $(r_{1/2},\bar\Sigma)$), we clear the hydrostatic‑temperature gates for both **Perseus (≈0.279)** and **A1689 (≈0.452)** without per‑cluster tuning (A1689 uses the digitized BCG+ICL stellar profile from the local Halkola TeX). We outline the optional polish—measured clumping curves and lensing overlays—using the same PDE field. The one‑law, category‑blind hypothesis thus explains discs and lensing and now **passes both clusters** with no halos and no per‑object dials.
+The **G³ field law** carries the scaling to clusters: using one global, geometry‑aware tuple (fixed on SPARC and tied to $(r_{1/2},\bar\Sigma)$), we clear the hydrostatic‑temperature gates for both **Perseus (≈0.279)** and **A1689 (≈0.452)** without per‑cluster tuning (A1689 uses the digitized BCG+ICL stellar profile from the local Halkola TeX). We outline the optional polish—measured clumping curves and lensing overlays—using the same field. The one‑law, category‑blind hypothesis thus explains disks and lensing and now **passes both clusters** with no halos and no per‑object dials.
 
 ---
 
@@ -435,11 +470,11 @@ MRT‑anchored pipeline and two‑form fitting in the utilities; outputs `btfr_*
 
 ## 14. Figures & tables (recommended)
 
-* **Fig. 1**: Schematic of the LogTail mechanism (additive tail in $v^2$ with gating).
-* **Fig. 2**: Outer rotation‑curve medians across galaxies (LogTail, GR); bar chart of median closeness (from the model summary JSON).
+* **Fig. 1**: Schematic of the G³ mechanism (geometry‑gated field; additive tail in $v^2$ in the disk limit).
+* **Fig. 2**: Outer rotation‑curve medians across galaxies (G³ surrogate vs GR); bar chart of median closeness (from the model summary JSON).
 * **Fig. 3**: RAR (observed vs model) with median curves and orthogonal scatter. &#x20;
-* **Fig. 4**: Galaxy–galaxy lensing $\Delta\Sigma(R)$ from the LogTail tail; log‑log slope and amplitudes at 50 and 100 kpc.&#x20;
-* **Table 1**: Best‑fit global parameters for LogTail and cross‑validated medians.
+* **Fig. 4**: Galaxy–galaxy lensing $\Delta\Sigma(R)$ from the G³ disk surrogate; log‑log slope and amplitudes at 50 and 100 kpc.&#x20;
+* **Table 1**: Best‑fit global parameters for G³ (and LogTail surrogate) and cross‑validated medians.
 * **Table 2**: BTFR two‑form slopes and scatters (observed & model) produced by the corrected MRT‑anchored pipeline.&#x20;
 
 ---

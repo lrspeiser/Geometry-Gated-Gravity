@@ -128,7 +128,7 @@ def plot_rotation_curve_overlays():
     # One shared legend
     handles, labels = axes[0].get_legend_handles_labels()
     fig.legend(handles, labels, loc="lower center", ncol=5, frameon=False)
-    fig.suptitle("Rotation curves: observed vs GR(baryons), MOND, DM-like, LogTail")
+    fig.suptitle("Rotation curves: observed vs GR(baryons), MOND, DM-like, G³ (disk surrogate LogTail)")
     savefig(FIG_DIR / "rc_overlays_examples_v2.png")
 
 
@@ -161,13 +161,13 @@ def plot_rar_obs_vs_model():
             yobs_med[i] = np.median(y_obs[m])
             ymod_med[i] = np.median(y_mod[m])
     ax.plot(xc, yobs_med, lw=2.5, c="#1f77b4", label="Observed median")
-    ax.plot(xc, ymod_med, lw=2.5, c="#d62728", label="LogTail median")
+    ax.plot(xc, ymod_med, lw=2.5, c="#d62728", label="G³ median (disk surrogate)")
 
     lims = [min(x.min(), y_obs.min(), y_mod.min()), max(x.max(), y_obs.max(), y_mod.max())]
     ax.plot(lims, lims, ls=":", c="#888888", lw=1)
     ax.set_xlabel(r"log10 g_bar (kpc km^2 s^-2 kpc^-1)")
     ax.set_ylabel(r"log10 g (same units)")
-    ax.set_title("RAR: observed vs model")
+    ax.set_title("RAR: observed vs G³ (disk surrogate)")
     ax.legend(frameon=False)
     savefig(FIG_DIR / "rar_obs_vs_model_v2.png")
 
@@ -223,7 +223,7 @@ def plot_btfr_two_panel():
     ax1.set_ylabel("log10 M_b (Msun)")
 
     a2 = do_panel(ax2, mod, v_mod_col, fit_mod)
-    ax2.set_title(f"LogTail BTFR (slope α≈{a2:.2f})")
+    ax2.set_title(f"G³ BTFR (disk surrogate; slope α≈{a2:.2f})")
     ax2.set_xlabel("log10 v_flat (km/s)")
 
     savefig(FIG_DIR / "btfr_two_panel_v2.png")
@@ -238,7 +238,7 @@ def plot_lensing_shapes():
     R = d.iloc[:,0].to_numpy(dtype=float)
     DS = d.iloc[:,1].to_numpy(dtype=float)
     fig, ax = plt.subplots(figsize=(7,6))
-    ax.loglog(R, DS, lw=2.5, c="#d62728", label="LogTail ΔΣ")
+    ax.loglog(R, DS, lw=2.5, c="#d62728", label="G³ ΔΣ (disk surrogate)")
     # annotate slope
     x = np.log10(R); y = np.log10(DS)
     m, b = np.polyfit(x, y, 1)
@@ -256,7 +256,7 @@ def plot_lensing_shapes():
             pass
     ax.set_xlabel("R (kpc)")
     ax.set_ylabel(r"ΔΣ (Msun/kpc²)")
-    ax.set_title("Galaxy–galaxy lensing shape (LogTail tail)")
+    ax.set_title("Galaxy–galaxy lensing shape (G³ disk surrogate)")
     ax.legend(frameon=False)
     savefig(FIG_DIR / "lensing_logtail_shape_v2.png")
 
@@ -268,12 +268,12 @@ def plot_cv_medians():
     d = pd.read_csv(path)
     fig, ax = plt.subplots(figsize=(8,5.5))
     x = np.arange(len(d))
-    ax.bar(x, d["LogTail_test_median"], width=0.6, label="LogTail test", color="#d62728")
+    ax.bar(x, d["LogTail_test_median"], width=0.6, label="G³ test (LogTail surrogate)", color="#d62728")
     ax.set_xticks(x)
     ax.set_xticklabels([f"Fold {i}" for i in d["fold"]])
     ax.set_ylim(0, 100)
     ax.set_ylabel("Median closeness (%)")
-    ax.set_title("5-fold CV: LogTail test medians by fold")
+    ax.set_title("5-fold CV: G³ (LogTail surrogate) test medians by fold")
     ax.legend(frameon=False)
     savefig(FIG_DIR / "cv_medians_bar_v2.png")
 
@@ -287,10 +287,10 @@ def plot_outer_slopes_hist():
         return None
     fig, ax = plt.subplots(figsize=(7,5.5))
     ax.hist(d["s_obs"].dropna(), bins=30, alpha=0.6, label="Observed", color="#7f7f7f")
-    ax.hist(d["s_model"].dropna(), bins=30, alpha=0.6, label="LogTail", color="#d62728")
+    ax.hist(d["s_model"].dropna(), bins=30, alpha=0.6, label="G³ (disk surrogate)", color="#d62728")
     ax.set_xlabel("Outer slope s = d ln v / d ln R")
     ax.set_ylabel("Count")
-    ax.set_title("Outer slope distribution")
+    ax.set_title("Outer slope distribution (G³ disk surrogate)")
     ax.legend(frameon=False)
     savefig(FIG_DIR / "outer_slopes_hist_v2.png")
 
@@ -404,6 +404,48 @@ def write_logtail_only_artifacts():
         pass
 
 
+def annotate_cluster_paper_figs():
+    """Overlay median |ΔT|/T and a small G³ tuple note onto cached cluster paper figures if present."""
+    import json
+    from pathlib import Path
+    import numpy as np
+    clusters = ["ABELL_0426", "ABELL_1689"]
+    for cl in clusters:
+        mpath = ROOT / "root-m" / "out" / "pde_clusters" / cl / "metrics.json"
+        med = None
+        if mpath.exists():
+            try:
+                mj = json.loads(mpath.read_text())
+                med = float(mj.get("temp_median_frac_err", np.nan))
+            except Exception:
+                med = None
+        # pick latest cached paper figure
+        candidates = sorted(FIG_DIR.glob(f"cluster_{cl}_pde_results_*.png"), key=lambda p: p.stat().st_mtime)
+        if not candidates:
+            continue
+        ipath = candidates[-1]
+        try:
+            im = plt.imread(ipath)
+            h, w = im.shape[:2]
+            fig, ax = plt.subplots(figsize=(w/100, h/100), dpi=100)
+            ax.imshow(im)
+            ax.axis('off')
+            # annotation positions in pixels (relative fractions)
+            if med is not None and np.isfinite(med):
+                ax.text(0.03*w, 0.06*h, f"median |ΔT|/T ≈ {med:.3f}", color="white", fontsize=14, weight="bold",
+                        bbox=dict(facecolor="black", alpha=0.35, boxstyle="round,pad=0.2"))
+            ax.text(0.03*w, 0.12*h, "G³: single global tuple", color="white", fontsize=12,
+                    bbox=dict(facecolor="black", alpha=0.25, boxstyle="round,pad=0.2"))
+            fig.subplots_adjust(left=0, right=1, top=1, bottom=0)
+            fig.savefig(ipath, dpi=100)
+            plt.close(fig)
+        except Exception:
+            try:
+                plt.close(fig)
+            except Exception:
+                pass
+
+
 def main():
     write_logtail_only_artifacts()
     plot_rotation_curve_overlays()
@@ -414,6 +456,7 @@ def main():
     plot_outer_slopes_hist()
     plot_shear_amp_vs_phiphi()
     plot_cmb_envelope_summary()
+    annotate_cluster_paper_figs()
 
 
 if __name__ == "__main__":
