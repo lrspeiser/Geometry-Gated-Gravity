@@ -54,6 +54,11 @@ def main():
     ap.add_argument('--g0_kms2_per_kpc', type=float, default=1000.0)
     ap.add_argument('--m_exp', type=float, default=1.0)
     ap.add_argument('--m_grid', type=str, default=None, help='Comma-separated m exponents for CV, e.g., 0.7,1.0,1.3')
+    # Geometry-aware global knobs
+    ap.add_argument('--rc_gamma', type=float, default=0.0)
+    ap.add_argument('--rc_ref_kpc', type=float, default=30.0)
+    ap.add_argument('--sigma_beta', type=float, default=0.0)
+    ap.add_argument('--sigma0_Msun_pc2', type=float, default=150.0)
     ap.add_argument('--axisym_maps', action='store_true')
     ap.add_argument('--rotmod_parquet', default='data/sparc_rotmod_ltg.parquet')
     ap.add_argument('--galaxy', default=None)
@@ -163,7 +168,25 @@ def main():
                                                                                     hz_from_rd=bool(args.hz_from_rd),
                                                                                     rd_to_hz=float(args.rd_to_hz),
                                                                                     hz_floor_kpc=float(args.hz_floor_kpc))
-                                params = SolverParams(S0=float(S0), rc_kpc=float(rc), g0_kms2_per_kpc=float(args.g0_kms2_per_kpc), m_exp=float(mm),
+                                # Geometry scalars from axisym map (spherical M_enc approx)
+                                dR = float(np.mean(np.diff(Rg))) if Rg.size > 1 else 1.0
+                                dZ = float(np.mean(np.diff(Zg))) if Zg.size > 1 else 1.0
+                                R2D = np.broadcast_to(Rg.reshape(1,-1), rho.shape)
+                                dV = (2.0 * np.pi) * R2D * dR * dZ
+                                r_cell = np.sqrt(R2D*R2D + np.broadcast_to(Zg.reshape(-1,1), rho.shape)**2)
+                                mass_cells = np.clip(rho, 0.0, None) * dV
+                                r_flat = r_cell.reshape(-1); m_flat = mass_cells.reshape(-1)
+                                order = np.argsort(r_flat)
+                                M_cum = np.cumsum(m_flat[order])
+                                M_tot = float(M_cum[-1]) if M_cum.size else 0.0
+                                # r_half via percentile on sorted radii
+                                r_sorted = r_flat[order]
+                                r_half = float(np.interp(0.5*M_tot, M_cum, r_sorted)) if M_tot > 0 else float(Rg[len(Rg)//4])
+                                sigma_bar_kpc2 = (0.5*M_tot) / (np.pi * max(r_half, 1e-9)**2) if r_half > 0 else 0.0
+                                sigma_bar_pc2 = sigma_bar_kpc2 / 1.0e6
+                                rc_eff = float(rc) * (max(r_half, 1e-12) / max(args.rc_ref_kpc, 1e-12))**float(args.rc_gamma)
+                                S0_eff = float(S0) * (max(args.sigma0_Msun_pc2, 1e-12) / max(sigma_bar_pc2, 1e-12))**float(args.sigma_beta)
+                                params = SolverParams(S0=S0_eff, rc_kpc=rc_eff, g0_kms2_per_kpc=float(args.g0_kms2_per_kpc), m_exp=float(mm),
                                                        eta=float(args.eta), Mref_Msun=float(args.Mref),
                                                        kappa=float(args.kappa), q_slope=float(args.q_slope),
                                                        chi=float(args.chi), h_aniso_kpc=float(args.h_aniso_kpc),
@@ -272,8 +295,26 @@ def main():
         # PDE map from spherical-equivalent rho_b
         Z, R, rho = sparc_map_from_predictions(in_path, R_max=args.Rmax, Z_max=args.Zmax, NR=args.NR, NZ=args.NZ)
 
+    # Geometry scalars from map (axisym approx)
+    dR = float(np.mean(np.diff(R))) if R.size > 1 else 1.0
+    dZ = float(np.mean(np.diff(Z))) if Z.size > 1 else 1.0
+    R2D = np.broadcast_to(R.reshape(1,-1), rho.shape)
+    dV = (2.0 * np.pi) * R2D * dR * dZ
+    r_cell = np.sqrt(R2D*R2D + np.broadcast_to(Z.reshape(-1,1), rho.shape)**2)
+    mass_cells = np.clip(rho, 0.0, None) * dV
+    r_flat = r_cell.reshape(-1); m_flat = mass_cells.reshape(-1)
+    order = np.argsort(r_flat)
+    M_cum = np.cumsum(m_flat[order])
+    M_tot = float(M_cum[-1]) if M_cum.size else 0.0
+    r_sorted = r_flat[order]
+    r_half = float(np.interp(0.5*M_tot, M_cum, r_sorted)) if M_tot > 0 else float(R[len(R)//4])
+    sigma_bar_kpc2 = (0.5*M_tot) / (np.pi * max(r_half, 1e-9)**2) if r_half > 0 else 0.0
+    sigma_bar_pc2 = sigma_bar_kpc2 / 1.0e6
+    rc_eff = float(args.rc_kpc) * (max(r_half, 1e-12) / max(args.rc_ref_kpc, 1e-12))**float(args.rc_gamma)
+    S0_eff = float(args.S0) * (max(args.sigma0_Msun_pc2, 1e-12) / max(sigma_bar_pc2, 1e-12))**float(args.sigma_beta)
+
     # Solve PDE
-    params = SolverParams(S0=args.S0, rc_kpc=args.rc_kpc, g0_kms2_per_kpc=args.g0_kms2_per_kpc, m_exp=args.m_exp,
+    params = SolverParams(S0=S0_eff, rc_kpc=rc_eff, g0_kms2_per_kpc=args.g0_kms2_per_kpc, m_exp=args.m_exp,
                           eta=float(args.eta), Mref_Msun=float(args.Mref),
                           kappa=float(args.kappa), q_slope=float(args.q_slope),
                           chi=float(args.chi), h_aniso_kpc=float(args.h_aniso_kpc),
@@ -317,7 +358,9 @@ def main():
     pd.DataFrame({'R_kpc': r_eval, 'Vobs_kms': vobs, 'Vbar_kms': vbar,
                   'Vpred_pde_kms': v_pred, 'percent_close': (100.0 - err)}).to_csv(out_csv, index=False)
     # metrics
-    (od/'summary.json').write_text(json.dumps({'S0': args.S0, 'rc_kpc': args.rc_kpc,
+    (od/'summary.json').write_text(json.dumps({'S0_input': args.S0, 'rc_input_kpc': args.rc_kpc,
+                                               'S0_eff': float(params.S0), 'rc_eff_kpc': float(params.rc_kpc),
+                                               'r_half_kpc': r_half, 'sigma_bar_Msun_pc2': sigma_bar_pc2,
                                                'median_percent_close': med}, indent=2))
 
     # plot
