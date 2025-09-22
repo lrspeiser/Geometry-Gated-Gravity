@@ -111,9 +111,21 @@ def main():
     wR = _taper_1d(R, frac=0.1).reshape(1,-1)
     rho = rho * (wZ * wR)
 
-    # Geometry scalars from spherical mass built above
-    M_tot = float(M[-1]) if len(M) else 0.0
-    r_half = float(np.interp(0.5*M_tot, M, r_obs)) if M_tot > 0 else float(R[len(R)//4])
+    # Geometry scalars from input spherical profile (compute M(<r) from gas_profile.csv)
+    g_in = pd.read_csv(cdir/'gas_profile.csv')
+    r_in = np.asarray(g_in['r_kpc'], float)
+    ne_to_rho = _maps.ne_to_rho_gas_Msun_kpc3
+    if 'rho_gas_Msun_per_kpc3' in g_in.columns:
+        rho_in = np.asarray(g_in['rho_gas_Msun_per_kpc3'], float)
+    else:
+        rho_in = ne_to_rho(np.asarray(g_in['n_e_cm3'], float))
+    order_geom = np.argsort(r_in)
+    r_in = r_in[order_geom]; rho_in = rho_in[order_geom]
+    integrand_geom = 4.0*np.pi * (r_in**2) * rho_in
+    M_geom = np.concatenate(([0.0], np.cumsum(0.5*(integrand_geom[1:]+integrand_geom[:-1]) * np.diff(r_in))))
+    M_geom = M_geom[:len(r_in)]
+    M_tot = float(M_geom[-1]) if len(M_geom) else 0.0
+    r_half = float(np.interp(0.5*M_tot, M_geom, r_in)) if M_tot > 0 else float(R[len(R)//4])
     sigma_bar_kpc2 = (0.5*M_tot) / (np.pi * max(r_half, 1e-9)**2) if r_half > 0 else 0.0
     sigma_bar_pc2 = sigma_bar_kpc2 / 1.0e6
     # Effective rc and S0
