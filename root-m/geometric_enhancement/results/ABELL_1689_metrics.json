@@ -1,0 +1,11 @@
+{
+  "cluster": "ABELL_1689",
+  "lambda0": 1.0,
+  "alpha": 2.0,
+  "r_half_kpc": 7.64,
+  "median_residual_enhanced": 1.0,
+  "median_residual_GR": 1.0,
+  "improvement_factor": 1.0,
+  "max_kappa": 1.0196413147628958,
+  "kappa_at_r_half": 1.0000089114417217
+}
