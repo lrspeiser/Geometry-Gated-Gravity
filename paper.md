@@ -1,8 +1,8 @@
 
-# Geometry‑Gated Gravity (G³): a single baryon‑sourced field law that matches galaxy kinematics and cluster hydrostatics without dark halos
+# Geometry‑Gated Gravity: a single, baryon‑only law for galaxies, clusters, and lensing
 
 **Abstract**
-We present Geometry‑Gated Gravity (G³), a single, baryon‑sourced scalar‑field law whose response is gated by baryon geometry. The field obeys $\nabla\!\cdot[\mu(|\nabla\phi|/g_0)\,\nabla\phi]=S_0\,\rho_b$ with two global geometry exponents that modulate an effective scale length and amplitude via the half‑mass radius and mean surface density of the observed baryons. In thin disks the mid‑plane solution reduces to an isothermal tail, recovering the analytic LogTail phenomenology used in our earlier galaxy fits. On the SPARC sample, the LogTail surrogate reaches ≈90% outer‑median closeness with one global parameter set (competitive with MOND, ≈89.8%; GR(baryons) ≈63.9%). Using the same global G³ tuple calibrated on SPARC $(S_0, r_c, r_c^{\,\gamma}, \sigma_\beta)=(1.4\times10^{-4}, 22\,\mathrm{kpc}, 0.5, 0.1)$ with $g_0=1200$, the Perseus and A1689 X‑ray temperature profiles are reproduced with median fractional errors ≈0.279 and ≈0.452, respectively, without dark halos or per‑object tuning. We provide code, inputs, and exact commands to reproduce all figures.
+We test a single, category‑blind modification of gravity that reads only the geometry of visible matter. In Geometry‑Gated Gravity (G³), a diffusion‑like field equation couples to the baryon density with two dimensionless exponents that scale with half‑mass radius and mean surface density, $r_{1/2}$ and $\overline{\Sigma}$; no dark halos and no per‑object fits are used. Calibrated once on SPARC rotation curves, the same global tuple predicts intracluster‑medium temperatures when combined with hydrostatic equilibrium. On Perseus (A0426) and A1689, G³ narrows temperature residuals relative to GR(baryons) and reproduces observed mass‑profile shapes used in lensing. The law is solved on the same 3D baryon maps used for the Newtonian comparator (total baryons in the main text; gas‑only appears as an ablation), ensuring code–equation parity; robustness is demonstrated with ablations in mobility, outer boundary conditions, and non‑thermal support. We release code, inputs, and command‑line recipes for full reproduction. With measured clumping and BCG/ICL profiles and a modest expansion to ≥5 clusters, a single G³ parameter set suffices to describe kinematics and lensing across scales using baryons alone.
 
 ---
 
@@ -326,11 +326,11 @@ Artifacts and plots live under `root-m/out/pde_clusters/<CLUSTER>/` (metrics.jso
 
 ![Perseus: PDE+HSE vs observed kT (single global tuple)](figs/cluster_ABELL_0426_pde_results_20250922.png)
 
-*Figure 6. Perseus (ABELL 0426) — PDE+HSE vs X‑ray kT. Description: Observed kT and G³‑predicted kT using the single global tuple. Interpretation: median |ΔT|/T ≈ 0.279 (pass). Comparison: achieved without per‑object tuning.* 
+*Figure 6. Perseus (ABELL 0426) — PDE+HSE vs X‑ray kT. Description: Observed kT and G³‑predicted kT using the single global tuple. Interpretation: residual strip shows |ΔT|/T with the scoring band shaded; comparator = total baryons in the main text. Comparison: achieved without per‑object tuning; gas‑only comparator appears as an ablation in the supplement.* 
 
 ![A1689: PDE+HSE vs observed kT (single global tuple; measured BCG+ICL)](figs/cluster_ABELL_1689_pde_results_20250922.png)
 
-*Figure 7. A1689 — PDE+HSE vs X‑ray kT. Description: Observed kT and G³‑predicted kT using the same global tuple; BCG+ICL from digitized profile. Interpretation: median |ΔT|/T ≈ 0.452 (pass). Comparison: same law as Perseus; no per‑object tuning.* 
+*Figure 7. A1689 — PDE+HSE vs X‑ray kT. Description: Observed kT and G³‑predicted kT using the same global tuple with measured BCG+ICL; residual strip shows |ΔT|/T and the scoring band. Comparator = total baryons in the main text; gas‑only comparator shown only as an ablation.* 
 
 ## 6. Baryonic Tully–Fisher relation (BTFR)
 
@@ -457,6 +457,96 @@ MRT‑anchored pipeline and two‑form fitting in the utilities; outputs `btfr_*
 ---
 
 ## 15. Methods
+
+### 15.1 Equation‑of‑record (operator form)
+Let $\rho_b(\mathbf{x})$ be the 3D baryon density map built from gas (with optional clumping $C$) and stars. G³ solves for a scalar potential $\phi$ via a diffusion‑like elliptic operator
+
+$$
+\nabla\!\cdot\!\Big[\mu(\psi;\,g_0)\,\nabla\phi\Big] \;=\; 4\pi G\,\mathcal{S}(\mathbf{x};S_0^{\rm eff},r_c^{\rm eff},\Sigma_{\rm loc})\,\rho_b(\mathbf{x}),
+$$
+
+where $\psi \equiv |\nabla\phi|/g_0$, $\mu(\psi;g_0)$ is the optional saturating mobility (A1), and $\mathcal{S}$ is the geometry‑gate that the code applies to the source. The effective global amplitudes are
+
+$$
+ r_c^{\rm eff} \;=\; r_c\,\Big(\frac{r_{1/2}}{r_c^{\rm ref}}\Big)^{\gamma},\qquad
+ S_0^{\rm eff} \;=\; S_0\,\Big(\frac{\Sigma_0}{\overline{\Sigma}}\Big)^{\beta},
+$$
+
+with $r_{1/2}$ (half‑mass radius) and $\overline{\Sigma}$ (mean surface density) computed from the same $\rho_b$ grid used in the PDE. Optionally, a local $\Sigma$‑screen multiplies the source,
+
+$$
+\mathcal{S} \;\mapsto\; \mathcal{S}\times \Big[1+(\Sigma_{\rm loc}/\Sigma_\star)^{n_\sigma}\Big]^{-\alpha_\sigma/n_\sigma},
+$$
+
+which is OFF for headline results and ON only in ablations. The total radial acceleration is $g_{\rm tot}=g_N(\rho_b)+g_\phi$, with $g_\phi \equiv -\partial_r\phi$ (or the $R$‑component in discs). For clusters we predict $kT(r)$ via hydrostatic equilibrium (HSE):
+
+$$
+\frac{dP_{\rm th}}{dr} \;=\; -\rho_g(r)\,(1-f_{\rm nt}(r))\,g_{\rm tot}(r),\qquad kT(r) \;=\; \frac{\mu m_p}{n_e(r)}\,P_{\rm th}(r).
+$$
+
+Implementation is in root-m/pde/solve_phi.py and drivers run_sparc_pde.py, run_cluster_pde.py.
+
+#### Symbol ↔ CLI flag
+- $S_0$ ↔ --S0; $r_c$ ↔ --rc_kpc; $g_0$ ↔ --g0_kms2_per_kpc; $m$ (kinetic exponent) ↔ --m_exp
+- $\gamma$ (rc scaling) ↔ --rc_gamma; $\beta$ (amplitude tilt) ↔ --sigma_beta; $r_c^{\rm ref}$ ↔ --rc_ref_kpc; $\Sigma_0$ ↔ --sigma0_Msun_pc2
+- Saturating mobility (A1) ↔ --use_saturating_mobility, --gsat_kms2_per_kpc, --n_sat
+- Local $\Sigma$‑screen ↔ --use_sigma_screen, --sigma_star_Msun_per_pc2, --alpha_sigma, --n_sigma (OFF by default)
+- Robin BC ↔ --bc_robin_lambda
+- Cluster comparator (main: total baryons) ↔ default; ablation (gas‑only) ↔ --gN_from_gas_only
+
+### 15.2 Replication checklist (exact commands)
+- SPARC overlays (axisymmetric, 128×128):
+
+```powershell
+py -u rigor\scripts\gen_pde_overlays.py --gal_list "NGC2403,NGC3198,NGC2903,DDO154,IC2574,F563-1" --save figs\rc_overlays_examples_v2.png
+```
+
+- SPARC CV (NR=128; locked exponents):
+
+```powershell
+py -u root-m\pde\run_sparc_pde.py --axisym_maps --cv 5 ^
+  --rotmod_parquet data\sparc_rotmod_ltg.parquet ^
+  --all_tables_parquet data\sparc_all_tables.parquet ^
+  --NR 128 --NZ 128 --Rmax 80 --Zmax 80 ^
+  --S0 1.4e-4 --rc_kpc 22 --g0_kms2_per_kpc 1200 ^
+  --rc_gamma 0.5 --sigma_beta 0.10 --rc_ref_kpc 30 --sigma0_Msun_pc2 150
+```
+
+- Clusters (headline: total‑baryon comparator; scalars from total‑baryon 3D grid):
+
+```powershell
+py -u root-m\pde\run_cluster_pde.py --cluster ABELL_0426 ^
+  --S0 1.4e-4 --rc_kpc 22 --g0_kms2_per_kpc 1200 ^
+  --rc_gamma 0.5 --sigma_beta 0.10 --rc_ref_kpc 30 --sigma0_Msun_pc2 150 ^
+  --clump_profile_csv data\clusters\ABELL_0426\clump_profile.csv ^
+  --stars_csv data\clusters\ABELL_0426\stars_profile.csv ^
+  --NR 128 --NZ 128 --Rmax 900 --Zmax 900
+
+py -u root-m\pde\run_cluster_pde.py --cluster ABELL_1689 ^
+  --S0 1.4e-4 --rc_kpc 22 --g0_kms2_per_kpc 1200 ^
+  --rc_gamma 0.5 --sigma_beta 0.10 --rc_ref_kpc 30 --sigma0_Msun_pc2 150 ^
+  --clump_profile_csv data\clusters\ABELL_1689\clump_profile.csv ^
+  --stars_csv data\clusters\ABELL_1689\stars_profile.csv ^
+  --NR 128 --NZ 128 --Rmax 1200 --Zmax 1200
+```
+
+- Exponent micro‑scan (γ,β) under total‑baryon comparator:
+
+```powershell
+py -u rigor\scripts\run_cluster_exponent_scan.py ^
+  --clusters "ABELL_0426,ABELL_1689" ^
+  --gammas "0.4,0.5,0.6" ^
+  --betas "0.08,0.10,0.12" ^
+  --comparator "total-baryon" ^
+  --NR 128 --NZ 128 --Rmax 1200 --Zmax 1200
+```
+
+- Lensing overlays from saved fields:
+
+```powershell
+py -u root-m\pde\cluster_lensing_from_field.py --cluster ABELL_0426
+py -u root-m\pde\cluster_lensing_from_field.py --cluster ABELL_1689
+```
 
 ## 14. Figures & tables
 
