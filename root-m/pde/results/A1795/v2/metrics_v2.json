@@ -1,0 +1,36 @@
+{
+  "cluster": "A1795",
+  "median_GR": 2.0686567283955867e+21,
+  "configs": {
+    "weak": {
+      "params": {
+        "name": "weak",
+        "gamma": 0.1,
+        "lambda0": 0.3,
+        "alpha_grad": 1.0
+      },
+      "median_residual": 2.296539686129592e+21,
+      "improvement_pct": -11.01598707054443
+    },
+    "moderate": {
+      "params": {
+        "name": "moderate",
+        "gamma": 0.3,
+        "lambda0": 0.5,
+        "alpha_grad": 1.5
+      },
+      "median_residual": 2.2964947091976235e+21,
+      "improvement_pct": -11.01381286100298
+    },
+    "strong": {
+      "params": {
+        "name": "strong",
+        "gamma": 0.5,
+        "lambda0": 0.7,
+        "alpha_grad": 2.0
+      },
+      "median_residual": 2.2964887467563056e+21,
+      "improvement_pct": -11.013524633321904
+    }
+  }
+}

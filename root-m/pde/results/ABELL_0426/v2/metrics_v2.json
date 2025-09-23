@@ -1,0 +1,36 @@
+{
+  "cluster": "ABELL_0426",
+  "median_GR": 1.0,
+  "configs": {
+    "weak": {
+      "params": {
+        "name": "weak",
+        "gamma": 0.1,
+        "lambda0": 0.3,
+        "alpha_grad": 1.0
+      },
+      "median_residual": 1.0,
+      "improvement_pct": 0.0
+    },
+    "moderate": {
+      "params": {
+        "name": "moderate",
+        "gamma": 0.3,
+        "lambda0": 0.5,
+        "alpha_grad": 1.5
+      },
+      "median_residual": 1.0,
+      "improvement_pct": 0.0
+    },
+    "strong": {
+      "params": {
+        "name": "strong",
+        "gamma": 0.5,
+        "lambda0": 0.7,
+        "alpha_grad": 2.0
+      },
+      "median_residual": 1.0,
+      "improvement_pct": 0.0
+    }
+  }
+}
