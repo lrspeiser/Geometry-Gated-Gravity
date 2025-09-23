@@ -1,0 +1,41 @@
+{
+  "cluster": "A2029",
+  "configs": {
+    "baseline": {
+      "params": {
+        "name": "baseline",
+        "lambda0": 0.0,
+        "use_geometric_enhancement": false
+      },
+      "median_residual": 1.4391705762036792e+24,
+      "max_g_phi_over_gN": 19363407338626.957
+    },
+    "weak": {
+      "params": {
+        "name": "weak",
+        "lambda0": 0.3,
+        "alpha_grad": 1.0
+      },
+      "median_residual": 1.5038312198781023e+24,
+      "max_g_phi_over_gN": 19312167309195.82
+    },
+    "moderate": {
+      "params": {
+        "name": "moderate",
+        "lambda0": 0.5,
+        "alpha_grad": 1.5
+      },
+      "median_residual": 1.4478473054812632e+24,
+      "max_g_phi_over_gN": 19370932552445.387
+    },
+    "strong": {
+      "params": {
+        "name": "strong",
+        "lambda0": 0.8,
+        "alpha_grad": 2.0
+      },
+      "median_residual": 1.4404228035866244e+24,
+      "max_g_phi_over_gN": 19369127100357.355
+    }
+  }
+}

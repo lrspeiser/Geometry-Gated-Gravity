@@ -1,0 +1,41 @@
+{
+  "cluster": "ABELL_0426",
+  "configs": {
+    "baseline": {
+      "params": {
+        "name": "baseline",
+        "lambda0": 0.0,
+        "use_geometric_enhancement": false
+      },
+      "median_residual": 8.100626555453706e+22,
+      "max_g_phi_over_gN": 1355997186973158.2
+    },
+    "weak": {
+      "params": {
+        "name": "weak",
+        "lambda0": 0.3,
+        "alpha_grad": 1.0
+      },
+      "median_residual": 8.132052438041259e+22,
+      "max_g_phi_over_gN": 1442573166552525.5
+    },
+    "moderate": {
+      "params": {
+        "name": "moderate",
+        "lambda0": 0.5,
+        "alpha_grad": 1.5
+      },
+      "median_residual": 8.132052438041259e+22,
+      "max_g_phi_over_gN": 1442573166552525.5
+    },
+    "strong": {
+      "params": {
+        "name": "strong",
+        "lambda0": 0.8,
+        "alpha_grad": 2.0
+      },
+      "median_residual": 8.132052438041259e+22,
+      "max_g_phi_over_gN": 1442573166552525.5
+    }
+  }
+}
