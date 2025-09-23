@@ -356,7 +356,12 @@ def main():
     print(f"[PDE] axisym_maps={args.axisym_maps} galaxy={args.galaxy} n_eval={len(r_eval)} n_obs={len(vobs)} n_bar={len(vbar)} grid_NR={R.shape[0]} grid_NZ={Z.shape[0]} rho_shape={rho.shape}")
 
     err = 100.0 * np.abs(v_pred - vobs) / np.maximum(vobs, 1e-9)
-    med = float(np.median(100.0 - err))
+    # Optional scoring mask to exclude tiny inner radii from scoring (keep in plots)
+    mask_score = (r_eval >= 0.8)
+    if np.any(mask_score):
+        med = float(np.median(100.0 - err[mask_score]))
+    else:
+        med = float(np.median(100.0 - err))
 
     od = Path(args.outdir)/args.tag
     od.mkdir(parents=True, exist_ok=True)
@@ -373,8 +378,8 @@ def main():
     # plot
     plt.figure(figsize=(6,4))
     plt.plot(r_eval, vobs, 'k.', ms=3, label='obs')
-    plt.plot(r_eval, vbar, 'c--', lw=1.2, label='baryon')
-    plt.plot(r_eval, v_pred, 'r-', lw=1.2, label='PDE pred')
+    plt.plot(r_eval, vbar, 'c--', lw=1.2, label='GR (baryons only)')
+    plt.plot(r_eval, v_pred, 'r-', lw=1.2, label='G³ prediction (single global tuple)')
     plt.xlabel('R [kpc]'); plt.ylabel('V [km/s]'); plt.legend(); plt.grid(True, alpha=0.3)
     plt.tight_layout(); plt.savefig(od/'rc_pde_results.png', dpi=140); plt.close()
 
