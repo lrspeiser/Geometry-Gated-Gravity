@@ -248,6 +248,11 @@ def main():
     M_R = np.interp(R, r_obs, M, left=M[0], right=M[-1])
     g_N_R = G * M_R / np.maximum(R**2, 1e-9)
     g_tot_R = g_N_R + g_phi_R
+
+    # Ensure output directory exists early for summaries
+    od = Path(args.outdir)/args.cluster
+    od.mkdir(parents=True, exist_ok=True)
+
     # Diagnostics (restrict to observed temperature radii)
     t = pd.read_csv(cdir/'temp_profile.csv')
     rT = np.asarray(t['r_kpc'], float)
@@ -291,8 +296,6 @@ def main():
     frac_GR = np.median(np.abs(kT_pred_on_obs_GR - kT)/np.maximum(kT, 1e-12))
 
     # Output
-    od = Path(args.outdir)/args.cluster
-    od.mkdir(parents=True, exist_ok=True)
     with open(od/'metrics.json','w') as f:
         json.dump({'cluster': args.cluster,
                    'S0_input': args.S0,
