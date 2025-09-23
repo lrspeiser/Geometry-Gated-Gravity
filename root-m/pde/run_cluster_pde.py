@@ -113,65 +113,91 @@ def main():
     wR = _taper_1d(R, frac=0.1).reshape(1,-1)
     rho = rho * (wZ * wR)
 
-    # Geometry scalars from TOTAL baryons (gas+stars) after clumping — parity with SPARC
-    # Build rho_gas(r) with clumping applied
-    g_in = pd.read_csv(cdir/'gas_profile.csv')
-    r_in = np.asarray(g_in['r_kpc'], float)
-    ne_to_rho = _maps.ne_to_rho_gas_Msun_kpc3
-    if 'rho_gas_Msun_per_kpc3' in g_in.columns:
-        rho_gas = np.asarray(g_in['rho_gas_Msun_per_kpc3'], float)
-    else:
-        rho_gas = ne_to_rho(np.asarray(g_in['n_e_cm3'], float))
-    # Apply clumping: use radial C(r) if provided; else uniform sqrt(C)
-    C_prof = None
-    if args.clump_profile_csv:
-        try:
-            cp = pd.read_csv(Path(args.clump_profile_csv))
-            r_cp = np.asarray(cp['r_kpc'], float)
-            C_cp = np.asarray(cp['C'], float)
-            C_prof = np.interp(r_in, r_cp, C_cp, left=C_cp[0], right=C_cp[-1])
-        except Exception:
-            C_prof = None
-    C_uni = float(np.sqrt(max(float(args.clump), 1.0)))
-    if C_prof is not None:
-        rho_gas_eff = rho_gas * np.sqrt(np.maximum(C_prof, 1.0))
-    else:
-        rho_gas_eff = rho_gas * C_uni
-
-    # Optional stars profile (BCG/ICL): interpolate onto r_in if present
-    rho_star_eff = np.zeros_like(r_in, dtype=float)
-    s_path = Path(args.stars_csv) if args.stars_csv else (cdir/"stars_profile.csv")
-    if s_path is not None and Path(s_path).exists():
-        try:
-            s = pd.read_csv(s_path)
-            rs = np.asarray(s['r_kpc'], float)
-            rho_s = np.asarray(s['rho_star_Msun_per_kpc3'], float)
-            # Set stellar density to zero outside provided profile range
-            rho_star_eff = np.interp(r_in, rs, rho_s, left=0.0, right=0.0)
-        except Exception:
-            rho_star_eff = np.zeros_like(r_in, dtype=float)
-
-    # Total baryon density profile
-    rho_tot = rho_gas_eff + rho_star_eff
-
-    # Ensure ascending radius for stable integrations
-    order_geom = np.argsort(r_in)
-    r_in = r_in[order_geom]
-    rho_tot = rho_tot[order_geom]
-
-    # Spherical cumulative mass and geometry scalars
-    dr = np.gradient(r_in)
-    shell_vol = 4.0 * np.pi * (r_in**2) * dr
-    M_shell = rho_tot * shell_vol
-    M_cum = np.cumsum(M_shell)
+    # Geometry scalars from the SAME rho grid used by the PDE (parity with SPARC axisym path)
+    dR = float(np.mean(np.diff(R))) if R.size > 1 else 1.0
+    dZ = float(np.mean(np.diff(Z))) if Z.size > 1 else 1.0
+    R2D = np.broadcast_to(R.reshape(1,-1), rho.shape)
+    dV = (2.0 * np.pi) * R2D * dR * dZ
+    Z2D = np.broadcast_to(Z.reshape(-1,1), rho.shape)
+    r_cell = np.sqrt(R2D*R2D + Z2D*Z2D)
+    mass_cells = np.clip(rho, 0.0, None) * dV
+    r_flat = r_cell.reshape(-1)
+    m_flat = mass_cells.reshape(-1)
+    order = np.argsort(r_flat)
+    r_sorted = r_flat[order]
+    M_cum = np.cumsum(m_flat[order])
     M_tot = float(M_cum[-1]) if M_cum.size else 0.0
-    r_half = float(np.interp(0.5*M_tot, M_cum, r_in)) if M_tot > 0 else float(R[len(R)//4])
+    r_half = float(np.interp(0.5*M_tot, M_cum, r_sorted)) if M_tot > 0 else float(R[len(R)//4])
     sigma_bar_kpc2 = (0.5*M_tot) / (np.pi * max(r_half, 1e-9)**2) if r_half > 0 else 0.0
     sigma_bar_pc2 = sigma_bar_kpc2 / 1.0e6
 
     # Effective rc and S0
     rc_eff = float(args.rc_kpc) * (max(r_half, 1e-12) / max(args.rc_ref_kpc, 1e-12))**float(args.rc_gamma)
     S0_eff = float(args.S0) * (max(args.sigma0_Msun_pc2, 1e-12) / max(sigma_bar_pc2, 1e-12))**float(args.sigma_beta)
+
+    # --- Audit masses for sanity (integrate gas and stars 1D profiles) ---
+    try:
+        g_in = pd.read_csv(cdir/'gas_profile.csv')
+        r_in = np.asarray(g_in['r_kpc'], float)
+        if 'rho_gas_Msun_per_kpc3' in g_in.columns:
+            rho_gas = np.asarray(g_in['rho_gas_Msun_per_kpc3'], float)
+        else:
+            rho_gas = _maps.ne_to_rho_gas_Msun_kpc3(np.asarray(g_in['n_e_cm3'], float))
+        # Apply clumping: use radial C(r) if provided; else uniform sqrt(C)
+        C_prof = None
+        if args.clump_profile_csv:
+            try:
+                cp = pd.read_csv(Path(args.clump_profile_csv))
+                r_cp = np.asarray(cp['r_kpc'], float)
+                C_cp = np.asarray(cp['C'], float)
+                C_prof = np.interp(r_in, r_cp, C_cp, left=C_cp[0], right=C_cp[-1])
+            except Exception:
+                C_prof = None
+        C_uni = float(np.sqrt(max(float(args.clump), 1.0)))
+        if C_prof is not None:
+            rho_gas_eff = rho_gas * np.sqrt(np.maximum(C_prof, 1.0))
+        else:
+            rho_gas_eff = rho_gas * C_uni
+        # stars 1D
+        rho_star_eff = np.zeros_like(r_in, dtype=float)
+        s_path = Path(args.stars_csv) if args.stars_csv else (cdir/"stars_profile.csv")
+        if s_path is not None and Path(s_path).exists():
+            try:
+                s = pd.read_csv(s_path)
+                rs = np.asarray(s['r_kpc'], float)
+                rho_s = np.asarray(s['rho_star_Msun_per_kpc3'], float)
+                rho_star_eff = np.interp(r_in, rs, rho_s, left=0.0, right=0.0)
+            except Exception:
+                rho_star_eff = np.zeros_like(r_in, dtype=float)
+        # cumulative masses
+        order_geom = np.argsort(r_in)
+        r_in = r_in[order_geom]
+        rho_gas_eff = rho_gas_eff[order_geom]
+        rho_star_eff = rho_star_eff[order_geom]
+        integ_g = 4.0*np.pi * (r_in**2) * rho_gas_eff
+        integ_s = 4.0*np.pi * (r_in**2) * rho_star_eff
+        M_gas = np.concatenate(([0.0], np.cumsum(0.5*(integ_g[1:]+integ_g[:-1]) * np.diff(r_in))))
+        M_gas = M_gas[:len(r_in)]
+        M_star = np.concatenate(([0.0], np.cumsum(0.5*(integ_s[1:]+integ_s[:-1]) * np.diff(r_in))))
+        M_star = M_star[:len(r_in)]
+        Mgas_100 = float(np.interp(100.0, r_in, M_gas))
+        Mgas_500 = float(np.interp(500.0, r_in, M_gas))
+        Mstar_100 = float(np.interp(100.0, r_in, M_star))
+        Mstar_500 = float(np.interp(500.0, r_in, M_star))
+        print(f"[AUDIT] {args.cluster}: M_gas(<100)={Mgas_100:.2e} Msun, M_star(<100)={Mstar_100:.2e} Msun")
+        print(f"[AUDIT] {args.cluster}: M_gas(<500)={Mgas_500:.2e} Msun, M_star(<500)={Mstar_500:.2e} Msun")
+        if Mstar_500 > 0.5 * max(Mgas_500, 1e-12):
+            print("[AUDIT][WARN] Stellar mass dominates at 500 kpc; check stars_profile units and tails.")
+    except Exception as e:
+        print(f"[AUDIT] Skipped mass audit due to: {e}")
+
+    # Optional: enable gentle saturation when using total-baryon gN to avoid over-shoot
+    if bool(args.gN_from_total_baryons) and not bool(args.use_saturating_mobility):
+        args.use_saturating_mobility = True
+        if float(args.gsat_kms2_per_kpc) <= 0:
+            args.gsat_kms2_per_kpc = 2500.0
+        if float(args.n_sat) <= 0:
+            args.n_sat = 2.0
 
     # Solve PDE
     params = SolverParams(S0=S0_eff, rc_kpc=rc_eff, g0_kms2_per_kpc=args.g0_kms2_per_kpc, m_exp=args.m_exp,
