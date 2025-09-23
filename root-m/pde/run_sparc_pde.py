@@ -94,6 +94,11 @@ def main():
     ap.add_argument('--beta_env', type=float, default=0.0)
     ap.add_argument('--rho_ref_Msun_per_kpc3', type=float, default=1.0e6)
     ap.add_argument('--env_L_kpc', type=float, default=150.0)
+    # Local surface-density screen (category-blind; off by default for backward compatibility)
+    ap.add_argument('--use_sigma_screen', action='store_true', help='Enable local surface-density screen of the PDE source')
+    ap.add_argument('--sigma_star_Msun_per_pc2', type=float, default=150.0, help='Surface-density threshold Sigma* [Msun/pc^2] for sigma screen')
+    ap.add_argument('--alpha_sigma', type=float, default=1.0, help='Strength of sigma screen (alpha)')
+    ap.add_argument('--n_sigma', type=float, default=2.0, help='Slope parameter of sigma screen (n)')
     args = ap.parse_args()
 
     in_path = Path(args.in_path)
@@ -204,6 +209,10 @@ def main():
                                                        beta_env=float(args.beta_env),
                                                        rho_ref_Msun_per_kpc3=float(args.rho_ref_Msun_per_kpc3),
                                                        env_L_kpc=float(args.env_L_kpc),
+                                                       use_sigma_screen=bool(args.use_sigma_screen),
+                                                       sigma_star_Msun_per_pc2=float(args.sigma_star_Msun_per_pc2),
+                                                       alpha_sigma=float(args.alpha_sigma),
+                                                       n_sigma=float(args.n_sigma),
                                                        max_iter=int(args.cv_max_iter), tol=float(args.cv_tol))
                                 phi, gR, gZ = solve_axisym(Rg, Zg, rho, params)
                                 r_eval = per_gal[gname]['r']
@@ -245,6 +254,10 @@ def main():
                                                   eta=float(args.eta), Mref_Msun=float(args.Mref),
                                                   kappa=float(args.kappa), q_slope=float(args.q_slope),
                                                   chi=float(args.chi), h_aniso_kpc=float(args.h_aniso_kpc),
+                                                  use_sigma_screen=bool(args.use_sigma_screen),
+                                                  sigma_star_Msun_per_pc2=float(args.sigma_star_Msun_per_pc2),
+                                                  alpha_sigma=float(args.alpha_sigma),
+                                                  n_sigma=float(args.n_sigma),
                                                   max_iter=int(args.cv_max_iter), tol=float(args.cv_tol))
                             phi, gR, gZ = solve_axisym(Rg, Zg, rho, params)
                             r_eval = per_gal[gname]['r']
@@ -332,6 +345,10 @@ def main():
                           beta_env=float(args.beta_env),
                           rho_ref_Msun_per_kpc3=float(args.rho_ref_Msun_per_kpc3),
                           env_L_kpc=float(args.env_L_kpc),
+                          use_sigma_screen=bool(args.use_sigma_screen),
+                          sigma_star_Msun_per_pc2=float(args.sigma_star_Msun_per_pc2),
+                          alpha_sigma=float(args.alpha_sigma),
+                          n_sigma=float(args.n_sigma),
                           bc_robin_lambda=float(args.bc_robin_lambda))
     phi, gR, gZ = solve_axisym(R, Z, rho, params)
 
@@ -373,6 +390,10 @@ def main():
     (od/'summary.json').write_text(json.dumps({'S0_input': args.S0, 'rc_input_kpc': args.rc_kpc,
                                                'S0_eff': float(params.S0), 'rc_eff_kpc': float(params.rc_kpc),
                                                'r_half_kpc': r_half, 'sigma_bar_Msun_pc2': sigma_bar_pc2,
+                                               'use_sigma_screen': bool(args.use_sigma_screen),
+                                               'sigma_star_Msun_per_pc2': float(args.sigma_star_Msun_per_pc2),
+                                               'alpha_sigma': float(args.alpha_sigma),
+                                               'n_sigma': float(args.n_sigma),
                                                'median_percent_close': med}, indent=2))
 
     # plot

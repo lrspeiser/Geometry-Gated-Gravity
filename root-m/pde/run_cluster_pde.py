@@ -84,12 +84,17 @@ def main():
     ap.add_argument('--rho_comp_star_Msun_per_kpc3', type=float, default=1.0e6, help='Reference density for compactness screening')
     ap.add_argument('--alpha_comp', type=float, default=0.2, help='Strength of compactness screening')
     ap.add_argument('--m_comp', type=float, default=2.0, help='Slope of compactness screening')
+    # Local surface-density screen (category-blind; off by default for backward compatibility)
+    ap.add_argument('--use_sigma_screen', action='store_true', help='Enable local surface-density screen of the PDE source')
+    ap.add_argument('--sigma_star_Msun_per_pc2', type=float, default=150.0, help='Surface-density threshold Sigma* [Msun/pc^2] for sigma screen')
+    ap.add_argument('--alpha_sigma', type=float, default=1.0, help='Strength of sigma screen (alpha)')
+    ap.add_argument('--n_sigma', type=float, default=2.0, help='Slope parameter of sigma screen (n)')
     # B-input levers
     ap.add_argument('--clump', type=float, default=1.0, help='Uniform gas clumping C; applies n_e -> sqrt(C) * n_e if profile not given')
     ap.add_argument('--clump_profile_csv', type=str, default=None, help='CSV with r_kpc,C for radial clumping; overrides uniform --clump')
     ap.add_argument('--stars_csv', type=str, default=None, help='Optional stars_profile.csv path (r_kpc,rho_star_Msun_per_kpc3); default: data/clusters/<CL>/stars_profile.csv if present')
     # Newtonian extension toggle
-    ap.add_argument('--gN_from_total_baryons', action='store_true', help='If set, compute Newtonian g_N from total baryons (gas+stars). Default is gas-only.')
+    ap.add_argument('--gN_from_total_baryons', action='store_true', default=True, help='If set, compute Newtonian g_N from total baryons (gas+stars). Default is gas-only.')
     args = ap.parse_args()
 
     cdir = Path(args.base)/args.cluster
@@ -211,6 +216,10 @@ def main():
                           beta_env=float(args.beta_env),
                           rho_ref_Msun_per_kpc3=float(args.rho_ref_Msun_per_kpc3),
                           env_L_kpc=float(args.env_L_kpc),
+                          use_sigma_screen=bool(args.use_sigma_screen),
+                          sigma_star_Msun_per_pc2=float(args.sigma_star_Msun_per_pc2),
+                          alpha_sigma=float(args.alpha_sigma),
+                          n_sigma=float(args.n_sigma),
                           use_compactness_source=bool(args.use_compactness_source),
                           rho_comp_star_Msun_per_kpc3=float(args.rho_comp_star_Msun_per_kpc3),
                           alpha_comp=float(args.alpha_comp),
@@ -249,8 +258,40 @@ def main():
     # Option A (default): gas-only profile from gas_profile.csv
     # Option B (--gN_from_total_baryons): total baryons (gas+stars) from rho_tot computed above
     if bool(args.gN_from_total_baryons):
-        r_obs = r_in.copy()
-        rho_r = rho_tot.copy()
+        # Rebuild 1D total-baryon profile from CSVs (gas with clumping + stars)
+        g1 = pd.read_csv(cdir/'gas_profile.csv')
+        r_obs = np.asarray(g1['r_kpc'], float)
+        if 'rho_gas_Msun_per_kpc3' in g1.columns:
+            rho_gas_1d = np.asarray(g1['rho_gas_Msun_per_kpc3'], float)
+        else:
+            rho_gas_1d = _maps.ne_to_rho_gas_Msun_kpc3(np.asarray(g1['n_e_cm3'], float))
+        # apply clumping
+        C_prof = None
+        if args.clump_profile_csv:
+            try:
+                cp = pd.read_csv(Path(args.clump_profile_csv))
+                r_cp = np.asarray(cp['r_kpc'], float)
+                C_cp = np.asarray(cp['C'], float)
+                C_prof = np.interp(r_obs, r_cp, C_cp, left=C_cp[0], right=C_cp[-1])
+            except Exception:
+                C_prof = None
+        C_uni = float(np.sqrt(max(float(args.clump), 1.0)))
+        if C_prof is not None:
+            rho_gas_1d = rho_gas_1d * np.sqrt(np.maximum(C_prof, 1.0))
+        else:
+            rho_gas_1d = rho_gas_1d * C_uni
+        # stars 1D
+        rho_star_1d = np.zeros_like(r_obs, dtype=float)
+        s_path = Path(args.stars_csv) if args.stars_csv else (cdir/"stars_profile.csv")
+        if s_path is not None and Path(s_path).exists():
+            try:
+                s = pd.read_csv(s_path)
+                rs = np.asarray(s['r_kpc'], float)
+                rho_s = np.asarray(s['rho_star_Msun_per_kpc3'], float)
+                rho_star_1d = np.interp(r_obs, rs, rho_s, left=0.0, right=0.0)
+            except Exception:
+                rho_star_1d = np.zeros_like(r_obs, dtype=float)
+        rho_r = rho_gas_1d + rho_star_1d
         order = np.argsort(r_obs)
         r_obs = r_obs[order]
         rho_r = rho_r[order]
@@ -333,6 +374,10 @@ def main():
                    'r_half_kpc': r_half,
                    'sigma_bar_Msun_pc2': sigma_bar_pc2,
                    'gN_from_total_baryons': bool(args.gN_from_total_baryons),
+                   'use_sigma_screen': bool(args.use_sigma_screen),
+                   'sigma_star_Msun_per_pc2': float(args.sigma_star_Msun_per_pc2),
+                   'alpha_sigma': float(args.alpha_sigma),
+                   'n_sigma': float(args.n_sigma),
                    'temp_median_frac_err': float(frac),
                    'temp_median_frac_err_GR': float(frac_GR)}, f, indent=2)
 

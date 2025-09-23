@@ -7,6 +7,9 @@ Provides spherical builders for clusters (from n_e(r), rho_star(r)), and
 spherical-equivalent maps for SPARC (from Vbar(r)).
 
 All maps are returned as (Z,R) grids with rho_b(R,z) in Msun/kpc^3.
+
+Note: Geometry scalars and any local screens are computed downstream from the
+same rho grid used by the PDE (gas×√C + stars) to maintain a single convention.
 """
 import numpy as np
 import pandas as pd

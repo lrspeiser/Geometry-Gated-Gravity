@@ -66,6 +66,12 @@ class SolverParams:
     rho_ref_Msun_per_kpc3: float = 1.0e6
     env_L_kpc: float = 150.0
 
+    # NEW: local surface-density screen (multiplies source; uses Sigma_loc from rho grid)
+    use_sigma_screen: bool = False
+    sigma_star_Msun_per_pc2: float = 150.0
+    alpha_sigma: float = 1.0
+    n_sigma: float = 2.0
+
     # NEW: compactness-aware source modulation (global, density-based screening)
     use_compactness_source: bool = False
     rho_comp_star_Msun_per_kpc3: float = 1.0e6
@@ -152,6 +158,29 @@ def solve_axisym(R: np.ndarray, Z: np.ndarray, rho_Msun_kpc3: np.ndarray, params
         else:
             boost = 1.0
         S_eff = S_eff * boost
+
+    # Local surface-density screen (sigma screen)
+    if params.use_sigma_screen:
+        # Sigma_loc(R) = ∫ rho(R,z) dz [Msun/kpc^2]; convert to Msun/pc^2
+        try:
+            Sigma_loc_kpc2 = np.trapz(np.clip(rho_Msun_kpc3, 0.0, None), Z, axis=0)
+        except Exception:
+            # Fallback: assume uniform spacing in Z if integration fails
+            Sigma_loc_kpc2 = np.sum(np.clip(rho_Msun_kpc3, 0.0, None), axis=0) * max(dZ, 1e-9)
+        Sigma_loc_pc2 = Sigma_loc_kpc2 / 1.0e6
+        denom = max(params.sigma_star_Msun_per_pc2, 1e-30)
+        m = max(params.n_sigma, 1e-9)
+        ratio = np.maximum(Sigma_loc_pc2 / denom, 0.0)
+        S_R = np.power(1.0 + np.power(ratio, m), -params.alpha_sigma / m)
+        # Broadcast across Z to (NZ, NR)
+        S_2D = np.broadcast_to(S_R.reshape(1, -1), S_eff.shape)
+        S_eff = S_eff * S_2D
+        # Diagnostics
+        try:
+            q = np.quantile(Sigma_loc_pc2, [0.0, 0.5, 0.95])
+            print(f"[PDE] Sigma-screen ON: Sigma*={params.sigma_star_Msun_per_pc2:.3g} Msun/pc^2, alpha={params.alpha_sigma}, n={params.n_sigma}; Sigma_loc pc2 min/med/p95 = {q[0]:.3g}/{q[1]:.3g}/{q[2]:.3g}")
+        except Exception:
+            print(f"[PDE] Sigma-screen ON: Sigma*={params.sigma_star_Msun_per_pc2:.3g} Msun/pc^2, alpha={params.alpha_sigma}, n={params.n_sigma}")
 
     # Compactness-aware modulation of source (density-based screening)
     if params.use_compactness_source:

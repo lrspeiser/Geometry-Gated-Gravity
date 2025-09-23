@@ -4,6 +4,9 @@ root-m/pde/baryon_maps_axisym.py
 
 Axisymmetric baryon map builders for SPARC using rotmod components.
 
+Note: Geometry scalars and any local screens are computed downstream from the
+same rho grid used by the PDE (gas×√C + stars) to maintain a single convention.
+
 We approximate component surface densities from the enclosed mass curves:
   M(<R) = V_comp(R)^2 * R / G  =>  Sigma(R) = (1/(2πR)) dM/dR
 and place mass vertically with a single exponential scale height hz_kpc:
