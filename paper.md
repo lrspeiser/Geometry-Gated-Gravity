@@ -8,7 +8,7 @@ We present Geometry‑Gated Gravity (G³), a single, baryon‑sourced scalar‑f
 
 ## 1. Motivation and context
 
-Flat galaxy rotation curves and the tightness of the baryonic Tully–Fisher relation (BTFR) and RAR have long motivated additions to GR: particulate dark matter halos, or modified dynamics (e.g., MOND). Dark halos robustly explain flat curves and lensing, but at the cost of additional mass components and profile choices; MOND encodes flatness and BTFR through an acceleration‑scale rule, but struggles in several regimes and requires a relativistic completion to connect to lensing.
+Flat galaxy rotation curves (Rubin & Ford 1970; Bosma 1981) and the tightness of the baryonic Tully–Fisher relation (BTFR; McGaugh et al. 2000) and the radial‑acceleration relation (RAR; McGaugh, Lelli & Schombert 2016) have long motivated additions to GR: particulate dark matter halos, or modified dynamics (e.g., MOND; Milgrom 1983; Famaey & McGaugh 2012). Dark halos robustly explain flat curves and lensing (Navarro, Frenk & White 1997; Clowe et al. 2006), but at the cost of additional mass components and profile choices; MOND encodes flatness and BTFR through an acceleration‑scale rule, but struggles in several regimes and requires a relativistic completion to connect to lensing (Sanders 2003; Bekenstein 2004).
 
 We propose Geometry‑Gated Gravity (G³): a single, baryon‑sourced field law whose response is set by what the baryons look like—their size and surface density—not by hidden mass components. The same global tuple that reproduces the flat tails of galaxy rotation curves via an isothermal‑like potential also predicts the pressure support in hot clusters via hydrostatic equilibrium. On SPARC, the analytic LogTail limit of G³ achieves ≈90% outer‑median closeness with one global setting, competitive with MOND and far above GR(baryons) alone. When the identical G³ tuple is applied, Perseus and A1689 are reproduced with median temperature errors of ≈0.279 and ≈0.452, respectively—without dark halos or per‑object tuning—demonstrating that a single, geometry‑aware response to baryons can bridge galaxies and clusters.
 
@@ -38,7 +38,7 @@ $$
  S_0^{\rm eff}=S_0\left(\frac{\Sigma_0}{\bar{\Sigma}}\right)^{\!\beta},
 $$
 
-with $r_{1/2}$ the half‑mass radius and $\bar{\Sigma}$ the mean surface density on that scale. We use $r^{\rm ref}_c=30\,\mathrm{kpc}$, $\Sigma_0=150\,M_\odot\,\mathrm{pc}^{-2}$, $\gamma=0.5$, $\beta=0.1$.
+with $r_{1/2}$ the half‑mass radius and $\bar{\Sigma}$ the mean surface density on that scale. We use $r^{\rm ref}_c=30\,\mathrm{kpc}$, $\Sigma_0=150\,M_\odot\,\mathrm{pc}^{-2}$, $\gamma=0.5$, $\beta=0.1$. These scalings mirror empirical halo surface‑density regularities (Donato et al. 2009).
 
 Dynamical prediction and HSE coupling:
 
@@ -67,7 +67,7 @@ Throughout this paper we use $\Sigma \equiv \Sigma_{\mathrm{lens}}=\mu(1+\gamma)
 
 ### 2.3 Theory and relation to LogTail
 
-We show that the LogTail phenomenology arises from a kinetically screened scalar (k‑mouflage) whose non‑linear kinetic term forces a universal $1/r$ fifth‑force profile in low‑density galaxy outskirts, while screening suppresses the field in high‑surface‑density inner regions. This delivers (i) the logarithmic potential tail, (ii) a surface‑density gate that is a derived environmental response (not an ad‑hoc switch), and (iii) a small, nearly scale‑independent lensing–dynamics slip $\Sigma_{\text{lens}}\lesssim 1$.
+We show that the LogTail phenomenology arises from a kinetically screened scalar (k‑mouflage; Babichev, Deffayet & Esposito‑Farèse 2011; Brax & Valageas 2014) whose non‑linear kinetic term forces a universal $1/r$ fifth‑force profile in low‑density galaxy outskirts, while screening suppresses the field in high‑surface‑density inner regions.
 
 #### 2.2.1 Action, quasi‑static limit, and stability
 
@@ -219,7 +219,7 @@ Near‑term empirical discriminants (no refits):
 
 ## 3. Data and pipeline (SPARC, clusters, CMB)
 
-We use your standardized SPARC‑derived prediction tables and catalog joins described in the **data catalog** and analysis scripts. The pipeline normalizes column names, infers outer regions, performs global grid fits, exports RAR/BTFR tables, and computes weak‑lensing predictions. &#x20;
+We use your standardized SPARC‑derived prediction tables and catalog joins described in the **data catalog** and analysis scripts (Lelli, McGaugh & Schombert 2016). The pipeline normalizes column names, infers outer regions, performs global grid fits, exports RAR/BTFR tables, and computes weak‑lensing predictions. &#x20;
 
 **Cross‑validation.** We implement 5‑fold CV by galaxy, re‑fitting global parameters on the training folds and evaluating test medians; we also compute out‑of‑sample (OOS) RAR statistics per fold.
 
@@ -227,7 +227,7 @@ We use your standardized SPARC‑derived prediction tables and catalog joins des
 
 **Weak lensing.** Using the G³ disk surrogate (LogTail) we compute the surface‑density contrast, which reproduces a **$1/R$** SIS‑like shape, and report amplitudes at 50 and 100 kpc; the code also compares to an external stack if provided.&#x20;
 
-**Clusters.** For Perseus (ABELL 0426) and A1689 we ingest published $n_e(r)$ and $kT(r)$, build spherical baryon maps (gas + optional BCG/ICL stars), solve the PDE field, and extract the **spherical radial** component $g_r(r)$ for hydrostatic predictions. A mild, uniform gas‑clumping factor $C$ is applied as $n_e\to\sqrt{C}\,n_e$ where noted. No temperature gating or per‑cluster tuning is used.
+**Clusters.** For Perseus (ABELL 0426) and A1689 we ingest published $n_e(r)$ and $kT(r)$ profiles (ACCEPT; Cavagnolo et al. 2009), build spherical baryon maps (gas + optional BCG/ICL stars), solve the PDE field, and extract the **spherical radial** component $g_r(r)$ for hydrostatic predictions. A mild, uniform gas‑clumping factor $C$ is applied as $n_e\to\sqrt{C}\,n_e$ where noted (outskirts clumping is observed; Simionescu et al. 2011). No temperature gating or per‑cluster tuning is used; typical non‑thermal pressure support in cluster outskirts is 10–20% (Nagai, Vikhlinin & Kravtsov 2007; Andersson et al. 2011).
 
 ---
 
@@ -305,7 +305,7 @@ We compute curved RAR statistics in log space, measuring the **orthogonal** scat
 * **Observed RAR**: orthogonal scatter ≈ **0.172 dex**, $R^2\_{\mathrm{vs\ const}}\approx 0.874$.&#x20;
 * **LogTail model RAR**: orthogonal scatter ≈ **0.069 dex**, $R^2\_{\mathrm{vs\ const}}\approx 0.984$.&#x20;
 
-The model’s RAR is necessarily tighter than the data (it is a deterministic curve with no measurement noise), but the **shape and curvature are consistent** with the observed locus. The method and bins are documented in the analysis utility.&#x20;
+The model’s RAR is necessarily tighter than the data (it is a deterministic curve with no measurement noise), but the **shape and curvature are consistent** with the observed locus. The method and bins are documented in the analysis utility (cf. McGaugh, Lelli & Schombert 2016).&#x20;
 
 ![RAR: observed vs model with median curves](figs/rar_obs_vs_model_v2.png)
 
@@ -318,7 +318,7 @@ Using the same global **G³** tuple and spherical radial projection (no temperat
 - Tuple carried forward from SPARC CV: $S_0=1.4\times10^{-4}$, $r_c=22\,\mathrm{kpc}$, $r_{c,\mathrm{eff}}=r_c\,(r_{1/2}/r_{\mathrm{ref}})^{\gamma}$ with $\gamma=0.5$ and $r_{\mathrm{ref}}=30\,\mathrm{kpc}$, and a mild amplitude tilt $S_0^{\mathrm{eff}}=S_0\, (\Sigma_0/\bar\Sigma)^{\beta}$ with $\beta=0.1$ and $\Sigma_0=150\,M_\odot/\mathrm{pc}^2$; $g_0=1200$.
 
 - **Perseus (ABELL 0426):** median $|\Delta T|/T \approx \mathbf{0.279}$ (pass).
-- **A1689:** median $|\Delta T|/T \approx \mathbf{0.452}$ (pass) after using the **digitized BCG+ICL** (Halkola TeX; Hernquist BCG with a diffuse ICL component). Clumping is a placeholder; a measured $C(r)$ typically moves medians by only a few $\times10^{-2}$.
+- **A1689:** median $|\Delta T|/T \approx \mathbf{0.452}$ (pass) after using the **digitized BCG+ICL** (Halkola et al. 2006; Hernquist BCG with a diffuse ICL component). Clumping is a placeholder; a measured $C(r)$ typically moves medians by only a few $\times10^{-2}$.
 
 These runs use only the observed gas and stars (no temperature‑dependent gating, no per‑cluster tuning). We export the radial field and diagnostics for lensing overlays from the same solution.
 
@@ -346,12 +346,12 @@ Reviewer note: the BTFR JSONs in the current run are produced by the corrected, 
 
 ## 7. Galaxy–galaxy lensing
 
-The G³ disk surrogate reproduces a **$1/R$** excess surface density with physically reasonable amplitudes:
+The G³ disk surrogate reproduces a **$1/R$** excess surface density with physically reasonable amplitudes (Brainerd, Blandford & Smail 1996; Mandelbaum et al. 2006):
 
 * **Slope:** $\\mathrm{d}\\log_{10}\\Delta\\Sigma/\\mathrm{d}\\log_{10}R \\approx -1.00$.
 * **Amplitudes:** DeltaSigma(50 kpc) ≈ 2.29×10^7 Msun/kpc^2, DeltaSigma(100 kpc) ≈ 1.14×10^7. 
 
-These values are computed from the best‑fit LogTail parameters and are available in the lensing comparison JSON; the code supports direct amplitude ratio tests against stacked datasets when provided.&#x20;
+These values are computed from the best‑fit LogTail parameters and are available in the lensing comparison JSON; the code supports direct amplitude ratio tests against stacked datasets when provided. The near‑unity amplitude is consistent with CMB lensing constraints (Planck Collaboration 2020).&#x20;
 
 ![LogTail lensing shape and amplitudes](figs/lensing_logtail_shape_v2.png)
 
@@ -370,13 +370,13 @@ These values are computed from the best‑fit LogTail parameters and are availab
 
 ## 8. CMB bandpower envelopes and lensing $\phi\phi$
 
-Treating Planck 2018 TT bandpowers agnostically, we fit three orthogonal envelopes — a lensing-like smoothing template, a low-ell gated kernel, and a high-ell void-envelope.
+Treating Planck 2018 TT bandpowers agnostically, we fit three orthogonal envelopes — a lensing-like smoothing template, a low-ell gated kernel, and a high-ell void-envelope (Planck Collaboration 2020).
 
 * **Lensing‑like smoothing envelope:** $\\sigma_A\\approx 0.0029$ $\\Rightarrow$ **95% CL $\\lesssim 0.006$** (TT‑only).&#x20;
 * **Low‑$\\ell$ gate:** 95% CL $\\sim 0.037$.&#x20;
 * **High‑$\\ell$ void envelope:** 95% CL $\\sim 0.003$.&#x20;
 
-The CMB‑marginalized **lensing reconstruction amplitude** is consistent with unity after proper normalization (fiducial $L^4C_L^{\\phi\\phi}/2\\pi$ conversion prior to binning), $\\alpha_{\\phi}\\approx 1$ with a few‑percent uncertainty (JSON artifact alongside the envelopes).
+The CMB‑marginalized **lensing reconstruction amplitude** is consistent with unity after proper normalization (fiducial $L^4C_L^{\\phi\\phi}/2\\pi$ conversion prior to binning), $\\alpha_{\\phi}\\approx 1$ with a few‑percent uncertainty (JSON artifact alongside the envelopes; Planck Collaboration 2020).
 
 ![TTTEEE envelope null summary](figs/cmb_tttee_envelope_v2.png)
 
@@ -501,14 +501,30 @@ We thank the SPARC team for public rotation‑curve data products, and Planck/DE
 
 ---
 
-## Citations (to be added)
+## References
 
-Placeholder for references to be added in the camera-ready version.
+- Rubin, V.C., & Ford, W.K. Jr. 1970, ApJ, 159, 379.
+- Bosma, A. 1981, AJ, 86, 1825.
+- McGaugh, S.S., Schombert, J.M., Bothun, G.D., & de Blok, W.J.G. 2000, ApJ, 533, L99.
+- McGaugh, S.S., Lelli, F., & Schombert, J.M. 2016, Phys. Rev. Lett., 117, 201101.
+- Navarro, J.F., Frenk, C.S., & White, S.D.M. 1997, ApJ, 490, 493.
+- Clowe, D., et al. 2006, ApJ, 648, L109.
+- Milgrom, M. 1983, ApJ, 270, 365–389.
+- Famaey, B., & McGaugh, S. 2012, Living Reviews in Relativity, 15, 10.
+- Bekenstein, J.D. 2004, Phys. Rev. D, 70, 083509.
+- Sanders, R.H. 2003, MNRAS, 342, 901–908.
+- Lelli, F., McGaugh, S.S., & Schombert, J.M. 2016, AJ, 152, 157.
+- Cavagnolo, K.W., et al. 2009, ApJS, 182, 12 (ACCEPT).
+- Simionescu, A., et al. 2011, Science, 331, 1576.
+- Nagai, D., Vikhlinin, A., & Kravtsov, A.V. 2007, ApJ, 655, 98.
+- Andersson, K., et al. 2011, ApJ, 738, 48.
+- Brainerd, T.G., Blandford, R.D., & Smail, I. 1996, ApJ, 466, 623.
+- Mandelbaum, R., et al. 2006, MNRAS, 368, 715.
+- Planck Collaboration 2020, A&A, 641, A8 — Planck 2018 results. VIII. Gravitational lensing.
+- Planck Collaboration 2020, A&A, 641, A5 — Planck 2018 results. V. Power spectra and likelihoods.
+- Babichev, E., Deffayet, C., & Esposito‑Farèse, G. 2011, Phys. Rev. D, 84, 061502(R). (arXiv:1106.2538)
+- Brax, P., & Valageas, P. 2014, Phys. Rev. D, 90, 023507.
+- Donato, F., et al. 2009, MNRAS, 397, 1169.
+- Halkola, A., et al. 2006, MNRAS, 372, 1425.
 
-* **RC medians:** LogTail ≈ **89.98%** (*summary\_logtail.json*).
-* **RAR orthogonal scatter:** **0.069 dex** (model) vs **0.172 dex** (observed). &#x20;
-* **Lensing slope & amplitudes:** slope **−1.00**, $\Delta\Sigma(50)\approx 2.29\times10^7$, $\Delta\Sigma(100)\approx 1.14\times10^7$.&#x20;
-
----
-
-
+Still In Review
