@@ -146,7 +146,8 @@ def main():
             s = pd.read_csv(s_path)
             rs = np.asarray(s['r_kpc'], float)
             rho_s = np.asarray(s['rho_star_Msun_per_kpc3'], float)
-            rho_star_eff = np.interp(r_in, rs, rho_s, left=rho_s[0], right=rho_s[-1])
+            # Set stellar density to zero outside provided profile range
+            rho_star_eff = np.interp(r_in, rs, rho_s, left=0.0, right=0.0)
         except Exception:
             rho_star_eff = np.zeros_like(r_in, dtype=float)
 
@@ -262,6 +263,7 @@ def main():
     print(f"[PDE-Cluster] {args.cluster}: median g_phi/g_N on kT radii = {med_ratio:.3g}")
 
     # HSE prediction (interpolate n_e onto R grid)
+    g = pd.read_csv(cdir/'gas_profile.csv')
     if 'n_e_cm3' in g.columns:
         ne_obs = np.asarray(g['n_e_cm3'], float)
     else:

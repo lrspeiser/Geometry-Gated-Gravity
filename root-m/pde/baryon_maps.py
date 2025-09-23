@@ -84,7 +84,8 @@ def cluster_map_from_csv(cluster_dir: Path, R_max: float=1500.0, Z_max: float=15
         rs = np.asarray(s['r_kpc'], float)
         rho_s = np.asarray(s['rho_star_Msun_per_kpc3'], float)
         # align onto r grid for simplicity
-        rho_star = np.interp(r, rs, rho_s, left=rho_s[0], right=rho_s[-1])
+        # Set stellar density to zero outside provided profile range (avoid unphysical constant tail)
+        rho_star = np.interp(r, rs, rho_s, left=0.0, right=0.0)
     rho_b = rho_gas if rho_star is None else (rho_gas + rho_star)
 
     return spherical_from_radial_profile(r, rho_b, R_max, Z_max, NR, NZ)
