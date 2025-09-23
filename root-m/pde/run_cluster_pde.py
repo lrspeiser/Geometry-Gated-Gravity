@@ -88,6 +88,8 @@ def main():
     ap.add_argument('--clump', type=float, default=1.0, help='Uniform gas clumping C; applies n_e -> sqrt(C) * n_e if profile not given')
     ap.add_argument('--clump_profile_csv', type=str, default=None, help='CSV with r_kpc,C for radial clumping; overrides uniform --clump')
     ap.add_argument('--stars_csv', type=str, default=None, help='Optional stars_profile.csv path (r_kpc,rho_star_Msun_per_kpc3); default: data/clusters/<CL>/stars_profile.csv if present')
+    # Newtonian extension toggle
+    ap.add_argument('--gN_from_total_baryons', action='store_true', help='If set, compute Newtonian g_N from total baryons (gas+stars). Default is gas-only.')
     args = ap.parse_args()
 
     cdir = Path(args.base)/args.cluster
@@ -217,19 +219,26 @@ def main():
             g_phi_R[i] = float(np.abs(gR[z0_idx, i]))
 
     # Build g_N along r using M(<r)=∫ 4πr^2ρ dr (spherical approx)
-    # integrate rho over spherical shells from cluster CSV (consistent with generator)
-    g = pd.read_csv(cdir/'gas_profile.csv')
-    r_obs = np.asarray(g['r_kpc'], float)
-    # simple cumulative mass from the input spherical rho we used
-    ne_to_rho = _maps.ne_to_rho_gas_Msun_kpc3
-    if 'rho_gas_Msun_per_kpc3' in g.columns:
-        rho_r = np.asarray(g['rho_gas_Msun_per_kpc3'], float)
+    # Option A (default): gas-only profile from gas_profile.csv
+    # Option B (--gN_from_total_baryons): total baryons (gas+stars) from rho_tot computed above
+    if bool(args.gN_from_total_baryons):
+        r_obs = r_in.copy()
+        rho_r = rho_tot.copy()
+        order = np.argsort(r_obs)
+        r_obs = r_obs[order]
+        rho_r = rho_r[order]
     else:
-        rho_r = ne_to_rho(np.asarray(g['n_e_cm3'], float))
-    # Ensure ascending radius for stable integration
-    order = np.argsort(r_obs)
-    r_obs = r_obs[order]
-    rho_r = rho_r[order]
+        g = pd.read_csv(cdir/'gas_profile.csv')
+        r_obs = np.asarray(g['r_kpc'], float)
+        ne_to_rho = _maps.ne_to_rho_gas_Msun_kpc3
+        if 'rho_gas_Msun_per_kpc3' in g.columns:
+            rho_r = np.asarray(g['rho_gas_Msun_per_kpc3'], float)
+        else:
+            rho_r = ne_to_rho(np.asarray(g['n_e_cm3'], float))
+        order = np.argsort(r_obs)
+        r_obs = r_obs[order]
+        rho_r = rho_r[order]
+
     # cumulative mass integral
     integrand = 4.0*np.pi * (r_obs**2) * rho_r
     M = np.concatenate(([0.0], np.cumsum(0.5*(integrand[1:]+integrand[:-1]) * np.diff(r_obs))))
@@ -265,6 +274,8 @@ def main():
         # simple power-law in radius relative to r500, capped at fnt_max
         f_nt = np.clip(float(args.fnt0) * np.power(np.maximum(r_abs, 0.0) / max(float(args.r500_kpc), 1e-9), float(args.fnt_n)), 0.0, float(args.fnt_max))
     kT_pred = kT_from_ne_and_gtot(R, ne_R, g_tot_R, f_nt)
+    # GR-only baseline (no φ):
+    kT_pred_GR = kT_from_ne_and_gtot(R, ne_R, g_N_R, f_nt)
 
     # Save field summary for downstream lensing overlays
     import pandas as _pd
@@ -275,7 +286,9 @@ def main():
     rT = np.asarray(t['r_kpc'], float)
     kT = np.asarray(t['kT_keV'], float)
     kT_pred_on_obs = np.interp(rT, R, kT_pred)
+    kT_pred_on_obs_GR = np.interp(rT, R, kT_pred_GR)
     frac = np.median(np.abs(kT_pred_on_obs - kT)/np.maximum(kT, 1e-12))
+    frac_GR = np.median(np.abs(kT_pred_on_obs_GR - kT)/np.maximum(kT, 1e-12))
 
     # Output
     od = Path(args.outdir)/args.cluster
@@ -288,7 +301,9 @@ def main():
                    'rc_eff_kpc': rc_eff,
                    'r_half_kpc': r_half,
                    'sigma_bar_Msun_pc2': sigma_bar_pc2,
-                   'temp_median_frac_err': float(frac)}, f, indent=2)
+                   'gN_from_total_baryons': bool(args.gN_from_total_baryons),
+                   'temp_median_frac_err': float(frac),
+                   'temp_median_frac_err_GR': float(frac_GR)}, f, indent=2)
 
     plt.figure(figsize=(11,5))
     # Mass/accel panel
@@ -301,7 +316,8 @@ def main():
 
     # Temperature panel
     plt.subplot(1,2,2)
-    plt.semilogx(R, kT_pred, '--', label='kT (PDE+HSE)')
+    plt.semilogx(R, kT_pred, '--', label='kT (G³ + HSE)')
+    plt.semilogx(R, kT_pred_GR, ':', label='kT (GR only)')
     plt.errorbar(rT, kT, yerr=t.get('kT_err_keV'), fmt='o', ms=3, label='kT (X-ray)')
     plt.xlabel('r [kpc]'); plt.ylabel('kT [keV]'); plt.legend(); plt.grid(True, which='both', alpha=0.3)
     # Annotate global tuple and median fractional error
