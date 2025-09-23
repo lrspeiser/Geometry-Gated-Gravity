@@ -15,6 +15,8 @@ from pathlib import Path
 import argparse
 import json
 import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
+from matplotlib.patches import Rectangle
 
 # Local imports (folder is not a Python package)
 import importlib.util as _ilu
@@ -95,8 +97,9 @@ def main():
     ap.add_argument('--stars_csv', type=str, default=None, help='Optional stars_profile.csv path (r_kpc,rho_star_Msun_per_kpc3); default: data/clusters/<CL>/stars_profile.csv if present')
     # Geometry ablation toggle (default OFF; total-baryon geometry is the paper default)
     ap.add_argument('--geom_from_gas_only', action='store_true', help='If set, compute geometry scalars (r_half, sigma_bar) from gas-only map (with clumping) instead of total baryons')
-    # Newtonian comparator toggle (default paper convention: gas-only)
-    ap.add_argument('--gN_from_total_baryons', action='store_true', help='If set, compute Newtonian g_N from total baryons (gas+stars). Default is gas-only.')
+    # Newtonian comparator toggles (default: total-baryon comparator)
+    ap.add_argument('--gN_from_total_baryons', action='store_true', help='[Deprecated] Kept for backward-compatibility; total-baryon comparator is now the default')
+    ap.add_argument('--gN_from_gas_only', action='store_true', help='If set, compute Newtonian g_N from gas-only (ablation). Default: total-baryon comparator')
     args = ap.parse_args()
 
     cdir = Path(args.base)/args.cluster
@@ -130,11 +133,7 @@ def main():
 
     # Geometry scalars from the SAME rho grid used by the PDE (parity with SPARC axisym path)
     # Optionally compute from gas-only map for ablations
-    rho_geom = None
-    if bool(args.geom_from_gas_only) and (rho_gas_map is not None):
-        rho_geom = rho_gas_map
-    else:
-        rho_geom = rho
+    rho_geom = rho_gas_map if (bool(args.geom_from_gas_only) and (rho_gas_map is not None)) else rho
     dR = float(np.mean(np.diff(R))) if R.size > 1 else 1.0
     dZ = float(np.mean(np.diff(Z))) if Z.size > 1 else 1.0
     R2D = np.broadcast_to(R.reshape(1,-1), rho_geom.shape)
@@ -212,8 +211,15 @@ def main():
     except Exception as e:
         print(f"[AUDIT] Skipped mass audit due to: {e}")
 
+    # Comparator mode resolution (default = total-baryon comparator)
+    gN_total_mode = True
+    if bool(args.gN_from_gas_only):
+        gN_total_mode = False
+    elif bool(args.gN_from_total_baryons):
+        gN_total_mode = True
+
     # Optional: enable gentle saturation when using total-baryon gN to avoid over-shoot
-    if bool(args.gN_from_total_baryons) and not bool(args.use_saturating_mobility):
+    if gN_total_mode and not bool(args.use_saturating_mobility):
         args.use_saturating_mobility = True
         if float(args.gsat_kms2_per_kpc) <= 0:
             args.gsat_kms2_per_kpc = 2500.0
@@ -271,9 +277,9 @@ def main():
             g_phi_R[i] = float(np.abs(gR[z0_idx, i]))
 
     # Build g_N along r using M(<r)=∫ 4πr^2ρ dr (spherical approx)
-    # Option A (default): gas-only profile from gas_profile.csv
-    # Option B (--gN_from_total_baryons): total baryons (gas+stars) from rho_tot computed above
-    if bool(args.gN_from_total_baryons):
+    # Default: total baryons (gas+stars).
+    # Ablation (--gN_from_gas_only): gas-only profile from gas_profile.csv
+    if gN_total_mode:
         # Rebuild 1D total-baryon profile from CSVs (gas with clumping + stars)
         g1 = pd.read_csv(cdir/'gas_profile.csv')
         r_obs = np.asarray(g1['r_kpc'], float)
@@ -311,6 +317,7 @@ def main():
         order = np.argsort(r_obs)
         r_obs = r_obs[order]
         rho_r = rho_r[order]
+        gN_mode = 'total-baryon'
     else:
         g = pd.read_csv(cdir/'gas_profile.csv')
         r_obs = np.asarray(g['r_kpc'], float)
@@ -322,6 +329,7 @@ def main():
         order = np.argsort(r_obs)
         r_obs = r_obs[order]
         rho_r = rho_r[order]
+        gN_mode = 'gas-only'
 
     # cumulative mass integral
     integrand = 4.0*np.pi * (r_obs**2) * rho_r
@@ -377,10 +385,12 @@ def main():
     kT = np.asarray(t['kT_keV'], float)
     kT_pred_on_obs = np.interp(rT, R, kT_pred)
     kT_pred_on_obs_GR = np.interp(rT, R, kT_pred_GR)
-    frac = np.median(np.abs(kT_pred_on_obs - kT)/np.maximum(kT, 1e-12))
-    frac_GR = np.median(np.abs(kT_pred_on_obs_GR - kT)/np.maximum(kT, 1e-12))
+    res_on_obs = np.abs(kT_pred_on_obs - kT)/np.maximum(kT, 1e-12)
+    frac = float(np.median(res_on_obs))
+    frac_GR = float(np.median(np.abs(kT_pred_on_obs_GR - kT)/np.maximum(kT, 1e-12)))
 
-    # Output
+    # Output metrics (extended)
+    geom_mode = 'gas-only' if bool(args.geom_from_gas_only) else 'total-baryon'
     with open(od/'metrics.json','w') as f:
         json.dump({'cluster': args.cluster,
                    'S0_input': args.S0,
@@ -390,34 +400,72 @@ def main():
                    'r_half_kpc': r_half,
                    'sigma_bar_Msun_pc2': sigma_bar_pc2,
                    'geom_from_gas_only': bool(args.geom_from_gas_only),
+                   'geom_mode': geom_mode,
                    'gN_from_total_baryons': bool(args.gN_from_total_baryons),
+                   'gN_from_gas_only': bool(args.gN_from_gas_only),
+                   'gN_mode': gN_mode,
                    'use_sigma_screen': bool(args.use_sigma_screen),
                    'sigma_star_Msun_per_pc2': float(args.sigma_star_Msun_per_pc2),
                    'alpha_sigma': float(args.alpha_sigma),
                    'n_sigma': float(args.n_sigma),
+                   'fnt0': float(args.fnt0),
+                   'r500_kpc': float(args.r500_kpc),
                    'temp_median_frac_err': float(frac),
-                   'temp_median_frac_err_GR': float(frac_GR)}, f, indent=2)
+                   'temp_median_frac_err_GR': float(frac_GR),
+                   'M_gas_100_Msun': float(Mgas_100) if 'Mgas_100' in locals() else None,
+                   'M_star_100_Msun': float(Mstar_100) if 'Mstar_100' in locals() else None,
+                   'M_gas_500_Msun': float(Mgas_500) if 'Mgas_500' in locals() else None,
+                   'M_star_500_Msun': float(Mstar_500) if 'Mstar_500' in locals() else None}, f, indent=2)
 
-    plt.figure(figsize=(11,5))
-    # Mass/accel panel
-    plt.subplot(1,2,1)
-    plt.plot(R, g_phi_R, label='g_phi (PDE)')
-    plt.plot(R, g_N_R, label='g_N (baryons)')
-    plt.plot(R, g_tot_R, label='g_tot')
-    plt.xscale('log'); plt.yscale('symlog')
-    plt.xlabel('R [kpc]'); plt.ylabel('g [(km/s)^2/kpc]'); plt.legend(); plt.grid(True, which='both', alpha=0.3)
+    # Figure: 2x2 grid with bottom residual strip spanning both columns
+    fig = plt.figure(figsize=(11.5, 6.8))
+    gs = gridspec.GridSpec(2, 2, height_ratios=[3.0, 1.2], hspace=0.35, wspace=0.28)
 
-    # Temperature panel
-    plt.subplot(1,2,2)
-    plt.semilogx(R, kT_pred, '--', label='kT (G³ + HSE)')
-    plt.semilogx(R, kT_pred_GR, ':', label='kT (GR only)')
-    plt.errorbar(rT, kT, yerr=t.get('kT_err_keV'), fmt='o', ms=3, label='kT (X-ray)')
-    plt.xlabel('r [kpc]'); plt.ylabel('kT [keV]'); plt.legend(); plt.grid(True, which='both', alpha=0.3)
-    # Annotate global tuple and median fractional error
-    txt = (f"G³ global: S0={args.S0}, rc={args.rc_kpc} kpc, b3={args.rc_gamma}, b2={args.sigma_beta}, g0={args.g0_kms2_per_kpc}\n"
-           f"median |ΔT|/T = {frac:.3f}")
-    plt.gcf().text(0.02, 0.02, txt, fontsize=8, ha='left', va='bottom')
-    plt.tight_layout(); plt.savefig(od/'cluster_pde_results.png', dpi=140); plt.close()
+    ax1 = fig.add_subplot(gs[0, 0])
+    ax1.plot(R, g_phi_R, label='g_φ (PDE)')
+    ax1.plot(R, g_N_R, label='g_N (baryons)')
+    ax1.plot(R, g_tot_R, label='g_tot')
+    ax1.set_xscale('log'); ax1.set_yscale('symlog')
+    ax1.set_xlabel('R [kpc]'); ax1.set_ylabel('g [(km/s)^2/kpc]')
+    ax1.legend(); ax1.grid(True, which='both', alpha=0.3)
+
+    ax2 = fig.add_subplot(gs[0, 1])
+    ax2.semilogx(R, kT_pred, '--', label='kT (G³ + HSE)')
+    ax2.semilogx(R, kT_pred_GR, ':', label='kT (GR only)')
+    yerr = t.get('kT_err_keV')
+    ax2.errorbar(rT, kT, yerr=yerr, fmt='o', ms=3, label='kT (X-ray)')
+    ax2.set_xlabel('r [kpc]'); ax2.set_ylabel('kT [keV]')
+    ax2.legend(); ax2.grid(True, which='both', alpha=0.3)
+
+    # Residuals panel
+    ax3 = fig.add_subplot(gs[1, :])
+    ax3.semilogx(rT, res_on_obs, 'm-', lw=1.6, label='|ΔT|/T on data radii')
+    # scoring-band shading across the observed temperature radial range
+    try:
+        xmin, xmax = float(np.nanmin(rT)), float(np.nanmax(rT))
+        ax3.axvspan(xmin, xmax, color='orange', alpha=0.07, label='scoring radii band')
+    except Exception:
+        pass
+    ax3.set_xlabel('r [kpc]'); ax3.set_ylabel('|ΔT|/T')
+    ax3.grid(True, which='both', alpha=0.3)
+    # target line(s) for quick visual gate
+    ax3.axhline(0.30, color='0.7', ls='--', lw=0.8)
+    ax3.text(0.005, 0.88, '0.30', transform=ax3.transAxes, fontsize=8, color='0.4')
+
+    # Callout: tuple and comparator
+    comparator_text = 'total baryons' if gN_mode == 'total-baryon' else 'gas-only (ablation)'
+    txt = (
+        f"G³: S0={args.S0}, rc={args.rc_kpc} kpc, γ={args.rc_gamma}, β={args.sigma_beta}, g0={args.g0_kms2_per_kpc}\n"
+        f"Comparator = {comparator_text}; median |ΔT|/T = {frac:.3f}"
+    )
+    fig.text(0.02, 0.02, txt, fontsize=9, ha='left', va='bottom')
+
+    # Save with ablation-safe filename
+    is_ablation = bool(args.gN_from_gas_only) or bool(args.geom_from_gas_only) or (float(args.fnt0) > 0.0)
+    out_png = od/('cluster_pde_results_ablation.png' if is_ablation else 'cluster_pde_results.png')
+    fig.tight_layout(rect=[0, 0.05, 1, 1])
+    fig.savefig(out_png, dpi=140)
+    plt.close(fig)
 
 if __name__ == '__main__':
     main()
