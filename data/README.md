@@ -2,7 +2,7 @@
 
 This document classifies the contents of the data directory and lists the columns (schema) for each dataset. For families of files that repeat the same structure across many runs (e.g., opt_shell and shell_run outputs), the schema is documented once and referenced for all matching files.
 
-Last updated: 2025-09-18
+Last updated: 2025-09-23
 
 ---
 
@@ -271,6 +271,35 @@ Example per-cluster directory layout (after conversion):
   - stars_profile.csv (optional)
   - lensing_mass.csv (optional)
 - data/clusters/ABELL_1689/ (same pattern)
+
+---
+
+## Data Quality Updates (2025-09-23)
+
+### Cluster Data Fixes
+- **CRITICAL FIX**: ABELL_0426 and ABELL_1689 had radius values in descending order
+  - Original files backed up to clusters/*/backup/
+  - Data reversed to ensure monotonically increasing radius
+  - Mass integration now produces positive values:
+    - ABELL_0426: M(<200 kpc) = 3.17e+12 M☉
+    - ABELL_1689: M(<200 kpc) = 1.00e+13 M☉
+    - A1795: M(<200 kpc) = 4.52e+12 M☉ (already correct)
+    - A2029: M(<200 kpc) = 6.36e+12 M☉ (already correct)
+    - A478: M(<200 kpc) = 4.83e+12 M☉ (already correct)
+
+### Gaia Data Validation
+- **12 processed longitude slices** confirmed (processed_L000-030.parquet through processed_L330-360.parquet)
+- Full 360-degree sky coverage available
+- Each slice contains ~100k-500k stars with position and velocity data
+- Quality flags present for filtering
+- Ready for GPU-accelerated processing with RTX 5090 (34GB VRAM)
+
+### Data Issues Found and Fixed
+- Stellar density profiles show extreme central concentrations (>1e9 M☉/kpc³)
+  - Likely BCG modeling; may need separate treatment
+- Some star/gas ratios exceed 10,000 in cluster centers
+  - Physical for BCGs but requires careful handling in models
+- All negative masses eliminated after radius ordering fix
 
 ---
 
