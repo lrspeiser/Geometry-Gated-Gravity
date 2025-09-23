@@ -94,6 +94,60 @@ def cluster_map_from_csv(cluster_dir: Path, R_max: float=1500.0, Z_max: float=15
     return spherical_from_radial_profile(r, rho_b, R_max, Z_max, NR, NZ)
 
 
+def cluster_maps_from_csv(cluster_dir: Path, R_max: float=1500.0, Z_max: float=1500.0,
+                          NR: int=128, NZ: int=128,
+                          clump: float = 1.0,
+                          clump_profile_csv: Path | None = None,
+                          stars_csv: Path | None = None):
+    """
+    Build both total-baryon and gas-only (clumping applied) (Z,R) maps for clusters.
+    Returns: Z, R, rho_total(Z,R), rho_gas_only(Z,R)
+    """
+    cdir = Path(cluster_dir)
+    g = pd.read_csv(cdir/"gas_profile.csv")
+    r = np.asarray(g['r_kpc'], float)
+
+    # optional radial clumping profile C(r)
+    C_prof = None
+    if clump_profile_csv is not None:
+        try:
+            cp = pd.read_csv(Path(clump_profile_csv))
+            r_cp = np.asarray(cp['r_kpc'], float)
+            C_cp = np.asarray(cp['C'], float)
+            C_prof = np.interp(r, r_cp, C_cp, left=C_cp[0], right=C_cp[-1])
+        except Exception:
+            C_prof = None
+    C_uni = float(np.sqrt(max(clump, 1.0)))
+
+    # gas with clumping as sqrt(C)
+    if 'rho_gas_Msun_per_kpc3' in g.columns:
+        rho_gas = np.asarray(g['rho_gas_Msun_per_kpc3'], float)
+        if C_prof is not None:
+            rho_gas = rho_gas * np.sqrt(np.maximum(C_prof, 1.0))
+        else:
+            rho_gas = rho_gas * C_uni
+    else:
+        ne = np.asarray(g['n_e_cm3'], float)
+        ne_eff = ne * (np.sqrt(np.maximum(C_prof, 1.0)) if C_prof is not None else C_uni)
+        rho_gas = ne_to_rho_gas_Msun_kpc3(ne_eff)
+
+    # stars (optional)
+    rho_star = None
+    s_path = Path(stars_csv) if stars_csv is not None else (cdir/"stars_profile.csv")
+    if s_path is not None and Path(s_path).exists():
+        s = pd.read_csv(s_path)
+        rs = np.asarray(s['r_kpc'], float)
+        rho_s = np.asarray(s['rho_star_Msun_per_kpc3'], float)
+        rho_star = np.interp(r, rs, rho_s, left=0.0, right=0.0)
+
+    rho_b = rho_gas if rho_star is None else (rho_gas + rho_star)
+
+    # build maps
+    Z, R, rho_tot_map = spherical_from_radial_profile(r, rho_b, R_max, Z_max, NR, NZ)
+    _,  _, rho_gas_map = spherical_from_radial_profile(r, rho_gas, R_max, Z_max, NR, NZ)
+    return Z, R, rho_tot_map, rho_gas_map
+
+
 def sparc_map_from_predictions(csv_path: Path, R_max: float=80.0, Z_max: float=80.0,
                                NR: int=128, NZ: int=128):
     """

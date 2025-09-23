@@ -93,15 +93,25 @@ def main():
     ap.add_argument('--clump', type=float, default=1.0, help='Uniform gas clumping C; applies n_e -> sqrt(C) * n_e if profile not given')
     ap.add_argument('--clump_profile_csv', type=str, default=None, help='CSV with r_kpc,C for radial clumping; overrides uniform --clump')
     ap.add_argument('--stars_csv', type=str, default=None, help='Optional stars_profile.csv path (r_kpc,rho_star_Msun_per_kpc3); default: data/clusters/<CL>/stars_profile.csv if present')
-    # Newtonian extension toggle
-    ap.add_argument('--gN_from_total_baryons', action='store_true', default=True, help='If set, compute Newtonian g_N from total baryons (gas+stars). Default is gas-only.')
+    # Geometry ablation toggle (default OFF; total-baryon geometry is the paper default)
+    ap.add_argument('--geom_from_gas_only', action='store_true', help='If set, compute geometry scalars (r_half, sigma_bar) from gas-only map (with clumping) instead of total baryons')
+    # Newtonian comparator toggle (default paper convention: gas-only)
+    ap.add_argument('--gN_from_total_baryons', action='store_true', help='If set, compute Newtonian g_N from total baryons (gas+stars). Default is gas-only.')
     args = ap.parse_args()
 
     cdir = Path(args.base)/args.cluster
-    Z, R, rho = cluster_map_from_csv(cdir, R_max=args.Rmax, Z_max=args.Zmax, NR=args.NR, NZ=args.NZ,
-                                     clump=float(args.clump),
-                                     clump_profile_csv=Path(args.clump_profile_csv) if args.clump_profile_csv else None,
-                                     stars_csv=Path(args.stars_csv) if args.stars_csv else None)
+    # Prefer component-returning builder if available
+    try:
+        Z, R, rho, rho_gas_map = _maps.cluster_maps_from_csv(cdir, R_max=args.Rmax, Z_max=args.Zmax, NR=args.NR, NZ=args.NZ,
+                                                             clump=float(args.clump),
+                                                             clump_profile_csv=Path(args.clump_profile_csv) if args.clump_profile_csv else None,
+                                                             stars_csv=Path(args.stars_csv) if args.stars_csv else None)
+    except AttributeError:
+        Z, R, rho = cluster_map_from_csv(cdir, R_max=args.Rmax, Z_max=args.Zmax, NR=args.NR, NZ=args.NZ,
+                                         clump=float(args.clump),
+                                         clump_profile_csv=Path(args.clump_profile_csv) if args.clump_profile_csv else None,
+                                         stars_csv=Path(args.stars_csv) if args.stars_csv else None)
+        rho_gas_map = None
     # Guard taper near boundaries to reduce reflection/suppression
     def _taper_1d(x, frac=0.1):
         xmax = float(np.max(np.abs(x)))
@@ -119,13 +129,19 @@ def main():
     rho = rho * (wZ * wR)
 
     # Geometry scalars from the SAME rho grid used by the PDE (parity with SPARC axisym path)
+    # Optionally compute from gas-only map for ablations
+    rho_geom = None
+    if bool(args.geom_from_gas_only) and (rho_gas_map is not None):
+        rho_geom = rho_gas_map
+    else:
+        rho_geom = rho
     dR = float(np.mean(np.diff(R))) if R.size > 1 else 1.0
     dZ = float(np.mean(np.diff(Z))) if Z.size > 1 else 1.0
-    R2D = np.broadcast_to(R.reshape(1,-1), rho.shape)
+    R2D = np.broadcast_to(R.reshape(1,-1), rho_geom.shape)
     dV = (2.0 * np.pi) * R2D * dR * dZ
-    Z2D = np.broadcast_to(Z.reshape(-1,1), rho.shape)
+    Z2D = np.broadcast_to(Z.reshape(-1,1), rho_geom.shape)
     r_cell = np.sqrt(R2D*R2D + Z2D*Z2D)
-    mass_cells = np.clip(rho, 0.0, None) * dV
+    mass_cells = np.clip(rho_geom, 0.0, None) * dV
     r_flat = r_cell.reshape(-1)
     m_flat = mass_cells.reshape(-1)
     order = np.argsort(r_flat)
@@ -373,6 +389,7 @@ def main():
                    'rc_eff_kpc': rc_eff,
                    'r_half_kpc': r_half,
                    'sigma_bar_Msun_pc2': sigma_bar_pc2,
+                   'geom_from_gas_only': bool(args.geom_from_gas_only),
                    'gN_from_total_baryons': bool(args.gN_from_total_baryons),
                    'use_sigma_screen': bool(args.use_sigma_screen),
                    'sigma_star_Msun_per_pc2': float(args.sigma_star_Msun_per_pc2),
