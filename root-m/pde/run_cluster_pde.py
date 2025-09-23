@@ -51,14 +51,14 @@ def main():
     ap.add_argument('--Zmax', type=float, default=1500.0)
     ap.add_argument('--NR', type=int, default=128)
     ap.add_argument('--NZ', type=int, default=128)
-    ap.add_argument('--S0', type=float, default=1.0e-7)
-    ap.add_argument('--rc_kpc', type=float, default=15.0)
-    ap.add_argument('--g0_kms2_per_kpc', type=float, default=1000.0)
+    ap.add_argument('--S0', type=float, default=1.4e-4)
+    ap.add_argument('--rc_kpc', type=float, default=22.0)
+    ap.add_argument('--g0_kms2_per_kpc', type=float, default=1200.0)
     ap.add_argument('--m_exp', type=float, default=1.0)
     # Geometry-aware global knobs (shape and mild amplitude)
-    ap.add_argument('--rc_gamma', type=float, default=0.0, help='Exponent for rc_eff = rc * (r_half/rc_ref_kpc)^rc_gamma')
+    ap.add_argument('--rc_gamma', type=float, default=0.5, help='Exponent for rc_eff = rc * (r_half/rc_ref_kpc)^rc_gamma')
     ap.add_argument('--rc_ref_kpc', type=float, default=30.0, help='Reference size for rc_gamma scaling')
-    ap.add_argument('--sigma_beta', type=float, default=0.0, help='Exponent for S0_eff = S0 * (sigma0/sigma_bar)^sigma_beta')
+    ap.add_argument('--sigma_beta', type=float, default=0.10, help='Exponent for S0_eff = S0 * (sigma0/sigma_bar)^sigma_beta')
     ap.add_argument('--sigma0_Msun_pc2', type=float, default=150.0, help='Reference surface density for sigma_beta (Msun/pc^2)')
     # New physics knobs
     ap.add_argument('--eta', type=float, default=0.0)
@@ -101,6 +101,12 @@ def main():
     ap.add_argument('--gN_from_total_baryons', action='store_true', help='[Deprecated] Kept for backward-compatibility; total-baryon comparator is now the default')
     ap.add_argument('--gN_from_gas_only', action='store_true', help='If set, compute Newtonian g_N from gas-only (ablation). Default: total-baryon comparator')
     args = ap.parse_args()
+
+    # Back-compat: deprecated alias --gN_from_total_baryons (now default)
+    if getattr(args, 'gN_from_total_baryons', False):
+        import warnings as _warn
+        _warn.warn("--gN_from_total_baryons is deprecated; total-baryon comparator is default.", DeprecationWarning)
+        args.gN_from_gas_only = False
 
     cdir = Path(args.base)/args.cluster
     # Prefer component-returning builder if available
@@ -217,6 +223,12 @@ def main():
         gN_total_mode = False
     elif bool(args.gN_from_total_baryons):
         gN_total_mode = True
+
+    # Fail fast if headline (total-baryon) comparator lacks stars profile
+    if gN_total_mode:
+        s_path_check = Path(args.stars_csv) if args.stars_csv else (Path(args.base)/args.cluster/"stars_profile.csv")
+        if not Path(s_path_check).exists():
+            raise RuntimeError("Total-baryon comparator requires stars_profile.csv; supply --stars_csv or use --gN_from_gas_only ablation.")
 
     # Optional: enable gentle saturation when using total-baryon gN to avoid over-shoot
     if gN_total_mode and not bool(args.use_saturating_mobility):
@@ -374,6 +386,10 @@ def main():
     kT_pred = kT_from_ne_and_gtot(R, ne_R, g_tot_R, f_nt)
     # GR-only baseline (no φ):
     kT_pred_GR = kT_from_ne_and_gtot(R, ne_R, g_N_R, f_nt)
+    # Print ⟨f_nt⟩ on scoring radii if enabled
+    if f_nt is not None:
+        f_nt_on_obs = np.interp(rT, R, f_nt)
+        print(f"[HSE] <f_nt> on scoring radii = {np.mean(f_nt_on_obs):.3f}")
 
     # Save field summary for downstream lensing overlays
     import pandas as _pd
@@ -395,6 +411,11 @@ def main():
         json.dump({'cluster': args.cluster,
                    'S0_input': args.S0,
                    'rc_input_kpc': args.rc_kpc,
+                   'g0_kms2_per_kpc': args.g0_kms2_per_kpc,
+                   'rc_gamma': args.rc_gamma,
+                   'sigma_beta': args.sigma_beta,
+                   'rc_ref_kpc': args.rc_ref_kpc,
+                   'sigma0_Msun_pc2': args.sigma0_Msun_pc2,
                    'S0_eff': S0_eff,
                    'rc_eff_kpc': rc_eff,
                    'r_half_kpc': r_half,
@@ -409,7 +430,10 @@ def main():
                    'alpha_sigma': float(args.alpha_sigma),
                    'n_sigma': float(args.n_sigma),
                    'fnt0': float(args.fnt0),
+                   'fnt_n': float(args.fnt_n),
+                   'fnt_max': float(args.fnt_max),
                    'r500_kpc': float(args.r500_kpc),
+                   'N_pts_scored': int(len(rT)),
                    'temp_median_frac_err': float(frac),
                    'temp_median_frac_err_GR': float(frac_GR),
                    'M_gas_100_Msun': float(Mgas_100) if 'Mgas_100' in locals() else None,
@@ -423,7 +447,7 @@ def main():
 
     ax1 = fig.add_subplot(gs[0, 0])
     ax1.plot(R, g_phi_R, label='g_φ (PDE)')
-    ax1.plot(R, g_N_R, label='g_N (baryons)')
+    ax1.plot(R, g_N_R, label=('g_N (total baryons)' if gN_mode == 'total-baryon' else 'g_N (gas-only)'))
     ax1.plot(R, g_tot_R, label='g_tot')
     ax1.set_xscale('log'); ax1.set_yscale('symlog')
     ax1.set_xlabel('R [kpc]'); ax1.set_ylabel('g [(km/s)^2/kpc]')
@@ -431,7 +455,7 @@ def main():
 
     ax2 = fig.add_subplot(gs[0, 1])
     ax2.semilogx(R, kT_pred, '--', label='kT (G³ + HSE)')
-    ax2.semilogx(R, kT_pred_GR, ':', label='kT (GR only)')
+    ax2.semilogx(R, kT_pred_GR, ':', label=('kT (GR baryons = total)' if gN_mode == 'total-baryon' else 'kT (GR baryons = gas-only)'))
     yerr = t.get('kT_err_keV')
     ax2.errorbar(rT, kT, yerr=yerr, fmt='o', ms=3, label='kT (X-ray)')
     ax2.set_xlabel('r [kpc]'); ax2.set_ylabel('kT [keV]')
@@ -451,18 +475,29 @@ def main():
     # target line(s) for quick visual gate
     ax3.axhline(0.30, color='0.7', ls='--', lw=0.8)
     ax3.text(0.005, 0.88, '0.30', transform=ax3.transAxes, fontsize=8, color='0.4')
+    ax3.axhline(0.60, color='0.75', ls='--', lw=0.8)
+    ax3.text(0.05, 0.61, '0.60', transform=ax3.transAxes, fontsize=8, color='0.5')
 
-    # Callout: tuple and comparator
+    # Callouts (top): comparator and median residual
     comparator_text = 'total baryons' if gN_mode == 'total-baryon' else 'gas-only (ablation)'
+    fig.text(0.015, 0.96, f"G³ single global tuple — comparator = {comparator_text}", fontsize=10, ha='left', va='top')
+    fig.text(0.015, 0.93, f"median |ΔT|/T = {frac:.3f}", fontsize=10, ha='left', va='top')
+
+    # Bottom callout: tuple
     txt = (
-        f"G³: S0={args.S0}, rc={args.rc_kpc} kpc, γ={args.rc_gamma}, β={args.sigma_beta}, g0={args.g0_kms2_per_kpc}\n"
-        f"Comparator = {comparator_text}; median |ΔT|/T = {frac:.3f}"
+        f"G³: S0={args.S0}, rc={args.rc_kpc} kpc, γ={args.rc_gamma}, β={args.sigma_beta}, g0={args.g0_kms2_per_kpc}"
     )
     fig.text(0.02, 0.02, txt, fontsize=9, ha='left', va='bottom')
 
-    # Save with ablation-safe filename
-    is_ablation = bool(args.gN_from_gas_only) or bool(args.geom_from_gas_only) or (float(args.fnt0) > 0.0)
-    out_png = od/('cluster_pde_results_ablation.png' if is_ablation else 'cluster_pde_results.png')
+    # Save with ablation/nonthermal-aware filename
+    is_ablation = bool(args.gN_from_gas_only) or bool(args.geom_from_gas_only)
+    is_nonthermal = float(args.fnt0) > 0.0
+    fname = 'cluster_pde_results'
+    if is_ablation:
+        fname += '_ablation'
+    if is_nonthermal:
+        fname += '_nonthermal'
+    out_png = od/(fname + '.png')
     fig.tight_layout(rect=[0, 0.05, 1, 1])
     fig.savefig(out_png, dpi=140)
     plt.close(fig)

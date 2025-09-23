@@ -11,11 +11,11 @@ RUN_SPARC   = ROOT / 'root-m' / 'pde' / 'run_sparc_pde.py'
 DATA        = ROOT / 'data'
 OUT_BASE    = ROOT / 'root-m' / 'out'
 
-# Default grids (moderate)
-S0_GRID = [8.0e-5, 1.0e-4, 1.2e-4]
-RC_GRID = [18.0, 22.0, 28.0]
-RC_GAMMA_GRID = [0.4, 0.5]
-SIGMA_BETA_GRID = [0.08, 0.10]
+# Default grids (broader for clusters under full-baryon gN)
+S0_GRID = [5.0e-5, 6.0e-5, 7.0e-5, 8.0e-5, 1.0e-4, 1.2e-4]
+RC_GRID = [18.0, 22.0, 28.0, 35.0, 45.0]
+RC_GAMMA_GRID = [0.3, 0.4, 0.5, 0.6]
+SIGMA_BETA_GRID = [0.05, 0.08, 0.10, 0.12]
 
 CLUSTERS = {
     'ABELL_0426': {
@@ -34,9 +34,12 @@ CLUSTERS = {
 G0 = 1200
 RC_REF   = 30
 SIGMA0     = 150
-# Use slightly coarser grid for tuning speed
+# Use slightly coarser grid for tuning speed (clusters)
 NR = 96
 NZ = 96
+# Evaluation resolution for SPARC overlays
+E_NR = 128
+E_NZ = 128
 
 # SPARC config
 SINGLE_GAL_OVERLAYS = True
@@ -102,24 +105,25 @@ def eval_sparc(best: dict) -> dict:
     S0 = best['S0']; rc = best['rc_kpc']
     rc_gamma = best.get('rc_gamma', 0.5)
     sigma_beta = best.get('sigma_beta', 0.1)
-    # Try to get ~20 galaxies: prefer an eval JSON, else sample from rotmod parquet
+    # Try to get ~50 galaxies: prefer an eval JSON, else sample from rotmod parquet
     eval_json = ROOT / 'out' / 'analysis' / 'type_breakdown' / 'sparc_eval_galaxies.json'
     gals: list[str] = []
     if eval_json.exists():
         try:
             sel = json.loads(eval_json.read_text())
-            gals = [s for s in sel.get('galaxies', [])][:20]
+            gals = [s for s in sel.get('galaxies', [])][:50]
         except Exception:
             gals = []
     if not gals:
         try:
             import pandas as _pd
             rot = _pd.read_parquet(ROTMOD_PAR)
-            gals = sorted(list(dict.fromkeys(rot['galaxy'].dropna().astype(str).tolist())))[:20]
+            gals = sorted(list(dict.fromkeys(rot['galaxy'].dropna().astype(str).tolist())))[:50]
         except Exception:
             if GAL_LIST_JSON.exists():
                 sel = json.loads(GAL_LIST_JSON.read_text())
                 gals = sel.get('galaxies', [])
+                gals = gals[:50]
     if not gals:
         print('[WARN] No galaxies found for SPARC eval')
         return {}
@@ -131,7 +135,7 @@ def eval_sparc(best: dict) -> dict:
             'py', '-u', str(RUN_SPARC),
             '--in', str(SPARC_IN), '--axisym_maps', '--galaxy', g,
             '--rotmod_parquet', str(ROTMOD_PAR), '--all_tables_parquet', str(ALL_TBL),
-            '--hz_kpc', '0.3', '--NR', f'{NR}', '--NZ', f'{NZ}',
+            '--hz_kpc', '0.3', '--NR', f'{E_NR}', '--NZ', f'{E_NZ}',
             '--S0', f'{S0}', '--rc_kpc', f'{rc}',
             '--rc_gamma', f'{rc_gamma}', '--rc_ref_kpc', f'{RC_REF}',
             '--sigma_beta', f'{sigma_beta}', '--sigma0_Msun_pc2', f'{SIGMA0}',

@@ -34,7 +34,7 @@ def main():
     args = ap.parse_args()
 
     field_dir = Path(args.field_dir) if args.field_dir else (Path('root-m/out/pde_clusters')/args.cluster)
-    out_dir = Path(args.out_dir) if args.out_dir else field_dir
+    out_dir = Path(args.out_dir) if args.out_dir else Path('figs/lensing')
     out_dir.mkdir(parents=True, exist_ok=True)
 
     fsum = pd.read_csv(field_dir/'field_summary.csv')
@@ -64,7 +64,7 @@ def main():
             plt.loglog(r_obs, M_obs, 'o', ms=3, label='Lensing')
         plt.xlabel('r [kpc]'); plt.ylabel('M(<r) [Msun]'); plt.title(args.cluster)
         plt.grid(True, which='both', alpha=0.3); plt.legend()
-        plt.tight_layout(); plt.savefig(out_dir/'cluster_lensing_overlay.png', dpi=140); plt.close()
+        plt.tight_layout(); plt.savefig(out_dir/(f"{args.cluster}_lensing_overlay.png"), dpi=140); plt.close()
     else:
         # No observed lensing mass provided; save the model mass curve and plot
         pd.DataFrame({'R_kpc': R, 'M_model_Msun': M_pred}).to_csv(out_dir/'M_model_only.csv', index=False)
@@ -72,7 +72,7 @@ def main():
         plt.loglog(R, M_pred, 'r-', lw=1.6, label='PDE (from g_tot)')
         plt.xlabel('r [kpc]'); plt.ylabel('M(<r) [Msun]'); plt.title(args.cluster)
         plt.grid(True, which='both', alpha=0.3); plt.legend()
-        plt.tight_layout(); plt.savefig(out_dir/'M_model_only.png', dpi=140); plt.close()
+        plt.tight_layout(); plt.savefig(out_dir/(f"{args.cluster}_M_model_only.png"), dpi=140); plt.close()
 
 
 if __name__ == '__main__':

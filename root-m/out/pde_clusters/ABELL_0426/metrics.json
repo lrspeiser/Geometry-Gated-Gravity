@@ -1,10 +1,3 @@
-{
-  "cluster": "ABELL_0426",
-  "S0_input": 0.00014,
-  "rc_input_kpc": 22.0,
-  "S0_eff": 0.00015432101058976159,
-  "rc_eff_kpc": 35.88643986230288,
-  "r_half_kpc": 79.82458053661247,
-  "sigma_bar_Msun_pc2": 56.639711046557984,
-  "temp_median_frac_err": 0.2791407974161888
-}
+version https://git-lfs.github.com/spec/v1
+oid sha256:9faef8d7406e3a98efffecec40f2434e0de861f9d7cedd9d466705ad791c72b9
+size 776

@@ -49,15 +49,15 @@ def main():
     ap.add_argument('--Zmax', type=float, default=80.0)
     ap.add_argument('--NR', type=int, default=128)
     ap.add_argument('--NZ', type=int, default=128)
-    ap.add_argument('--S0', type=float, default=1.0e-7)
-    ap.add_argument('--rc_kpc', type=float, default=15.0)
-    ap.add_argument('--g0_kms2_per_kpc', type=float, default=1000.0)
+    ap.add_argument('--S0', type=float, default=1.4e-4)
+    ap.add_argument('--rc_kpc', type=float, default=22.0)
+    ap.add_argument('--g0_kms2_per_kpc', type=float, default=1200.0)
     ap.add_argument('--m_exp', type=float, default=1.0)
     ap.add_argument('--m_grid', type=str, default=None, help='Comma-separated m exponents for CV, e.g., 0.7,1.0,1.3')
     # Geometry-aware global knobs
-    ap.add_argument('--rc_gamma', type=float, default=0.0)
+    ap.add_argument('--rc_gamma', type=float, default=0.5)
     ap.add_argument('--rc_ref_kpc', type=float, default=30.0)
-    ap.add_argument('--sigma_beta', type=float, default=0.0)
+    ap.add_argument('--sigma_beta', type=float, default=0.10)
     ap.add_argument('--sigma0_Msun_pc2', type=float, default=150.0)
     # CV grids for geometry-aware knobs
     ap.add_argument('--rc_gamma_grid', type=str, default=None, help='Comma-separated rc_gamma grid for CV, e.g., 0.0,0.25,0.5')
@@ -388,6 +388,11 @@ def main():
                   'Vpred_pde_kms': v_pred, 'percent_close': (100.0 - err)}).to_csv(out_csv, index=False)
     # metrics
     (od/'summary.json').write_text(json.dumps({'S0_input': args.S0, 'rc_input_kpc': args.rc_kpc,
+                                               'g0_kms2_per_kpc': args.g0_kms2_per_kpc,
+                                               'rc_gamma': args.rc_gamma,
+                                               'sigma_beta': args.sigma_beta,
+                                               'rc_ref_kpc': args.rc_ref_kpc,
+                                               'sigma0_Msun_pc2': args.sigma0_Msun_pc2,
                                                'S0_eff': float(params.S0), 'rc_eff_kpc': float(params.rc_kpc),
                                                'r_half_kpc': r_half, 'sigma_bar_Msun_pc2': sigma_bar_pc2,
                                                'use_sigma_screen': bool(args.use_sigma_screen),

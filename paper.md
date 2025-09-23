@@ -520,14 +520,14 @@ py -u root-m\pde\run_cluster_pde.py --cluster ABELL_0426 ^
   --rc_gamma 0.5 --sigma_beta 0.10 --rc_ref_kpc 30 --sigma0_Msun_pc2 150 ^
   --clump_profile_csv data\clusters\ABELL_0426\clump_profile.csv ^
   --stars_csv data\clusters\ABELL_0426\stars_profile.csv ^
-  --NR 128 --NZ 128 --Rmax 900 --Zmax 900
+  --NR 128 --NZ 128 --Rmax 1500 --Zmax 1500
 
 py -u root-m\pde\run_cluster_pde.py --cluster ABELL_1689 ^
   --S0 1.4e-4 --rc_kpc 22 --g0_kms2_per_kpc 1200 ^
   --rc_gamma 0.5 --sigma_beta 0.10 --rc_ref_kpc 30 --sigma0_Msun_pc2 150 ^
   --clump_profile_csv data\clusters\ABELL_1689\clump_profile.csv ^
   --stars_csv data\clusters\ABELL_1689\stars_profile.csv ^
-  --NR 128 --NZ 128 --Rmax 1200 --Zmax 1200
+  --NR 128 --NZ 128 --Rmax 1500 --Zmax 1500
 ```
 
 - Exponent micro‑scan (γ,β) under total‑baryon comparator:
@@ -538,7 +538,7 @@ py -u rigor\scripts\run_cluster_exponent_scan.py ^
   --gammas "0.4,0.5,0.6" ^
   --betas "0.08,0.10,0.12" ^
   --comparator "total-baryon" ^
-  --NR 128 --NZ 128 --Rmax 1200 --Zmax 1200
+  --NR 128 --NZ 128 --Rmax 1500 --Zmax 1500
 ```
 
 - Lensing overlays from saved fields:
