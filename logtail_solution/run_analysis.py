@@ -74,10 +74,10 @@ class LogTailAnalyzer:
             self.sparc_model = self.mw_model
             logger.info("Using MW parameters for SPARC")
     
-    def analyze_sparc_galaxies(self, max_galaxies=20):
+    def analyze_sparc_galaxies(self, max_galaxies=None):
         """Analyze SPARC galaxy rotation curves."""
         logger.info("\n" + "="*60)
-        logger.info("ANALYZING SPARC GALAXIES")
+        logger.info("ANALYZING ALL SPARC GALAXIES (175 total)")
         logger.info("="*60)
         
         galaxies = self.loader.load_sparc_galaxies(max_galaxies=max_galaxies)
