@@ -1,0 +1,51 @@
+{
+  "name": "Hybrid C - Two-Zone G\u00b3 Model",
+  "median_error_pct": 4.374458450841557,
+  "description": "Pure G\u00b3 formulation with separate inner/outer galaxy treatment",
+  "NO_DARK_MATTER": true,
+  "NO_MOND": true,
+  "inner_component": {
+    "formula": "g_inner = (v0\u00b2/R) * R\u00b2/(R\u00b2+rc_eff\u00b2) * exp(-\u03a30*\u03b1/(2*\u03a3_loc))",
+    "domain": "R < 10 kpc (weight decreases smoothly)",
+    "features": [
+      "Squared rational for smooth core",
+      "Exponential density screening"
+    ],
+    "parameters": {
+      "v0": 250.0,
+      "rc": 5.0,
+      "Sigma0": 50.0,
+      "alpha": 2.0,
+      "hz": 1.5,
+      "m": 3.0
+    }
+  },
+  "outer_component": {
+    "formula": "g_outer = (v0_outer\u00b2/R) * R/(R+rc_outer)",
+    "domain": "R > 8 kpc (weight increases smoothly)",
+    "features": [
+      "Simple rational",
+      "No screening (low density)",
+      "Enhanced parameters"
+    ],
+    "parameters": {
+      "v0_outer": 275.0,
+      "rc_outer": 7.5
+    }
+  },
+  "transition": {
+    "range_kpc": [
+      8,
+      10
+    ],
+    "inner_weight": "1/(1 + exp((R-10)/1))",
+    "outer_weight": "1/(1 + exp((8-R)/1))"
+  },
+  "performance_metrics": {
+    "median_error_pct": 4.374458450841557,
+    "mean_error_pct": 5.757853359910977,
+    "frac_within_5pct": 0.5572485155734574,
+    "frac_within_10pct": 0.8434320636133199,
+    "frac_within_20pct": 0.9773603250112851
+  }
+}
