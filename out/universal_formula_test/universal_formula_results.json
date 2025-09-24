@@ -1,0 +1,166 @@
+{
+  "timestamp": "2025-09-24T12:24:58.680701",
+  "parameters": {
+    "v0_kms": 380.0,
+    "rc0_kpc": 30.075954666752033,
+    "gamma": 1.3322214351196064,
+    "beta": 0.5295454646849203,
+    "sigma_star": 177.71106151313964,
+    "alpha": 0.6458012532424637,
+    "kappa": 0.5901191180476101,
+    "eta": 1.3604458792375866,
+    "delta_kpc": 0.28784445836206585,
+    "p_in": 1.5917071959444333,
+    "p_out": 1.398112049555365,
+    "g_sat": 1240.749388563806
+  },
+  "variant": {
+    "gating_type": "tanh",
+    "screen_type": "sigmoid",
+    "exponent_type": "logistic_r"
+  },
+  "mw_results": null,
+  "sparc_results": {
+    "dataset": "SPARC",
+    "n_galaxies": 171,
+    "n_points": 3336,
+    "median_error": 0.16232317930542883,
+    "mean_error": 0.22597914843350775,
+    "std_error": 0.27560727056649026,
+    "under_10pct": 0.33123501199040767,
+    "under_20pct": 0.5980215827338129,
+    "type_stats": {
+      "Sdm-Irr": {
+        "median_error": 0.26072267477196054,
+        "mean_error": 0.4057926176292,
+        "n_galaxies": 77
+      },
+      "Sbc-Sc": {
+        "median_error": 0.16229910454355634,
+        "mean_error": 0.20092809230490727,
+        "n_galaxies": 34
+      },
+      "Scd-Sd": {
+        "median_error": 0.1485310815302397,
+        "mean_error": 0.15993773948964737,
+        "n_galaxies": 32
+      },
+      "Sa-Sb": {
+        "median_error": 0.15426921065740967,
+        "mean_error": 0.16477561810194558,
+        "n_galaxies": 25
+      },
+      "Early-type": {
+        "median_error": 0.19284254046758037,
+        "mean_error": 0.17586251252534793,
+        "n_galaxies": 3
+      }
+    },
+    "best_galaxies": [
+      {
+        "name": "NGC1090",
+        "type": "Sbc-Sc",
+        "median_error": 0.026150931900053832,
+        "n_points": 24
+      },
+      {
+        "name": "IC4202",
+        "type": "Sbc-Sc",
+        "median_error": 0.029857844692184186,
+        "n_points": 32
+      },
+      {
+        "name": "UGC03205",
+        "type": "Sa-Sb",
+        "median_error": 0.03576627582061456,
+        "n_points": 48
+      },
+      {
+        "name": "UGC06786",
+        "type": "Early-type",
+        "median_error": 0.04051743698615962,
+        "n_points": 45
+      },
+      {
+        "name": "NGC3972",
+        "type": "Sbc-Sc",
+        "median_error": 0.0418545234822828,
+        "n_points": 10
+      }
+    ],
+    "worst_galaxies": [
+      {
+        "name": "UGC07577",
+        "type": "Sdm-Irr",
+        "median_error": 2.0670537299277285,
+        "n_points": 5
+      },
+      {
+        "name": "CamB",
+        "type": "Sdm-Irr",
+        "median_error": 1.8984457204432055,
+        "n_points": 5
+      },
+      {
+        "name": "PGC51017",
+        "type": "Sdm-Irr",
+        "median_error": 1.7920024821644616,
+        "n_points": 6
+      },
+      {
+        "name": "UGC02455",
+        "type": "Sdm-Irr",
+        "median_error": 1.6144925739099634,
+        "n_points": 8
+      },
+      {
+        "name": "D564-8",
+        "type": "Sdm-Irr",
+        "median_error": 1.30577145832489,
+        "n_points": 5
+      }
+    ]
+  },
+  "cluster_results": {
+    "dataset": "Galaxy Clusters",
+    "n_clusters": 5,
+    "n_points": 250,
+    "median_error": 2.1491683720262644,
+    "mean_error": 2.333235857130865,
+    "std_error": 1.565671816517457,
+    "note": "Simplified test - needs proper lensing data integration",
+    "cluster_results": [
+      {
+        "name": "Perseus",
+        "median_error": 1.8707553431081463,
+        "T_keV": 6.0,
+        "r_200": 1500
+      },
+      {
+        "name": "Coma",
+        "median_error": 2.882715464683325,
+        "T_keV": 8.0,
+        "r_200": 2000
+      },
+      {
+        "name": "Virgo",
+        "median_error": 2.1227308774386167,
+        "T_keV": 2.5,
+        "r_200": 1100
+      },
+      {
+        "name": "A1689",
+        "median_error": 3.315194546826285,
+        "T_keV": 9.0,
+        "r_200": 2200
+      },
+      {
+        "name": "Bullet",
+        "median_error": 1.3414594397401562,
+        "T_keV": 14.0,
+        "r_200": 1800
+      }
+    ]
+  },
+  "gpu_used": true
+}
