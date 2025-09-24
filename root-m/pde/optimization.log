@@ -1,0 +1,13 @@
+WARNING: CuPy not installed. GPU acceleration unavailable.
+Traceback (most recent call last):
+  File "C:\Users\henry\dev\GravityCalculator\root-m\pde\gpu_multi_optimizer.py", line 520, in <module>
+    results = main()
+  File "C:\Users\henry\dev\GravityCalculator\root-m\pde\gpu_multi_optimizer.py", line 496, in main
+    optimizer = GPUMultiOptimizer(use_gpu=True)
+  File "C:\Users\henry\dev\GravityCalculator\root-m\pde\gpu_multi_optimizer.py", line 76, in __init__
+    print("\U0001f4bb CPU Mode (GPU not available)")
+    ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\henry\AppData\Local\Programs\Python\Python313\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f4bb' in position 0: character maps to <undefined>

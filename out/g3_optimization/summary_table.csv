@@ -1,0 +1,8 @@
+Dataset,Metric,Performance,Unique Feature
+SPARC (175 galaxies),Median Outer %,88.0%,Diverse morphologies
+Milky Way (Gaia),Median %,285.1%,"Single galaxy, high quality"
+Perseus (A426),Median kT error,55.794,"Cool core, AGN feedback"
+Abell 1689,Median kT error,60.752,Massive lensing cluster
+A1795,Median kT error,28.369,Relaxed cool-core
+A2029,Median kT error,27.110,High central density
+A478,Median kT error,26.166,Intermediate mass

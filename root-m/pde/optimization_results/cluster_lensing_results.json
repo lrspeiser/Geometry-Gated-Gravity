@@ -1,0 +1,32 @@
+{
+  "ABELL_1689": {
+    "theta_E_obs": 47.0,
+    "theta_E_GR": 0,
+    "theta_E_model": 0,
+    "M_ratio_obs": 4.833333333333333
+  },
+  "ABELL_2029": {
+    "theta_E_obs": 28.0,
+    "theta_E_GR": 0,
+    "theta_E_model": 0,
+    "M_ratio_obs": 4.0
+  },
+  "A478": {
+    "theta_E_obs": 31.0,
+    "theta_E_GR": 0,
+    "theta_E_model": 0,
+    "M_ratio_obs": 3.888888888888889
+  },
+  "MACS_J0416": {
+    "theta_E_obs": 35.0,
+    "theta_E_GR": 0,
+    "theta_E_model": 0,
+    "M_ratio_obs": 5.466666666666666
+  },
+  "BULLET_1E0657": {
+    "theta_E_obs": 55.0,
+    "theta_E_GR": 0,
+    "theta_E_model": 0,
+    "M_ratio_obs": 7.5
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "clusters": {
+    "gamma": {
+      "mean": 0.5000386972176092,
+      "std": 7.741483031968287e-05,
+      "median": 0.5
+    },
+    "lambda0": {
+      "mean": 0.0,
+      "std": 0.0,
+      "median": 0.0
+    },
+    "alpha_grad": {
+      "mean": 1.5,
+      "std": 0.0,
+      "median": 1.5
+    },
+    "n_converged": 5,
+    "n_total": 5
+  },
+  "mw": {
+    "gamma": {
+      "mean": 1.0,
+      "std": 0.0,
+      "median": 1.0
+    },
+    "lambda0": {
+      "mean": 1.0,
+      "std": 0.0,
+      "median": 1.0
+    },
+    "alpha_grad": {
+      "mean": 2.0,
+      "std": 0.0,
+      "median": 2.0
+    },
+    "n_converged": 1,
+    "n_total": 1
+  }
+}

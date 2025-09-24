@@ -1,0 +1,46 @@
+{
+  "mw": {
+    "gamma": 1.0,
+    "lambda0": 1.0,
+    "alpha_grad": 2.0,
+    "chi2": 1610.088126499072,
+    "converged": true
+  },
+  "clusters": {
+    "ABELL_0426": {
+      "gamma": 0.5,
+      "lambda0": 0.0,
+      "alpha_grad": 1.5,
+      "chi2": 262450.0974554392,
+      "converged": true
+    },
+    "ABELL_1689": {
+      "gamma": 0.499999965046363,
+      "lambda0": 0.0,
+      "alpha_grad": 1.5,
+      "chi2": 2790.550972345188,
+      "converged": true
+    },
+    "A1795": {
+      "gamma": 0.5001935268760787,
+      "lambda0": 0.0,
+      "alpha_grad": 1.5,
+      "chi2": 5893.49295743889,
+      "converged": true
+    },
+    "A2029": {
+      "gamma": 0.49999999416560387,
+      "lambda0": 0.0,
+      "alpha_grad": 1.5,
+      "chi2": 9756.05295629179,
+      "converged": true
+    },
+    "A478": {
+      "gamma": 0.5,
+      "lambda0": 0.0,
+      "alpha_grad": 1.5,
+      "chi2": 7610.84431088038,
+      "converged": true
+    }
+  }
+}
