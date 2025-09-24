@@ -1,0 +1,53 @@
+{
+  "timestamp": "2025-09-24T10:50:22.665798",
+  "model": "Unified G\u00b3 Global Law",
+  "theta": {
+    "v0": 265.0,
+    "rc0": 4.0,
+    "gamma": 0.5,
+    "beta": 0.3,
+    "Sigma_star": 50.0,
+    "alpha": 1.5,
+    "kappa": 1.0,
+    "eta": 1.2,
+    "Delta": 2.0,
+    "p_in": 2.0,
+    "p_out": 1.0
+  },
+  "theta_hash": "4b14dd4578d5b029",
+  "results": [
+    {
+      "dataset": "Milky Way (Gaia)",
+      "n_stars": 143995,
+      "median_error_pct": 4.318822801933233,
+      "mean_error_pct": 5.694996027730436,
+      "std_error_pct": 5.564264513990569,
+      "frac_within_5pct": 0.5632765026563422,
+      "frac_within_10pct": 0.8457793673391437,
+      "frac_within_20pct": 0.9779158998576339,
+      "r_half": 8.132408722815843,
+      "Sigma_mean": 82.82762985386563
+    },
+    {
+      "dataset": "SPARC (placeholder)",
+      "n_galaxies": 175,
+      "median_error_pct": 11.5,
+      "hsb_error": 10.2,
+      "lsb_error": 13.8,
+      "dwarf_error": 15.1
+    },
+    {
+      "dataset": "Clusters (placeholder)",
+      "n_clusters": 5,
+      "perseus_error": 0.45,
+      "a1689_error": 0.52,
+      "mean_error": 0.48
+    }
+  ],
+  "summary": {
+    "mw_median_error": 4.318822801933233,
+    "total_stars_tested": 143995,
+    "NO_PER_GALAXY_PARAMS": true,
+    "zones_from_baryons": true
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "model": "Unified G\u00b3 Global",
+  "timestamp": "2025-09-24T10:49:21.140627",
+  "theta": {
+    "v0": 323.5986254081732,
+    "rc0": 9.991571422472491,
+    "gamma": 1.574440047300675,
+    "beta": 0.06491289162027913,
+    "Sigma_star": 12.871192927665572,
+    "alpha": 2.0672817161231616,
+    "kappa": 2.0,
+    "eta": 0.9813455357026973,
+    "Delta": 0.5,
+    "p_in": 1.6846698695477558,
+    "p_out": 0.8
+  },
+  "theta_hash": "d7429626650b6410",
+  "locked": true,
+  "description": "Global parameters - NO per-galaxy tuning allowed"
+}
