@@ -344,12 +344,24 @@ Reviewer note: the BTFR JSONs in the current run are produced by the corrected, 
 
 ---
 
-## 7. Galaxy–galaxy lensing
+## 7. Lensing predictions
 
+### 7.1 Galaxy–galaxy weak lensing
 The G³ disk surrogate reproduces a **$1/R$** excess surface density with physically reasonable amplitudes (Brainerd, Blandford & Smail 1996; Mandelbaum et al. 2006):
 
 * **Slope:** $\\mathrm{d}\\log_{10}\\Delta\\Sigma/\\mathrm{d}\\log_{10}R \\approx -1.00$.
-* **Amplitudes:** DeltaSigma(50 kpc) ≈ 2.29×10^7 Msun/kpc^2, DeltaSigma(100 kpc) ≈ 1.14×10^7. 
+* **Amplitudes:** DeltaSigma(50 kpc) ≈ 2.29×10^7 Msun/kpc^2, DeltaSigma(100 kpc) ≈ 1.14×10^7.
+
+### 7.2 Cluster strong lensing analysis
+Rigorous calculation of lensing observables from G³ effective mass profiles reveals:
+
+* **Convergence profiles:** Maximum mean convergence κ̄(<R) reaches only 0.17-0.19
+* **Einstein radii:** No Einstein rings predicted (κ̄ < 1 everywhere)
+* **Comparison with observations:**
+  - Abell 1689: Observed θ_E = 47±3" (Broadhurst et al. 2005); G³ predicts none
+  - Bullet Cluster: Observed θ_E = 16±2" (Clowe et al. 2006); G³ predicts none
+* **NFW comparison:** NFW with c=5-7 matches observations; G³ profiles too shallow
+* **Mass deficit:** G³ requires ~6× more effective mass to produce strong lensing
 
 These values are computed from the best‑fit LogTail parameters and are available in the lensing comparison JSON; the code supports direct amplitude ratio tests against stacked datasets when provided. The near‑unity amplitude is consistent with CMB lensing constraints (Planck Collaboration 2020).&#x20;
 
@@ -413,9 +425,24 @@ The CMB‑marginalized **lensing reconstruction amplitude** is consistent with u
 
 ---
 
-## 11. Limitations (addressed within the present framework)
+## 11. Limitations
 
-We deliberately **gate** the tail to avoid inner‑region conflicts; this gating is part of the model’s definition and fits the data. Because LogTail **does not inject mass**, its success on galaxy–galaxy lensing relies on the tail’s dynamical imprint—*which we have verified yields the correct $1/R$ shape and plausible amplitudes.*&#x20;
+### 11.1 Galaxy-scale limitations (addressed within framework)
+We deliberately **gate** the tail to avoid inner‑region conflicts; this gating is part of the model's definition and fits the data. Because LogTail **does not inject mass**, its success on galaxy–galaxy lensing relies on the tail's dynamical imprint—*which we have verified yields the correct $1/R$ shape and plausible amplitudes.*
+
+### 11.2 Cluster-scale limitations (fundamental)
+Comprehensive lensing analysis using Abel transform projections of the G³ effective mass profile reveals critical limitations at cluster scales:
+
+- **Strong lensing deficit:** G³ under-predicts cluster lensing convergence by factor of **~6.1**
+- **Maximum convergence:** Achieves only **κ̄_max = 0.17** (need 1.0 for Einstein rings)
+- **Observed vs predicted:** Abell 1689 has θ_E = 47" observed; G³ predicts none
+- **Root causes:** 
+  - Insufficient tail acceleration at Mpc scales
+  - Aggressive screening suppresses effect in high-density regions  
+  - Saturation cap (g_sat) limits maximum acceleration
+  - Lacks central density spike that NFW profiles provide
+
+These findings suggest G³'s universal formula may have fundamental domain limits, working well for galaxies (16% error) but requiring significant modification or scale-dependent parameters for clusters.
 
 ---
 
@@ -438,6 +465,8 @@ Note: Current solver shows numerical scaling issues with total-baryon densities 
 With one global parameter set, the G³ disk surrogate (LogTail) reaches **≈90%** median outer accuracy on galaxy rotation curves, reproduces a **tight, curved RAR**, matches the **isothermal $1/R$** weak‑lensing shape with realistic amplitudes, and yields BTFR slopes in the expected range when anchored to catalog baryonic masses. The CMB TT envelopes limit any late‑time lensing‑like smoothing to **≲0.6%** (95% CL), and the Planck φφ amplitude is consistent with unity after proper normalization.
 
 The **G³ field law** carries the scaling to clusters: using one global, geometry‑aware tuple (fixed on SPARC and tied to $(r_{1/2},\bar\Sigma)$), we apply the same field equation to galaxy clusters with comprehensive baryon accounting. The implementation now defaults to total‑baryon comparators (gas×√clumping + stars) with geometry scalars computed from the same 3D density grid used by the PDE solver, ensuring complete parity. Extended cluster samples including A1795, A478, and A2029 with ACCEPT‑quality profiles are now included. The one‑law, category‑blind hypothesis thus explains disks and lensing and extends naturally to clusters with no halos and no per‑object dials.
+
+**Important caveat:** Comprehensive cluster lensing analysis reveals that G³ in its current universal form **under-predicts strong lensing by a factor of ~6**, achieving maximum mean convergence of only 0.17 where 1.0 is needed for Einstein rings. This indicates fundamental scale limitations requiring either modified parameters at cluster scales or acknowledgment that the universal formula applies primarily to the galaxy regime (10-100 kpc).
 
 ---
 
