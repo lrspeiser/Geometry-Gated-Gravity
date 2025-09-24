@@ -1,0 +1,56 @@
+[
+  {
+    "iter": 0,
+    "branch": 0,
+    "variant_id": 0,
+    "solver": "pso",
+    "score": 21.44996753020835,
+    "best_score": 21.44996753020835,
+    "time_s": 9.442254066467285
+  },
+  {
+    "iter": 0,
+    "branch": 1,
+    "variant_id": 1,
+    "solver": "de",
+    "score": 22.44666916379829,
+    "best_score": 21.44996753020835,
+    "time_s": 34.541189432144165
+  },
+  {
+    "iter": 0,
+    "branch": 2,
+    "variant_id": 2,
+    "solver": "pso",
+    "score": 20.820083499385973,
+    "best_score": 20.820083499385973,
+    "time_s": 42.80416965484619
+  },
+  {
+    "iter": 0,
+    "branch": 3,
+    "variant_id": 3,
+    "solver": "de",
+    "score": 15.744304285407775,
+    "best_score": 15.744304285407775,
+    "time_s": 70.20228576660156
+  },
+  {
+    "iter": 0,
+    "branch": 4,
+    "variant_id": 4,
+    "solver": "pso",
+    "score": 22.446718180792345,
+    "best_score": 15.744304285407775,
+    "time_s": 79.17496490478516
+  },
+  {
+    "iter": 0,
+    "branch": 5,
+    "variant_id": 5,
+    "solver": "de",
+    "score": 18.14155618401176,
+    "best_score": 15.744304285407775,
+    "time_s": 104.95543503761292
+  }
+]

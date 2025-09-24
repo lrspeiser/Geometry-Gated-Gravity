@@ -1,0 +1,119 @@
+{
+  "timestamp": "2025-09-24 12:17:01",
+  "gpu_used": true,
+  "n_galaxies": 171,
+  "n_variants_tested": 30,
+  "best_score_percent": 12.717679721928087,
+  "best_params_vector": [
+    239.49147965363485,
+    20.62800308500901,
+    0.1912192208169624,
+    0.03075621464345645,
+    49.64924522875023,
+    0.5,
+    0.5,
+    1.5221768391012567,
+    1.2590935512312036,
+    1.757129152556421,
+    2.1586271694922834,
+    3081.7700845825784
+  ],
+  "best_variant": {
+    "gating_type": "rational",
+    "screen_type": "sigmoid",
+    "exponent_type": "logistic_r"
+  },
+  "results_by_type": {
+    "Sdm-Irr": {
+      "median_error": 0.1443982533045145,
+      "n_galaxies": 77
+    },
+    "Sbc-Sc": {
+      "median_error": 0.11950112667691248,
+      "n_galaxies": 34
+    },
+    "Scd-Sd": {
+      "median_error": 0.10413417129964658,
+      "n_galaxies": 32
+    },
+    "Sa-Sb": {
+      "median_error": 0.17507680719984653,
+      "n_galaxies": 25
+    },
+    "Early": {
+      "median_error": 0.04480377355628197,
+      "n_galaxies": 3
+    }
+  },
+  "param_names": [
+    "v0_kms",
+    "rc0_kpc",
+    "gamma",
+    "beta",
+    "sigma_star",
+    "alpha",
+    "kappa",
+    "eta",
+    "delta_kpc",
+    "p_in",
+    "p_out",
+    "g_sat"
+  ],
+  "bounds": {
+    "v0_kms": [
+      120.0,
+      380.0
+    ],
+    "rc0_kpc": [
+      5.0,
+      40.0
+    ],
+    "gamma": [
+      0.0,
+      2.0
+    ],
+    "beta": [
+      0.0,
+      0.8
+    ],
+    "sigma_star": [
+      20.0,
+      400.0
+    ],
+    "alpha": [
+      0.5,
+      3.0
+    ],
+    "kappa": [
+      0.5,
+      3.5
+    ],
+    "eta": [
+      0.4,
+      1.6
+    ],
+    "delta_kpc": [
+      0.1,
+      2.5
+    ],
+    "p_in": [
+      0.2,
+      2.5
+    ],
+    "p_out": [
+      0.2,
+      2.5
+    ],
+    "g_sat": [
+      800.0,
+      8000.0
+    ]
+  },
+  "search_time_s": 952.1533122062683,
+  "config": {
+    "metric": "median",
+    "branches": 6,
+    "iters": 300,
+    "patience": 30
+  }
+}
