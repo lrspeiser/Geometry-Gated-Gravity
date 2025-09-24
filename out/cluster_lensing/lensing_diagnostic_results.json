@@ -1,0 +1,25 @@
+{
+  "clusters": [
+    "Abell_1689",
+    "Bullet"
+  ],
+  "observed_einstein_radii": [
+    47.0,
+    16.0
+  ],
+  "g3_max_convergence": [
+    0.17276556054262748,
+    0.1567442615366976
+  ],
+  "required_scaling_factors": [
+    5.788190637411581,
+    6.379818885847224
+  ],
+  "average_deficit_factor": 6.084004761629402,
+  "implications": {
+    "mass_deficit": "G\u00b3 needs 6.1x more mass",
+    "best_convergence": 0.17276556054262748,
+    "success_rate": "0/2",
+    "conclusion": "G\u00b3 significantly under-predicts cluster lensing"
+  }
+}

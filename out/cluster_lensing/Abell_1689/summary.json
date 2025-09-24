@@ -1,0 +1,15 @@
+{
+  "cluster": "Abell_1689",
+  "z_lens": 0.183,
+  "z_source": 1.0,
+  "r200_kpc": 2200.0,
+  "M200_Msun": 2000000000000000.0,
+  "Sigma_crit_Msun_per_kpc2": 3391792410.0051126,
+  "Einstein_radius_arcsec_baryons": null,
+  "Einstein_radius_kpc_baryons": null,
+  "Einstein_radius_arcsec_G3": null,
+  "Einstein_radius_kpc_G3": null,
+  "max_kappa_eff_mean": 0.17276556054262748,
+  "max_kappa_bar_mean": 0.17254520137664203,
+  "note": "G\u00b3-effective lensing computed by mapping g_total to M_eff(r)=g_total r^2/G and projecting."
+}

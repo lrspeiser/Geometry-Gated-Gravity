@@ -191,6 +191,16 @@ def test_sparc():
     all_errors = []
     galaxy_results = []
     type_results = {}
+    # Per-type per-point errors for success-rate plots
+    errors_by_type = {}
+    # Per-point aggregates for calibration and residual diagnostics
+    r_all = []
+    vobs_all = []
+    vpred_all = []
+    rhalf_all = []
+    sigloc_all = []
+    sigbar_all = []
+    type_all = []
     
     # Process each galaxy
     for name, gdf in df.groupby('galaxy'):
@@ -248,16 +258,39 @@ def test_sparc():
             median_error = float(xp.median(rel_errors))
             all_errors.extend(rel_errors)
             
+            # Accumulate per-point arrays for diagnostics
+            r_cpu = cp.asnumpy(r_valid) if GPU_AVAILABLE else np.asarray(r_valid)
+            vobs_cpu = cp.asnumpy(v_obs_valid) if GPU_AVAILABLE else np.asarray(v_obs_valid)
+            vpred_cpu = cp.asnumpy(v_pred) if GPU_AVAILABLE else np.asarray(v_pred)
+            sigloc_cpu = (cp.asnumpy(model.params["sigma_star"]*0 + 1) * 0).tolist() if False else None  # placeholder
+            r_all.extend(r_cpu.tolist())
+            vobs_all.extend(vobs_cpu.tolist())
+            vpred_all.extend(vpred_cpu.tolist())
+            rhalf_all.extend([r_half]*len(r_cpu))
+            # Recompute sigma_loc for points (mirror model's construction)
+            r_d = r_half / 1.68
+            sigma_0 = sigma_bar * 2.0
+            sigma_loc_pts = sigma_0 * np.exp(-r_cpu / r_d)
+            sigloc_all.extend(sigma_loc_pts.tolist())
+            sigbar_all.extend([sigma_bar]*len(r_cpu))
+            type_all.extend([galaxy_type]*len(r_cpu))
+            
             galaxy_results.append({
                 'name': name,
                 'type': galaxy_type,
                 'median_error': median_error,
-                'n_points': len(rel_errors)
+                'n_points': int(len(rel_errors))
             })
             
             if galaxy_type not in type_results:
                 type_results[galaxy_type] = []
             type_results[galaxy_type].append(median_error)
+            
+            # Per-type per-point errors
+            if galaxy_type not in errors_by_type:
+                errors_by_type[galaxy_type] = []
+            err_cpu = cp.asnumpy(rel_errors) if GPU_AVAILABLE else np.asarray(rel_errors)
+            errors_by_type[galaxy_type].extend(err_cpu.tolist())
     
     # Aggregate statistics
     all_errors = xp.asarray(all_errors)
@@ -289,7 +322,20 @@ def test_sparc():
     if GPU_AVAILABLE:
         all_errors = cp.asnumpy(all_errors)
     
-    return results, {'all_errors': all_errors, 'galaxy_results': galaxy_results}
+    sparc_plot_payload = {
+        'all_errors': all_errors,
+        'galaxy_results': galaxy_results,
+        'r_all': np.asarray(r_all),
+        'vobs_all': np.asarray(vobs_all),
+        'vpred_all': np.asarray(vpred_all),
+        'rhalf_all': np.asarray(rhalf_all),
+        'sigloc_all': np.asarray(sigloc_all),
+        'sigbar_all': np.asarray(sigbar_all),
+        'type_all': np.asarray(type_all),
+        'errors_by_type': errors_by_type
+    }
+    
+    return results, sparc_plot_payload
 
 def test_clusters():
     """Test on galaxy clusters (simplified)."""
@@ -374,7 +420,7 @@ def create_comprehensive_plot(mw_data, sparc_data, cluster_results):
     """Create comprehensive performance visualization."""
     fig = plt.figure(figsize=(20, 15))
     
-    # Plot 1: MW rotation curve
+    # Plot 1: MW rotation curve (or Not evaluated)
     ax1 = plt.subplot(3, 4, 1)
     if mw_data:
         mw_results, mw_plot = mw_data
@@ -384,22 +430,50 @@ def create_comprehensive_plot(mw_data, sparc_data, cluster_results):
         ax1.scatter(mw_plot['r'][idx], mw_plot['v_pred'][idx], alpha=0.3, s=1, c='red', label='Predicted')
         ax1.set_xlabel('Radius (kpc)')
         ax1.set_ylabel('Velocity (km/s)')
-        ax1.set_title(f'Milky Way (Error: {mw_results["median_error"]*100:.1f}%)')
-        ax1.legend()
+        ax1.set_title(f'Milky Way (Median per-point error: {mw_results["median_error"]*100:.1f}%)')
+        ax1.legend(loc='lower right', fontsize=8)
         ax1.grid(True, alpha=0.3)
+    else:
+        ax1.axis('off')
+        ax1.text(0.5, 0.5, 'MW not evaluated', ha='center', va='center', fontsize=12)
     
-    # Plot 2: MW error distribution
+    # Plot 2: Calibration (v_pred vs v_obs) when MW missing, else MW errors
     ax2 = plt.subplot(3, 4, 2)
     if mw_data:
         mw_results, mw_plot = mw_data
         ax2.hist(mw_plot['errors']*100, bins=50, alpha=0.7, edgecolor='black')
         ax2.axvline(mw_results['median_error']*100, color='red', linestyle='--',
                    label=f'Median: {mw_results["median_error"]*100:.1f}%')
-        ax2.set_xlabel('Relative Error (%)')
-        ax2.set_ylabel('Count')
+        ax2.set_xlabel('Per-point weighted fractional error (%)')
+        ax2.set_ylabel('Count (2% bins)')
         ax2.set_title('MW Error Distribution')
-        ax2.legend()
+        ax2.legend(fontsize=8)
         ax2.grid(True, alpha=0.3)
+    elif sparc_data:
+        sparc_results, sparc_plot = sparc_data
+        # Bin by observed velocity
+        vobs = sparc_plot['vobs_all']
+        vpred = sparc_plot['vpred_all']
+        if len(vobs) > 0:
+            bins = np.linspace(np.percentile(vobs, 1), np.percentile(vobs, 99), 20)
+            idx = np.digitize(vobs, bins)
+            vobs_bin = [np.mean(vobs[idx==i]) for i in range(1, len(bins))]
+            vpred_bin = [np.mean(vpred[idx==i]) for i in range(1, len(bins))]
+            # 68% band
+            vpred_lo = [np.percentile(vpred[idx==i], 16) if np.any(idx==i) else np.nan for i in range(1, len(bins))]
+            vpred_hi = [np.percentile(vpred[idx==i], 84) if np.any(idx==i) else np.nan for i in range(1, len(bins))]
+            ax2.plot(vobs_bin, vobs_bin, 'k--', linewidth=1, label='Ideal')
+            ax2.plot(vobs_bin, vpred_bin, 'o-', label='Binned mean')
+            ax2.fill_between(vobs_bin, vpred_lo, vpred_hi, color='C0', alpha=0.2, label='68% band')
+            # Calibration slope/intercept
+            m, b = np.polyfit(vobs, vpred, 1)
+            ax2.text(0.05, 0.95, f'slope={m:.2f}, intercept={b:.1f} km/s', transform=ax2.transAxes,
+                     va='top', fontsize=9)
+            ax2.set_xlabel('Observed velocity v_obs (km/s)')
+            ax2.set_ylabel('Predicted velocity v_pred (km/s)')
+            ax2.set_title('Calibration: v_pred vs v_obs (SPARC)')
+            ax2.legend(fontsize=8)
+            ax2.grid(True, alpha=0.3)
     
     # Plot 3: SPARC error distribution
     ax3 = plt.subplot(3, 4, 3)
@@ -464,7 +538,7 @@ def create_comprehensive_plot(mw_data, sparc_data, cluster_results):
     ax5.legend()
     ax5.grid(True, alpha=0.3, axis='y')
     
-    # Plot 6: MW by radius
+    # Plot 6: MW by radius or Residual structure diagnostics
     ax6 = plt.subplot(3, 4, 6)
     if mw_data and 'bin_stats' in mw_results:
         bins = list(mw_results['bin_stats'].keys())
@@ -472,65 +546,99 @@ def create_comprehensive_plot(mw_data, sparc_data, cluster_results):
         ax6.plot(range(len(bins)), errors, 'o-', linewidth=2, markersize=8)
         ax6.set_xticks(range(len(bins)))
         ax6.set_xticklabels(bins, rotation=45, ha='right')
-        ax6.set_ylabel('Median Error (%)')
+        ax6.set_ylabel('Median per-point error (%)')
         ax6.set_title('MW Error by Radius')
         ax6.grid(True, alpha=0.3)
+    elif sparc_data:
+        # Residual structure: median(|Δv|/v) vs R/R_half and vs Σ_loc/Σ̄
+        sparc_results, sparc_plot = sparc_data
+        vobs = sparc_plot['vobs_all']
+        vpred = sparc_plot['vpred_all']
+        r = sparc_plot['r_all']
+        rhalf = sparc_plot['rhalf_all']
+        sigloc = sparc_plot['sigloc_all']
+        sigbar = sparc_plot['sigbar_all']
+        if len(vobs) > 0:
+            resid = np.abs(vpred - vobs) / (vobs + 1e-10)
+            Rnorm = r / (rhalf + 1e-10)
+            Snorm = sigloc / (sigbar + 1e-10)
+            # Bin and median
+            rbins = np.logspace(np.log10(0.2), np.log10(3.0), 15)
+            r_idx = np.digitize(Rnorm, rbins)
+            r_x = [np.median(Rnorm[r_idx==i]) for i in range(1, len(rbins))]
+            r_y = [np.median(resid[r_idx==i]) for i in range(1, len(rbins))]
+            ax6.plot(r_x, np.array(r_y)*100, 'o-', label='vs R/R_half')
+            # Twin x-axis for Sigma
+            ax6_ = ax6.twiny()
+            sbins = np.logspace(-2, 1, 15)
+            s_idx = np.digitize(Snorm, sbins)
+            s_x = [np.median(Snorm[s_idx==i]) for i in range(1, len(sbins))]
+            s_y = [np.median(resid[s_idx==i]) for i in range(1, len(sbins))]
+            ax6_.plot(s_x, np.array(s_y)*100, 's--', color='C3', label='vs Σ_loc/Σ̄')
+            ax6.set_xscale('log')
+            ax6.set_xlabel('R/R_half (log)')
+            ax6.set_ylabel('Median per-point error (%)')
+            ax6.set_title('Residual structure (SPARC)')
+            ax6.grid(True, alpha=0.3)
+            ax6_.set_xscale('log')
+            ax6_.set_xlabel('Σ_loc/Σ̄ (log)')
     
     # Plot 7-8: Best and worst SPARC galaxies
     if sparc_data:
         # Best galaxies
         ax7 = plt.subplot(3, 4, 7)
         best = sparc_results['best_galaxies'][:5]
-        names = [g['name'][:10] for g in best]
+        names = [f"{g['name'][:10]} (n={g['n_points']})" for g in best]
         errors = [g['median_error']*100 for g in best]
         ax7.barh(range(len(names)), errors, color='green', alpha=0.7)
         ax7.set_yticks(range(len(names)))
         ax7.set_yticklabels(names)
-        ax7.set_xlabel('Median Error (%)')
+        ax7.set_xlabel('Median per-galaxy error (%)')
         ax7.set_title('Best SPARC Galaxies')
         ax7.grid(True, alpha=0.3, axis='x')
         
         # Worst galaxies
         ax8 = plt.subplot(3, 4, 8)
         worst = sparc_results['worst_galaxies'][:5]
-        names = [g['name'][:10] for g in worst]
+        names = [f"{g['name'][:10]} (n={g['n_points']})" for g in worst]
         errors = [g['median_error']*100 for g in worst]
         ax8.barh(range(len(names)), errors, color='red', alpha=0.7)
         ax8.set_yticks(range(len(names)))
         ax8.set_yticklabels(names)
-        ax8.set_xlabel('Median Error (%)')
+        ax8.set_xlabel('Median per-galaxy error (%)')
         ax8.set_title('Worst SPARC Galaxies')
         ax8.grid(True, alpha=0.3, axis='x')
     
-    # Plot 9: Success thresholds
+    # Plot 9: Success thresholds by Hubble type (per-point)
     ax9 = plt.subplot(3, 4, 9)
-    thresholds = ['<10%', '<20%']
-    datasets_thresh = []
-    under_10 = []
-    under_20 = []
-    
-    if mw_data:
-        datasets_thresh.append('MW')
-        under_10.append(mw_results['under_10pct']*100)
-        under_20.append(mw_results['under_20pct']*100)
     if sparc_data:
-        datasets_thresh.append('SPARC')
-        under_10.append(sparc_results['under_10pct']*100)
-        under_20.append(sparc_results['under_20pct']*100)
-        
-    if datasets_thresh:
-        x = np.arange(len(datasets_thresh))
+        sparc_results, sparc_plot = sparc_data
+        types = list(sparc_results['type_stats'].keys())
+        # Maintain consistent order
+        type_order = ['Early-type', 'Sa-Sb', 'Sbc-Sc', 'Scd-Sd', 'Sdm-Irr']
+        types = [t for t in type_order if t in types]
+        under10 = []
+        under20 = []
+        for t in types:
+            errs = np.asarray(sparc_plot['errors_by_type'].get(t, []))
+            if errs.size > 0:
+                under10.append(np.sum(errs < 0.10)/errs.size*100)
+                under20.append(np.sum(errs < 0.20)/errs.size*100)
+            else:
+                under10.append(0.0)
+                under20.append(0.0)
+        x = np.arange(len(types))
         width = 0.35
-        ax9.bar(x - width/2, under_10, width, label='<10% error', alpha=0.8)
-        ax9.bar(x + width/2, under_20, width, label='<20% error', alpha=0.8)
+        ax9.bar(x - width/2, under10, width, label='<10% error', alpha=0.8)
+        ax9.bar(x + width/2, under20, width, label='<20% error', alpha=0.8)
         ax9.set_xticks(x)
-        ax9.set_xticklabels(datasets_thresh)
-        ax9.set_ylabel('Fraction of Points (%)')
-        ax9.set_title('Success Rate by Threshold')
-        ax9.legend()
+        ax9.set_xticklabels(types, rotation=45, ha='right')
+        ax9.set_ylabel('Per-point success rate (%)')
+        ax9.set_title('Success Rate by Hubble Type (SPARC)')
+        ax9.legend(fontsize=8)
         ax9.grid(True, alpha=0.3, axis='y')
     
-    # Plot 10: Cluster results
+    # Plot 10: Cluster results (log scale)
     ax10 = plt.subplot(3, 4, 10)
     if cluster_results and 'cluster_results' in cluster_results:
         clusters = cluster_results['cluster_results']
@@ -542,9 +650,10 @@ def create_comprehensive_plot(mw_data, sparc_data, cluster_results):
         for i, name in enumerate(names):
             ax10.annotate(name, (temps[i], errors[i]), fontsize=8)
         ax10.set_xlabel('Temperature (keV)')
-        ax10.set_ylabel('Median Error (%)')
-        ax10.set_title('Cluster Performance')
-        ax10.grid(True, alpha=0.3)
+        ax10.set_ylabel('Median per-point |Δv|/v (%) (log)')
+        ax10.set_title('Cluster Performance (simplified sanity check)')
+        ax10.set_yscale('log')
+        ax10.grid(True, which='both', alpha=0.3)
     
     # Plot 11-12: Parameter summary
     ax11 = plt.subplot(3, 4, 11)
@@ -554,6 +663,7 @@ def create_comprehensive_plot(mw_data, sparc_data, cluster_results):
     param_text += f"Formula: {BEST_VARIANT['gating_type']} gate\n"
     param_text += f"Screen: {BEST_VARIANT['screen_type']}\n"
     param_text += f"Exponent: {BEST_VARIANT['exponent_type']}\n\n"
+    param_text += "Provenance: Discovered on SPARC only; no Milky Way data used; clusters excluded.\n\n"
     
     for i, (key, val) in enumerate(list(UNIVERSAL_PARAMS.items())[:6]):
         param_text += f"{key:12s}: {val:8.2f}\n"
