@@ -1,0 +1,147 @@
+{
+  "irregular": {
+    "n_galaxies": 55,
+    "median_accuracy": 0.0,
+    "mean_accuracy": 4.86296389276061,
+    "accuracy_std": 13.773473066927908,
+    "best_performers": [
+      {
+        "galaxy": "F563-1",
+        "median_outer_accuracy": 80.2394218721733
+      },
+      {
+        "galaxy": "UGC00128",
+        "median_outer_accuracy": 40.50460387576392
+      },
+      {
+        "galaxy": "UGC05005",
+        "median_outer_accuracy": 28.106330120342083
+      }
+    ],
+    "worst_performers": [
+      {
+        "galaxy": "D631-7",
+        "median_outer_accuracy": 0.0
+      },
+      {
+        "galaxy": "DDO064",
+        "median_outer_accuracy": 0.0
+      },
+      {
+        "galaxy": "DDO154",
+        "median_outer_accuracy": 0.0
+      }
+    ]
+  },
+  "thin_disk": {
+    "n_galaxies": 61,
+    "median_accuracy": 0.0,
+    "mean_accuracy": 1.76613622947108,
+    "accuracy_std": 8.834831440854408,
+    "best_performers": [
+      {
+        "galaxy": "UGC06667",
+        "median_outer_accuracy": 64.22062485802596
+      },
+      {
+        "galaxy": "F568-1",
+        "median_outer_accuracy": 26.332291821162922
+      },
+      {
+        "galaxy": "ESO079-G014",
+        "median_outer_accuracy": 0.0
+      }
+    ],
+    "worst_performers": [
+      {
+        "galaxy": "ESO079-G014",
+        "median_outer_accuracy": 0.0
+      },
+      {
+        "galaxy": "ESO116-G012",
+        "median_outer_accuracy": 0.0
+      },
+      {
+        "galaxy": "ESO563-G021",
+        "median_outer_accuracy": 0.0
+      }
+    ]
+  },
+  "thick_disk": {
+    "n_galaxies": 25,
+    "median_accuracy": 0.0,
+    "mean_accuracy": 0.0,
+    "accuracy_std": 0.0,
+    "best_performers": [
+      {
+        "galaxy": "NGC0891",
+        "median_outer_accuracy": 0.0
+      },
+      {
+        "galaxy": "NGC2683",
+        "median_outer_accuracy": 0.0
+      },
+      {
+        "galaxy": "NGC2841",
+        "median_outer_accuracy": 0.0
+      }
+    ],
+    "worst_performers": [
+      {
+        "galaxy": "NGC0891",
+        "median_outer_accuracy": 0.0
+      },
+      {
+        "galaxy": "NGC2683",
+        "median_outer_accuracy": 0.0
+      },
+      {
+        "galaxy": "NGC2841",
+        "median_outer_accuracy": 0.0
+      }
+    ]
+  },
+  "spheroidal": {
+    "n_galaxies": 2,
+    "median_accuracy": 0.0,
+    "mean_accuracy": 0.0,
+    "accuracy_std": 0.0,
+    "best_performers": [
+      {
+        "galaxy": "UGC02487",
+        "median_outer_accuracy": 0.0
+      },
+      {
+        "galaxy": "UGC06786",
+        "median_outer_accuracy": 0.0
+      }
+    ],
+    "worst_performers": [
+      {
+        "galaxy": "UGC02487",
+        "median_outer_accuracy": 0.0
+      },
+      {
+        "galaxy": "UGC06786",
+        "median_outer_accuracy": 0.0
+      }
+    ]
+  },
+  "mass_intermediate": {
+    "n_galaxies": 101,
+    "median_accuracy": 0.0,
+    "mean_M_bary": 2574257425.742574,
+    "mean_r_half": 27.98936170212766
+  },
+  "mass_dwarf": {
+    "n_galaxies": 42,
+    "median_accuracy": 0.0,
+    "mean_M_bary": 119047619.04761904,
+    "mean_r_half": 90.76190476190476
+  },
+  "correlations": {
+    "accuracy_vs_mass": 0.11405818748377845,
+    "accuracy_vs_r_half": -0.1389857941973186,
+    "accuracy_vs_sigma": 0.24852448883958142
+  }
+}
