@@ -1,0 +1,41 @@
+{
+  "n_galaxies": 50,
+  "n_converged": 50,
+  "convergence_rate": 1.0,
+  "chi2_stats": {
+    "mean": 1676.4612237848569,
+    "median": 426.3401315660857,
+    "std": 3793.746431229505,
+    "min": 13.23802,
+    "max": 20673.397967881974,
+    "good_fits": 0,
+    "acceptable_fits": 0
+  },
+  "param_stats": {
+    "S0": {
+      "mean": 1.5,
+      "std": 0.0,
+      "median": 1.5
+    },
+    "rc_kpc": {
+      "mean": 10.0,
+      "std": 0.0,
+      "median": 10.0
+    },
+    "rc_eff": {
+      "mean": 7.434542095156016,
+      "std": 1.198823246139652,
+      "median": 7.351109657392715
+    },
+    "S0_eff": {
+      "mean": 2.0099817119668044,
+      "std": 2.1871705615042725,
+      "median": 1.0608462265327456
+    }
+  },
+  "timing_stats": {
+    "mean_solve_time": 0.024377946853637696,
+    "total_gpu_time": 1.2188973426818848,
+    "throughput_galaxies_per_minute": 2461.2409059808397
+  }
+}

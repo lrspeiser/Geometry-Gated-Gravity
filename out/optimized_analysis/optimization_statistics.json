@@ -1,0 +1,100 @@
+{
+  "summary": {
+    "n_galaxies": 30,
+    "n_converged_default": 30,
+    "n_converged_optimized": 30
+  },
+  "default_performance": {
+    "chi2_mean": 1042.1136539193888,
+    "chi2_median": 117.82357649571037,
+    "chi2_std": 2989.9363362647377,
+    "chi2_min": 13.23802,
+    "chi2_max": 16748.585813610163,
+    "good_fits": 0,
+    "acceptable_fits": 0,
+    "poor_fits": 30
+  },
+  "optimized_performance": {
+    "chi2_mean": 1042.1136539193888,
+    "chi2_median": 117.82357649571037,
+    "chi2_std": 2989.9363362647377,
+    "chi2_min": 13.23802,
+    "chi2_max": 16748.585813610163,
+    "good_fits": 0,
+    "acceptable_fits": 0,
+    "poor_fits": 30
+  },
+  "improvement_analysis": {
+    "mean_improvement": 0.0,
+    "median_improvement": 0.0,
+    "max_improvement": 0.0,
+    "min_improvement": 0.0,
+    "n_improved": 0,
+    "n_worsened": 0,
+    "significant_improvements": 0
+  },
+  "parameter_analysis": {
+    "S0": {
+      "mean": 2.9447516718856783,
+      "std": 1.3322676295501878e-15,
+      "median": 2.944751671885677,
+      "min": 2.944751671885677,
+      "max": 2.944751671885677,
+      "range": 0.0
+    },
+    "rc": {
+      "mean": 20.5175774239233,
+      "std": 3.552713678800501e-15,
+      "median": 20.517577423923303,
+      "min": 20.517577423923303,
+      "max": 20.517577423923303,
+      "range": 0.0
+    },
+    "gamma": {
+      "mean": 0.40238786189615694,
+      "std": 5.551115123125783e-17,
+      "median": 0.4023878618961569,
+      "min": 0.4023878618961569,
+      "max": 0.4023878618961569,
+      "range": 0.0
+    },
+    "beta": {
+      "mean": 0.5336030231855508,
+      "std": 0.0,
+      "median": 0.5336030231855508,
+      "min": 0.5336030231855508,
+      "max": 0.5336030231855508,
+      "range": 0.0
+    },
+    "g_sat": {
+      "mean": 173.48242415425256,
+      "std": 5.684341886080802e-14,
+      "median": 173.4824241542525,
+      "min": 173.4824241542525,
+      "max": 173.4824241542525,
+      "range": 0.0
+    }
+  },
+  "correlations": {
+    "r_half_vs_chi2": -0.04023253354577398,
+    "sigma_bar_vs_chi2": -0.020781724414861775,
+    "r_half_vs_S0": 0.0,
+    "sigma_bar_vs_S0": -5.127571936247219e-17
+  },
+  "classification": {
+    "excellent_fits": [],
+    "n_excellent": 0,
+    "good_fits": [],
+    "n_good": 0,
+    "moderate_fits": [],
+    "n_moderate": 0,
+    "poor_fits": [
+      "CamB",
+      "D512-2",
+      "D564-8",
+      "D631-7",
+      "DDO064"
+    ],
+    "n_poor": 30
+  }
+}

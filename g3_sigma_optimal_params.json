@@ -1,0 +1,19 @@
+{
+  "optimal_parameters": {
+    "S0": 0.000192,
+    "rc_kpc": 15.736375636071676,
+    "gamma": 0.66,
+    "beta": 0.132,
+    "g_sat_kms2_per_kpc": 2712.766457762245,
+    "sigma_star_Msun_pc2": 132.82703922041375,
+    "alpha_sigma": 1.1
+  },
+  "performance": {
+    "galaxies_mean": 62.85707859786062,
+    "galaxies_median": 59.80568802662008,
+    "mw": 82.22271047536842,
+    "perseus": 0.0,
+    "combined_error": 0.15659861380226478
+  },
+  "timestamp": "2025-09-23 22:47:31"
+}

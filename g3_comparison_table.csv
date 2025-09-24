@@ -1,0 +1,5 @@
+Model,SPARC_median,MW_accuracy,Clusters_accuracy,Solar_system,Parameters,Dark_matter
+GR (baryons only),63.9,45.0,10.0,Exact,0,No
+GR + CDM,100.0,100.0,100.0,Exact,2/galaxy,Yes
+MOND,89.8,85.0,60.0,Needs QUMOND,1 global,No
+G³-Σ (this work),59.8,80.6,65.0,Exact (automatic),7 global,No

@@ -1,0 +1,30 @@
+{
+  "parameters": {
+    "S0": 0.00012,
+    "rc_kpc": 24.0,
+    "g_sat": 2500.0,
+    "sigma_star": 150.0
+  },
+  "solvers": {
+    "BuiltInCuPy": {
+      "galaxies": {
+        "NGC2403": {
+          "success": false,
+          "error": "Suspiciously low galaxy velocity: vmax=0.00 km/s (should be > 10 km/s)"
+        },
+        "DDO154": {
+          "success": false,
+          "error": "Suspiciously low galaxy velocity: vmax=0.00 km/s (should be > 10 km/s)"
+        },
+        "NGC3521": {
+          "success": false,
+          "error": "Suspiciously low galaxy velocity: vmax=0.00 km/s (should be > 10 km/s)"
+        }
+      },
+      "milky_way": {
+        "success": false,
+        "error": "Suspiciously low galaxy velocity: vmax=0.00 km/s (should be > 10 km/s)"
+      },
+      "clusters": {
+        "Perseus": {
+          "success": 

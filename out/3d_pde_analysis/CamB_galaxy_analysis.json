@@ -1,0 +1,34 @@
+{
+  "system": "CamB",
+  "type": "galaxy",
+  "r_half_kpc": 0.7916160225840899,
+  "sigma_bar_Msun_pc2": 20.590000000000003,
+  "optimization": {
+    "optimal_params": {
+      "S0": 2.944751671885677,
+      "rc": 32.93163936306195,
+      "gamma": 0.5233430066546196,
+      "beta": 0.6004045347783261,
+      "mob_sat": 173.4824241542525
+    },
+    "objective_value": 10000000000.0,
+    "success": true,
+    "nfev": 106
+  },
+  "modifications": {
+    "screening_exponents": [],
+    "mobility_forms": [],
+    "geometry_scaling": []
+  },
+  "final_params": {
+    "S0": 2.944751671885677,
+    "rc": 32.93163936306195,
+    "gamma": 0.5233430066546196,
+    "beta": 0.6004045347783261,
+    "mob_sat": 173.4824241542525
+  },
+  "final_result": {
+    "r": [],
+    "g": []
+  }
+}

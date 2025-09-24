@@ -1,0 +1,17 @@
+{
+  "model_parameters": {
+    "S0": 0.000192,
+    "rc_kpc": 15.7,
+    "rc_gamma": 0.66,
+    "sigma_beta": 0.13,
+    "g_sat_kms2_per_kpc": 2713.0,
+    "n_sat": 2,
+    "sigma_star_Msun_pc2": 133.0,
+    "alpha_sigma": 1.1,
+    "sigma_solar_Msun_pc2": 10000.0
+  },
+  "solar_system_verified": true,
+  "sparc_median_accuracy": 66.70473294526596,
+  "mw_accuracy": 80.57777976627023,
+  "timestamp": "2025-09-23 22:54:31"
+}
