@@ -73,15 +73,23 @@ def load_mw_test_data(n_sample=10000):
     Sigma_0 = 800.0  # Msun/pc^2 at center
     Sigma_loc = Sigma_0 * np.exp(-R / R_d)
     
+    # For testing geometry consistency, also compute the true integrated mass
+    # This should match the mass inferred from v_bar
+    
     # Baryonic circular speed (from disk + bulge)
     M_disk = 6e10  # Msun
-    a_disk = 3.0   # kpc
+    a_disk = 3.0   # kpc  
     M_bulge = 1e10  # Msun
     a_bulge = 0.5  # kpc
     
-    v_disk = np.sqrt(G * M_disk * R**2 / (R**2 + a_disk**2)**1.5)
-    v_bulge = np.sqrt(G * M_bulge / (R + a_bulge))
-    v_bar = np.sqrt(v_disk**2 + v_bulge**2)
+    # Disk contribution (Miyamoto-Nagai potential)
+    v_disk_sq = G * M_disk * R**2 / (R**2 + a_disk**2)**1.5
+    
+    # Bulge contribution (Hernquist potential)
+    v_bulge_sq = G * M_bulge * R / (R + a_bulge)**2
+    
+    # Total baryonic circular speed
+    v_bar = np.sqrt(v_disk_sq + v_bulge_sq)
     
     # Convert to GPU if available
     if GPU_AVAILABLE:
@@ -230,9 +238,13 @@ def test_units_geometry():
         R_sorted = R[idx]
         Sigma_sorted = mw_data['Sigma_loc'][idx]
     
-    # Cumulative mass
-    dr = np.mean(np.diff(R_sorted[:100]))  # Approximate spacing
-    M_cum = 2 * np.pi * np.cumsum(Sigma_sorted * R_sorted) * dr * 1e6  # Convert to Msun
+    # Cumulative mass - surface density is in Msun/pc^2, need to convert to Msun/kpc^2
+    # 1 kpc^2 = 10^6 pc^2, so multiply by 10^6
+    dr = np.mean(np.diff(R_sorted[:100])) if len(R_sorted) > 100 else 0.1  # kpc spacing
+    # Surface density in Msun/pc^2 * 10^6 pc^2/kpc^2 = Msun/kpc^2
+    Sigma_kpc2 = Sigma_sorted * 1e6  # Convert from Msun/pc^2 to Msun/kpc^2
+    # Mass element: dM = 2*pi*R*Sigma*dR
+    M_cum = 2 * np.pi * np.cumsum(Sigma_kpc2 * R_sorted) * dr  # Now in Msun
     
     # Compare at 10 kpc
     idx_10 = np.argmin(np.abs(R_sorted - 10.0))

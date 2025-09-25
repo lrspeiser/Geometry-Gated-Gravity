@@ -26,7 +26,11 @@ W_SUN = 7.25      # Solar motion in vertical direction (km/s)
 
 def smooth_step(x, x0, width):
     """C¹ smooth logistic transition function"""
-    t = 0.5 * (1 + cp.tanh((x - x0) / width))
+    # Use a wider transition to ensure smoothness
+    # tanh provides C-infinity smoothness
+    if width <= 0:
+        width = 0.5  # Default width to avoid division by zero
+    t = 0.5 * (1 + cp.tanh((x - x0) / (2.0 * width)))
     return t
 
 def compute_ad_correction(R, vphi, sigR, sigphi, nu, bins=None):
@@ -56,16 +60,17 @@ def compute_ad_correction(R, vphi, sigR, sigphi, nu, bins=None):
         Asymmetric drift correction term (km/s)^2
     """
     if bins is None:
-        bins = cp.linspace(cp.min(R), cp.max(R), 41)
+        bins = cp.linspace(cp.min(R), cp.max(R), 21)  # Fewer bins for better statistics
     
     AD = cp.zeros_like(R)
-    digit = cp.digitize(R, bins) - 1
     
+    # Process each bin
     for i in range(len(bins) - 1):
-        mask = (digit == i)
+        # Find stars in this bin
+        mask = (R >= bins[i]) & (R < bins[i + 1])
         n_stars = cp.sum(mask)
         
-        if n_stars < 50:  # Need enough stars for reliable gradients
+        if n_stars < 20:  # Need minimum stars for statistics
             continue
             
         # Extract bin data
@@ -74,38 +79,65 @@ def compute_ad_correction(R, vphi, sigR, sigphi, nu, bins=None):
         sigphi_bin = sigphi[mask]
         nu_bin = nu[mask]
         
-        # Sort by radius for gradient computation
-        idx = cp.argsort(R_bin)
-        R_sorted = R_bin[idx]
-        sigR2_sorted = sigR_bin[idx] ** 2
-        nu_sorted = nu_bin[idx]
-        sigphi2_sorted = sigphi_bin[idx] ** 2
+        # Compute bin-averaged quantities
+        R_mean = cp.mean(R_bin)
+        sigR2_mean = cp.mean(sigR_bin ** 2)
+        sigphi2_mean = cp.mean(sigphi_bin ** 2)
+        nu_mean = cp.mean(nu_bin)
         
-        # Apply Gaussian smoothing to reduce noise
-        if n_stars > 100:
-            sigma_smooth = 2.0
-        else:
-            sigma_smooth = 1.0
-            
-        sigR2_smooth = gaussian_filter1d(sigR2_sorted, sigma_smooth, mode='nearest')
-        nu_smooth = gaussian_filter1d(nu_sorted, sigma_smooth, mode='nearest')
+        # Compute gradients using adjacent bins (if they exist)
+        dln_nu_dlnR = 0.0
+        dln_sigR2_dlnR = 0.0
         
-        # Compute logarithmic derivatives
-        log_R = cp.log(cp.maximum(R_sorted, 1e-6))
-        log_nu = cp.log(cp.maximum(nu_smooth, 1e-10))
-        log_sigR2 = cp.log(cp.maximum(sigR2_smooth, 1e-4))
+        # Look at previous bin
+        if i > 0:
+            mask_prev = (R >= bins[i-1]) & (R < bins[i])
+            if cp.sum(mask_prev) > 10:
+                R_prev = cp.mean(R[mask_prev])
+                nu_prev = cp.mean(nu[mask_prev])
+                sigR2_prev = cp.mean(sigR[mask_prev] ** 2)
+                
+                # Look at next bin
+                if i < len(bins) - 2:
+                    mask_next = (R >= bins[i+1]) & (R < bins[i+2])
+                    if cp.sum(mask_next) > 10:
+                        R_next = cp.mean(R[mask_next])
+                        nu_next = cp.mean(nu[mask_next])
+                        sigR2_next = cp.mean(sigR[mask_next] ** 2)
+                        
+                        # Central differences for gradients
+                        if R_next > R_prev > 0 and nu_next > 0 and nu_prev > 0:
+                            dln_nu_dlnR = (cp.log(nu_next) - cp.log(nu_prev)) / (cp.log(R_next) - cp.log(R_prev))
+                        if R_next > R_prev > 0 and sigR2_next > 0 and sigR2_prev > 0:
+                            dln_sigR2_dlnR = (cp.log(sigR2_next) - cp.log(sigR2_prev)) / (cp.log(R_next) - cp.log(R_prev))
+                else:
+                    # Use backward difference at outer edge
+                    if R_mean > R_prev > 0 and nu_mean > 0 and nu_prev > 0:
+                        dln_nu_dlnR = (cp.log(nu_mean) - cp.log(nu_prev)) / (cp.log(R_mean) - cp.log(R_prev))
+                    if R_mean > R_prev > 0 and sigR2_mean > 0 and sigR2_prev > 0:
+                        dln_sigR2_dlnR = (cp.log(sigR2_mean) - cp.log(sigR2_prev)) / (cp.log(R_mean) - cp.log(R_prev))
+        elif i == 0 and i < len(bins) - 2:
+            # Use forward difference at inner edge
+            mask_next = (R >= bins[i+1]) & (R < bins[i+2])
+            if cp.sum(mask_next) > 10:
+                R_next = cp.mean(R[mask_next])
+                nu_next = cp.mean(nu[mask_next])
+                sigR2_next = cp.mean(sigR[mask_next] ** 2)
+                
+                if R_next > R_mean > 0 and nu_next > 0 and nu_mean > 0:
+                    dln_nu_dlnR = (cp.log(nu_next) - cp.log(nu_mean)) / (cp.log(R_next) - cp.log(R_mean))
+                if R_next > R_mean > 0 and sigR2_next > 0 and sigR2_mean > 0:
+                    dln_sigR2_dlnR = (cp.log(sigR2_next) - cp.log(sigR2_mean)) / (cp.log(R_next) - cp.log(R_mean))
         
-        dln_nu_dlnR = cp.gradient(log_nu, log_R)
-        dln_sigR2_dlnR = cp.gradient(log_sigR2, log_R)
+        # Anisotropy parameter beta = 1 - (sigma_phi/sigma_R)^2
+        beta_aniso = 1.0 - sigphi2_mean / cp.maximum(sigR2_mean, 1e-4)
         
-        # Anisotropy parameter
-        beta_aniso = 1.0 - sigphi2_sorted / cp.maximum(sigR2_sorted, 1e-4)
+        # Full AD correction: sigma_R^2 * [d(ln nu)/d(ln R) + d(ln sigma_R^2)/d(ln R) + beta]
+        # Note: The standard formula has "1 - sigma_phi^2/sigma_R^2" which equals beta
+        AD_value = sigR2_mean * (dln_nu_dlnR + dln_sigR2_dlnR + beta_aniso)
         
-        # Full AD correction
-        AD_bin = sigR2_smooth * (dln_nu_dlnR + dln_sigR2_dlnR + beta_aniso)
-        
-        # Map back to original indices
-        AD[mask] = AD_bin[cp.argsort(idx)]
+        # Apply to all stars in bin
+        AD[mask] = AD_value
     
     return AD
 
@@ -144,8 +176,9 @@ def g3_tail_smooth(R, Sigma_loc, params):
     Sigma_star = params['Sigma_star']
     
     # Use default widths if not provided (ensures C¹)
-    w_p = params.get('w_p', 0.7)  # Power law transition width
-    w_S = params.get('w_S', 1.0)  # Screening transition width
+    # Wider transitions for better smoothness
+    w_p = params.get('w_p', 1.5)  # Power law transition width (wider for smoothness)
+    w_S = params.get('w_S', 2.0)  # Screening transition width (wider for smoothness)
     
     gamma = params.get('gamma', 0.5)
     beta = params.get('beta', 0.5)
@@ -160,13 +193,24 @@ def g3_tail_smooth(R, Sigma_loc, params):
     
     # Smooth transitions in log-Sigma space for C¹ continuity
     log_Sigma = cp.log(cp.maximum(Sigma_loc, 1e-8))
-    log_Sigma_star = cp.log(Sigma_star)
+    log_Sigma_star = cp.log(cp.maximum(Sigma_star, 1e-8))
     
     # Smooth power law exponent transition
-    p = p_out + (p_in - p_out) * smooth_step(log_Sigma, log_Sigma_star, w_p)
+    # Use smooth interpolation to avoid jumps
+    transition_p = smooth_step(log_Sigma, log_Sigma_star, w_p)
+    p = p_out + (p_in - p_out) * transition_p
+    
+    # Ensure p is always positive and bounded
+    p = cp.clip(p, 0.5, 3.0)
     
     # Smooth screening function (0 → 1)
+    # Gradual turn-on to avoid sharp transitions
     S = smooth_step(log_Sigma, log_Sigma_star, w_S)
+    
+    # Additional smoothing for very low densities
+    # This prevents numerical issues at the edges
+    low_density_mask = Sigma_loc < (Sigma_star * 0.01)
+    S = cp.where(low_density_mask, S * cp.exp(-(Sigma_star * 0.01 - Sigma_loc) / Sigma_star), S)
     
     # Rational gate function (always smooth if p is smooth)
     R_safe = cp.maximum(R, 1e-6)

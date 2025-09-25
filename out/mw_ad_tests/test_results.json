@@ -1,14 +1,14 @@
 {
   "ad_correction": {
     "median_AD": 0.0,
-    "median_diff": -24.97929722249303,
-    "std_diff": 74.39032458307226,
-    "improvement": -24.952154624389323
+    "median_diff": -10.323745959967397,
+    "std_diff": 7.748833132970076,
+    "improvement": -10.296603361863689
   },
   "units_geometry": {
     "R_8kpc": 8.00763060875326,
-    "vbar_8kpc": 177.53547982078908,
-    "M_8kpc": 58683128482.56773,
+    "vbar_8kpc": 176.6967428654418,
+    "M_8kpc": 58129960818.44893,
     "mass_reasonable": true,
     "Sigma_min": 2.9616336785776642,
     "Sigma_max": 158.55216179089868,
@@ -23,20 +23,20 @@
     }
   },
   "smoothness": {
-    "max_jump_g": 20.600340420837398,
-    "max_jump_dg": 15.879838524824379,
+    "max_jump_g": 27.611609786703994,
+    "max_jump_dg": 37.711519044906254,
     "is_smooth": false
   },
   "model_performance": {
-    "loss": 0.15783137347490434,
+    "loss": 0.12105046216119146,
     "diagnostics": {
       "n_stars": 8060,
       "median_AD": 0.0,
       "mean_vphi": 221.81470903714342,
-      "mean_vc_obs": 162.5628224942642,
-      "mean_vc_model": 181.89751156436242,
-      "median_error": 0.0049749161410350025,
-      "percentile_90": 19.11463298440433
+      "mean_vc_obs": 211.1755570188684,
+      "mean_vc_model": 184.9396805572992,
+      "median_error": -0.12105046216119146,
+      "percentile_90": 0.2742081381865162
     }
   }
 }
