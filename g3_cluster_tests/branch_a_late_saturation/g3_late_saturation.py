@@ -9,7 +9,7 @@ Key features:
 """
 
 import numpy as np
-from scipy.integrate import cumtrapz
+from scipy.integrate import cumulative_trapezoid
 from scipy.interpolate import interp1d
 import matplotlib.pyplot as plt
 from typing import Dict, Tuple, Optional
@@ -73,7 +73,7 @@ class G3LateSaturation:
             # 1D spherical case
             r = R
             M_tot = 4 * np.pi * np.trapz(rho * r**2, r)
-            M_cumul = 4 * np.pi * cumtrapz(rho * r**2, r, initial=0)
+            M_cumul = 4 * np.pi * cumulative_trapezoid(rho * r**2, r, initial=0)
         else:
             # 2D axisymmetric case
             dR = R[1] - R[0]
@@ -81,7 +81,7 @@ class G3LateSaturation:
             M_tot = 2 * np.pi * np.sum(rho * R[:, np.newaxis] * dR * dz)
             # Simplified - would need proper 2D integration for M(r)
             r = R
-            M_cumul = 2 * np.pi * cumtrapz(np.sum(rho * R[:, np.newaxis], axis=1) * dz, R, initial=0)
+            M_cumul = 2 * np.pi * cumulative_trapezoid(np.sum(rho * R[:, np.newaxis], axis=1) * dz, R, initial=0)
             
         # Half-mass radius
         idx_half = np.searchsorted(M_cumul, 0.5 * M_tot)
@@ -158,7 +158,7 @@ class G3LateSaturation:
             r = R
             
             # Newtonian
-            M_enc = 4 * np.pi * cumtrapz(rho * r**2, r, initial=0)
+            M_enc = 4 * np.pi * cumulative_trapezoid(rho * r**2, r, initial=0)
             g_N = self.G * M_enc / r**2
             g_N[0] = 0  # Handle r=0
             
@@ -388,7 +388,10 @@ def test_late_saturation_on_cluster(cluster_name: str = 'A1689',
     plt.tight_layout()
     
     # Save
-    output_path = f'g3_cluster_tests/branch_a_late_saturation/outputs/{cluster_name}_test.png'
+    import os
+    output_dir = os.path.join(os.path.dirname(__file__), 'outputs')
+    os.makedirs(output_dir, exist_ok=True)
+    output_path = os.path.join(output_dir, f'{cluster_name}_test.png')
     plt.savefig(output_path, dpi=150)
     print(f"Saved plot to {output_path}")
     
@@ -412,7 +415,7 @@ def test_late_saturation_on_cluster(cluster_name: str = 'A1689',
         }
     }
     
-    json_path = f'g3_cluster_tests/branch_a_late_saturation/outputs/{cluster_name}_metrics.json'
+    json_path = os.path.join(output_dir, f'{cluster_name}_metrics.json')
     with open(json_path, 'w') as f:
         json.dump(metrics, f, indent=2)
     print(f"Saved metrics to {json_path}")

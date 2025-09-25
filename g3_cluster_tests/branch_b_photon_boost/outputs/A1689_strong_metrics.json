@@ -1,0 +1,23 @@
+{
+  "cluster": "A1689_strong",
+  "parameters": {
+    "xi_gamma": 0.5,
+    "beta_gamma": 1.0
+  },
+  "standard_g3": {
+    "kappa_bar_max": 5.814848378979739e+18,
+    "kappa_bar_at_50kpc": 1.8627058228673533e+18,
+    "kappa_bar_at_100kpc": 2.7889886887637617e+18
+  },
+  "photon_boost": {
+    "kappa_bar_max": 5.814870709423672e+18,
+    "kappa_bar_at_50kpc": 1.8627058228787727e+18,
+    "kappa_bar_at_100kpc": 2.788988688798771e+18,
+    "improvement_factor": 1.0000038402452616,
+    "max_boost_factor": 1.196305617013883
+  },
+  "dynamics_check": {
+    "max_temperature_difference": NaN,
+    "dynamics_preserved": false
+  }
+}

@@ -1,0 +1,79 @@
+{
+  "test_configs": [
+    {
+      "name": "Standard",
+      "eta": 0.0,
+      "r_boost": 1000000000.0,
+      "zeta": 0.0
+    },
+    {
+      "name": "Weak boost",
+      "eta": 0.2,
+      "r_boost": 500,
+      "zeta": 0.1
+    },
+    {
+      "name": "Moderate boost",
+      "eta": 0.3,
+      "r_boost": 300,
+      "zeta": 0.2
+    },
+    {
+      "name": "Strong boost",
+      "eta": 0.5,
+      "r_boost": 200,
+      "zeta": 0.3
+    },
+    {
+      "name": "Very strong",
+      "eta": 0.7,
+      "r_boost": 150,
+      "zeta": 0.4
+    }
+  ],
+  "results": [
+    {
+      "name": "Standard",
+      "kappa_max": 2.7397483473756004,
+      "kappa_at_50kpc": 2.1998301537864218,
+      "kappa_at_100kpc": 1.8673842457569005,
+      "kT_at_100kpc": 1.654521252083459e+25,
+      "kT_at_200kpc": 2.3087149686749768e+25
+    },
+    {
+      "name": "Weak boost",
+      "kappa_max": 2.73974834737865,
+      "kappa_at_50kpc": 2.1998301544782866,
+      "kappa_at_100kpc": 1.8673842488128363,
+      "kT_at_100kpc": 1.6545223492016795e+25,
+      "kT_at_200kpc": 2.3087192792222387e+25
+    },
+    {
+      "name": "Moderate boost",
+      "kappa_max": 2.7397483473883053,
+      "kappa_at_50kpc": 2.199830156656296,
+      "kappa_at_100kpc": 1.8673842582702518,
+      "kT_at_100kpc": 1.654524420587027e+25,
+      "kT_at_200kpc": 2.30872739189069e+25
+    },
+    {
+      "name": "Strong boost",
+      "kappa_max": 2.739748347423245,
+      "kappa_at_50kpc": 2.199830164499887,
+      "kappa_at_100kpc": 1.8673842919144785,
+      "kT_at_100kpc": 1.654534280284481e+25,
+      "kT_at_200kpc": 2.3087660969151254e+25
+    },
+    {
+      "name": "Very strong",
+      "kappa_max": 2.739748347494183,
+      "kappa_at_50kpc": 2.199830180433709,
+      "kappa_at_100kpc": 1.8673843605276137,
+      "kT_at_100kpc": 1.6545722367100535e+25,
+      "kT_at_200kpc": 2.308915532927977e+25
+    }
+  ],
+  "improvement_factor": 1.0000000000432823,
+  "best_kappa_max": 2.739748347494183,
+  "gap_to_einstein": -1.7397483474941828
+}

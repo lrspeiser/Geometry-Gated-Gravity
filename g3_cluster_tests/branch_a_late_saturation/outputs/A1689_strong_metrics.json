@@ -1,0 +1,18 @@
+{
+  "cluster": "A1689_strong",
+  "parameters": {
+    "eta_boost": 0.5,
+    "r_boost_kpc": 200
+  },
+  "standard_g3": {
+    "kappa_bar_max": 5.814848378979739e+18,
+    "kappa_bar_at_50kpc": 1.8627058228673533e+18,
+    "kappa_bar_at_100kpc": 2.7889886887637617e+18
+  },
+  "late_saturation": {
+    "kappa_bar_max": 5.818526599168088e+18,
+    "kappa_bar_at_50kpc": 1.8627058313360161e+18,
+    "kappa_bar_at_100kpc": 2.788988752293782e+18,
+    "improvement_factor": 1.000632556508549
+  }
+}

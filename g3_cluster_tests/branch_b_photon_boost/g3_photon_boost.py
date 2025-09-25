@@ -10,7 +10,7 @@ Key features:
 """
 
 import numpy as np
-from scipy.integrate import cumtrapz
+from scipy.integrate import cumulative_trapezoid
 import matplotlib.pyplot as plt
 from typing import Dict, Tuple, Optional
 import json
@@ -67,7 +67,7 @@ class G3PhotonBoost:
         M_tot = 4 * np.pi * np.trapz(rho * r**2, r)
         
         # Cumulative mass
-        M_cumul = 4 * np.pi * cumtrapz(rho * r**2, r, initial=0)
+        M_cumul = 4 * np.pi * cumulative_trapezoid(rho * r**2, r, initial=0)
         
         # Half-mass radius
         idx_half = np.searchsorted(M_cumul, 0.5 * M_tot)
@@ -134,7 +134,7 @@ class G3PhotonBoost:
         geom = self.compute_geometry_scalars(rho, r)
         
         # Newtonian
-        M_enc = 4 * np.pi * cumtrapz(rho * r**2, r, initial=0)
+        M_enc = 4 * np.pi * cumulative_trapezoid(rho * r**2, r, initial=0)
         g_N = self.G * M_enc / r**2
         g_N[0] = 0
         
@@ -399,7 +399,10 @@ Physics:
     plt.tight_layout()
     
     # Save plot
-    output_path = f'g3_cluster_tests/branch_b_photon_boost/outputs/{cluster_name}_test.png'
+    import os
+    output_dir = os.path.join(os.path.dirname(__file__), 'outputs')
+    os.makedirs(output_dir, exist_ok=True)
+    output_path = os.path.join(output_dir, f'{cluster_name}_test.png')
     plt.savefig(output_path, dpi=150)
     print(f"Saved plot to {output_path}")
     
@@ -428,7 +431,7 @@ Physics:
         }
     }
     
-    json_path = f'g3_cluster_tests/branch_b_photon_boost/outputs/{cluster_name}_metrics.json'
+    json_path = os.path.join(output_dir, f'{cluster_name}_metrics.json')
     with open(json_path, 'w') as f:
         json.dump(metrics, f, indent=2)
     print(f"Saved metrics to {json_path}")
@@ -439,6 +442,7 @@ def test_solar_system_safety():
     """
     Verify photon boost vanishes in high-density (Solar System) regime
     """
+    import os
     
     g3 = G3PhotonBoost(xi_gamma=0.5, beta_gamma=1.0, Sigma_star=20.0)
     
@@ -473,7 +477,9 @@ def test_solar_system_safety():
     
     plt.suptitle('Solar System Safety Check: Boost → 1 at high Σ')
     plt.tight_layout()
-    plt.savefig('g3_cluster_tests/branch_b_photon_boost/outputs/solar_safety.png', dpi=150)
+    output_dir = os.path.join(os.path.dirname(__file__), 'outputs')
+    os.makedirs(output_dir, exist_ok=True)
+    plt.savefig(os.path.join(output_dir, 'solar_safety.png'), dpi=150)
     print("Saved Solar System safety check")
 
 if __name__ == "__main__":
