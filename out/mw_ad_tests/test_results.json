@@ -1,0 +1,42 @@
+{
+  "ad_correction": {
+    "median_AD": 0.0,
+    "median_diff": -24.97929722249303,
+    "std_diff": 74.39032458307226,
+    "improvement": -24.952154624389323
+  },
+  "units_geometry": {
+    "R_8kpc": 8.00763060875326,
+    "vbar_8kpc": 177.53547982078908,
+    "M_8kpc": 58683128482.56773,
+    "mass_reasonable": true,
+    "Sigma_min": 2.9616336785776642,
+    "Sigma_max": 158.55216179089868,
+    "Sigma_median": 22.13995242030954,
+    "sigma_reasonable": true,
+    "solar_params": {
+      "R0_kpc": 8.2,
+      "V0_kms": 232.8,
+      "U_sun_kms": 11.1,
+      "V_sun_kms": 12.24,
+      "W_sun_kms": 7.25
+    }
+  },
+  "smoothness": {
+    "max_jump_g": 20.600340420837398,
+    "max_jump_dg": 15.879838524824379,
+    "is_smooth": false
+  },
+  "model_performance": {
+    "loss": 0.15783137347490434,
+    "diagnostics": {
+      "n_stars": 8060,
+      "median_AD": 0.0,
+      "mean_vphi": 221.81470903714342,
+      "mean_vc_obs": 162.5628224942642,
+      "mean_vc_model": 181.89751156436242,
+      "median_error": 0.0049749161410350025,
+      "percentile_90": 19.11463298440433
+    }
+  }
+}
