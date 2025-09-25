@@ -46,8 +46,12 @@ def hernquist_sigma(R, M, a):
     small_mask = x < 1e-3
     if xp.any(small_mask):
         x_small = x[small_mask]
-        # Series: Σ ≈ (M/2πa²) * (1/3 + x²/10 + 3x⁴/140 + ...)
-        Sigma[small_mask] = prefac * (1.0/3.0 + x_small**2/10.0 + 3*x_small**4/140.0)
+        # Use proper series expansion for C(x) = arccos(x)/sqrt(1-x²)
+        # C(x) ≈ π/2 * (1 + x²/2 + 3x⁴/8 + ...)
+        C_series = (xp.pi/2) * (1.0 + x_small**2/2.0 + 3*x_small**4/8.0)
+        numerator = (2.0 + x_small**2) * C_series - 3.0
+        denominator = (1.0 - x_small**2)**2
+        Sigma[small_mask] = prefac * numerator / denominator
     
     # x < 1 branch
     mask_lt1 = (x >= 1e-3) & (x < 1.0 - 1e-10)

@@ -1,0 +1,50 @@
+{
+  "best_params": {
+    "v0": 218.07202757384965,
+    "rc0": 9.26063641494834,
+    "p_in": 2.0,
+    "p_out": 1.0105385419335955,
+    "Sigma_star": 47.443603266907715,
+    "beta": 0.5,
+    "gamma": 0.5,
+    "alpha": 2.0,
+    "w_p": 1.25,
+    "w_S": 1.875,
+    "eta_C": 0.0,
+    "grad_weight": 0.0,
+    "epsilon_R": 0.05,
+    "ell": 3.0
+  },
+  "best_family": "F3",
+  "best_loss": 9.74247222351949e-05,
+  "iterations": 73,
+  "plateaus": 3,
+  "branches": [
+    {
+      "plateau_num": 1,
+      "iteration": 72,
+      "best_value": 9.74247222351949e-05,
+      "type": "family_hop",
+      "from": "F1",
+      "to": "F3"
+    },
+    {
+      "plateau_num": 2,
+      "iteration": 73,
+      "best_value": 9.74247222351949e-05,
+      "type": "anneal_weights",
+      "new_MW_weight": 0.9
+    },
+    {
+      "plateau_num": 3,
+      "iteration": 74,
+      "best_value": 9.74247222351949e-05,
+      "type": "widen_transitions",
+      "new_widths": {
+        "w_p": 1.25,
+        "w_S": 1.875
+      }
+    }
+  ],
+  "gpu_used": true
+}

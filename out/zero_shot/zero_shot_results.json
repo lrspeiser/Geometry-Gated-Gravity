@@ -1,0 +1,5 @@
+{
+  "solar_system": {
+    "G_eff/G": 1.2895581151414186,
+    "constraint": 1e-08,
+    "passed": 
