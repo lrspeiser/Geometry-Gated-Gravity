@@ -169,7 +169,14 @@ class G3MultiScaleOptimizer:
         r_test = np.array([50, 75, 100])  # kpc
         sigma_galaxy = 100 * np.exp(-r_test / 10)  # Galaxy-like
         
-        g_tail_galaxy, _ = model.compute_tail_acceleration(r_test, 0, sigma_galaxy)
+        # Convert to GPU if available
+        if GPU_AVAILABLE:
+            r_test_gpu = cp.asarray(r_test)
+            sigma_galaxy_gpu = cp.asarray(sigma_galaxy)
+            g_tail_galaxy, _ = model.compute_tail_acceleration(r_test_gpu, 0, sigma_galaxy_gpu)
+            g_tail_galaxy = cp.asnumpy(g_tail_galaxy)
+        else:
+            g_tail_galaxy, _ = model.compute_tail_acceleration(r_test, 0, sigma_galaxy)
         
         # Effective mass from g_tail
         M_eff_galaxy = g_tail_galaxy * r_test**2 / G
@@ -182,7 +189,13 @@ class G3MultiScaleOptimizer:
         r_cluster = np.array([500, 750, 1000])
         sigma_cluster = 500 * np.exp(-r_cluster / 200)  # Cluster-like
         
-        g_tail_cluster, _ = model.compute_tail_acceleration(r_cluster, 0, sigma_cluster)
+        if GPU_AVAILABLE:
+            r_cluster_gpu = cp.asarray(r_cluster)
+            sigma_cluster_gpu = cp.asarray(sigma_cluster)
+            g_tail_cluster, _ = model.compute_tail_acceleration(r_cluster_gpu, 0, sigma_cluster_gpu)
+            g_tail_cluster = cp.asnumpy(g_tail_cluster)
+        else:
+            g_tail_cluster, _ = model.compute_tail_acceleration(r_cluster, 0, sigma_cluster)
         M_eff_cluster = g_tail_cluster * r_cluster**2 / G
         
         # Should produce ~10^14 - 10^15 Msun at 1000 kpc for cluster lensing
@@ -291,7 +304,13 @@ class G3MultiScaleOptimizer:
         lensing_results = {}
         for name, (r, sigma_0, M_expected) in scales.items():
             sigma = sigma_0 * np.exp(-r / (r/3))
-            g_tail, _ = model.compute_tail_acceleration(np.array([r]), 0, np.array([sigma]))
+            if GPU_AVAILABLE:
+                r_arr = cp.array([r])
+                sigma_arr = cp.array([sigma])
+                g_tail, _ = model.compute_tail_acceleration(r_arr, 0, sigma_arr)
+                g_tail = cp.asnumpy(g_tail)
+            else:
+                g_tail, _ = model.compute_tail_acceleration(np.array([r]), 0, np.array([sigma]))
             M_eff = float(g_tail[0] * r**2 / G)
             lensing_results[name] = {
                 'M_eff': M_eff,

@@ -167,10 +167,11 @@ class G3ContinuumModel:
         
         # Effective core radius (smooth scaling)
         rc_eff = p.rc0 * (r_half / p.r_ref)**p.gamma * (sigma_bar / p.Sigma0)**(-p.beta)
-        if isinstance(rc_eff, (float, int)):
-            rc_eff = np.clip(rc_eff, 0.1, 100.0)
+        # Handle both scalar and array cases, avoiding complex numbers
+        if np.isscalar(rc_eff) or isinstance(rc_eff, (float, int, complex)):
+            rc_eff = np.clip(np.real(rc_eff), 0.1, 100.0)
         else:
-            rc_eff = xp.clip(rc_eff, 0.1, 100.0)  # Reasonable bounds
+            rc_eff = xp.clip(xp.real(rc_eff), 0.1, 100.0)  # Reasonable bounds
         
         # Variable exponent (continuous transition)
         x = xp.log((sigma_loc + 1e-12) / p.Sigma_star)
@@ -269,22 +270,50 @@ def test_continuity(model, r_test=None):
     
     return continuity_score
 
-def test_on_milky_way(model, mw_data_path='data/MW_Gaia_DR3_RCR_100k.csv'):
+def test_on_milky_way(model, use_full_gaia=True):
     """Test model on Milky Way Gaia data."""
     logger.info("Testing on Milky Way data...")
     
-    if not Path(mw_data_path).exists():
-        logger.warning(f"MW data not found at {mw_data_path}")
-        return None
-    
-    # Load MW data
-    df = pd.read_csv(mw_data_path)
+    if use_full_gaia:
+        # Load all Gaia sky slices (144k stars)
+        data_dir = Path('data/gaia_sky_slices')
+        parquet_files = sorted(data_dir.glob('processed_*.parquet'))
+        
+        if not parquet_files:
+            # Fallback to CSV
+            logger.info("Using CSV fallback for MW data")
+            csv_file = Path('data/gaia_mw_real.csv')
+            if csv_file.exists():
+                df = pd.read_csv(csv_file)
+            else:
+                logger.warning("No MW data found")
+                return None
+        else:
+            # Load and combine all parquet files
+            dfs = []
+            for pf in parquet_files:
+                dfs.append(pd.read_parquet(pf))
+            df = pd.concat(dfs, ignore_index=True)
+            logger.info(f"Loaded {len(df)} stars from {len(parquet_files)} Gaia slices")
+    else:
+        # Use simplified CSV
+        df = pd.read_csv('data/gaia_mw_real.csv')
     
     # Sample for speed
     df_sample = df.sample(n=min(10000, len(df)), random_state=42)
     
-    r = xp.asarray(df_sample['R'].values)
-    v_obs = xp.asarray(df_sample['Vcirc'].values)
+    # Handle different column naming conventions
+    if 'R_kpc' in df.columns:
+        r = xp.asarray(df_sample['R_kpc'].values)
+    else:
+        r = xp.asarray(df_sample['R'].values)
+        
+    if 'v_phi_kms' in df.columns:
+        v_obs = xp.asarray(df_sample['v_phi_kms'].values)
+    elif 'v_obs' in df.columns:
+        v_obs = xp.asarray(df_sample['v_obs'].values) 
+    else:
+        v_obs = xp.asarray(df_sample['Vcirc'].values)
     
     # Create density profile (simplified exponential)
     r_d = 3.0

@@ -1,0 +1,43 @@
+{
+  "optimized_params": {
+    "v0": 398.55,
+    "rc0": 7.37,
+    "gamma": 0.261,
+    "beta": 0.937,
+    "Sigma_star": 177.96,
+    "alpha": 0.51,
+    "kappa": 0.504,
+    "p_in": 2.05,
+    "p_out": 1.915,
+    "lambda_p": 1.19,
+    "g_star": 0.288,
+    "alpha_g": 0.654,
+    "kappa_g": 1.7,
+    "g_sat": 3313.95,
+    "n_sat": 3.275
+  },
+  "sparc_results": {
+    "n_galaxies": 171,
+    "median_error": 0.15939940237545253,
+    "mean_error": 0.3149172882878018,
+    "std_error": 0.3996848867359261,
+    "best_galaxy": {
+      "name": "UGC08286",
+      "median_error": 0.036279426382320665,
+      "n_points": 17
+    },
+    "worst_galaxy": {
+      "name": "UGC07577",
+      "median_error": 2.2609014057245855,
+      "n_points": 5
+    }
+  },
+  "mw_results": {
+    "n_points": 10000,
+    "median_error": -1.8638956685844867,
+    "mean_error": -1.8629041585605974,
+    "percentile_90": -1.8574584770292668,
+    "under_10pct": 0.999
+  },
+  "note": "Parameters optimized with lensing constraints"
+}
