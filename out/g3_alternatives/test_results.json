@@ -1,0 +1,50 @@
+{
+  "timestamp": "2025-09-24 17:26:24",
+  "gpu_available": true,
+  "continuity": {
+    "smooth": false,
+    "max_jump": 13.71294764492427
+  },
+  "mw_results": null,
+  "sparc_results": {
+    "n_galaxies": 171,
+    "median_error": 0.2915759232812587,
+    "mean_error": 0.31803817950875857,
+    "std_error": 0.16975294877429165,
+    "best_galaxy": {
+      "name": "NGC2976",
+      "median_error": 0.0468614017429064,
+      "n_points": 25
+    },
+    "worst_galaxy": {
+      "name": "UGC02455",
+      "median_error": 1.1711010342106385,
+      "n_points": 8
+    }
+  },
+  "zero_shot": {
+    "mw_to_sparc": {
+      "n_galaxies": 171,
+      "median_error": 0.2915759232812587,
+      "mean_error": 0.31803817950875857,
+      "std_error": 0.16975294877429165,
+      "best_galaxy": {
+        "name": "NGC2976",
+        "median_error": 0.0468614017429064,
+        "n_points": 25
+      },
+      "worst_galaxy": {
+        "name": "UGC02455",
+        "median_error": 1.1711010342106385,
+        "n_points": 8
+      }
+    },
+    "sparc_to_mw": null
+  },
+  "ablations": {
+    "full": null,
+    "no_gradient": null,
+    "no_mobility_cap": null,
+    "fixed_exponent": null
+  }
+}
