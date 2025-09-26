@@ -106,6 +106,15 @@ Emergent principle (O2)
   - fX ≈ α x^2 [exp(Σ̂_smooth) + c + d |∇lnΣ| + ε √g_bar]
 - We will finalize a ≤6-parameter law under a robust objective and publish it with per-type medians & overlays.
 
+Latest robust global fit (updated)
+- Objective: median APE (mape_median) across all points.
+- Best family: exp (fX ≈ α x^2 [exp(Σ̂) + c]).
+- Params: α ≈ 1.247, c ≈ 0.631 (see gravity_learn/experiments/eval/global_fit/best_family.json).
+- Summary (per-galaxy):
+  - rmse_median ≈ 23.86 km/s (IQR ≈ 12.78–44.15)
+  - mape_median ≈ 0.254 (IQR ≈ 0.133–0.362)
+- Note: robust objective lifted Σ̂-gating vs MSE, consistent with overlays and NN distillation.
+
 What’s next (prioritized)
 1) Robust global fit & stratified validation
    - Fit (a,b,c,d,ε,…) for the ratio/exp templates with median APE or Huber loss; stratify by type/outer slope to prevent dominance by easy subsets.
