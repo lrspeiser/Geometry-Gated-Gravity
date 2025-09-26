@@ -1,0 +1,6 @@
+# Default data paths used by gravity_learn
+sparc_path: ../data/sparc_rotmod_ltg.parquet
+# Optional SPARC master sheet (if present); loader handles missing gracefully
+master_path: ../data/Rotmod_LTG/MasterSheet_SPARC.csv
+# Cluster and lensing resources (fill as needed later)
+cluster_profiles: []

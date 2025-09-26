@@ -1,0 +1,19 @@
+numpy
+scipy
+pandas
+pyarrow
+astropy
+xarray
+pyyaml
+sympy
+scikit-image
+optuna
+mlflow
+hydra-core
+# Optional (GPU): install if you want GPU acceleration
+# For NVIDIA CUDA 12:
+# cupy-cuda12x
+# JAX w/ CUDA 12 wheels:
+# jax[cuda12] -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
+# Symbolic regression (requires Julia on first run)
+pysr

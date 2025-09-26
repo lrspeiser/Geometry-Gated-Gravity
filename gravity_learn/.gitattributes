@@ -1,0 +1,5 @@
+# Keep notebook texts as text; track large artifacts in this folder only
+*.ipynb -text
+
+# Track experiment artifacts with Git LFS (scoped to this subfolder)
+gravity_learn/experiments/**/*.{npz,npy,pt,ckpt,onnx,h5,parquet,csv,feather,jsonl} filter=lfs diff=lfs merge=lfs -text

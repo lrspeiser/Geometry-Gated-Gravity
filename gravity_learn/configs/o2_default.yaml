@@ -1,0 +1,22 @@
+# Include-like pattern via path references (read by our simple YAML loader)
+includes:
+  - gravity_learn/configs/data_defaults.yaml
+
+mode: pinn   # one of: [pinn, sr]
+use_cupy: true
+seed: 0
+
+# Dataset controls (keep small for smoke tests)
+limit_galaxies: 8
+limit_points_per_galaxy: 128
+
+training:
+  epochs: 60
+  lr: 1.0e-2
+  weight_smooth: 1.0e-3
+  weight_positive: 1.0e-3
+
+sr:
+  niterations: 10
+  populations: 3
+  maxsize: 25
