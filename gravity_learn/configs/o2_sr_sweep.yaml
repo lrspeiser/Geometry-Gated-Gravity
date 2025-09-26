@@ -1,0 +1,16 @@
+# SR-focused configuration for broader search
+includes:
+  - gravity_learn/configs/data_defaults.yaml
+
+mode: sr
+use_cupy: false
+seed: 0
+
+# Use a larger subset for SR
+limit_galaxies: 50
+limit_points_per_galaxy: 512
+
+sr:
+  niterations: 200
+  populations: 20
+  maxsize: 40
