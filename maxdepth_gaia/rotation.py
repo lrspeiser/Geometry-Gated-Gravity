@@ -43,17 +43,18 @@ def bin_rotation_curve(stars_df: pd.DataFrame,
         if N == 0:
             continue
         # weights from errors if available
+        vphi_vals = np.abs(sub['vphi_kms'].to_numpy())
         if use_weights and has_err and sub['vphi_err_kms'].notna().all():
             w = 1.0/np.maximum(sub['vphi_err_kms'].to_numpy()**2, 1e-6)
-            v_med = float(np.average(sub['vphi_kms'].to_numpy(), weights=w))
+            v_med = float(np.average(vphi_vals, weights=w))
             v_err = float(np.sqrt(1.0/np.maximum(np.sum(w), 1e-12)))
         else:
-            s = robust_stats(sub['vphi_kms'].to_numpy())
+            s = robust_stats(vphi_vals)
             v_med = s['median']
             v_err = s['stderr'] if np.isfinite(s['stderr']) else 5.0
 
         # dispersions
-        sigma_phi = float(np.std(sub['vphi_kms'].to_numpy(), ddof=1)) if N > 1 else np.nan
+        sigma_phi = float(np.std(vphi_vals, ddof=1)) if N > 1 else np.nan
         sigma_R = float(np.std(sub['vR_kms'].to_numpy(), ddof=1)) if (has_vR and sub['vR_kms'].notna().all() and N>1) else np.nan
 
         out_rows.append(dict(R_lo=lo, R_hi=hi, R_kpc_mid=centers[i],

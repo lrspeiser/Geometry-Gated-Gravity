@@ -16,7 +16,7 @@ def make_plot(bins_df: pd.DataFrame,
 
     # Star-level scatter (light)
     if star_sample_df is not None and len(star_sample_df) > 0:
-        plt.scatter(star_sample_df['R_kpc'], star_sample_df['vphi_kms'], s=1, c='0.8', alpha=0.25, label='Stars (sample)')
+        plt.scatter(star_sample_df['R_kpc'], np.abs(star_sample_df['vphi_kms']), s=1, c='0.8', alpha=0.25, label='Stars (sample)')
 
     # Binned data with errors
     plt.errorbar(bins_df['R_kpc_mid'], bins_df['vphi_kms'], yerr=bins_df['vphi_err_kms'], fmt='o', ms=4,
