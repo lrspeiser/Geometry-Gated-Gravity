@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 from scipy.integrate import simpson
 import importlib.util as _ilu, sys as _sys
+import argparse
 
 # Import slip
 _o3p = Path(__file__).resolve().parent / 'o3_slip.py'
@@ -108,9 +109,59 @@ def load_cluster(name: str, base: Path):
     return r[i], rho[i]
 
 
+def _parse_weights(s: str) -> dict:
+    default = {
+        'ABELL_1689': 0.4,
+        'A2029': 0.3,
+        'A478': 0.25,
+        'A1795': 0.04,
+        'ABELL_0426': 0.01,
+    }
+    if not s:
+        return default
+    out = {}
+    for tok in s.split(','):
+        tok = tok.strip()
+        if not tok:
+            continue
+        if '=' not in tok:
+            continue
+        k, v = tok.split('=', 1)
+        k = k.strip().upper()
+        name = k
+        if k in ('A1689', 'ABELL1689'): name = 'ABELL_1689'
+        elif k in ('PERSEUS', 'ABELL0426', 'A0426'): name = 'ABELL_0426'
+        elif k == 'A2029': name = 'A2029'
+        elif k == 'A478': name = 'A478'
+        elif k == 'A1795': name = 'A1795'
+        else:
+            name = k  # allow direct keys
+        try:
+            out[name] = float(v)
+        except Exception:
+            pass
+    # merge with defaults
+    for k, v in default.items():
+        out.setdefault(k, v)
+    return out
+
 def main():
     if not ASTROPY_OK:
         raise SystemExit('astropy required')
+    ap = argparse.ArgumentParser()
+    ap.add_argument('--weights', type=str, default='', help='e.g. A1689=0.4,A2029=0.3,A478=0.25,A1795=0.04,PERSEUS=0.01')
+    ap.add_argument('--kappa_core', type=float, default=1.8)
+    ap.add_argument('--Rmin_kpc', type=float, default=30.0)
+    ap.add_argument('--kappa_500', type=float, default=0.6)
+    ap.add_argument('--overshoot_mult', type=float, default=2.5)
+    ap.add_argument('--tau_curv', type=float, default=0.3)
+    ap.add_argument('--lowz_veto_z', type=float, default=0.03)
+    ap.add_argument('--gamma_sigma', type=float, default=0.5)
+    ap.add_argument('--gamma_z', type=float, default=1.0)
+    ap.add_argument('--Sigma_star', type=float, default=50.0)
+    args = ap.parse_args()
+    W = _parse_weights(args.weights)
+
     base = Path('data/clusters')
     clusters = [
         ('ABELL_1689', 0.184, 47.0),
@@ -128,6 +179,9 @@ def main():
             items.append((name, z, theta_obs, r, rho, Sigma_dyn))
         except Exception as e:
             print('[WARN]', name, e)
+    # normalize weight dict with defaults for any missing clusters
+    for name, _, _ in clusters:
+        W.setdefault(name, 0.1)
     # grid
     A3_list = [0.5, 1.0, 2.0, 3.0, 5.0, 8.0, 10.0, 15.0, 20.0, 30.0, 50.0, 80.0, 100.0]
     Sigma_star_list = [30.0, 50.0, 150.0, 500.0]
@@ -147,45 +201,74 @@ def main():
                             for cc in ccurv_list:
                                 params = {'A3':A3,'Sigma_star':Sstar,'beta':beta,'r_boost_kpc':rb,'w_dec':wd,'ell_kpc':ell,'c_curv':cc}
                                 total_err = 0.0
-                                ok = True
+                                ok_global = True
                                 for (name, z, theta_obs, r, rho, Sigma_dyn) in items:
-                                    Sigma_lens = o3s.apply_slip(r, Sigma_dyn, rho, params)
+                                    w = float(W.get(name, 1.0))
+                                    # Environment + redshift amplitude regulation
+                                    mask_band = (r >= 30.0) & (r <= 100.0)
+                                    if not np.any(mask_band):
+                                        Sigma_mean = float(np.mean(Sigma_dyn))
+                                    else:
+                                        Sigma_mean = float(np.mean(Sigma_dyn[mask_band]))
+                                    A3_eff = A3 * (max(Sigma_mean, 1e-9) / max(args.Sigma_star, 1e-9)) ** (-args.gamma_sigma) * (1.0 + float(z)) ** (-args.gamma_z)
+                                    # Low-z curvature veto
+                                    logr = np.log(np.maximum(r, 1e-12))
+                                    lnS = np.log(np.maximum(Sigma_dyn, 1e-30))
+                                    d1 = np.gradient(lnS, logr)
+                                    d2 = np.gradient(d1, logr)
+                                    curv_band = float(np.min(d2[mask_band])) if np.any(mask_band) else float(np.min(d2))
+                                    local_params = dict(params)
+                                    if (float(z) < args.lowz_veto_z) and (curv_band > -args.tau_curv):
+                                        local_params['A3'] = 0.0
+                                    else:
+                                        local_params['A3'] = A3_eff
+                                    Sigma_lens = o3s.apply_slip(r, Sigma_dyn, rho, local_params)
                                     kap, kbar = kappa_bar(Sigma_lens, r, z)
                                     RE_kpc = theta_E_kpc(r, kbar)
                                     th_arc = theta_E_arcsec_from_kpc(RE_kpc, z)
                                     kmax = float(np.nanmax(kbar)) if np.all(np.isfinite(kbar)) else 0.0
-                                    # Core safety (avoid huge central κ̄)
-                                    if kmax > 1.8:
-                                        total_err += 7.5
+                                    # Core safety (weighted)
+                                    if kmax > args.kappa_core:
+                                        total_err += w * 7.5
+                                    # kappa at 500 kpc guardrail (weighted)
+                                    kbar_500 = float(np.interp(500.0, r, kbar))
+                                    if kbar_500 > args.kappa_500:
+                                        total_err += w * 1.0 * (kbar_500 - args.kappa_500)
                                     if theta_obs is not None:
-                                        # Observed clusters: stricter θE handling
                                         if not np.isfinite(th_arc):
-                                            ok = False; total_err += 7.5
+                                            ok_global = False; total_err += w * 7.5
                                         else:
-                                            # Hard overshoot gate: skip egregious solutions
-                                            if th_arc > 2.5*theta_obs:
-                                                ok = False; total_err += 10.0
-                                            # Target Einstein radius band: 50–150 kpc
-                                            D_l = COSMO.angular_diameter_distance(z).to(u.kpc).value
-                                            R_target = float(theta_obs * (np.pi/648000.0) * D_l)
+                                            if th_arc > args.overshoot_mult*theta_obs:
+                                                ok_global = False; total_err += w * 10.0
                                             if np.isfinite(RE_kpc):
                                                 rel_err = abs(th_arc - theta_obs)/max(theta_obs, 1e-6)
                                                 band_pen = 0.0
-                                                if RE_kpc < 30.0:
-                                                    band_pen = 1.0 + (30.0 - RE_kpc)/30.0  # strong penalty for central crossings
-                                                elif RE_kpc < 50.0:
-                                                    band_pen = (50.0 - RE_kpc)/50.0
+                                                # Central crossing penalty using innermost crossing (weighted)
+                                                idxs = np.where(kbar >= 1.0)[0]
+                                                if idxs.size > 0:
+                                                    RE_min = float(r[idxs[0]])
+                                                    if RE_min < args.Rmin_kpc:
+                                                        band_pen += (args.Rmin_kpc - RE_min)/max(args.Rmin_kpc, 1e-6)
+                                                if RE_kpc < 50.0:
+                                                    band_pen += (50.0 - RE_kpc)/50.0
                                                 elif RE_kpc > 150.0:
-                                                    band_pen = (RE_kpc - 150.0)/150.0
-                                                # Weight band penalty more to encourage correct scale
-                                                total_err += 2.0 * rel_err + 1.5 * band_pen
+                                                    band_pen += (RE_kpc - 150.0)/150.0
+                                                total_err += w * (2.0 * rel_err + 1.5 * band_pen)
                                             else:
-                                                ok = False; total_err += 7.5
+                                                ok_global = False; total_err += w * 7.5
                                     else:
-                                        # No observed θE: penalize spurious θE at low-z clusters (lightly)
                                         if np.isfinite(th_arc):
-                                            total_err += 0.2
-                                score = total_err if ok else (total_err + 10.0)
+                                            # Penalty for spurious θE (weighted), stronger at low-z
+                                            spur = 0.2
+                                            if float(z) < 0.03:
+                                                spur += 0.8
+                                            # additional penalty if central crossing occurs very small
+                                            idxs = np.where(kbar >= 1.0)[0]
+                                            if idxs.size > 0 and float(r[idxs[0]]) < args.Rmin_kpc:
+                                                spur += 0.5
+                                            total_err += w * spur
+                                # Overall score
+                                score = total_err if ok_global else (total_err + 10.0)
                                 rec = {'params': params, 'score': float(score)}
                                 if (best is None) or (score < best['score']):
                                     best = rec
