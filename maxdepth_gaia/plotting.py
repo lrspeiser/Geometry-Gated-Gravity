@@ -48,6 +48,8 @@ def make_plot(bins_df: pd.DataFrame,
     txt = []
     if sw:
         txt.append(f"SatWell: v_flat={sw.get('v_flat', np.nan):.1f} km/s, R_s={sw.get('R_s', np.nan):.2f} kpc, m={sw.get('m', np.nan):.2f}")
+        if 'gate_width_kpc' in sw.get('params', {}):
+            txt.append(f"gate ΔR={sw['params'].get('gate_width_kpc', np.nan):.2f} kpc")
         if 'lensing_alpha_arcsec' in sw:
             txt.append(f"alpha≈{sw['lensing_alpha_arcsec']:.3f}\" (log-tail)")
         txt.append(f"AIC/BIC/chi2: {sw.get('aic', np.nan):.1f} / {sw.get('bic', np.nan):.1f} / {sw.get('chi2', np.nan):.1f}")

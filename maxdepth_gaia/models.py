@@ -73,6 +73,17 @@ def v2_saturated_extra(R: np.ndarray, v_flat: float, R_s: float, m: float) -> np
     return (v_flat**2) * (1.0 - np.exp(-np.power(R/R_s, m)))
 
 
+def gate_c1(R: np.ndarray, Rb: float, dR: float) -> np.ndarray:
+    """C1 smooth gate that is exactly 0 for R <= Rb and exactly 1 for R >= Rb + dR.
+    Uses Hermite smoothstep: g(s)=3s^2-2s^3 on s in [0,1].
+    """
+    R = np.asarray(R, dtype=float)
+    dR = max(dR, 1e-6)
+    s = (R - Rb) / dR
+    s = np.clip(s, 0.0, 1.0)
+    return 3.0 * s**2 - 2.0 * s**3
+
+
 def lensing_alpha_arcsec(v_flat: float) -> float:
     # alpha ~ 2π (v_flat/c)^2 radians
     a_rad = 2.0 * np.pi * (v_flat**2) / (C_KMS**2)

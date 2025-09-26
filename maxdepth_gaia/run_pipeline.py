@@ -39,6 +39,8 @@ def main():
     ap.add_argument('--baryon_priors', choices=['mw','wide'], default='mw')
 
     ap.add_argument('--saveplot', default=os.path.join('maxdepth_gaia','outputs','mw_rotation_curve_maxdepth.png'))
+    ap.add_argument('--gate_width_kpc', type=float, default=None, help='Optional: fix smooth gate width (kpc) for the tail (C1, exact zero inside).')
+    ap.add_argument('--fix_m', type=float, default=None, help='Optional: fix m (tail sharpness) globally for cross-galaxy tests.')
     ap.add_argument('--debug', action='store_true')
     args = ap.parse_args()
 
@@ -74,7 +76,9 @@ def main():
     logger.info(f"Stars after filters: {len(stars_df):,}")
 
     # Bin rotation curve
-    bins_df = bin_rotation_curve(stars_df, rmin=args.rmin, rmax=args.rmax, nbins=args.nbins, ad_correction=args.ad_correction, logger=logger)
+    bins_df = bin_rotation_curve(stars_df, rmin=args.rmin, rmax=args.rmax, nbins=args.nbins,
+                                 ad_correction=args.ad_correction, ad_poly_deg=2, ad_frac_err=0.3,
+                                 logger=logger)
     bins_path = os.path.join(out_dir, 'rotation_curve_bins.csv')
     bins_df.to_csv(bins_path, index=False)
     logger.info(f"Saved binned curve: {bins_path} (rows={len(bins_df)})")
@@ -119,7 +123,7 @@ def main():
     M_enclosed = float((Vb**2) * R_boundary / G_KPC)
 
     # Outer fits
-    sat = fit_saturated_well(bins_df, vbar_all, R_boundary, logger=logger)
+    sat = fit_saturated_well(bins_df, vbar_all, R_boundary, gate_width_fixed=args.gate_width_kpc, fixed_m=args.fix_m, logger=logger)
     nfw = fit_nfw(bins_df, vbar_all, logger=logger)
 
     # Build dense curves for plotting

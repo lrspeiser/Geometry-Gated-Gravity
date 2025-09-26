@@ -8,7 +8,7 @@ from typing import Dict, Any, Tuple
 from scipy.optimize import least_squares, curve_fit
 
 from .utils import G_KPC
-from .models import v_c_baryon, v2_saturated_extra, v_c_nfw, v_flat_from_anchor
+from .models import v_c_baryon, v2_saturated_extra, v_c_nfw, v_flat_from_anchor, gate_c1
 
 
 @dataclass
@@ -139,23 +139,23 @@ def find_boundary_bic(bins_df: pd.DataFrame, vbar_all: np.ndarray, logger=None) 
             continue
         Rout = R[mask_out]; Vout = V[mask_out]; Sout = S[mask_out]
 
-        def model_out(Rx, xi, R_s, m):
+        def model_out(Rx, xi, R_s, m, dR):
             # Derive v_flat via anchor from baryon mass within Rb
             Vb = np.interp(Rb, R, vbar_all)
             M_encl = (Vb**2) * Rb / G_KPC
             vflat = v_flat_from_anchor(M_encl, Rb, xi)
-            v2_extra = v2_saturated_extra(Rx, vflat, R_s, m)
+            v2_extra = v2_saturated_extra(Rx, vflat, R_s, m) * gate_c1(Rx, Rb, dR)
             return np.sqrt(np.clip(np.power(np.interp(Rx, R, vbar_all), 2) + v2_extra, 0.0, None))
 
         try:
             popt, pcov = curve_fit(model_out, Rout, Vout, sigma=Sout, absolute_sigma=True,
-                                   p0=[0.8, 10.0, 2.0], bounds=([0.1, 1.0, 0.5], [1.0, 50.0, 8.0]), maxfev=30000)
+                                   p0=[0.8, 10.0, 2.0, 0.8], bounds=([0.1, 1.0, 0.5, 0.1], [1.0, 50.0, 8.0, 2.0]), maxfev=40000)
             Vmod = np.interp(R, R, vbar_all)
             Vmod_out = model_out(Rout, *popt)
             # Compose full model by combining inside (no tail) and outside
             Vfull = np.array(Vmod)
             Vfull[mask_out] = Vmod_out
-            stats = compute_metrics(V, Vfull, S, k_params=8)  # 5 baryon + 3 tail
+            stats = compute_metrics(V, Vfull, S, k_params=9)  # 5 baryon + 4 tail (xi, R_s, m, dR)
             if stats['bic'] < best_bic:
                 best_bic = stats['bic']
                 best = dict(R_boundary=float(Rb), params=dict(xi=float(popt[0]), R_s=float(popt[1]), m=float(popt[2])), stats=stats)
@@ -195,7 +195,7 @@ def bootstrap_boundary(bins_df: pd.DataFrame, vbar_all: np.ndarray, method: str 
 # Outer fits: anchored saturated-well and NFW
 # -----------------------------
 
-def fit_saturated_well(bins_df: pd.DataFrame, vbar_all: np.ndarray, R_boundary: float, logger=None) -> FitResult:
+def fit_saturated_well(bins_df: pd.DataFrame, vbar_all: np.ndarray, R_boundary: float, gate_width_fixed: float | None = None, fixed_m: float | None = None, logger=None) -> FitResult:
     R = bins_df['R_kpc_mid'].to_numpy()
     V = bins_df['vphi_kms'].to_numpy()
     S = np.maximum(bins_df['vphi_err_kms'].to_numpy(), 2.0)
@@ -208,22 +208,59 @@ def fit_saturated_well(bins_df: pd.DataFrame, vbar_all: np.ndarray, R_boundary: 
     Vb = np.interp(R_boundary, R, vbar_all)
     M_encl = (Vb**2) * R_boundary / G_KPC
 
-    def model_out(Rx, xi, R_s, m):
-        vflat = v_flat_from_anchor(M_encl, R_boundary, xi)
-        v2_extra = v2_saturated_extra(Rx, vflat, R_s, m)
-        return np.sqrt(np.clip(np.power(np.interp(Rx, R, vbar_all), 2) + v2_extra, 0.0, None))
-
-    popt, pcov = curve_fit(model_out, Rout, Vout, sigma=Sout, absolute_sigma=True,
-                           p0=[0.8, 10.0, 2.0], bounds=([0.1, 1.0, 0.5], [1.0, 50.0, 8.0]), maxfev=30000)
-    xi, R_s, m = popt
+    if gate_width_fixed is None and fixed_m is None:
+        def model_out(Rx, xi, R_s, m, dR):
+            vflat = v_flat_from_anchor(M_encl, R_boundary, xi)
+            v2_extra = v2_saturated_extra(Rx, vflat, R_s, m) * gate_c1(Rx, R_boundary, dR)
+            return np.sqrt(np.clip(np.power(np.interp(Rx, R, vbar_all), 2) + v2_extra, 0.0, None))
+        p0 = [0.8, 10.0, 2.0, 0.8]
+        lb = [0.1, 1.0, 0.5, 0.1]; ub = [1.0, 50.0, 8.0, 2.0]
+        popt, pcov = curve_fit(model_out, Rout, Vout, sigma=Sout, absolute_sigma=True,
+                               p0=p0, bounds=(lb, ub), maxfev=50000)
+        xi, R_s, m, dR = popt
+    elif gate_width_fixed is not None and fixed_m is None:
+        def model_out(Rx, xi, R_s, m):
+            vflat = v_flat_from_anchor(M_encl, R_boundary, xi)
+            v2_extra = v2_saturated_extra(Rx, vflat, R_s, m) * gate_c1(Rx, R_boundary, gate_width_fixed)
+            return np.sqrt(np.clip(np.power(np.interp(Rx, R, vbar_all), 2) + v2_extra, 0.0, None))
+        popt, pcov = curve_fit(model_out, Rout, Vout, sigma=Sout, absolute_sigma=True,
+                               p0=[0.8, 10.0, 2.0], bounds=([0.1, 1.0, 0.5], [1.0, 50.0, 8.0]), maxfev=40000)
+        xi, R_s, m = popt; dR = gate_width_fixed
+    elif gate_width_fixed is None and fixed_m is not None:
+        def model_out(Rx, xi, R_s, dR):
+            vflat = v_flat_from_anchor(M_encl, R_boundary, xi)
+            v2_extra = v2_saturated_extra(Rx, vflat, R_s, fixed_m) * gate_c1(Rx, R_boundary, dR)
+            return np.sqrt(np.clip(np.power(np.interp(Rx, R, vbar_all), 2) + v2_extra, 0.0, None))
+        popt, pcov = curve_fit(model_out, Rout, Vout, sigma=Sout, absolute_sigma=True,
+                               p0=[0.8, 10.0, 0.8], bounds=([0.1, 1.0, 0.1], [1.0, 50.0, 2.0]), maxfev=40000)
+        xi, R_s, dR = popt; m = fixed_m
+    else:  # both fixed
+        def model_out(Rx, xi, R_s):
+            vflat = v_flat_from_anchor(M_encl, R_boundary, xi)
+            v2_extra = v2_saturated_extra(Rx, vflat, R_s, fixed_m) * gate_c1(Rx, R_boundary, gate_width_fixed)
+            return np.sqrt(np.clip(np.power(np.interp(Rx, R, vbar_all), 2) + v2_extra, 0.0, None))
+        popt, pcov = curve_fit(model_out, Rout, Vout, sigma=Sout, absolute_sigma=True,
+                               p0=[0.8, 10.0], bounds=([0.1, 1.0], [1.0, 50.0]), maxfev=30000)
+        xi, R_s = popt; m = fixed_m; dR = gate_width_fixed
     vflat = v_flat_from_anchor(M_encl, R_boundary, xi)
 
     # Compose full curve
     Vmodel = np.interp(R, R, vbar_all)
-    Vmodel[mask_out] = model_out(Rout, *popt)
+    if gate_width_fixed is None and fixed_m is None:
+        Vmodel[mask_out] = model_out(Rout, xi, R_s, m, dR)
+        k_params = 9
+    elif gate_width_fixed is not None and fixed_m is None:
+        Vmodel[mask_out] = model_out(Rout, xi, R_s, m)
+        k_params = 8
+    elif gate_width_fixed is None and fixed_m is not None:
+        Vmodel[mask_out] = model_out(Rout, xi, R_s, dR)
+        k_params = 8
+    else:
+        Vmodel[mask_out] = model_out(Rout, xi, R_s)
+        k_params = 7
 
-    stats = compute_metrics(V, Vmodel, S, k_params=8)  # 5 baryon + 3 tail
-    return FitResult(params=dict(xi=float(xi), R_s=float(R_s), m=float(m), v_flat=float(vflat)), cov=pcov, stats=stats)
+    stats = compute_metrics(V, Vmodel, S, k_params=k_params)
+    return FitResult(params=dict(xi=float(xi), R_s=float(R_s), m=float(m), gate_width_kpc=float(dR), v_flat=float(vflat)), cov=pcov, stats=stats)
 
 
 def fit_nfw(bins_df: pd.DataFrame, vbar_all: np.ndarray, logger=None) -> FitResult:

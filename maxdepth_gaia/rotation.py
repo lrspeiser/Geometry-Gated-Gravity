@@ -13,6 +13,8 @@ def bin_rotation_curve(stars_df: pd.DataFrame,
                        nbins: int = 24,
                        use_weights: bool = True,
                        ad_correction: bool = False,
+                       ad_poly_deg: int = 2,
+                       ad_frac_err: float = 0.3,
                        logger=None) -> pd.DataFrame:
     """Bin star-level data into a rotation curve with robust uncertainties.
 
@@ -72,43 +74,62 @@ def bin_rotation_curve(stars_df: pd.DataFrame,
     # Optional asymmetric drift correction at bin level
     rc['ad_applied'] = False
     if ad_correction:
-        # Precompute gradients in ln space; handle edges with 1-sided differences
         Rm = rc['R_kpc_mid'].to_numpy()
         nu = rc['nu'].to_numpy()
         sigR2 = np.power(rc['sigma_R'].to_numpy(), 2)
         sigphi2 = np.power(rc['sigma_phi'].to_numpy(), 2)
 
-        # Only apply where we have finite dispersions
-        valid = np.isfinite(nu) & np.isfinite(sigR2) & np.isfinite(sigphi2) & (sigR2 > 0) & (sigphi2 > 0)
-        if np.count_nonzero(valid) >= 5:
-            dlnnu = np.full_like(nu, np.nan, dtype=float)
-            dlnsigR2 = np.full_like(sigR2, np.nan, dtype=float)
-            # central differences
-            for i in range(len(Rm)):
-                if i == 0:
-                    j, k = i, i+1
-                elif i == len(Rm)-1:
-                    j, k = i-1, i
-                else:
-                    j, k = i-1, i+1
-                if valid[j] and valid[k] and Rm[k] > 0 and Rm[j] > 0 and nu[j] > 0 and nu[k] > 0 and sigR2[j] > 0 and sigR2[k] > 0:
-                    dlnnu[i] = (np.log(nu[k]) - np.log(nu[j])) / (np.log(Rm[k]) - np.log(Rm[j]))
-                    dlnsigR2[i] = (np.log(sigR2[k]) - np.log(sigR2[j])) / (np.log(Rm[k]) - np.log(Rm[j]))
+        valid = np.isfinite(Rm) & (Rm > 0) & np.isfinite(nu) & (nu > 0) & np.isfinite(sigR2) & (sigR2 > 0) & np.isfinite(sigphi2) & (sigphi2 > 0)
+        if np.count_nonzero(valid) >= max(6, ad_poly_deg+1):
+            lnR = np.log(Rm[valid])
+            lnnu = np.log(nu[valid])
+            lnsigR2 = np.log(sigR2[valid])
+            # Weighted polyfits (weights ~ counts) to smooth gradients
+            w = rc.loc[valid, 'N'].to_numpy()
+            w = np.where(np.isfinite(w) & (w > 0), w, 1.0)
+            deg = int(max(1, ad_poly_deg))
+            try:
+                pn = np.polyfit(lnR, lnnu, deg=deg, w=w)
+                pr = np.polyfit(lnR, lnsigR2, deg=deg, w=w)
+                dpn = np.polyder(pn)
+                dpr = np.polyder(pr)
+                dlnnu = np.polyval(dpn, np.log(Rm))
+                dlnsigR2 = np.polyval(dpr, np.log(Rm))
+            except Exception:
+                # Fallback to central differences if polyfit fails
+                dlnnu = np.full_like(nu, np.nan, dtype=float)
+                dlnsigR2 = np.full_like(sigR2, np.nan, dtype=float)
+                for i in range(len(Rm)):
+                    if i == 0:
+                        j, k = i, i+1
+                    elif i == len(Rm)-1:
+                        j, k = i-1, i
+                    else:
+                        j, k = i-1, i+1
+                    if valid[j] and valid[k]:
+                        dlnnu[i] = (np.log(nu[k]) - np.log(nu[j])) / (np.log(Rm[k]) - np.log(Rm[j]))
+                        dlnsigR2[i] = (np.log(sigR2[k]) - np.log(sigR2[j])) / (np.log(Rm[k]) - np.log(Rm[j]))
 
             beta = 1.0 - sigphi2/np.maximum(sigR2, 1e-6)
             AD = sigR2 * (np.nan_to_num(dlnnu, nan=0.0) + np.nan_to_num(dlnsigR2, nan=0.0) + beta)
 
-            # Apply AD correction where valid
+            # Apply AD correction and inflate errors conservatively
             apply = np.isfinite(AD)
-            idx = np.where(apply)[0]
-            if idx.size > 0:
-                vc2 = np.power(rc.loc[apply,'vphi_kms'].to_numpy(), 2) + AD[apply]
+            if np.any(apply):
+                vphi = rc.loc[apply, 'vphi_kms'].to_numpy()
+                vphi = np.abs(vphi)
+                vc2 = vphi**2 + AD[apply]
                 vc = np.sqrt(np.clip(vc2, 0.0, None))
                 rc.loc[apply, 'vphi_kms'] = vc
+                # error inflation: sigma_AD = f * AD, dv ≈ 0.5 * sigma_AD / v
+                v_err = rc.loc[apply, 'vphi_err_kms'].to_numpy()
+                sigma_AD = np.maximum(ad_frac_err, 0.0) * np.maximum(AD[apply], 0.0)
+                add_err = 0.5 * sigma_AD / np.maximum(vc, 1e-3)
+                v_err_new = np.sqrt(np.maximum(v_err, 0.0)**2 + add_err**2)
+                rc.loc[apply, 'vphi_err_kms'] = v_err_new
                 rc.loc[apply, 'ad_applied'] = True
-                # keep same error bars; could be propagated in a later refinement
         else:
             if logger:
-                logger.info("AD correction requested but insufficient dispersions present; skipping.")
+                logger.info("AD correction requested but insufficient valid bins; skipping.")
 
     return rc
