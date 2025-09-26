@@ -614,7 +614,8 @@ def nfw_lensing_unit_test():
     idx = np.where(kbar >= 1.0)[0]
     if idx.size == 0:
         return float('nan'), False
-    R_E = r[idx[0]]  # kpc
+    # Use the outermost radius where kbar>=1 (Einstein radius)
+    R_E = r[idx[-1]]  # kpc
     theta_E_rad = R_E / D_l
     theta_E_arcsec = theta_E_rad * (180.0/np.pi) * 3600.0
 
