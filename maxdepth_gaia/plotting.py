@@ -5,6 +5,8 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
+from .models import v_c_baryon_multi, MW_DEFAULT  # reference GR overlay
+
 
 def make_plot(bins_df: pd.DataFrame,
               star_sample_df: pd.DataFrame | None,
@@ -29,6 +31,14 @@ def make_plot(bins_df: pd.DataFrame,
         plt.plot(curves_df['R_kpc'], curves_df['v_baryon_nfw'], color='darkorange', lw=2, label='Baryons + NFW')
     if 'v_baryon_satwell' in curves_df:
         plt.plot(curves_df['R_kpc'], curves_df['v_baryon_satwell'], color='forestgreen', lw=2, label='Baryons + Saturated-well')
+
+    # Reference MW GR overlay for visual sanity check
+    try:
+        Rf = curves_df['R_kpc'].to_numpy()
+        v_ref = v_c_baryon_multi(Rf, MW_DEFAULT)
+        plt.plot(Rf, v_ref, ls='--', lw=1.2, alpha=0.6, color='gray', label='MWPotential2014-like (GR)')
+    except Exception:
+        pass
 
     # Boundary shading and line
     boundary = fit_json.get('boundary', {})

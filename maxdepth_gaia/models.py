@@ -5,7 +5,7 @@
 from __future__ import annotations
 import numpy as np
 from dataclasses import dataclass
-from typing import Dict
+from typing import Dict, List
 
 from .utils import G_KPC, C_KMS
 
@@ -41,6 +41,27 @@ class BaryonicMW:
     disk: MiyamotoNagaiDisk
     def v2(self, R: np.ndarray) -> np.ndarray:
         return self.bulge.v2(R) + self.disk.v2(R)
+
+
+@dataclass
+class MultiDiskMW:
+    bulge: HernquistBulge
+    disks: List[MiyamotoNagaiDisk]
+    def v2(self, R: np.ndarray) -> np.ndarray:
+        v2 = self.bulge.v2(R)
+        for d in self.disks:
+            v2 += d.v2(R)
+        return v2
+
+
+# Widely used MW-like defaults (order-of-magnitude consistent with MWPotential2014 / McMillan)
+MW_DEFAULT: Dict[str, float] = dict(
+    M_b=5e9, a_b=0.6,
+    M_thin=4.5e10, a_thin=3.0, b_thin=0.3,
+    M_thick=1.0e10, a_thick=2.5, b_thick=0.9,
+    M_HI=1.1e10, a_HI=7.0, b_HI=0.1,
+    M_H2=1.2e9,  a_H2=1.5, b_H2=0.05,
+)
 
 
 # -----------------------------
@@ -98,6 +119,17 @@ def v_c_baryon(R: np.ndarray, params: Dict[str, float]) -> np.ndarray:
     bulge = HernquistBulge(M_b=params['M_b'], a_b=params['a_b'])
     disk = MiyamotoNagaiDisk(M_d=params['M_d'], a=params['a_d'], b=params['b_d'])
     return np.sqrt(np.clip(BaryonicMW(bulge, disk).v2(R), 0.0, None))
+
+
+def v_c_baryon_multi(R: np.ndarray, p: Dict[str, float]) -> np.ndarray:
+    bulge = HernquistBulge(M_b=p['M_b'], a_b=p['a_b'])
+    disks = [
+        MiyamotoNagaiDisk(M_d=p['M_thin'],  a=p['a_thin'],  b=p['b_thin']),
+        MiyamotoNagaiDisk(M_d=p['M_thick'], a=p['a_thick'], b=p['b_thick']),
+        MiyamotoNagaiDisk(M_d=p['M_HI'],    a=p['a_HI'],    b=p['b_HI']),
+        MiyamotoNagaiDisk(M_d=p['M_H2'],    a=p['a_H2'],    b=p['b_H2']),
+    ]
+    return np.sqrt(np.clip(MultiDiskMW(bulge, disks).v2(R), 0.0, None))
 
 
 def v_c_nfw(R: np.ndarray, V200: float, c: float, R200_kpc: float = 220.0) -> np.ndarray:

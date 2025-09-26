@@ -117,7 +117,7 @@ def find_boundary_consecutive(bins_df: pd.DataFrame, vbar_all: np.ndarray, K: in
     return dict(found=True, R_boundary=Rb, first_index=int(hit_idx), K=int(K), S_thresh=float(S_thresh))
 
 
-def find_boundary_bic(bins_df: pd.DataFrame, vbar_all: np.ndarray, logger=None) -> Dict[str, Any]:
+def find_boundary_bic(bins_df: pd.DataFrame, vbar_all: np.ndarray, gate_width_fixed: float | None = None, fixed_m: float | None = None, logger=None) -> Dict[str, Any]:
     R = bins_df['R_kpc_mid'].to_numpy()
     V = bins_df['vphi_kms'].to_numpy()
     S = np.maximum(bins_df['vphi_err_kms'].to_numpy(), 2.0)
@@ -133,32 +133,66 @@ def find_boundary_bic(bins_df: pd.DataFrame, vbar_all: np.ndarray, logger=None) 
     start = max(2, len(R)//4)
     for j in range(start, len(R)-2):
         Rb = bins_df['R_lo'].iloc[j]
-        # Anchored saturated-well fit beyond Rb with 3 params (xi, R_s, m)
+        # Anchored saturated-well fit beyond Rb
         mask_out = R >= Rb
         if np.count_nonzero(mask_out) < 4:
             continue
         Rout = R[mask_out]; Vout = V[mask_out]; Sout = S[mask_out]
 
-        def model_out(Rx, xi, R_s, m, dR):
-            # Derive v_flat via anchor from baryon mass within Rb
-            Vb = np.interp(Rb, R, vbar_all)
-            M_encl = (Vb**2) * Rb / G_KPC
-            vflat = v_flat_from_anchor(M_encl, Rb, xi)
-            v2_extra = v2_saturated_extra(Rx, vflat, R_s, m) * gate_c1(Rx, Rb, dR)
-            return np.sqrt(np.clip(np.power(np.interp(Rx, R, vbar_all), 2) + v2_extra, 0.0, None))
+        if gate_width_fixed is None and fixed_m is None:
+            def model_out(Rx, xi, R_s, m, dR):
+                Vb = np.interp(Rb, R, vbar_all)
+                M_encl = (Vb**2) * Rb / G_KPC
+                vflat = v_flat_from_anchor(M_encl, Rb, xi)
+                v2_extra = v2_saturated_extra(Rx, vflat, R_s, m) * gate_c1(Rx, Rb, dR)
+                return np.sqrt(np.clip(np.power(np.interp(Rx, R, vbar_all), 2) + v2_extra, 0.0, None))
+            p0=[0.8, 10.0, 2.0, 0.8]; lb=[0.1, 1.0, 0.5, 0.1]; ub=[1.0, 50.0, 8.0, 2.0]
+            k_params = 9
+        elif gate_width_fixed is not None and fixed_m is None:
+            def model_out(Rx, xi, R_s, m):
+                Vb = np.interp(Rb, R, vbar_all)
+                M_encl = (Vb**2) * Rb / G_KPC
+                vflat = v_flat_from_anchor(M_encl, Rb, xi)
+                v2_extra = v2_saturated_extra(Rx, vflat, R_s, m) * gate_c1(Rx, Rb, gate_width_fixed)
+                return np.sqrt(np.clip(np.power(np.interp(Rx, R, vbar_all), 2) + v2_extra, 0.0, None))
+            p0=[0.8, 10.0, 2.0]; lb=[0.1, 1.0, 0.5]; ub=[1.0, 50.0, 8.0]
+            k_params = 8
+        elif gate_width_fixed is None and fixed_m is not None:
+            def model_out(Rx, xi, R_s, dR):
+                Vb = np.interp(Rb, R, vbar_all)
+                M_encl = (Vb**2) * Rb / G_KPC
+                vflat = v_flat_from_anchor(M_encl, Rb, xi)
+                v2_extra = v2_saturated_extra(Rx, vflat, R_s, fixed_m) * gate_c1(Rx, Rb, dR)
+                return np.sqrt(np.clip(np.power(np.interp(Rx, R, vbar_all), 2) + v2_extra, 0.0, None))
+            p0=[0.8, 10.0, 0.8]; lb=[0.1, 1.0, 0.1]; ub=[1.0, 50.0, 2.0]
+            k_params = 8
+        else:
+            def model_out(Rx, xi, R_s):
+                Vb = np.interp(Rb, R, vbar_all)
+                M_encl = (Vb**2) * Rb / G_KPC
+                vflat = v_flat_from_anchor(M_encl, Rb, xi)
+                v2_extra = v2_saturated_extra(Rx, vflat, R_s, fixed_m) * gate_c1(Rx, Rb, gate_width_fixed)
+                return np.sqrt(np.clip(np.power(np.interp(Rx, R, vbar_all), 2) + v2_extra, 0.0, None))
+            p0=[0.8, 10.0]; lb=[0.1, 1.0]; ub=[1.0, 50.0]
+            k_params = 7
 
         try:
             popt, pcov = curve_fit(model_out, Rout, Vout, sigma=Sout, absolute_sigma=True,
-                                   p0=[0.8, 10.0, 2.0, 0.8], bounds=([0.1, 1.0, 0.5, 0.1], [1.0, 50.0, 8.0, 2.0]), maxfev=40000)
+                                   p0=p0, bounds=(lb, ub), maxfev=50000)
             Vmod = np.interp(R, R, vbar_all)
             Vmod_out = model_out(Rout, *popt)
-            # Compose full model by combining inside (no tail) and outside
             Vfull = np.array(Vmod)
             Vfull[mask_out] = Vmod_out
-            stats = compute_metrics(V, Vfull, S, k_params=9)  # 5 baryon + 4 tail (xi, R_s, m, dR)
+            stats = compute_metrics(V, Vfull, S, k_params=k_params)
             if stats['bic'] < best_bic:
                 best_bic = stats['bic']
-                best = dict(R_boundary=float(Rb), params=dict(xi=float(popt[0]), R_s=float(popt[1]), m=float(popt[2])), stats=stats)
+                params_out = dict(xi=float(popt[0]), R_s=float(popt[1]))
+                if k_params >= 8:
+                    if fixed_m is None:
+                        params_out['m'] = float(popt[2])
+                else:
+                    params_out['m'] = float(fixed_m) if fixed_m is not None else np.nan
+                best = dict(R_boundary=float(Rb), params=params_out, stats=stats)
                 best_idx = j
         except Exception:
             continue
@@ -271,10 +305,56 @@ def fit_nfw(bins_df: pd.DataFrame, vbar_all: np.ndarray, logger=None) -> FitResu
     def model_all(Rx, V200, c):
         return np.sqrt(np.clip(np.power(np.interp(Rx, R, vbar_all), 2) + np.power(v_c_nfw(Rx, V200, c), 2), 0.0, None))
 
-    p0 = [200.0, 10.0]
-    bounds = ([80.0, 3.0], [350.0, 30.0])
+    # MW-like priors to avoid extreme/unphysical corners
+    p0 = [150.0, 12.0]
+    bounds = ([120.0, 8.0], [180.0, 20.0])
     popt, pcov = curve_fit(model_all, R, V, sigma=S, absolute_sigma=True, p0=p0, bounds=bounds, maxfev=30000)
 
     Vmodel = model_all(R, *popt)
-    stats = compute_metrics(V, Vmodel, S, k_params=7)  # 5 baryon + 2 halo
+    stats = compute_metrics(V, Vmodel, S, k_params=7)  # 5 baryon + 2 halo (effective)
     return FitResult(params=dict(V200=float(popt[0]), c=float(popt[1])), cov=pcov, stats=stats)
+
+
+def fit_baryon_plus_nfw_joint(bins_df: pd.DataFrame, priors: str = 'mw', logger=None) -> FitResult:
+    """Jointly fit single-disk baryons (MN+Hernquist) and NFW on all bins.
+    This is an optional helper for future experiments; not wired to CLI by default.
+    """
+    R = bins_df['R_kpc_mid'].to_numpy()
+    V = bins_df['vphi_kms'].to_numpy()
+    S = np.maximum(bins_df['vphi_err_kms'].to_numpy(), 2.0)
+
+    # Parameter vector: [Md, ad, bd, Mb, ab, V200, c]
+    if priors == 'mw':
+        lb = np.array([3e10, 2.0, 0.1, 5e9, 0.3, 120.0, 8.0], dtype=float)
+        ub = np.array([8e10, 4.0, 0.5, 1.5e10, 1.2, 180.0, 20.0], dtype=float)
+        x0 = np.array([6e10, 3.0, 0.3, 8e9, 0.6, 150.0, 12.0], dtype=float)
+    else:
+        lb = np.array([2e10, 1.5, 0.05, 1e9, 0.1, 100.0, 5.0], dtype=float)
+        ub = np.array([1.2e11, 6.0, 1.0, 2e10, 1.5, 220.0, 25.0], dtype=float)
+        x0 = np.array([5e10, 3.5, 0.3, 8e9, 0.6, 150.0, 12.0], dtype=float)
+
+    def resid(theta: np.ndarray) -> np.ndarray:
+        Md, ad, bd, Mb, ab, V200, c = theta
+        params = dict(M_d=float(Md), a_d=float(ad), b_d=float(bd), M_b=float(Mb), a_b=float(ab))
+        Vbar = v_c_baryon(R, params)
+        Vhalo = v_c_nfw(R, float(V200), float(c))
+        Vmod = np.sqrt(np.clip(Vbar**2 + Vhalo**2, 0.0, None))
+        return (Vmod - V) / S
+
+    res = least_squares(resid, x0=x0, bounds=(lb, ub), max_nfev=30000)
+
+    # Extract and compute stats
+    Md, ad, bd, Mb, ab, V200, c = res.x
+    params = dict(M_d=float(Md), a_d=float(ad), b_d=float(bd), M_b=float(Mb), a_b=float(ab), V200=float(V200), c=float(c))
+    Vbar = v_c_baryon(R, dict(M_d=params['M_d'], a_d=params['a_d'], b_d=params['b_d'], M_b=params['M_b'], a_b=params['a_b']))
+    Vhalo = v_c_nfw(R, params['V200'], params['c'])
+    Vmod = np.sqrt(np.clip(Vbar**2 + Vhalo**2, 0.0, None))
+    stats = compute_metrics(V, Vmod, S, k_params=7)
+
+    try:
+        _, s, VT = np.linalg.svd(res.jac, full_matrices=False)
+        cov = VT.T @ np.diag(1.0/np.maximum(s*s, 1e-12)) @ VT
+    except Exception:
+        cov = None
+
+    return FitResult(params=params, cov=cov, stats=stats)

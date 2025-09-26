@@ -12,7 +12,7 @@ import pandas as pd
 from .utils import setup_logging, write_json, xp_name, get_xp, G_KPC
 from .data_io import detect_source, load_slices, load_mw_csv
 from .rotation import bin_rotation_curve
-from .models import v_c_baryon, v2_saturated_extra, v_c_nfw, v_flat_from_anchor, lensing_alpha_arcsec
+from .models import v_c_baryon, v_c_baryon_multi, MW_DEFAULT, v2_saturated_extra, v_c_nfw, v_flat_from_anchor, lensing_alpha_arcsec, gate_c1
 from .boundary import fit_baryons_inner, find_boundary_bic, find_boundary_consecutive, bootstrap_boundary, fit_saturated_well, fit_nfw, compute_metrics
 from .plotting import make_plot
 
@@ -32,6 +32,7 @@ def main():
     ap.add_argument('--rmax', type=float, default=20.0)
     ap.add_argument('--nbins', type=int, default=24)
     ap.add_argument('--ad_correction', action='store_true')
+    ap.add_argument('--baryon_model', choices=['single','mw_multi'], default='mw_multi', help='Select GR baseline: single MN disk + bulge or MW-like multi-disk + gas.')
 
     ap.add_argument('--inner_fit_min', type=float, default=3.0)
     ap.add_argument('--inner_fit_max', type=float, default=8.0)
@@ -83,10 +84,27 @@ def main():
     bins_df.to_csv(bins_path, index=False)
     logger.info(f"Saved binned curve: {bins_path} (rows={len(bins_df)})")
 
-    # Fit baryons in the inner region
+    # Fit baryons in the inner region (for diagnostics; baseline may be overridden below)
     inner = fit_baryons_inner(bins_df, Rmin=args.inner_fit_min, Rmax=args.inner_fit_max, priors=args.baryon_priors, logger=logger)
+
+    # Select GR baseline and renormalize inner errors to reduced chi^2 ~ 1 relative to that baseline
     R_bins = bins_df['R_kpc_mid'].to_numpy()
-    vbar_all = v_c_baryon(R_bins, inner.params)
+    if args.baryon_model == 'mw_multi':
+        vbar_all = v_c_baryon_multi(R_bins, MW_DEFAULT)
+        # Compute inner stats vs MW baseline
+        m_inner = (R_bins >= args.inner_fit_min) & (R_bins <= args.inner_fit_max)
+        stats_inner_vs_mw = compute_metrics(bins_df['vphi_kms'].to_numpy()[m_inner], vbar_all[m_inner], np.maximum(bins_df['vphi_err_kms'].to_numpy()[m_inner], 2.0), k_params=5)
+        if stats_inner_vs_mw and stats_inner_vs_mw.get('dof', 0) > 0 and stats_inner_vs_mw.get('chi2', None) is not None:
+            f = float(np.sqrt(max(stats_inner_vs_mw['chi2']/max(stats_inner_vs_mw['dof'],1.0), 1.0)))
+            bins_df['vphi_err_kms'] = bins_df['vphi_err_kms'] * f
+            logger.info(f"Rescaled bin errors by factor f={f:.3f} vs MW-like baseline to target inner reduced chi2 ~ 1")
+    else:
+        # single-component baseline from inner fit
+        if inner.stats and inner.stats.get('dof', 0) > 0 and inner.stats.get('chi2', None) is not None:
+            f = float(np.sqrt(max(inner.stats['chi2']/max(inner.stats['dof'],1.0), 1.0)))
+            bins_df['vphi_err_kms'] = bins_df['vphi_err_kms'] * f
+            logger.info(f"Rescaled bin errors by factor f={f:.3f} to target inner reduced chi2 ~ 1")
+        vbar_all = v_c_baryon(R_bins, inner.params)
 
     # Detect boundary
     chosen = None
@@ -98,7 +116,7 @@ def main():
             boundary_obj = out1
             logger.info(f"Boundary (consecutive): R_b = {out1['R_boundary']:.2f} kpc")
     if args.boundary_method in ('both','bic_changepoint'):
-        out2 = find_boundary_bic(bins_df, vbar_all, logger=logger)
+        out2 = find_boundary_bic(bins_df, vbar_all, gate_width_fixed=args.gate_width_kpc, fixed_m=args.fix_m, logger=logger)
         if out2.get('found') and (boundary_obj is None or out2['delta_bic_vs_baryons'] > 6.0):
             chosen = out2
             boundary_obj = out2
@@ -128,16 +146,21 @@ def main():
 
     # Build dense curves for plotting
     Rf = np.linspace(bins_df['R_lo'].min(), bins_df['R_hi'].max(), 300)
-    vbar_curve = v_c_baryon(Rf, inner.params)
+    if args.baryon_model == 'mw_multi':
+        vbar_curve = v_c_baryon_multi(Rf, MW_DEFAULT)
+    else:
+        vbar_curve = v_c_baryon(Rf, inner.params)
     # Saturated-well curve across all R (no tail inside boundary)
     xi = sat.params.get('xi', np.nan)
     R_s = sat.params.get('R_s', np.nan)
     m = sat.params.get('m', np.nan)
     vflat = sat.params.get('v_flat', np.nan)
-    v2_extra = v2_saturated_extra(Rf, vflat, R_s, m) if np.isfinite(vflat) else np.zeros_like(Rf)
-    # Apply tail only beyond the detected boundary (convert only excess beyond GR)
-    if np.isfinite(R_boundary):
-        v2_extra[Rf < R_boundary] = 0.0
+    # Dense curve uses the same smooth gate as the fit
+    if np.isfinite(vflat):
+        gw = sat.params.get('gate_width_kpc', args.gate_width_kpc if args.gate_width_kpc is not None else 0.8)
+        v2_extra = v2_saturated_extra(Rf, vflat, R_s, m) * gate_c1(Rf, R_boundary, gw)
+    else:
+        v2_extra = np.zeros_like(Rf)
     v_satwell = np.sqrt(np.clip(vbar_curve**2 + v2_extra, 0.0, None))
 
     v_nfw = np.sqrt(np.clip(vbar_curve**2 + v_c_nfw(Rf, nfw.params.get('V200', 200.0), nfw.params.get('c', 10.0))**2, 0.0, None))
@@ -147,13 +170,17 @@ def main():
     curves_df.to_csv(curves_path, index=False)
 
     # Metrics for baryons-only on bins_df
-    stats_bary = compute_metrics(bins_df['vphi_kms'].to_numpy(), v_c_baryon(bins_df['R_kpc_mid'].to_numpy(), inner.params), np.maximum(bins_df['vphi_err_kms'].to_numpy(), 2.0), k_params=5)
+    if args.baryon_model == 'mw_multi':
+        stats_bary = compute_metrics(bins_df['vphi_kms'].to_numpy(), v_c_baryon_multi(bins_df['R_kpc_mid'].to_numpy(), MW_DEFAULT), np.maximum(bins_df['vphi_err_kms'].to_numpy(), 2.0), k_params=5)
+    else:
+        stats_bary = compute_metrics(bins_df['vphi_kms'].to_numpy(), v_c_baryon(bins_df['R_kpc_mid'].to_numpy(), inner.params), np.maximum(bins_df['vphi_err_kms'].to_numpy(), 2.0), k_params=5)
 
     # Compose fit_params JSON
     fit_params = dict(
         data_source=dict(mode=meta.get('mode'), files=meta.get('files', [])),
         backend=dict(name=xp_name(xp)),
-        baryon_params=inner.params,
+        baryon_model=args.baryon_model,
+        baryon_params=(MW_DEFAULT if args.baryon_model == 'mw_multi' else inner.params),
         inner_fit_stats=inner.stats,
         boundary=boundary_obj,
         M_enclosed=M_enclosed,

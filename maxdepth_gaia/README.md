@@ -4,6 +4,10 @@ This package gives you a **complete, runnable** Python pipeline to test a
 "**saturated‑well**" (max-depth) gravity toy model against a Milky Way rotation
 curve built from your **local Gaia DR3 products**.
 
+Default baselines now align with widely used Milky Way models: the GR baseline
+uses a multi-component disk (thin+thick+gas) plus a small bulge, and the NFW
+fit is restricted to MW-like ranges to avoid unphysical corners.
+
 What it does now (no online queries):
 1. Ingests Gaia MW data from your repo under `data/`:
    - Preferred: `data/gaia_sky_slices/processed_*.parquet` (per‑longitude processed slices; documented in `data/README.md`).
@@ -68,6 +72,7 @@ python -m maxdepth_gaia.run_pipeline \
 ```
 
 Key options:
+- `--baryon_model {single,mw_multi}` selects the GR baseline. Default: `mw_multi` (MW-like thin+thick stellar disks + H I + H₂ as MN approximations, plus a small bulge).
 - `--ad_correction` enables an (optional) asymmetric‑drift correction on binned data.
 - `--boundary_method` tries both a consecutive‑excess significance test and a BIC changepoint to locate the onset of the tail.
 - Outputs land in `maxdepth_gaia/outputs/`.
@@ -120,6 +125,16 @@ this so you can compare to strong‑lensing scales if you add an external catalo
 - Add **MCMC** (`emcee`) to map parameter posteriors.
 - Add an **external galaxy** rotation‑curve set (e.g., SPARC) for cross‑checks.
 - Bolt on a **lensing catalog** and test the deflection scaling for galaxy lenses.
+
+## Notes on baselines and priors
+
+- GR baseline `mw_multi` approximates MWPotential2014/McMillan with two MN stellar
+  disks (thin+thick) and two MN gas disks (H I, H₂) plus a small Hernquist bulge.
+- NFW bounds are constrained to Milky Way–like ranges by default: `120 ≤ V200 ≤ 180`
+  km/s and `8 ≤ c ≤ 20`. This avoids optimizer excursions to unrealistic corners
+  (e.g., very low-c or very high-c) when outer data leverage is weak.
+- A dashed grey overlay of the MW-like GR curve is drawn on every plot for
+  immediate visual sanity checks.
 
 ---
 
