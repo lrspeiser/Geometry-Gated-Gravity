@@ -36,6 +36,7 @@ def main():
     ap.add_argument('--inner_fit_min', type=float, default=3.0)
     ap.add_argument('--inner_fit_max', type=float, default=8.0)
     ap.add_argument('--boundary_method', choices=['bic_changepoint','consecutive_excess','both'], default='both')
+    ap.add_argument('--baryon_priors', choices=['mw','wide'], default='mw')
 
     ap.add_argument('--saveplot', default=os.path.join('maxdepth_gaia','outputs','mw_rotation_curve_maxdepth.png'))
     ap.add_argument('--debug', action='store_true')
@@ -79,7 +80,7 @@ def main():
     logger.info(f"Saved binned curve: {bins_path} (rows={len(bins_df)})")
 
     # Fit baryons in the inner region
-    inner = fit_baryons_inner(bins_df, Rmin=args.inner_fit_min, Rmax=args.inner_fit_max, logger=logger)
+    inner = fit_baryons_inner(bins_df, Rmin=args.inner_fit_min, Rmax=args.inner_fit_max, priors=args.baryon_priors, logger=logger)
     R_bins = bins_df['R_kpc_mid'].to_numpy()
     vbar_all = v_c_baryon(R_bins, inner.params)
 
@@ -97,7 +98,7 @@ def main():
         if out2.get('found') and (boundary_obj is None or out2['delta_bic_vs_baryons'] > 6.0):
             chosen = out2
             boundary_obj = out2
-            logger.info(f"Boundary (BIC): R_b = {out2['R_boundary']:.2f} kpc  (ΔBIC={out2['delta_bic_vs_baryons']:.1f})")
+            logger.info(f"Boundary (BIC): R_b = {out2['R_boundary']:.2f} kpc  (dBIC={out2['delta_bic_vs_baryons']:.1f})")
 
     if boundary_obj is None:
         logger.warning("Boundary not detected robustly; using inner_fit_max as a provisional boundary.")

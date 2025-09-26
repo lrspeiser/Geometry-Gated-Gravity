@@ -38,12 +38,12 @@ def compute_metrics(y: np.ndarray, y_model: np.ndarray, sigma: np.ndarray, k_par
 def fit_baryons_inner(bins_df: pd.DataFrame,
                       Rmin: float = 3.0,
                       Rmax: float = 8.0,
+                      priors: str = 'mw',
                       logger=None) -> FitResult:
     d = bins_df[(bins_df['R_kpc_mid'] >= Rmin) & (bins_df['R_kpc_mid'] <= Rmax)].copy()
     if len(d) < 6:
-        # fall back to default priors
-        params = dict(M_d=6e10, a_d=5.0, b_d=0.3, M_b=8e9, a_b=0.6)
-        vbar = v_c_baryon(bins_df['R_kpc_mid'].to_numpy(), params)
+        # fall back to typical MW-like priors
+        params = dict(M_d=6e10, a_d=3.0, b_d=0.3, M_b=8e9, a_b=0.6)
         stats = compute_metrics(d['vphi_kms'].to_numpy(), v_c_baryon(d['R_kpc_mid'].to_numpy(), params), np.maximum(d['vphi_err_kms'].to_numpy(), 2.0), 5)
         return FitResult(params=params, cov=None, stats=stats)
 
@@ -58,9 +58,14 @@ def fit_baryons_inner(bins_df: pd.DataFrame,
         return (Vbar - V)/S
 
     # Bounds
-    lb = np.array([2e10, 2.0, 0.05, 1e9, 0.1], dtype=float)
-    ub = np.array([1.5e11, 7.0, 1.0, 2e10, 1.5], dtype=float)
-    x0 = np.array([6e10, 5.0, 0.3, 8e9, 0.6], dtype=float)
+    if priors == 'mw':
+        lb = np.array([3e10, 2.0, 0.1, 5e9, 0.3], dtype=float)
+        ub = np.array([8e10, 4.0, 0.5, 1.5e10, 1.2], dtype=float)
+        x0 = np.array([6e10, 3.0, 0.3, 8e9, 0.6], dtype=float)
+    else:
+        lb = np.array([2e10, 2.0, 0.05, 1e9, 0.1], dtype=float)
+        ub = np.array([1.5e11, 7.0, 1.0, 2e10, 1.5], dtype=float)
+        x0 = np.array([6e10, 5.0, 0.3, 8e9, 0.6], dtype=float)
 
     res = least_squares(resid, x0=x0, bounds=(lb, ub), max_nfev=20000)
     Md, ad, bd, Mb, ab = res.x
@@ -144,7 +149,7 @@ def find_boundary_bic(bins_df: pd.DataFrame, vbar_all: np.ndarray, logger=None) 
 
         try:
             popt, pcov = curve_fit(model_out, Rout, Vout, sigma=Sout, absolute_sigma=True,
-                                   p0=[1.0, 5.0, 1.5], bounds=([0.5, 1.0, 0.5], [2.0, 30.0, 4.0]), maxfev=20000)
+                                   p0=[0.8, 10.0, 2.0], bounds=([0.1, 1.0, 0.5], [1.0, 50.0, 8.0]), maxfev=30000)
             Vmod = np.interp(R, R, vbar_all)
             Vmod_out = model_out(Rout, *popt)
             # Compose full model by combining inside (no tail) and outside
@@ -209,7 +214,7 @@ def fit_saturated_well(bins_df: pd.DataFrame, vbar_all: np.ndarray, R_boundary: 
         return np.sqrt(np.clip(np.power(np.interp(Rx, R, vbar_all), 2) + v2_extra, 0.0, None))
 
     popt, pcov = curve_fit(model_out, Rout, Vout, sigma=Sout, absolute_sigma=True,
-                           p0=[1.0, 5.0, 1.5], bounds=([0.5, 1.0, 0.5], [2.0, 30.0, 4.0]), maxfev=20000)
+                           p0=[0.8, 10.0, 2.0], bounds=([0.1, 1.0, 0.5], [1.0, 50.0, 8.0]), maxfev=30000)
     xi, R_s, m = popt
     vflat = v_flat_from_anchor(M_encl, R_boundary, xi)
 
@@ -230,7 +235,7 @@ def fit_nfw(bins_df: pd.DataFrame, vbar_all: np.ndarray, logger=None) -> FitResu
         return np.sqrt(np.clip(np.power(np.interp(Rx, R, vbar_all), 2) + np.power(v_c_nfw(Rx, V200, c), 2), 0.0, None))
 
     p0 = [200.0, 10.0]
-    bounds = ([100.0, 4.0], [300.0, 20.0])
+    bounds = ([80.0, 3.0], [350.0, 30.0])
     popt, pcov = curve_fit(model_all, R, V, sigma=S, absolute_sigma=True, p0=p0, bounds=bounds, maxfev=30000)
 
     Vmodel = model_all(R, *popt)
