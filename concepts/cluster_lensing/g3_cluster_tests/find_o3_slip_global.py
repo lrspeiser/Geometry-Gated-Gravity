@@ -65,24 +65,28 @@ def kappa_bar(Sigma_pc2, R_kpc, z_l):
     return kap, kb
 
 
-def theta_E(R_kpc, kbar, z_l):
+def theta_E_kpc(R_kpc, kbar):
     kmax = float(np.nanmax(kbar))
     if kmax >= 1.0:
         idx = np.where(kbar >= 1.0)[0]
         RE = R_kpc[idx[-1]]
+        return float(RE)
     elif kmax >= 0.95:
         j = int(np.argmin(np.abs(kbar - 1.0)))
         j0 = max(0, min(len(R_kpc)-1, j-1))
         K1, K2 = kbar[j0], kbar[j]
         R1, R2 = R_kpc[j0], R_kpc[j]
         if abs(K2 - K1) < 1e-9:
-            RE = R2
-        else:
-            RE = R1 + (1.0 - K1) * (R2 - R1) / (K2 - K1)
+            return float(R2)
+        return float(R1 + (1.0 - K1) * (R2 - R1) / (K2 - K1))
     else:
-        return np.nan
+        return float('nan')
+
+def theta_E_arcsec_from_kpc(R_E_kpc, z_l):
+    if not np.isfinite(R_E_kpc):
+        return float('nan')
     D_l = COSMO.angular_diameter_distance(z_l).to(u.kpc).value
-    return float((RE / D_l) * (180.0/np.pi) * 3600.0)
+    return float((R_E_kpc / D_l) * (180.0/np.pi) * 3600.0)
 
 
 def load_cluster(name: str, base: Path):
@@ -125,12 +129,12 @@ def main():
         except Exception as e:
             print('[WARN]', name, e)
     # grid
-    A3_list = [1.0, 2.0, 3.0, 5.0, 8.0, 10.0]
-    Sigma_star_list = [50.0, 150.0, 500.0]
-    beta_list = [0.7, 1.0, 1.5]
-    rboost_list = [80.0, 120.0, 200.0, 300.0]
-    wdec_list = [0.5, 0.7, 1.0]
-    ell_list = [0.0, 150.0, 300.0]
+    A3_list = [1.0, 2.0, 3.0, 5.0, 8.0, 10.0, 15.0, 20.0, 30.0]
+    Sigma_star_list = [30.0, 50.0, 150.0, 500.0]
+    beta_list = [0.7, 1.0, 1.5, 1.8]
+    rboost_list = [60.0, 80.0, 120.0, 200.0, 300.0]
+    wdec_list = [0.4, 0.6, 0.8, 1.0]
+    ell_list = [0.0, 150.0, 300.0, 500.0]
     ccurv_list = [0.6, 0.8, 1.0]
 
     best = None
@@ -147,20 +151,34 @@ def main():
                                 for (name, z, theta_obs, r, rho, Sigma_dyn) in items:
                                     Sigma_lens = o3s.apply_slip(r, Sigma_dyn, rho, params)
                                     kap, kbar = kappa_bar(Sigma_lens, r, z)
-                                    th = theta_E(r, kbar, z)
+                                    RE_kpc = theta_E_kpc(r, kbar)
+                                    th_arc = theta_E_arcsec_from_kpc(RE_kpc, z)
                                     kmax = float(np.nanmax(kbar)) if np.all(np.isfinite(kbar)) else 0.0
-                                    # Mass-sheet safety
+                                    # Core safety (avoid huge central κ̄)
                                     if kmax > 2.0:
                                         total_err += 5.0
                                     if theta_obs is not None:
-                                        # Double weight observed clusters
-                                        if not np.isfinite(th):
+                                        # Observed clusters: normalize error by observed θE arcsec
+                                        if not np.isfinite(th_arc):
                                             ok = False; total_err += 5.0
                                         else:
-                                            total_err += 2.0 * abs(th - theta_obs)/theta_obs
+                                            # Target Einstein radius in kpc from observed θE
+                                            D_l = COSMO.angular_diameter_distance(z).to(u.kpc).value
+                                            R_target = float(theta_obs * (np.pi/648000.0) * D_l)
+                                            if np.isfinite(RE_kpc):
+                                                # Combined error: relative θE arcsec + band penalty if RE is far from 50–150 kpc
+                                                rel_err = abs(th_arc - theta_obs)/max(theta_obs, 1e-6)
+                                                band_pen = 0.0
+                                                if RE_kpc < 50.0:
+                                                    band_pen = (50.0 - RE_kpc)/50.0
+                                                elif RE_kpc > 150.0:
+                                                    band_pen = (RE_kpc - 150.0)/150.0
+                                                total_err += 2.0 * (rel_err + 0.5 * band_pen)
+                                            else:
+                                                ok = False; total_err += 5.0
                                     else:
-                                        # Penalize spurious θE at low-z slightly
-                                        if np.isfinite(th):
+                                        # No observed θE: penalize spurious θE at low-z clusters
+                                        if np.isfinite(th_arc):
                                             total_err += 0.5
                                 score = total_err if ok else (total_err + 10.0)
                                 rec = {'params': params, 'score': float(score)}

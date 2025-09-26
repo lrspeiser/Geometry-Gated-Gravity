@@ -1,12 +1,12 @@
 {
   "params": {
     "A3": 1.0,
-    "Sigma_star": 50.0,
+    "Sigma_star": 30.0,
     "beta": 0.7,
-    "r_boost_kpc": 80.0,
-    "w_dec": 0.5,
+    "r_boost_kpc": 60.0,
+    "w_dec": 0.4,
     "ell_kpc": 0.0,
     "c_curv": 0.6
   },
-  "score": 6.294780992006901
+  "score": 9.157769852476783
 }

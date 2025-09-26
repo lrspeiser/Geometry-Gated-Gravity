@@ -1,0 +1,5 @@
+# .gitignore (local to maxdepth_gaia)
+outputs/
+__pycache__/
+*.pyc
+*.log

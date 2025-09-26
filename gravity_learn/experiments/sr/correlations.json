@@ -1,0 +1,62 @@
+[
+  {
+    "target": "gX",
+    "feature": "x_dimless",
+    "spearman": 0.36862634154304247,
+    "p_value": 1.5538083582437214e-103
+  },
+  {
+    "target": "gX",
+    "feature": "Sigma",
+    "spearman": -0.3486971463520264,
+    "p_value": 4.040511445739092e-92
+  },
+  {
+    "target": "gX",
+    "feature": "Sigma_hat",
+    "spearman": -0.3489527710095265,
+    "p_value": 2.918526145335506e-92
+  },
+  {
+    "target": "gX",
+    "feature": "grad_ln_Sigma",
+    "spearman": -0.3339373998711599,
+    "p_value": 3.488309554920401e-84
+  },
+  {
+    "target": "gX",
+    "feature": "R_kpc",
+    "spearman": 0.2971124486907805,
+    "p_value": 3.2884724918756e-66
+  },
+  {
+    "target": "xi_emp",
+    "feature": "x_dimless",
+    "spearman": 0.574514458713351,
+    "p_value": 2.0009998876402394e-280
+  },
+  {
+    "target": "xi_emp",
+    "feature": "Sigma",
+    "spearman": -0.46108209362172503,
+    "p_value": 3.60189321217336e-168
+  },
+  {
+    "target": "xi_emp",
+    "feature": "Sigma_hat",
+    "spearman": -0.4623603756117223,
+    "p_value": 3.2645665366128357e-169
+  },
+  {
+    "target": "xi_emp",
+    "feature": "grad_ln_Sigma",
+    "spearman": -0.4349673563843546,
+    "p_value": 8.166234472384468e-148
+  },
+  {
+    "target": "xi_emp",
+    "feature": "R_kpc",
+    "spearman": 0.26416142889028643,
+    "p_value": 3.2294699449350822e-52
+  }
+]
