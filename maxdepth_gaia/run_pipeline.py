@@ -8,6 +8,7 @@ import json
 import os
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 
 from .utils import setup_logging, write_json, xp_name, get_xp, G_KPC
 from .data_io import detect_source, load_slices, load_mw_csv
@@ -32,6 +33,8 @@ def main():
     ap.add_argument('--rmax', type=float, default=20.0)
     ap.add_argument('--nbins', type=int, default=24)
     ap.add_argument('--ad_correction', action='store_true')
+    ap.add_argument('--ad_poly_deg', type=int, default=2)
+    ap.add_argument('--ad_frac_err', type=float, default=0.3)
     ap.add_argument('--baryon_model', choices=['single','mw_multi'], default='mw_multi', help='Select GR baseline: single MN disk + bulge or MW-like multi-disk + gas.')
 
     ap.add_argument('--inner_fit_min', type=float, default=3.0)
@@ -43,6 +46,8 @@ def main():
     ap.add_argument('--gate_width_kpc', type=float, default=None, help='Optional: fix smooth gate width (kpc) for the tail (C1, exact zero inside).')
     ap.add_argument('--fix_m', type=float, default=None, help='Optional: fix m (tail sharpness) globally for cross-galaxy tests.')
     ap.add_argument('--eta_rs', type=float, default=None, help='Optional: fix R_s as eta_rs * R_boundary (global tail shape).')
+    ap.add_argument('--mond_kind', choices=['simple','standard'], default='simple')
+    ap.add_argument('--mond_a0', type=float, default=1.2e-10)
     ap.add_argument('--debug', action='store_true')
     args = ap.parse_args()
 
@@ -79,7 +84,7 @@ def main():
 
     # Bin rotation curve
     bins_df = bin_rotation_curve(stars_df, rmin=args.rmin, rmax=args.rmax, nbins=args.nbins,
-                                 ad_correction=args.ad_correction, ad_poly_deg=2, ad_frac_err=0.3,
+                                 ad_correction=args.ad_correction, ad_poly_deg=args.ad_poly_deg, ad_frac_err=args.ad_frac_err,
                                  logger=logger)
     bins_path = os.path.join(out_dir, 'rotation_curve_bins.csv')
     bins_df.to_csv(bins_path, index=False)
@@ -166,7 +171,7 @@ def main():
 
     v_nfw = np.sqrt(np.clip(vbar_curve**2 + v_c_nfw(Rf, nfw.params.get('V200', 200.0), nfw.params.get('c', 10.0))**2, 0.0, None))
     # MOND curve based on the same GR baseline
-    v_mond = v_c_mond_from_vbar(Rf, vbar_curve, kind='simple')
+    v_mond = v_c_mond_from_vbar(Rf, vbar_curve, a0_m_s2=args.mond_a0, kind=args.mond_kind)
 
     curves_df = pd.DataFrame(dict(R_kpc=Rf, v_baryon=vbar_curve, v_baryon_satwell=v_satwell, v_baryon_nfw=v_nfw, v_baryon_mond=v_mond))
     curves_path = os.path.join(out_dir, 'model_curves.csv')
@@ -181,7 +186,7 @@ def main():
         stats_bary = compute_metrics(bins_df['vphi_kms'].to_numpy(), vb_bins, np.maximum(bins_df['vphi_err_kms'].to_numpy(), 2.0), k_params=5)
 
     # MOND metrics on bins
-    v_mond_bins = v_c_mond_from_vbar(bins_df['R_kpc_mid'].to_numpy(), vb_bins, kind='simple')
+    v_mond_bins = v_c_mond_from_vbar(bins_df['R_kpc_mid'].to_numpy(), vb_bins, a0_m_s2=args.mond_a0, kind=args.mond_kind)
     stats_mond = compute_metrics(bins_df['vphi_kms'].to_numpy(), v_mond_bins, np.maximum(bins_df['vphi_err_kms'].to_numpy(), 2.0), k_params=5)
 
     # Compose fit_params JSON
@@ -204,7 +209,7 @@ def main():
             chi2=nfw.stats.get('chi2'), aic=nfw.stats.get('aic'), bic=nfw.stats.get('bic'),
         ),
         mond=dict(
-            kind='simple', a0_m_s2=1.2e-10,
+            kind=args.mond_kind, a0_m_s2=float(args.mond_a0),
             chi2=stats_mond.get('chi2'), aic=stats_mond.get('aic'), bic=stats_mond.get('bic')
         ),
         baryons_only=dict(
@@ -220,6 +225,31 @@ def main():
 
     # Plot
     make_plot(bins_df, star_sample_df, curves_df, fit_params, args.saveplot, logger=logger)
+
+    # Budget audit: used vs allowed v_flat^2 across R (saved separately)
+    try:
+        out_dir = os.path.dirname(args.saveplot)
+        gw = sat.params.get('gate_width_kpc', args.gate_width_kpc if args.gate_width_kpc is not None else 0.8)
+        used_frac = gate_c1(Rf, R_boundary, gw) * (1.0 - np.exp(-np.power(np.maximum(Rf, 1e-9)/np.maximum(R_s, 1e-9), m)))
+        budget_csv = os.path.join(out_dir, 'budget_audit.csv')
+        pd.DataFrame(dict(R_kpc=Rf, used_fraction=np.clip(used_frac, 0.0, 1.0))).to_csv(budget_csv, index=False)
+        plt.figure(figsize=(8,4))
+        plt.plot(Rf, used_frac, color='teal', lw=2, label='Used fraction (v_extra^2 / v_flat^2)')
+        plt.axhline(1.0, color='gray', ls='--', lw=1)
+        plt.axvline(R_boundary, color='gray', ls='--', lw=1)
+        plt.ylim(-0.05, 1.05)
+        plt.xlabel('R [kpc]')
+        plt.ylabel('Used / Allowed')
+        plt.title('Budget audit: tail budget usage vs radius')
+        plt.grid(True, alpha=0.3)
+        plt.legend(loc='lower right', frameon=True)
+        budget_png = os.path.join(out_dir, 'budget_audit.png')
+        plt.tight_layout(); plt.savefig(budget_png, dpi=220, bbox_inches='tight')
+        if logger:
+            logger.info(f"Saved budget audit plot to {budget_png} and CSV to {budget_csv}")
+    except Exception as e:
+        if logger:
+            logger.warning(f"Failed to generate budget audit: {e}")
 
 
 if __name__ == '__main__':

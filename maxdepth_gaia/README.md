@@ -74,6 +74,9 @@ python -m maxdepth_gaia.run_pipeline \
 Key options:
 - `--baryon_model {single,mw_multi}` selects the GR baseline. Default: `mw_multi` (MW-like thin+thick stellar disks + H I + H₂ as MN approximations, plus a small bulge).
 - `--ad_correction` enables an (optional) asymmetric‑drift correction on binned data.
+- `--ad_poly_deg` and `--ad_frac_err` tune AD smoothing and error inflation.
+- `--mond_kind {simple,standard}` and `--mond_a0` configure the MOND baseline.
+- `--gate_width_kpc`, `--fix_m`, `--eta_rs` control the saturated‑well tail shape.
 - `--boundary_method` tries both a consecutive‑excess significance test and a BIC changepoint to locate the onset of the tail.
 - `--gate_width_kpc` fixes the smooth C¹ gate width ΔR.
 - `--fix_m` fixes the transition sharpness m across all radii.
@@ -245,6 +248,7 @@ This writes `wedge_summary_phi{phi_bins}.csv/json` in `maxdepth_gaia/outputs/` w
 
 - Overlay reference: A dashed MWPotential2014-like GR curve (from `mw_multi` defaults) appears on the main figure.
 - Evaluator (optional): `maxdepth_gaia/outputs/eval_metrics.py` prints per-range MAE/RMSE and χ²/bin using current outputs.
+- Budget audit: `budget_audit.png` and `budget_audit.csv` show the used fraction of the tail budget vs radius (should not exceed 1 by construction).
 
 # Next steps (prioritized)
 
