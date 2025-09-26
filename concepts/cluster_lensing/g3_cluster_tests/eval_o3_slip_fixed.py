@@ -109,7 +109,14 @@ def main():
         ('ABELL_0426', 0.0179, None),
     ]
     best_path = Path('concepts/cluster_lensing/g3_cluster_tests/outputs/o3_slip_global_best.json')
-    params = json.loads(best_path.read_text())['params']
+    base_params = json.loads(best_path.read_text())['params']
+    # Regulation hyperparameters (match search defaults)
+    Sigma_star = 50.0
+    gamma_sigma = 0.5
+    gamma_z = 1.0
+    tau_curv = 0.3
+    lowz_veto_z = 0.03
+
     summaries = {}
     for name, z, theta_obs in clusters:
         try:
@@ -118,7 +125,19 @@ def main():
             print('[WARN]', name, e)
             continue
         Sigma_dyn = sigma_from_rho_abel(r, rho, r) / 1e6
-        Sigma_lens = o3s.apply_slip(r, Sigma_dyn, rho, params)
+        # Env+z amplitude regulation and low-z curvature veto
+        mask_band = (r >= 30.0) & (r <= 100.0)
+        Sigma_mean = float(np.mean(Sigma_dyn[mask_band])) if np.any(mask_band) else float(np.mean(Sigma_dyn))
+        A3_base = float(base_params.get('A3', 1.0))
+        A3_eff = A3_base * (max(Sigma_mean, 1e-9)/Sigma_star) ** (-gamma_sigma) * (1.0 + float(z)) ** (-gamma_z)
+        logr = np.log(np.maximum(r, 1e-12))
+        lnS = np.log(np.maximum(Sigma_dyn, 1e-30))
+        d1 = np.gradient(lnS, logr)
+        d2 = np.gradient(d1, logr)
+        curv_band = float(np.min(d2[mask_band])) if np.any(mask_band) else float(np.min(d2))
+        slip_params = dict(base_params)
+        slip_params['A3'] = 0.0 if ((float(z) < lowz_veto_z) and (curv_band > -tau_curv)) else A3_eff
+        Sigma_lens = o3s.apply_slip(r, Sigma_dyn, rho, slip_params)
         _, kbar = kappa_bar(Sigma_lens, r, z)
         th = theta_E(r, kbar, z)
         kmax = float(np.max(kbar))
@@ -128,7 +147,7 @@ def main():
             'kappa_max': float(kmax),
             'kappa_50': float(np.interp(50, r, kbar)),
             'kappa_100': float(np.interp(100, r, kbar)),
-            'params': params
+            'params': slip_params
         }
         print(f"{name}: θE={summaries[name]['theta_E_arcsec']} vs obs={theta_obs}, κ̄max={kmax:.2f}")
     outp = Path('concepts/cluster_lensing/g3_cluster_tests/outputs/o3_slip_fixed_eval.json')
