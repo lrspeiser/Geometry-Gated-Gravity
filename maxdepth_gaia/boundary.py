@@ -229,7 +229,7 @@ def bootstrap_boundary(bins_df: pd.DataFrame, vbar_all: np.ndarray, method: str 
 # Outer fits: anchored saturated-well and NFW
 # -----------------------------
 
-def fit_saturated_well(bins_df: pd.DataFrame, vbar_all: np.ndarray, R_boundary: float, gate_width_fixed: float | None = None, fixed_m: float | None = None, logger=None) -> FitResult:
+def fit_saturated_well(bins_df: pd.DataFrame, vbar_all: np.ndarray, R_boundary: float, gate_width_fixed: float | None = None, fixed_m: float | None = None, eta_rs: float | None = None, logger=None) -> FitResult:
     R = bins_df['R_kpc_mid'].to_numpy()
     V = bins_df['vphi_kms'].to_numpy()
     S = np.maximum(bins_df['vphi_err_kms'].to_numpy(), 2.0)
@@ -242,59 +242,117 @@ def fit_saturated_well(bins_df: pd.DataFrame, vbar_all: np.ndarray, R_boundary: 
     Vb = np.interp(R_boundary, R, vbar_all)
     M_encl = (Vb**2) * R_boundary / G_KPC
 
-    if gate_width_fixed is None and fixed_m is None:
-        def model_out(Rx, xi, R_s, m, dR):
-            vflat = v_flat_from_anchor(M_encl, R_boundary, xi)
-            v2_extra = v2_saturated_extra(Rx, vflat, R_s, m) * gate_c1(Rx, R_boundary, dR)
-            return np.sqrt(np.clip(np.power(np.interp(Rx, R, vbar_all), 2) + v2_extra, 0.0, None))
-        p0 = [0.8, 10.0, 2.0, 0.8]
-        lb = [0.1, 1.0, 0.5, 0.1]; ub = [1.0, 50.0, 8.0, 2.0]
-        popt, pcov = curve_fit(model_out, Rout, Vout, sigma=Sout, absolute_sigma=True,
-                               p0=p0, bounds=(lb, ub), maxfev=50000)
-        xi, R_s, m, dR = popt
-    elif gate_width_fixed is not None and fixed_m is None:
-        def model_out(Rx, xi, R_s, m):
-            vflat = v_flat_from_anchor(M_encl, R_boundary, xi)
-            v2_extra = v2_saturated_extra(Rx, vflat, R_s, m) * gate_c1(Rx, R_boundary, gate_width_fixed)
-            return np.sqrt(np.clip(np.power(np.interp(Rx, R, vbar_all), 2) + v2_extra, 0.0, None))
-        popt, pcov = curve_fit(model_out, Rout, Vout, sigma=Sout, absolute_sigma=True,
-                               p0=[0.8, 10.0, 2.0], bounds=([0.1, 1.0, 0.5], [1.0, 50.0, 8.0]), maxfev=40000)
-        xi, R_s, m = popt; dR = gate_width_fixed
-    elif gate_width_fixed is None and fixed_m is not None:
-        def model_out(Rx, xi, R_s, dR):
-            vflat = v_flat_from_anchor(M_encl, R_boundary, xi)
-            v2_extra = v2_saturated_extra(Rx, vflat, R_s, fixed_m) * gate_c1(Rx, R_boundary, dR)
-            return np.sqrt(np.clip(np.power(np.interp(Rx, R, vbar_all), 2) + v2_extra, 0.0, None))
-        popt, pcov = curve_fit(model_out, Rout, Vout, sigma=Sout, absolute_sigma=True,
-                               p0=[0.8, 10.0, 0.8], bounds=([0.1, 1.0, 0.1], [1.0, 50.0, 2.0]), maxfev=40000)
-        xi, R_s, dR = popt; m = fixed_m
-    else:  # both fixed
-        def model_out(Rx, xi, R_s):
-            vflat = v_flat_from_anchor(M_encl, R_boundary, xi)
-            v2_extra = v2_saturated_extra(Rx, vflat, R_s, fixed_m) * gate_c1(Rx, R_boundary, gate_width_fixed)
-            return np.sqrt(np.clip(np.power(np.interp(Rx, R, vbar_all), 2) + v2_extra, 0.0, None))
-        popt, pcov = curve_fit(model_out, Rout, Vout, sigma=Sout, absolute_sigma=True,
-                               p0=[0.8, 10.0], bounds=([0.1, 1.0], [1.0, 50.0]), maxfev=30000)
-        xi, R_s = popt; m = fixed_m; dR = gate_width_fixed
+    R_s_fixed = None
+    if eta_rs is not None and np.isfinite(eta_rs):
+        R_s_fixed = max(eta_rs * R_boundary, 1e-6)
+
+    # Build model variants depending on which parameters are fixed
+    if R_s_fixed is None:
+        # R_s is free
+        if gate_width_fixed is None and fixed_m is None:
+            def model_out(Rx, xi, R_s, m, dR):
+                vflat = v_flat_from_anchor(M_encl, R_boundary, xi)
+                v2_extra = v2_saturated_extra(Rx, vflat, R_s, m) * gate_c1(Rx, R_boundary, dR)
+                return np.sqrt(np.clip(np.power(np.interp(Rx, R, vbar_all), 2) + v2_extra, 0.0, None))
+            p0 = [0.8, 10.0, 2.0, 0.8]
+            lb = [0.1, 1.0, 0.5, 0.1]; ub = [1.0, 50.0, 8.0, 2.0]
+            popt, pcov = curve_fit(model_out, Rout, Vout, sigma=Sout, absolute_sigma=True,
+                                   p0=p0, bounds=(lb, ub), maxfev=50000)
+            xi, R_s, m, dR = popt
+            k_params = 9
+        elif gate_width_fixed is not None and fixed_m is None:
+            def model_out(Rx, xi, R_s, m):
+                vflat = v_flat_from_anchor(M_encl, R_boundary, xi)
+                v2_extra = v2_saturated_extra(Rx, vflat, R_s, m) * gate_c1(Rx, R_boundary, gate_width_fixed)
+                return np.sqrt(np.clip(np.power(np.interp(Rx, R, vbar_all), 2) + v2_extra, 0.0, None))
+            popt, pcov = curve_fit(model_out, Rout, Vout, sigma=Sout, absolute_sigma=True,
+                                   p0=[0.8, 10.0, 2.0], bounds=([0.1, 1.0, 0.5], [1.0, 50.0, 8.0]), maxfev=40000)
+            xi, R_s, m = popt; dR = gate_width_fixed
+            k_params = 8
+        elif gate_width_fixed is None and fixed_m is not None:
+            def model_out(Rx, xi, R_s, dR):
+                vflat = v_flat_from_anchor(M_encl, R_boundary, xi)
+                v2_extra = v2_saturated_extra(Rx, vflat, R_s, fixed_m) * gate_c1(Rx, R_boundary, dR)
+                return np.sqrt(np.clip(np.power(np.interp(Rx, R, vbar_all), 2) + v2_extra, 0.0, None))
+            popt, pcov = curve_fit(model_out, Rout, Vout, sigma=Sout, absolute_sigma=True,
+                                   p0=[0.8, 10.0, 0.8], bounds=([0.1, 1.0, 0.1], [1.0, 50.0, 2.0]), maxfev=40000)
+            xi, R_s, dR = popt; m = fixed_m
+            k_params = 8
+        else:  # both gate_width and m fixed
+            def model_out(Rx, xi, R_s):
+                vflat = v_flat_from_anchor(M_encl, R_boundary, xi)
+                v2_extra = v2_saturated_extra(Rx, vflat, R_s, fixed_m) * gate_c1(Rx, R_boundary, gate_width_fixed)
+                return np.sqrt(np.clip(np.power(np.interp(Rx, R, vbar_all), 2) + v2_extra, 0.0, None))
+            popt, pcov = curve_fit(model_out, Rout, Vout, sigma=Sout, absolute_sigma=True,
+                                   p0=[0.8, 10.0], bounds=([0.1, 1.0], [1.0, 50.0]), maxfev=30000)
+            xi, R_s = popt; m = fixed_m; dR = gate_width_fixed
+            k_params = 7
+    else:
+        # R_s is fixed to eta_rs * R_boundary
+        R_s = R_s_fixed
+        if gate_width_fixed is None and fixed_m is None:
+            def model_out(Rx, xi, m, dR):
+                vflat = v_flat_from_anchor(M_encl, R_boundary, xi)
+                v2_extra = v2_saturated_extra(Rx, vflat, R_s, m) * gate_c1(Rx, R_boundary, dR)
+                return np.sqrt(np.clip(np.power(np.interp(Rx, R, vbar_all), 2) + v2_extra, 0.0, None))
+            popt, pcov = curve_fit(model_out, Rout, Vout, sigma=Sout, absolute_sigma=True,
+                                   p0=[0.8, 2.0, 0.8], bounds=([0.1, 0.5, 0.1], [1.0, 8.0, 2.0]), maxfev=40000)
+            xi, m, dR = popt
+            k_params = 8  # one fewer since R_s fixed
+        elif gate_width_fixed is not None and fixed_m is None:
+            def model_out(Rx, xi, m):
+                vflat = v_flat_from_anchor(M_encl, R_boundary, xi)
+                v2_extra = v2_saturated_extra(Rx, vflat, R_s, m) * gate_c1(Rx, R_boundary, gate_width_fixed)
+                return np.sqrt(np.clip(np.power(np.interp(Rx, R, vbar_all), 2) + v2_extra, 0.0, None))
+            popt, pcov = curve_fit(model_out, Rout, Vout, sigma=Sout, absolute_sigma=True,
+                                   p0=[0.8, 2.0], bounds=([0.1, 0.5], [1.0, 8.0]), maxfev=30000)
+            xi, m = popt; dR = gate_width_fixed
+            k_params = 7
+        elif gate_width_fixed is None and fixed_m is not None:
+            def model_out(Rx, xi, dR):
+                vflat = v_flat_from_anchor(M_encl, R_boundary, xi)
+                v2_extra = v2_saturated_extra(Rx, vflat, R_s, fixed_m) * gate_c1(Rx, R_boundary, dR)
+                return np.sqrt(np.clip(np.power(np.interp(Rx, R, vbar_all), 2) + v2_extra, 0.0, None))
+            popt, pcov = curve_fit(model_out, Rout, Vout, sigma=Sout, absolute_sigma=True,
+                                   p0=[0.8, 0.8], bounds=([0.1, 0.1], [1.0, 2.0]), maxfev=30000)
+            xi, dR = popt; m = fixed_m
+            k_params = 7
+        else:  # R_s fixed, m fixed, gate fixed
+            def model_out(Rx, xi):
+                vflat = v_flat_from_anchor(M_encl, R_boundary, xi)
+                v2_extra = v2_saturated_extra(Rx, vflat, R_s, fixed_m) * gate_c1(Rx, R_boundary, gate_width_fixed)
+                return np.sqrt(np.clip(np.power(np.interp(Rx, R, vbar_all), 2) + v2_extra, 0.0, None))
+            popt, pcov = curve_fit(model_out, Rout, Vout, sigma=Sout, absolute_sigma=True,
+                                   p0=[0.8], bounds=([0.1], [1.0]), maxfev=20000)
+            xi = popt[0]; dR = gate_width_fixed
+            k_params = 6
+
     vflat = v_flat_from_anchor(M_encl, R_boundary, xi)
 
     # Compose full curve
     Vmodel = np.interp(R, R, vbar_all)
-    if gate_width_fixed is None and fixed_m is None:
-        Vmodel[mask_out] = model_out(Rout, xi, R_s, m, dR)
-        k_params = 9
-    elif gate_width_fixed is not None and fixed_m is None:
-        Vmodel[mask_out] = model_out(Rout, xi, R_s, m)
-        k_params = 8
-    elif gate_width_fixed is None and fixed_m is not None:
-        Vmodel[mask_out] = model_out(Rout, xi, R_s, dR)
-        k_params = 8
+    if R_s_fixed is None:
+        # use the same function variant as above
+        if gate_width_fixed is None and fixed_m is None:
+            Vmodel[mask_out] = model_out(Rout, xi, R_s, m, dR)
+        elif gate_width_fixed is not None and fixed_m is None:
+            Vmodel[mask_out] = model_out(Rout, xi, R_s, m)
+        elif gate_width_fixed is None and fixed_m is not None:
+            Vmodel[mask_out] = model_out(Rout, xi, R_s, dR)
+        else:
+            Vmodel[mask_out] = model_out(Rout, xi, R_s)
     else:
-        Vmodel[mask_out] = model_out(Rout, xi, R_s)
-        k_params = 7
+        if gate_width_fixed is None and fixed_m is None:
+            Vmodel[mask_out] = model_out(Rout, xi, m, dR)
+        elif gate_width_fixed is not None and fixed_m is None:
+            Vmodel[mask_out] = model_out(Rout, xi, m)
+        elif gate_width_fixed is None and fixed_m is not None:
+            Vmodel[mask_out] = model_out(Rout, xi, dR)
+        else:
+            Vmodel[mask_out] = model_out(Rout, xi)
 
     stats = compute_metrics(V, Vmodel, S, k_params=k_params)
-    return FitResult(params=dict(xi=float(xi), R_s=float(R_s), m=float(m), gate_width_kpc=float(dR), v_flat=float(vflat)), cov=pcov, stats=stats)
+    return FitResult(params=dict(xi=float(xi), R_s=float(R_s if R_s_fixed is not None else R_s), m=float(m), gate_width_kpc=float(dR), v_flat=float(vflat)), cov=pcov, stats=stats)
 
 
 def fit_nfw(bins_df: pd.DataFrame, vbar_all: np.ndarray, logger=None) -> FitResult:

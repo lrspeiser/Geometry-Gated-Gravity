@@ -42,6 +42,7 @@ def main():
     ap.add_argument('--saveplot', default=os.path.join('maxdepth_gaia','outputs','mw_rotation_curve_maxdepth.png'))
     ap.add_argument('--gate_width_kpc', type=float, default=None, help='Optional: fix smooth gate width (kpc) for the tail (C1, exact zero inside).')
     ap.add_argument('--fix_m', type=float, default=None, help='Optional: fix m (tail sharpness) globally for cross-galaxy tests.')
+    ap.add_argument('--eta_rs', type=float, default=None, help='Optional: fix R_s as eta_rs * R_boundary (global tail shape).')
     ap.add_argument('--debug', action='store_true')
     args = ap.parse_args()
 
@@ -141,7 +142,7 @@ def main():
     M_enclosed = float((Vb**2) * R_boundary / G_KPC)
 
     # Outer fits
-    sat = fit_saturated_well(bins_df, vbar_all, R_boundary, gate_width_fixed=args.gate_width_kpc, fixed_m=args.fix_m, logger=logger)
+    sat = fit_saturated_well(bins_df, vbar_all, R_boundary, gate_width_fixed=args.gate_width_kpc, fixed_m=args.fix_m, eta_rs=args.eta_rs, logger=logger)
     nfw = fit_nfw(bins_df, vbar_all, logger=logger)
 
     # Build dense curves for plotting

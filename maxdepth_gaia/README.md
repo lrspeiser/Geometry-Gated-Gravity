@@ -75,6 +75,9 @@ Key options:
 - `--baryon_model {single,mw_multi}` selects the GR baseline. Default: `mw_multi` (MW-like thin+thick stellar disks + H I + H₂ as MN approximations, plus a small bulge).
 - `--ad_correction` enables an (optional) asymmetric‑drift correction on binned data.
 - `--boundary_method` tries both a consecutive‑excess significance test and a BIC changepoint to locate the onset of the tail.
+- `--gate_width_kpc` fixes the smooth C¹ gate width ΔR.
+- `--fix_m` fixes the transition sharpness m across all radii.
+- `--eta_rs` fixes the tail scale as `R_s = eta_rs * R_b` (global shape control), leaving only `xi` free for the tail amplitude.
 - Outputs land in `maxdepth_gaia/outputs/`.
 
 ---
@@ -135,6 +138,16 @@ this so you can compare to strong‑lensing scales if you add an external catalo
   (e.g., very low-c or very high-c) when outer data leverage is weak.
 - A dashed grey overlay of the MW-like GR curve is drawn on every plot for
   immediate visual sanity checks.
+
+### Wedge runner
+
+Run azimuthal wedges and summarize boundary and fit stability across φ:
+
+```bash
+python -m maxdepth_gaia.wedge_runner --phi_bins 4 --ad_correction --baryon_model mw_multi --fix_m 1.5 --eta_rs 0.2 --gate_width_kpc 0.8
+```
+
+This writes `wedge_summary_phi{phi_bins}.csv/json` in `maxdepth_gaia/outputs/` with per-wedge `R_boundary`, `(lo,hi)` bootstrap bounds, saturated-well parameters (`xi, R_s, m, ΔR, v_flat`), and model-selection metrics.
 
 ---
 
