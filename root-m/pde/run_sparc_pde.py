@@ -34,6 +34,18 @@ _solve = _load_local('solve_phi', 'solve_phi.py')
 _maps  = _load_local('baryon_maps', 'baryon_maps.py')
 _prc   = _load_local('predict_rc', 'predict_rc.py')
 
+# Optional: dynamic import of SOG utilities
+import importlib.util as _ilu2, sys as _sys
+from pathlib import Path as _Path
+_sog_path = _Path(__file__).resolve().parents[1] / 'pde' / 'second_order.py'
+if _sog_path.exists():
+    _spec_sog = _ilu2.spec_from_file_location('second_order', str(_sog_path))
+    second_order = _ilu2.module_from_spec(_spec_sog)
+    _sys.modules['second_order'] = second_order
+    _spec_sog.loader.exec_module(second_order)
+else:
+    second_order = None
+
 SolverParams = _solve.SolverParams
 solve_axisym = _solve.solve_axisym
 sparc_map_from_predictions = _maps.sparc_map_from_predictions
@@ -99,6 +111,19 @@ def main():
     ap.add_argument('--sigma_star_Msun_per_pc2', type=float, default=150.0, help='Surface-density threshold Sigma* [Msun/pc^2] for sigma screen')
     ap.add_argument('--alpha_sigma', type=float, default=1.0, help='Strength of sigma screen (alpha)')
     ap.add_argument('--n_sigma', type=float, default=2.0, help='Slope parameter of sigma screen (n)')
+    # SOG options (axisym only; default OFF)
+    ap.add_argument('--use_sog_fe', action='store_true')
+    ap.add_argument('--use_sog_rho2', action='store_true')
+    ap.add_argument('--use_sog_rg', action='store_true')
+    ap.add_argument('--sog_sigma_star', type=float, default=100.0)
+    ap.add_argument('--sog_g_star', type=float, default=1200.0)
+    ap.add_argument('--sog_aSigma', type=float, default=2.0)
+    ap.add_argument('--sog_ag', type=float, default=2.0)
+    ap.add_argument('--sog_fe_lambda', type=float, default=1.0)
+    ap.add_argument('--sog_rho2_eta', type=float, default=0.01)
+    ap.add_argument('--sog_rg_A', type=float, default=0.8)
+    ap.add_argument('--sog_rg_n', type=float, default=1.2)
+    ap.add_argument('--sog_rg_g0', type=float, default=5.0)
     args = ap.parse_args()
 
     in_path = Path(args.in_path)
@@ -218,7 +243,43 @@ def main():
                                 r_eval = per_gal[gname]['r']
                                 vbar = per_gal[gname]['vbar']
                                 vobs = per_gal[gname]['vobs']
-                                v_pred, _, _ = predict_v_from_phi_equatorial(Rg, gR, r_eval, vbar)
+                                v_pred, gphi_eval, gN_eval = predict_v_from_phi_equatorial(Rg, gR, r_eval, vbar)
+                                # Optional SOG augmentation (axisym-only)
+                                if second_order is not None and (args.use_sog_fe or args.use_sog_rho2 or args.use_sog_rg):
+                                    # Build Sigma proxy from rotmod components
+                                    try:
+                                        dfr = rot[rot['galaxy'] == gname].sort_values('R_kpc')
+                                        Rr = dfr['R_kpc'].to_numpy(float)
+                                        Vgas = dfr['Vgas_kms'].to_numpy(float) if 'Vgas_kms' in dfr.columns else np.zeros_like(Rr)
+                                        Vdisk = dfr['Vdisk_kms'].to_numpy(float) if 'Vdisk_kms' in dfr.columns else np.zeros_like(Rr)
+                                        Gc = 4.300917270e-6
+                                        Mgas = (Vgas*Vgas) * Rr / Gc
+                                        Mdisk= (Vdisk*Vdisk) * Rr / Gc
+                                        Sgas = axisym.sigma_from_M_of_R(Rr, Mgas)
+                                        Sdisk= axisym.sigma_from_M_of_R(Rr, Mdisk)
+                                        Sigma_sum = Sgas + Sdisk
+                                        Sigma_eval = np.interp(r_eval, Rr, Sigma_sum, left=Sigma_sum[0], right=Sigma_sum[-1])
+                                    except Exception:
+                                        Sigma_eval = np.zeros_like(r_eval)
+                                    g1_eval = (vbar*vbar) / np.maximum(r_eval, 1e-9)
+                                    gate = {
+                                        'Sigma_star': float(args.sog_sigma_star),
+                                        'g_star': float(args.sog_g_star),
+                                        'aSigma': float(args.sog_aSigma),
+                                        'ag': float(args.sog_ag),
+                                    }
+                                    g2_add = np.zeros_like(g1_eval)
+                                    if args.use_sog_fe:
+                                        g2_add += second_order.g2_field_energy(r_eval, g1_eval, Sigma_eval, {'lambda': float(args.sog_fe_lambda), **gate})
+                                    if args.use_sog_rho2:
+                                        # Construct a spherical-equivalent rho proxy from Sigma via rho ~ Sigma/(2h)
+                                        # Use h ~ 0.3 kpc as a benign scale height default
+                                        rho_proxy = (Sigma_eval * 1e6) / (2.0 * 0.3)
+                                        g2_add += second_order.g2_rho2_local(r_eval, rho_proxy, g1_eval, Sigma_eval, {'eta': float(args.sog_rho2_eta), **gate})
+                                    if args.use_sog_rg:
+                                        g2_add += second_order.g_runningG(r_eval, g1_eval, Sigma_eval, {'A': float(args.sog_rg_A), 'n': float(args.sog_rg_n), 'g0': float(args.sog_rg_g0), **gate})
+                                    v2 = np.clip(vbar*vbar + (gphi_eval + g2_add) * r_eval, 0.0, None)
+                                    v_pred = np.sqrt(v2)
                                 is_outer = per_gal[gname]['is_outer']
                                 if not np.any(is_outer):
                                     idx = np.argsort(r_eval)[-3:]
@@ -263,7 +324,40 @@ def main():
                             r_eval = per_gal[gname]['r']
                             vbar = per_gal[gname]['vbar']
                             vobs = per_gal[gname]['vobs']
-                            v_pred, _, _ = predict_v_from_phi_equatorial(Rg, gR, r_eval, vbar)
+                            v_pred, gphi_eval, gN_eval = predict_v_from_phi_equatorial(Rg, gR, r_eval, vbar)
+                            # Optional SOG augmentation (axisym-only)
+                            if second_order is not None and (args.use_sog_fe or args.use_sog_rho2 or args.use_sog_rg):
+                                try:
+                                    dfr = rot[rot['galaxy'] == gname].sort_values('R_kpc')
+                                    Rr = dfr['R_kpc'].to_numpy(float)
+                                    Vgas = dfr['Vgas_kms'].to_numpy(float) if 'Vgas_kms' in dfr.columns else np.zeros_like(Rr)
+                                    Vdisk = dfr['Vdisk_kms'].to_numpy(float) if 'Vdisk_kms' in dfr.columns else np.zeros_like(Rr)
+                                    Gc = 4.300917270e-6
+                                    Mgas = (Vgas*Vgas) * Rr / Gc
+                                    Mdisk= (Vdisk*Vdisk) * Rr / Gc
+                                    Sgas = axisym.sigma_from_M_of_R(Rr, Mgas)
+                                    Sdisk= axisym.sigma_from_M_of_R(Rr, Mdisk)
+                                    Sigma_sum = Sgas + Sdisk
+                                    Sigma_eval = np.interp(r_eval, Rr, Sigma_sum, left=Sigma_sum[0], right=Sigma_sum[-1])
+                                except Exception:
+                                    Sigma_eval = np.zeros_like(r_eval)
+                                g1_eval = (vbar*vbar) / np.maximum(r_eval, 1e-9)
+                                gate = {
+                                    'Sigma_star': float(args.sog_sigma_star),
+                                    'g_star': float(args.sog_g_star),
+                                    'aSigma': float(args.sog_aSigma),
+                                    'ag': float(args.sog_ag),
+                                }
+                                g2_add = np.zeros_like(g1_eval)
+                                if args.use_sog_fe:
+                                    g2_add += second_order.g2_field_energy(r_eval, g1_eval, Sigma_eval, {'lambda': float(args.sog_fe_lambda), **gate})
+                                if args.use_sog_rho2:
+                                    rho_proxy = (Sigma_eval * 1e6) / (2.0 * 0.3)
+                                    g2_add += second_order.g2_rho2_local(r_eval, rho_proxy, g1_eval, Sigma_eval, {'eta': float(args.sog_rho2_eta), **gate})
+                                if args.use_sog_rg:
+                                    g2_add += second_order.g_runningG(r_eval, g1_eval, Sigma_eval, {'A': float(args.sog_rg_A), 'n': float(args.sog_rg_n), 'g0': float(args.sog_rg_g0), **gate})
+                                v2 = np.clip(vbar*vbar + (gphi_eval + g2_add) * r_eval, 0.0, None)
+                                v_pred = np.sqrt(v2)
                             is_outer = per_gal[gname]['is_outer']
                             if not np.any(is_outer):
                                 # fallback to last 3 points
@@ -363,6 +457,45 @@ def main():
         r_eval = np.asarray(df['R_kpc'], float)
         vbar = np.asarray(df['Vbar_kms'], float)
     v_pred, gphi, gN = predict_v_from_phi_equatorial(R, gR, r_eval, vbar)
+    # Optional SOG augmentation for single galaxy (axisym_maps only)
+    if args.axisym_maps and second_order is not None and (args.use_sog_fe or args.use_sog_rho2 or args.use_sog_rg):
+        # Build Sigma proxy from rotmod
+        try:
+            rot = pd.read_parquet(Path(args.rotmod_parquet))
+            dfr = rot[rot['galaxy'] == args.galaxy].sort_values('R_kpc')
+            Rr = dfr['R_kpc'].to_numpy(float)
+            Vgas = dfr['Vgas_kms'].to_numpy(float) if 'Vgas_kms' in dfr.columns else np.zeros_like(Rr)
+            Vdisk = dfr['Vdisk_kms'].to_numpy(float) if 'Vdisk_kms' in dfr.columns else np.zeros_like(Rr)
+            Gc = 4.300917270e-6
+            Mgas = (Vgas*Vgas) * Rr / Gc
+            Mdisk= (Vdisk*Vdisk) * Rr / Gc
+            # dynamic import axisym builder to access sigma_from_M_of_R
+            pkg = _P(__file__).resolve().parent
+            spec = _ilu.spec_from_file_location('baryon_maps_axisym', str(pkg/'baryon_maps_axisym.py'))
+            axisym = _ilu.module_from_spec(spec); spec.loader.exec_module(axisym)
+            Sgas = axisym.sigma_from_M_of_R(Rr, Mgas)
+            Sdisk= axisym.sigma_from_M_of_R(Rr, Mdisk)
+            Sigma_sum = Sgas + Sdisk
+            Sigma_eval = np.interp(r_eval, Rr, Sigma_sum, left=Sigma_sum[0], right=Sigma_sum[-1])
+        except Exception:
+            Sigma_eval = np.zeros_like(r_eval)
+        g1_eval = (vbar*vbar) / np.maximum(r_eval, 1e-9)
+        gate = {
+            'Sigma_star': float(args.sog_sigma_star),
+            'g_star': float(args.sog_g_star),
+            'aSigma': float(args.sog_aSigma),
+            'ag': float(args.sog_ag),
+        }
+        g2_add = np.zeros_like(g1_eval)
+        if args.use_sog_fe:
+            g2_add += second_order.g2_field_energy(r_eval, g1_eval, Sigma_eval, {'lambda': float(args.sog_fe_lambda), **gate})
+        if args.use_sog_rho2:
+            rho_proxy = (Sigma_eval * 1e6) / (2.0 * 0.3)
+            g2_add += second_order.g2_rho2_local(r_eval, rho_proxy, g1_eval, Sigma_eval, {'eta': float(args.sog_rho2_eta), **gate})
+        if args.use_sog_rg:
+            g2_add += second_order.g_runningG(r_eval, g1_eval, Sigma_eval, {'A': float(args.sog_rg_A), 'n': float(args.sog_rg_n), 'g0': float(args.sog_rg_g0), **gate})
+        v2 = np.clip(vbar*vbar + (gphi + g2_add) * r_eval, 0.0, None)
+        v_pred = np.sqrt(v2)
 
     if args.axisym_maps:
         vobs = np.asarray(dfg['Vobs_kms'], float)

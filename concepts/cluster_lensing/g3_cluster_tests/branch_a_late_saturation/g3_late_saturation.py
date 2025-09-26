@@ -246,6 +246,42 @@ class G3LateSaturation:
         
         return kT_keV
     
+def _rho_from_g(self, r, g):
+        y = r**2 * g
+        dy_dr = np.gradient(y, r)
+        rho = dy_dr / (4 * np.pi * self.G * np.maximum(r**2, 1e-20))
+        rho[rho < 0] = 0.0
+        return rho
+
+    def _extend_powerlaw(self, r, y, r_out=5000.0):
+        r0 = r[-1]
+        n = min(5, len(r)-1)
+        s = np.polyfit(np.log(r[-n:]), np.log(np.maximum(y[-n:], 1e-30)), 1)[0]
+        r_ext = np.concatenate([r, np.logspace(np.log10(r0*1.05), np.log10(r_out), 100)])
+        y_ext = np.concatenate([y, y[-1] * (r_ext[len(r):]/r0)**s])
+        return r_ext, y_ext
+
+    def _sigma_from_rho_abel(self, r_ext, rho_ext, R_eval):
+        Sigma = np.zeros_like(R_eval)
+        for j, R in enumerate(R_eval):
+            mask = r_ext > R
+            rr = r_ext[mask]
+            integrand = 2.0 * rho_ext[mask] * rr / np.sqrt(np.maximum(rr**2 - R**2, 1e-20))
+            Sigma[j] = np.trapz(integrand, rr)
+        return Sigma
+
+    def _kappa_bar(self, R, kappa):
+        kbar = np.zeros_like(kappa)
+        for i in range(len(R)):
+            Ri = R[i]
+            if Ri <= 0:
+                kbar[i] = kappa[i]
+                continue
+            integrand = kappa[:i+1] * R[:i+1]
+            val = np.trapz(integrand, R[:i+1])
+            kbar[i] = 2.0 * val / (Ri**2)
+        return kbar
+
     def compute_lensing_convergence(self,
                                      result: Dict,
                                      z_lens: float = 0.2,
@@ -260,31 +296,22 @@ class G3LateSaturation:
         r = result['r']
         g_tot = result['g_tot']
         
-        # Surface mass density from g_tot via Abel transform
-        # Σ(R) = (1/2πG) * ∫ dg/dr / sqrt(r² - R²) dr
-        
-        # Simplified: use enclosed mass approach
-        M_enc = g_tot * r**2 / self.G
-        
-        # Project to surface density (simplified)
-        Sigma = np.gradient(M_enc) / (2 * np.pi * r) * 1e6  # M☉/pc²
+        # Robust rho-from-g and Abel projection
+        rho = self._rho_from_g(r, g_tot)
+        r_ext, rho_ext = self._extend_powerlaw(r, rho, r_out=5000.0)
+        Sigma_kpc2 = self._sigma_from_rho_abel(r_ext, rho_ext, r)
+        Sigma = Sigma_kpc2 / 1e6  # M☉/pc²
         
         # Critical density
-        from astropy.cosmology import Planck18
-        D_l = Planck18.angular_diameter_distance(z_lens).value * 1000  # kpc
-        D_s = Planck18.angular_diameter_distance(z_source).value * 1000
-        D_ls = Planck18.angular_diameter_distance_z1z2(z_lens, z_source).value * 1000
-        
+        # Simplified distances (consistent with comprehensive runner)
+        D_l = 800e3
+        D_s = 2400e3
+        D_ls = 2000e3
         c = 299792.458  # km/s
-        Sigma_crit = (c**2 / (4 * np.pi * self.G)) * (D_s / (D_l * D_ls)) * 1e-12  # M☉/pc²
+        Sigma_crit = (c**2 / (4 * np.pi * self.G)) * (D_s / (D_l * D_ls)) / 1e6  # M☉/pc²
         
         kappa = Sigma / Sigma_crit
-        
-        # Mean convergence within R
-        kappa_bar = np.zeros_like(kappa)
-        for i in range(1, len(r)):
-            kappa_bar[i] = np.mean(kappa[:i+1])
-            
+        kappa_bar = self._kappa_bar(r, kappa)
         return kappa, kappa_bar
     
     def parameter_summary(self) -> Dict:

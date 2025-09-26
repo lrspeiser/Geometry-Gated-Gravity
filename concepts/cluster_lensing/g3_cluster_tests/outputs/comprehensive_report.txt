@@ -4,60 +4,60 @@ G³ CLUSTER TESTS - COMPREHENSIVE REPORT
 
 EXECUTIVE SUMMARY
 ----------------------------------------
-• Standard G³ achieves κ_max = 0.627 (need ~1.0)
-• Best modification: Branch A - Strong with κ_max = 0.633
+• Standard G³ achieves κ_max = 0.656 (need ~1.0)
+• Best modification: Branch A - Strong with κ_max = 0.662
 • Improvement factor: 1.01×
-• Gap to Einstein radius: 0.367
+• Gap to Einstein radius: 0.338
 
 DETAILED RESULTS BY CONFIGURATION
 ----------------------------------------
 
 Newtonian:
   Type: baseline
-  κ_max: 0.624
-  κ at 50 kpc: 0.278
-  κ at 100 kpc: 0.185
+  κ_max: 0.653
+  κ at 50 kpc: 0.304
+  κ at 100 kpc: 0.207
   kT at 100 kpc: 2.4 keV
   kT at 200 kpc: 3.5 keV
 
 Standard G³:
   Type: standard
-  κ_max: 0.627
-  κ at 50 kpc: 0.280
-  κ at 100 kpc: 0.187
+  κ_max: 0.656
+  κ at 50 kpc: 0.306
+  κ at 100 kpc: 0.208
   kT at 100 kpc: 2.4 keV
   kT at 200 kpc: 3.5 keV
 
 Branch A - Weak:
   Type: late_sat
-  κ_max: 0.627
-  κ at 50 kpc: 0.281
-  κ at 100 kpc: 0.187
+  κ_max: 0.656
+  κ at 50 kpc: 0.306
+  κ at 100 kpc: 0.209
   kT at 100 kpc: 2.4 keV
   kT at 200 kpc: 3.5 keV
 
 Branch A - Strong:
   Type: late_sat
-  κ_max: 0.633
-  κ at 50 kpc: 0.287
-  κ at 100 kpc: 0.194
+  κ_max: 0.662
+  κ at 50 kpc: 0.313
+  κ at 100 kpc: 0.215
   kT at 100 kpc: 2.4 keV
   kT at 200 kpc: 3.5 keV
 
 Branch B - Moderate:
   Type: photon
-  κ_max: 0.627
-  κ at 50 kpc: 0.280
-  κ at 100 kpc: 0.187
+  κ_max: 0.656
+  κ at 50 kpc: 0.306
+  κ at 100 kpc: 0.208
   kT at 100 kpc: 2.4 keV
   kT at 200 kpc: 3.5 keV
   Photon boost: 1.30×
 
 Branch B - Strong:
   Type: photon
-  κ_max: 0.627
-  κ at 50 kpc: 0.280
-  κ at 100 kpc: 0.187
+  κ_max: 0.656
+  κ at 50 kpc: 0.306
+  κ at 100 kpc: 0.208
   kT at 100 kpc: 2.4 keV
   kT at 200 kpc: 3.5 keV
   Photon boost: 1.50×
@@ -66,14 +66,14 @@ PHYSICS ASSESSMENT
 ----------------------------------------
 
 Branch A (Late-Saturation):
-  • Best κ_max: 0.633
+  • Best κ_max: 0.662
   • Mechanism: Tail boost at r > r_boost
   • Preserves dynamics: Yes
   • Solar System safe: Yes (r << r_boost)
   • Main limitation: Still saturates below κ=1
 
 Branch B (Photon Boost):
-  • Best κ_max: 0.627
+  • Best κ_max: 0.656
   • Mechanism: Photons see enhanced field
   • Preserves dynamics: Perfect
   • Solar System safe: Yes (screening)

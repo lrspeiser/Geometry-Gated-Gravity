@@ -1,0 +1,18 @@
+{
+  "baseline_kappa_max": 0.626820312928483,
+  "best": {
+    "gamma_A": 0.5,
+    "beta_A": 0.3,
+    "f_max": 4.0,
+    "eta_sigma": 0.5,
+    "eta_alpha": 0.5,
+    "use_curv_gate": false,
+    "p_in": 2.0,
+    "p_out": 1.0,
+    "kappa_max": 0.7592982597698285,
+    "kappa_50": 0.3318771464582253,
+    "kappa_100": 0.2193414429678871,
+    "improvement_vs_baseline": 1.211349160371675
+  },
+  "count": 108
+}

@@ -1,0 +1,45 @@
+# SOG parameter profiles for quick sweeps across cluster tests
+profiles:
+  - name: SOG-FE
+    gate:
+      Sigma_star: 100.0
+      g_star: 1200.0
+      aSigma: 2.0
+      ag: 2.0
+    fe:
+      lambda: 1.0
+    lensing_boost:
+      xi_gamma: 0.4
+      chi: 1.5
+      m_ref: 1.0
+      m_floor: 1.0e-8
+
+  - name: SOG-RHO2
+    gate:
+      Sigma_star: 100.0
+      g_star: 1200.0
+      aSigma: 2.0
+      ag: 2.0
+    rho2:
+      eta: 0.01
+    lensing_boost:
+      xi_gamma: 0.4
+      chi: 1.5
+      m_ref: 1.0
+      m_floor: 1.0e-8
+
+  - name: SOG-RG
+    gate:
+      Sigma_star: 100.0
+      g_star: 1200.0
+      aSigma: 2.0
+      ag: 2.0
+    rg:
+      A: 0.8
+      n: 1.2
+      g0: 5.0
+    lensing_boost:
+      xi_gamma: 0.4
+      chi: 1.5
+      m_ref: 1.0
+      m_floor: 1.0e-8
