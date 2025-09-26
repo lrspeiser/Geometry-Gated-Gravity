@@ -129,12 +129,12 @@ def main():
         except Exception as e:
             print('[WARN]', name, e)
     # grid
-    A3_list = [1.0, 2.0, 3.0, 5.0, 8.0, 10.0, 15.0, 20.0, 30.0]
+    A3_list = [0.5, 1.0, 2.0, 3.0, 5.0, 8.0, 10.0, 15.0, 20.0, 30.0, 50.0, 80.0, 100.0]
     Sigma_star_list = [30.0, 50.0, 150.0, 500.0]
     beta_list = [0.7, 1.0, 1.5, 1.8]
     rboost_list = [60.0, 80.0, 120.0, 200.0, 300.0]
     wdec_list = [0.4, 0.6, 0.8, 1.0]
-    ell_list = [0.0, 150.0, 300.0, 500.0]
+    ell_list = [0.0, 150.0, 300.0, 500.0, 800.0]
     ccurv_list = [0.6, 0.8, 1.0]
 
     best = None
@@ -155,31 +155,36 @@ def main():
                                     th_arc = theta_E_arcsec_from_kpc(RE_kpc, z)
                                     kmax = float(np.nanmax(kbar)) if np.all(np.isfinite(kbar)) else 0.0
                                     # Core safety (avoid huge central κ̄)
-                                    if kmax > 2.0:
-                                        total_err += 5.0
+                                    if kmax > 1.8:
+                                        total_err += 7.5
                                     if theta_obs is not None:
-                                        # Observed clusters: normalize error by observed θE arcsec
+                                        # Observed clusters: stricter θE handling
                                         if not np.isfinite(th_arc):
-                                            ok = False; total_err += 5.0
+                                            ok = False; total_err += 7.5
                                         else:
-                                            # Target Einstein radius in kpc from observed θE
+                                            # Hard overshoot gate: skip egregious solutions
+                                            if th_arc > 2.5*theta_obs:
+                                                ok = False; total_err += 10.0
+                                            # Target Einstein radius band: 50–150 kpc
                                             D_l = COSMO.angular_diameter_distance(z).to(u.kpc).value
                                             R_target = float(theta_obs * (np.pi/648000.0) * D_l)
                                             if np.isfinite(RE_kpc):
-                                                # Combined error: relative θE arcsec + band penalty if RE is far from 50–150 kpc
                                                 rel_err = abs(th_arc - theta_obs)/max(theta_obs, 1e-6)
                                                 band_pen = 0.0
-                                                if RE_kpc < 50.0:
+                                                if RE_kpc < 30.0:
+                                                    band_pen = 1.0 + (30.0 - RE_kpc)/30.0  # strong penalty for central crossings
+                                                elif RE_kpc < 50.0:
                                                     band_pen = (50.0 - RE_kpc)/50.0
                                                 elif RE_kpc > 150.0:
                                                     band_pen = (RE_kpc - 150.0)/150.0
-                                                total_err += 2.0 * (rel_err + 0.5 * band_pen)
+                                                # Weight band penalty more to encourage correct scale
+                                                total_err += 2.0 * rel_err + 1.5 * band_pen
                                             else:
-                                                ok = False; total_err += 5.0
+                                                ok = False; total_err += 7.5
                                     else:
-                                        # No observed θE: penalize spurious θE at low-z clusters
+                                        # No observed θE: penalize spurious θE at low-z clusters (lightly)
                                         if np.isfinite(th_arc):
-                                            total_err += 0.5
+                                            total_err += 0.2
                                 score = total_err if ok else (total_err + 10.0)
                                 rec = {'params': params, 'score': float(score)}
                                 if (best is None) or (score < best['score']):
