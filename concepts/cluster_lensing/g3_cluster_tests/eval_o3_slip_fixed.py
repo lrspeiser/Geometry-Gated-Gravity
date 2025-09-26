@@ -118,6 +118,7 @@ def main():
     lowz_veto_z = 0.03
 
     summaries = {}
+    diags = {}
     for name, z, theta_obs in clusters:
         try:
             r, rho = load_cluster(name, base)
@@ -141,6 +142,23 @@ def main():
         _, kbar = kappa_bar(Sigma_lens, r, z)
         th = theta_E(r, kbar, z)
         kmax = float(np.max(kbar))
+        # Diagnostics (decimate profiles to keep JSON small)
+        step = max(1, int(np.ceil(len(r) / 400.0)))
+        idx = slice(None, None, step)
+        diags[name] = {
+            'z': float(z),
+            'A3_base': A3_base,
+            'Sigma_mean_30_100': Sigma_mean,
+            'A3_eff': A3_eff,
+            'lowz_veto_applied': bool((float(z) < lowz_veto_z) and (curv_band > -tau_curv)),
+            'curvature_band': curv_band,
+            'kappa_max': kmax,
+            'kappa_500': float(np.interp(500.0, r, kbar)),
+            'profiles': {
+                'r_kpc': np.asarray(r, float)[idx].tolist(),
+                'kbar': np.asarray(kbar, float)[idx].tolist(),
+            },
+        }
         summaries[name] = {
             'theta_E_arcsec': float(th) if np.isfinite(th) else None,
             'theta_E_obs': theta_obs,
@@ -153,6 +171,9 @@ def main():
     outp = Path('concepts/cluster_lensing/g3_cluster_tests/outputs/o3_slip_fixed_eval.json')
     outp.write_text(json.dumps(summaries, indent=2))
     print('Saved:', outp)
+    diag_out = Path('concepts/cluster_lensing/g3_cluster_tests/outputs/o3_slip_eval_diagnostics.json')
+    diag_out.write_text(json.dumps(diags, indent=2))
+    print('Saved diagnostics:', diag_out)
 
 if __name__ == '__main__':
     main()

@@ -207,3 +207,15 @@ Outputs are saved under `concepts/cluster_lensing/g3_cluster_tests/outputs/`.
 4) Non-local O3 lensing: port guardrails/weights to `grid_search_o3.py`; evaluate with identical checks.
 5) Low-z safety: add tests ensuring low-z curvature veto suppresses θE for Perseus; validate Σcrit safety and metadata.
 6) Documentation: update this section after each major sweep; add quick plots of κ̄ and θE crossings.
+
+## New Diagnostics & Tests (2025-09-26)
+
+- Evaluator now writes per-cluster diagnostics to `outputs/o3_slip_eval_diagnostics.json` with:
+  - z, A3_base, Σ_mean(30–100 kpc), A3_eff, lowz_veto_applied, curvature_band,
+  - κ̄_max, κ̄(500 kpc), and decimated profiles of r_kpc and κ̄(r).
+- Added pytest `tests/test_lowz_veto.py` asserting that when low-z curvature veto conditions are met for Perseus (ABELL_0426), A3 is set to 0 and no Einstein crossing occurs.
+
+Run the test:
+```
+powershell -NoProfile -Command "python -m pytest -q 'concepts/cluster_lensing/g3_cluster_tests/tests/test_lowz_veto.py'"
+```
