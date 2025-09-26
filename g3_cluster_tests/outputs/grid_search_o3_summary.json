@@ -1,0 +1,22 @@
+{
+  "best": {
+    "ell3_kpc": 600.0,
+    "Sigma_star3": 30.0,
+    "beta3": 1.0,
+    "r3_kpc": 60.0,
+    "w3_decades": 1.5,
+    "xi3": 1.2,
+    "A3": 0.0005,
+    "chi": 1.0,
+    "kappa_max": 429.8912879340584,
+    "kappa_30": 308.31343265097894,
+    "kappa_50": 265.96904408367834,
+    "kappa_100": 195.84384334601532,
+    "theta_E_arcsec_simplified": 815.3332360926901,
+    "nfw_theta_E_ref_arcsec": 48.854226972647346,
+    "unit_test_passed": true
+  },
+  "count": 8748,
+  "nfw_theta_E_ref_arcsec": 48.854226972647346,
+  "unit_test_passed": true
+}

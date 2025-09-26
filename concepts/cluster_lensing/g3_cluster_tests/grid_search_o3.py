@@ -11,7 +11,7 @@ from itertools import product
 import numpy as np
 import matplotlib.pyplot as plt
 
-from comprehensive_analysis import ClusterTestFramework
+from comprehensive_analysis import ClusterTestFramework, nfw_lensing_unit_test
 from o3_lensing import apply_o3_lensing
 
 
@@ -26,6 +26,10 @@ def run_grid_search_o3(output_dir: str = 'g3_cluster_tests/outputs',
                        chi_list=(0.5, 0.8, 1.0)):
     os.makedirs(output_dir, exist_ok=True)
 
+    # Run strict NFW Einstein-radius unit test (cosmology sanity)
+    theta_ref, ok = nfw_lensing_unit_test()
+    unit_test_info = {'nfw_theta_E_ref_arcsec': float(theta_ref), 'unit_test_passed': bool(ok)}
+
     fw = ClusterTestFramework()
     fw.create_cluster_model()
     g_N = fw.compute_newtonian()
@@ -39,15 +43,25 @@ def run_grid_search_o3(output_dir: str = 'g3_cluster_tests/outputs',
     except Exception:
         Sigma_bary_pc2 = fw.rho_nfw * fw.r * 1e-6
 
-    # Helper to compute metrics
+    # Helper to compute metrics (also estimate θE in a simplified cosmology)
     def compute_metrics(params):
         g_lens = apply_o3_lensing(g_dyn, fw.r, Sigma_bary_pc2, params, m_test_Msun=0.0)
         kappa, kbar, _ = fw.compute_convergence(g_lens)
+        # θE_kpc: outermost crossing of kbar>=1 (if any)
+        idx = np.where(kbar >= 1.0)[0]
+        if idx.size > 0:
+            R_E = fw.r[idx[-1]]
+            # Convert to arcsec using the simplified D_l used internally (≈800 Mpc)
+            D_l_kpc = 800e3
+            theta_arcsec = (R_E / D_l_kpc) * (180.0/np.pi) * 3600.0
+        else:
+            theta_arcsec = float('nan')
         return {
             'kappa_max': float(np.max(kbar)),
             'kappa_30': float(np.interp(30, fw.r, kbar)),
             'kappa_50': float(np.interp(50, fw.r, kbar)),
             'kappa_100': float(np.interp(100, fw.r, kbar)),
+            'theta_E_arcsec_simplified': float(theta_arcsec),
         }
 
     results = []
@@ -63,7 +77,7 @@ def run_grid_search_o3(output_dir: str = 'g3_cluster_tests/outputs',
             'A3': float(A3),
             'chi': float(chi),
             'm_ref_Msun': 1.0,
-'m_floor_Msun': 1e-6,
+            'm_floor_Msun': 1e-6,
         }
         met = compute_metrics(params)
         rec = {
@@ -71,6 +85,7 @@ def run_grid_search_o3(output_dir: str = 'g3_cluster_tests/outputs',
             'r3_kpc': float(r3), 'w3_decades': float(w3), 'xi3': float(xi3),
             'A3': float(A3), 'chi': float(chi),
             **met,
+            **unit_test_info,
         }
         results.append(rec)
 
@@ -97,7 +112,7 @@ def run_grid_search_o3(output_dir: str = 'g3_cluster_tests/outputs',
     fig.savefig(fig_path, dpi=150)
 
     # JSON summary
-    summary = {'best': topN[0], 'count': len(results)}
+    summary = {'best': topN[0], 'count': len(results), **unit_test_info}
     with open(os.path.join(output_dir, 'grid_search_o3_summary.json'), 'w', encoding='utf-8') as f:
         json.dump(summary, f, indent=2)
 

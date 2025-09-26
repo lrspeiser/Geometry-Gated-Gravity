@@ -1,0 +1,41 @@
+# Gravity order handoff thresholds (defaults)
+#
+# This YAML defines default gates and thresholds for O1→O2 (dynamics) and O3 (lensing-only).
+# Pipelines may override these per run via CLI args or custom YAMLs.
+#
+# Units:
+# - Radii R in kpc
+# - Surface density Σ in Msun/pc^2
+# - Accelerations g in (km/s)^2/kpc
+#
+# O2 handoff (dynamics): w2 = S_env(Σ, g1)
+o2_handoff:
+  Sigma_star: 100.0       # Σ* threshold for local screen
+  g_star: 1200.0          # g* threshold (≈ Solar System safe scale)
+  aSigma: 2.0             # Σ gate sharpness
+  ag: 2.0                 # g gate sharpness
+
+# O3 lensing-only environment boost (multiplicative on g_lens)
+# This mirrors concepts/cluster_lensing/g3_cluster_tests/o3_lensing.py
+# and o3_slip.py, but only applies to the lensing leg and never to dynamics.
+o3_lensing:
+  # Non-local Gaussian smoothing scale over Σ(R)
+  ell3_kpc: 400.0
+  # Low-Σ preference gate (effective Σ* in Msun/pc^2)
+  Sigma_star3_Msun_pc2: 50.0
+  beta3: 1.0
+  # Radial smootherstep gate around r3 over log10 decades
+  r3_kpc: 80.0
+  w3_decades: 1.0
+  # Photon/test-mass gate (photons: m_test≈0)
+  A3: 1.0e-4
+  chi: 0.8
+  m_ref_Msun: 1.0
+  m_floor_Msun: 1.0e-8
+
+# Guardrails
+# - Ensure w2≈0 and O3 boost≈1 in high-Σ, high-g regions (Solar System, galaxy bulges)
+# - Prefer boosts in weak-field, low-Σ cluster outskirts
+# - Enforce lensing-only for O3
+#
+# Pipelines should log the final weights and boosts at each radius for auditing.

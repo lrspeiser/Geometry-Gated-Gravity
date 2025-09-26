@@ -1,0 +1,16 @@
+{
+  "ell3_kpc": 200.0,
+  "Sigma_star3": 80.0,
+  "beta3": 0.8,
+  "A3": 3.0,
+  "r_boost_kpc": 80.0,
+  "w_dec": 1.0,
+  "c_curv": 1.0,
+  "theta_E_arcsec": null,
+  "theta_E_obs": null,
+  "err": 0.8720412360564758,
+  "kappa_max": 0.1340837945576425,
+  "kappa_50": 0.1290412742138301,
+  "kappa_100": 0.1265284348985228,
+  "theta_E_GR": null
+}
