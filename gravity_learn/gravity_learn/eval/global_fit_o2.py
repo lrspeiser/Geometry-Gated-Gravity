@@ -29,47 +29,98 @@ def build_dataset(ds):
         x = np.asarray(dimensionless_radius(R, Rd=(g.Rd_kpc or None)))
         Sh = np.asarray(sigma_hat(Sigma))
         dlnS = np.asarray(grad_log_sigma(R, Sigma))
+        gbar = (Vbar * Vbar) / np.maximum(R, 1e-9)
         items.append({
             "name": g.name,
             "R": R, "Vobs": Vobs, "Vbar": Vbar,
-            "x": x, "Sh": Sh, "dlnS": dlnS,
+            "x": x, "Sh": Sh, "dlnS": dlnS, "gbar": gbar,
         })
     return items
 
 
-def fX_ratio(params, x, Sh, dlnS):
+def fX_ratio(params, x, Sh, dlnS, gbar=None):
     a, b = params
     denom = (a - b * Sh)
     denom = np.where(np.abs(denom) < 1e-6, np.sign(denom) * 1e-6, denom)
     return np.maximum(0.0, (x * x) / denom)
 
 
-def fX_exp(params, x, Sh, dlnS):
+def fX_exp(params, x, Sh, dlnS, gbar=None):
     alpha, c = params
     alpha = np.maximum(alpha, 0.0)
     return np.maximum(0.0, alpha * (x * x) * (np.exp(Sh) + c))
 
+def fX_ratio_curv(params, x, Sh, dlnS, gbar=None):
+    # fX = x^2 / (a - b*Sh - d*|dlnS|)
+    a, b, d = params
+    denom = (a - b * Sh - d * np.abs(dlnS))
+    denom = np.where(np.abs(denom) < 1e-6, np.sign(denom) * 1e-6, denom)
+    return np.maximum(0.0, (x * x) / denom)
+
+def fX_exp_curv(params, x, Sh, dlnS, gbar=None):
+    # fX = alpha * x^2 * (exp(Sh) + c + d*|dlnS|)
+    alpha, c, d = params
+    alpha = np.maximum(alpha, 0.0)
+    return np.maximum(0.0, alpha * (x * x) * (np.exp(Sh) + c + d * np.abs(dlnS)))
+
+
+def fX_ratio_curv_gbar(params, x, Sh, dlnS, gbar=None):
+    # fX = x^2 / (a - b*Sh - d*|dlnS| + e*sqrt(gbar))
+    a, b, d, e = params
+    gb = np.sqrt(np.maximum(gbar, 0.0)) if gbar is not None else 0.0
+    denom = (a - b * Sh - d * np.abs(dlnS) + e * gb)
+    denom = np.where(np.abs(denom) < 1e-6, np.sign(denom) * 1e-6, denom)
+    return np.maximum(0.0, (x * x) / denom)
 
 FAMILIES = {
     "ratio": {"func": fX_ratio, "x0": np.array([0.5, 0.2]), "bounds": [(-1.0, 2.0), (0.0, 2.0)]},
     "exp":   {"func": fX_exp,   "x0": np.array([1.0, 0.5]),  "bounds": [(0.0, 10.0), (-0.9, 5.0)]},
+    "ratio_curv": {"func": fX_ratio_curv, "x0": np.array([0.6, 0.2, 0.1]), "bounds": [(-1.0, 2.0), (0.0, 2.0), (0.0, 3.0)]},
+    "exp_curv":   {"func": fX_exp_curv,   "x0": np.array([1.0, 0.5, 0.1]),  "bounds": [(0.0, 10.0), (-0.9, 5.0), (0.0, 3.0)]},
+    "ratio_curv_gbar": {"func": fX_ratio_curv_gbar, "x0": np.array([0.6, 0.2, 0.1, 0.05]), "bounds": [(-1.0, 2.0), (0.0, 2.0), (0.0, 3.0), (0.0, 1.0)]},
 }
 
 
-def loss_global(params, family_key, dataset):
+def _residuals_for_dataset(params, family_key, dataset):
     f = FAMILIES[family_key]["func"]
-    err = 0.0; npts = 0
+    # Return concatenated arrays of Vmod and Vobs for all galaxies
+    vmods, vobss = [], []
     for it in dataset:
         Vbar = it["Vbar"]; Vobs = it["Vobs"]
-        fX = f(params, it["x"], it["Sh"], it["dlnS"])  # shape (N,)
+        fX = f(params, it["x"], it["Sh"], it["dlnS"], it.get("gbar", None))  # (N,)
         Vmod = Vbar * np.sqrt(np.maximum(0.0, 1.0 + fX))
-        diff = Vmod - Vobs
-        err += float(np.sum(diff * diff))
-        npts += Vobs.size
-    return err / max(npts, 1)
+        vmods.append(Vmod)
+        vobss.append(Vobs)
+    if len(vmods) == 0:
+        return np.array([]), np.array([])
+    return np.concatenate(vmods), np.concatenate(vobss)
 
 
-def fit_family_global(family_key, dataset):
+def loss_global(params, family_key, dataset, objective="mse", huber_delta=15.0):
+    Vmod_all, Vobs_all = _residuals_for_dataset(params, family_key, dataset)
+    if Vmod_all.size == 0:
+        return np.inf
+    diff = Vmod_all - Vobs_all
+    if objective == "mse":
+        return float(np.mean(diff * diff))
+    elif objective == "mape_median":
+        eps = 1e-6
+        ape = np.abs(diff) / np.maximum(np.abs(Vobs_all), eps)
+        return float(np.median(ape))
+    elif objective == "huber":
+        d = np.abs(diff)
+        delta = float(huber_delta)
+        # 0.5 d^2 if d<=delta, else delta*(d - 0.5*delta)
+        quad = 0.5 * (d * d)
+        lin = delta * (d - 0.5 * delta)
+        val = np.where(d <= delta, quad, lin)
+        return float(np.mean(val))
+    else:
+        # default fallback
+        return float(np.mean(diff * diff))
+
+
+def fit_family_global(family_key, dataset, objective="mse", huber_delta=15.0):
     x0 = FAMILIES[family_key]["x0"]
     bounds = FAMILIES[family_key]["bounds"]
     if opt is None:
@@ -80,7 +131,7 @@ def fit_family_global(family_key, dataset):
             best = None
             for a in a_grid:
                 for b in b_grid:
-                    L = loss_global([a, b], family_key, dataset)
+                    L = loss_global([a, b], family_key, dataset, objective=objective, huber_delta=huber_delta)
                     if (best is None) or (L < best[0]):
                         best = (L, a, b)
             return {"params": [float(best[1]), float(best[2])], "loss": float(best[0])}
@@ -90,12 +141,12 @@ def fit_family_global(family_key, dataset):
             best = None
             for a in alpha_grid:
                 for c in c_grid:
-                    L = loss_global([a, c], family_key, dataset)
+                    L = loss_global([a, c], family_key, dataset, objective=objective, huber_delta=huber_delta)
                     if (best is None) or (L < best[0]):
                         best = (L, a, c)
             return {"params": [float(best[1]), float(best[2])], "loss": float(best[0])}
     else:
-        res = opt.minimize(lambda p: loss_global(p, family_key, dataset), x0=x0, bounds=bounds, method="L-BFGS-B")
+        res = opt.minimize(lambda p: loss_global(p, family_key, dataset, objective=objective, huber_delta=huber_delta), x0=x0, bounds=bounds, method="L-BFGS-B")
         return {"params": [float(v) for v in res.x], "loss": float(res.fun)}
 
 
@@ -151,6 +202,8 @@ def main():
     ap.add_argument("--limit_galaxies", type=int, default=-1, help="-1 to use all galaxies")
     ap.add_argument("--montage_limit", type=int, default=16)
     ap.add_argument("--outdir", type=str, default=os.path.join("gravity_learn", "experiments", "eval", "global_fit"))
+    ap.add_argument("--objective", type=str, default="mse", choices=["mse", "mape_median", "huber"], help="Global fit objective")
+    ap.add_argument("--huber_delta", type=float, default=15.0, help="Huber delta parameter (km/s)")
     args = ap.parse_args()
 
     ds = load_sparc()
@@ -161,10 +214,10 @@ def main():
     os.makedirs(args.outdir, exist_ok=True)
 
     results = {}
-    for fam in ("ratio", "exp"):
-        fit = fit_family_global(fam, data_all)
+    for fam in ("ratio", "exp", "ratio_curv", "exp_curv", "ratio_curv_gbar"):
+        fit = fit_family_global(fam, data_all, objective=args.objective, huber_delta=args.huber_delta)
         df, summary = evaluate_metrics(fam, fit["params"], data_all)
-        results[fam] = {"params": fit["params"], "loss": fit["loss"], "summary": summary}
+        results[fam] = {"params": fit["params"], "loss": fit["loss"], "objective": args.objective, "summary": summary}
         # Save metrics and montage
         ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
         df.to_csv(os.path.join(args.outdir, f"per_galaxy_metrics_{fam}_{ts}.csv"), index=False)
