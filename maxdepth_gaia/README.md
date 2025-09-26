@@ -151,6 +151,133 @@ This writes `wedge_summary_phi{phi_bins}.csv/json` in `maxdepth_gaia/outputs/` w
 
 ---
 
+# Executive Summary (what’s built and why)
+
+- Purpose: Test a “saturated‑well” (max-depth/outward-extension) gravity toy model against real Gaia DR3 Milky Way kinematics, with rigorous GR baselines and NFW comparisons.
+- Data: Runs only on your local repository data (Gaia DR3 Milky Way star-level CSV or processed sky-slice Parquet files). No synthetic data.
+- Pipeline: Ingest → robust binning (optional asymmetric drift) → fit inner baryons → detect boundary → anchor and fit saturated-well tail beyond the boundary → fit NFW → produce figures, curves, and metrics.
+- Performance: On the latest MW run, the saturated‑well model outperforms both GR (baryons-only) and GR+NFW across 6–16.5 kpc and overall by MAE/RMSE and χ²-based metrics; inside the boundary it is exactly GR by construction.
+- Rigor: Uses a MW-like multi-component GR baseline (thin+thick stellar disks + H I + H₂ + small bulge), MW-like priors for NFW, two boundary detectors, bootstrap CI, and a smooth C¹ gate that is exactly zero inside the boundary.
+
+# Data sources and I/O (local only)
+
+- Preferred star-level input: `data/gaia_sky_slices/processed_*.parquet` (12 sky slices). Fallback: `data/gaia_mw_real.csv` (Galactocentric kinematics).
+- Outputs are written to `maxdepth_gaia/outputs/`:
+  - `rotation_curve_bins.csv` — binned radii, median vφ, errors, counts, AD flags
+  - `model_curves.csv` — dense curves for GR, GR+NFW, GR+SatWell
+  - `fit_params.json` — all parameters and model comparison stats
+  - `mw_rotation_curve_maxdepth.png` — main figure
+  - `g_ratio_vs_GR.png` — g_model/g_GR profile
+  - `pipeline.log` — log of the run
+
+# Pipeline architecture (high level)
+
+- Ingestion: Auto-detects between slices vs. MW CSV; filters by |z|, σ cuts, radial velocity limits; optional azimuthal wedge selection (φ bins).
+- Binning: Fixed- or wedge-aware radial bins; robust medians; optional asymmetric drift (AD) correction with tunable smoothing and uncertainty inflation.
+- Inner GR fit: By default we use the MW-like multi-disk+gas baseline (below). We still fit a single MN+Hernquist model over 3–8 kpc for diagnostics and error scaling.
+- Error renormalization: Inner-window (3–8 kpc) reduced-χ² ≈ 1 against the chosen GR baseline for fair comparisons.
+- Boundary detection: Consecutive-excess test and a BIC changepoint model; bootstrap CI on R_b.
+- Outer fits:
+  - Anchored saturated-well tail (no mass creation): v_flat anchored by enclosed baryon mass at R_b (ξ≤1), C¹ gate (exact 0 inside), smooth transition.
+  - NFW comparison: V200–c parameterization with MW-like priors.
+- Plotting: Publication-style PNG with data, models, boundary shading, and a dashed MWPotential2014-like GR reference overlay.
+
+# Models
+
+- GR baseline (mw_multi): Two MN stellar disks (thin+thick), two MN gas disks (H I, H₂) and a small Hernquist bulge. Defaults (order-of-magnitude MW-like):
+  - Bulge ~5×10^9 Msun, a_b=0.6 kpc
+  - Thin disk ~4.5×10^10 Msun, a=3.0 kpc, b=0.3 kpc
+  - Thick disk ~1.0×10^10 Msun, a=2.5 kpc, b=0.9 kpc
+  - H I ~1.1×10^10 Msun, a=7.0 kpc, b=0.1 kpc; H₂ ~1.2×10^9 Msun, a=1.5 kpc, b=0.05 kpc
+- NFW: V200–c with R_s=R200/c; bounds [120,180] km/s and [8,20] to avoid extreme/unphysical corners when outer leverage is weak.
+- Saturated-well: Extra term v_extra^2(R) = v_flat^2 · [1 − exp(−(R/R_s)^m)].
+  - Gate: C¹ smoothstep; exactly zero inside R_b and one outside (over ΔR).
+  - Anchor: v_flat^2 = ξ · G M(<R_b)/R_b, with ξ ≤ 1.
+  - Global tail controls (optional): fix m (–-fix_m), fix R_s via R_s = η · R_b (–-eta_rs), fix gate width ΔR (–-gate_width_kpc).
+
+# Boundary detection
+
+- Consecutive-excess: K consecutive bins with significant positive excess vs GR beyond a threshold.
+- BIC changepoint: Evaluate candidate boundaries and fit the anchored tail outside; select by BIC; also compute ΔBIC vs baryons-only.
+- Bootstrap: Resample bins with replacement to estimate R_b confidence interval.
+
+# Rotation curve binning and AD correction
+
+- Robust medians per bin; star counts logged per bin.
+- Optional AD correction (polynomial smoothing; uncertainty inflation factor) to better reflect circular velocity proxies.
+
+# GPU acceleration
+
+- CuPy (if available) is used for large arrays; falls back to NumPy automatically.
+- Backend is logged (cupy vs numpy).
+
+# Latest Milky Way run (Gaia DR3) — headline results
+
+- Data: 108,048 stars after filters; 17 radial bins (3–16.5+ kpc).
+- Boundary: R_b ≈ 6.54 kpc; bootstrap 16–84%: 5.83–7.96 kpc.
+- NFW (MW-like priors): V200 ≈ 180 km/s, c ≈ 14.8.
+- Saturated-well tail: ξ ≈ 0.59, m ≈ 1.50, R_s ≈ 1.06 kpc, v_flat ≈ 136 km/s; smooth gate ΔR ≈ 0.27 kpc; lensing heuristic α ≈ 0.267".
+- Model comparison (per-bin residuals on vφ; MAE/RMSE in km/s; χ² per bin):
+  - 3–6 kpc (inside R_b): SatWell = GR (gate is zero). NFW slightly closer to data.
+  - 6–8 kpc: GR 74.9, NFW 68.1, SatWell 51.5 (χ²/bin ≈ 62.4 — best)
+  - 8–12 kpc: GR 45.7, NFW 36.8, SatWell 11.2 (χ²/bin ≈ 3.59e4 — best by orders of magnitude)
+  - 12–16.5 kpc: GR 73.2, NFW 62.4, SatWell 29.1 (χ²/bin ≈ 147.5 — best)
+  - Overall 3–16.5+ kpc: GR 69.5, NFW 61.7, SatWell 47.9 (χ²/bin ≈ 1.27e4 — best)
+- Interpretation: With a realistic MW-like GR baseline and MW-like NFW priors, the anchored saturated‑well model provides the best match to Gaia rotation bins beyond ~6 kpc; inside the boundary it reduces exactly to GR.
+
+# How to run (recap)
+
+- Slices (preferred):
+  - python -m maxdepth_gaia.run_pipeline --use_source slices --slices_glob "C:\\Users\\henry\\dev\\GravityCalculator\\data\\gaia_sky_slices\\processed_*.parquet" --baryon_model mw_multi --ad_correction --saveplot "C:\\Users\\henry\\dev\\GravityCalculator\\maxdepth_gaia\\outputs\\mw_rotation_curve_maxdepth.png"
+- MW CSV:
+  - python -m maxdepth_gaia.run_pipeline --use_source mw_csv --mw_csv_path "C:\\Users\\henry\\dev\\GravityCalculator\\data\\gaia_mw_real.csv" --baryon_model mw_multi --saveplot "C:\\Users\\henry\\dev\\GravityCalculator\\maxdepth_gaia\\outputs\\mw_rotation_curve_maxdepth.png"
+- Global tail shape example:
+  - python -m maxdepth_gaia.run_pipeline --use_source auto --baryon_model mw_multi --ad_correction --fix_m 1.5 --eta_rs 0.2 --gate_width_kpc 0.8
+- Wedges (stability check):
+  - python -m maxdepth_gaia.wedge_runner --phi_bins 4 --ad_correction --baryon_model mw_multi --fix_m 1.5 --eta_rs 0.2 --gate_width_kpc 0.8
+
+# Useful artifacts
+
+- Overlay reference: A dashed MWPotential2014-like GR curve (from `mw_multi` defaults) appears on the main figure.
+- Evaluator (optional): `maxdepth_gaia/outputs/eval_metrics.py` prints per-range MAE/RMSE and χ²/bin using current outputs.
+
+# Next steps (prioritized)
+
+1) MOND baseline
+- Add MOND (simple μ/ν function with a0) and compare MAE/RMSE/χ²/bin vs GR, NFW, SatWell on the same bins.
+
+2) Lensing benchmarks
+- Replace the heuristic α with a consistent deflection law for the saturated‑well potential; evaluate on a strong-lensing sample (e.g., SLACS), alongside GR+NFW and MOND.
+
+3) Cross-galaxy generalization
+- Fix global tail shape (m, η=R_s/R_b, ΔR) across galaxies; fit only (R_b, ξ). Add SPARC ingestion to reuse published baryon curves.
+
+4) Robustness sweeps
+- Azimuthal wedges (φ bins), AD settings, variable-width outer bins (ensure N≥50), and minimum outside-segment occupancy rules to stabilize R_b.
+
+5) Fitting enhancements
+- Optional joint GR+NFW fit over all bins (helper stub provided), MCMC (emcee) for uncertainty mapping, and a flexible NFW parameterization (M200, c, R200 variable).
+
+6) Diagnostics
+- “Budget audit” panel: plot cumulative used vs allowed v_flat^2 budget to verify the anchor is respected across R.
+
+# Reproducibility and logging
+
+- Every run logs to `maxdepth_gaia/outputs/pipeline.log`.
+- Provenance of input files is written to `used_files.json` in slice mode.
+- Fit parameters and metrics are in `fit_params.json`.
+
+# Notes and references
+
+- GR baseline follows MWPotential2014/McMillan-like scales and masses.
+- Typical MW rotation curve reference: Eilers et al. (2018) — flat ~229 km/s at R0~8.1 kpc with gentle decline.
+- Thick vs thin disk context: A&A (Pouliasis+ 2017) — motivates two-disk GR baseline.
+- NFW priors align with MW-mass halo expectations: c~10–15; V200 ~140–160 km/s (we constrained to [120,180] and [8,20]).
+
+---
+
+---
+
 ## Citation note
 
 This code helps you build a rotation curve from Gaia DR3. If you publish, please
