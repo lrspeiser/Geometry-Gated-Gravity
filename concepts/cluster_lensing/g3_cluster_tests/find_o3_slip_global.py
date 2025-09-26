@@ -191,7 +191,11 @@ def main():
     ell_list = [0.0, 150.0, 300.0, 500.0, 800.0]
     ccurv_list = [0.6, 0.8, 1.0]
 
+    out_dir = Path('concepts/cluster_lensing/g3_cluster_tests/outputs')
+    out_dir.mkdir(parents=True, exist_ok=True)
+
     best = None
+    best_diags = None
     for A3 in A3_list:
         for Sstar in Sigma_star_list:
             for beta in beta_list:
@@ -272,8 +276,75 @@ def main():
                                 rec = {'params': params, 'score': float(score)}
                                 if (best is None) or (score < best['score']):
                                     best = rec
+                                    # Capture diagnostics for the current best across clusters
+                                    try:
+                                        import matplotlib
+                                        matplotlib.use('Agg')
+                                        import matplotlib.pyplot as plt
+                                        HAVE_PLOT = True
+                                    except Exception:
+                                        HAVE_PLOT = False
+                                    diags = {}
+                                    for (name2, z2, theta_obs2, r2, rho2, Sigma_dyn2) in items:
+                                        # Recompute with best params and regulation/veto
+                                        mask_band2 = (r2 >= 30.0) & (r2 <= 100.0)
+                                        Sigma_mean2 = float(np.mean(Sigma_dyn2[mask_band2])) if np.any(mask_band2) else float(np.mean(Sigma_dyn2))
+                                        A3_eff2 = params['A3'] * (max(Sigma_mean2, 1e-9) / max(args.Sigma_star, 1e-9)) ** (-args.gamma_sigma) * (1.0 + float(z2)) ** (-args.gamma_z)
+                                        logr2 = np.log(np.maximum(r2, 1e-12))
+                                        lnS2 = np.log(np.maximum(Sigma_dyn2, 1e-30))
+                                        d12 = np.gradient(lnS2, logr2)
+                                        d22 = np.gradient(d12, logr2)
+                                        curv_band2 = float(np.min(d22[mask_band2])) if np.any(mask_band2) else float(np.min(d22))
+                                        local2 = dict(params)
+                                        if (float(z2) < args.lowz_veto_z) and (curv_band2 > -args.tau_curv):
+                                            local2['A3'] = 0.0
+                                            veto2 = True
+                                        else:
+                                            local2['A3'] = A3_eff2
+                                            veto2 = False
+                                        Sigma_lens2 = o3s.apply_slip(r2, Sigma_dyn2, rho2, local2)
+                                        kap2, kbar2 = kappa_bar(Sigma_lens2, r2, z2)
+                                        RE_kpc2 = theta_E_kpc(r2, kbar2)
+                                        th_arc2 = theta_E_arcsec_from_kpc(RE_kpc2, z2)
+                                        kmax2 = float(np.nanmax(kbar2)) if np.all(np.isfinite(kbar2)) else float('nan')
+                                        k500_2 = float(np.interp(500.0, r2, kbar2))
+                                        step2 = max(1, int(np.ceil(len(r2) / 400.0)))
+                                        idx2 = slice(None, None, step2)
+                                        diags[name2] = {
+                                            'z': float(z2),
+                                            'Sigma_mean_30_100': Sigma_mean2,
+                                            'A3_eff': float(local2['A3']),
+                                            'veto_lowz_curv': bool(veto2),
+                                            'curvature_band': curv_band2,
+                                            'theta_E_arcsec': float(th_arc2) if np.isfinite(th_arc2) else None,
+                                            'kappa_max': float(kmax2) if np.isfinite(kmax2) else None,
+                                            'kappa_500': float(k500_2),
+                                            'profiles': {
+                                                'r_kpc': np.asarray(r2, float)[idx2].tolist(),
+                                                'kbar': np.asarray(kbar2, float)[idx2].tolist(),
+                                            },
+                                        }
+                                        if HAVE_PLOT:
+                                            try:
+                                                fig, ax = plt.subplots(figsize=(4.8, 3.2), dpi=120)
+                                                ax.plot(r2[idx2], kbar2[idx2], label='k̄(r)')
+                                                ax.axhline(1.0, color='k', lw=0.8, ls='--')
+                                                ax.set_xlabel('r [kpc]')
+                                                ax.set_ylabel('k̄')
+                                                ax.set_title(f'{name2}: θE~{th_arc2:.2f} arcsec' if np.isfinite(th_arc2) else f'{name2}: no θE')
+                                                ax.grid(alpha=0.3)
+                                                fig.tight_layout()
+                                                fig.savefig(out_dir / f"o3_slip_best_{name2}.png")
+                                                plt.close(fig)
+                                            except Exception:
+                                                pass
+                                    best_diags = diags
     out = Path('concepts/cluster_lensing/g3_cluster_tests/outputs/o3_slip_global_best.json')
     out.write_text(json.dumps(best, indent=2))
+    if best_diags is not None:
+        diag_out = Path('concepts/cluster_lensing/g3_cluster_tests/outputs/o3_slip_global_best_diags.json')
+        diag_out.write_text(json.dumps(best_diags, indent=2))
+        print('Saved best diagnostics:', diag_out)
     print('Best global O3 slip params:', best)
 
 if __name__ == '__main__':

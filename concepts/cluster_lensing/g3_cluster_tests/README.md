@@ -210,6 +210,12 @@ Outputs are saved under `concepts/cluster_lensing/g3_cluster_tests/outputs/`.
 
 ## New Diagnostics & Tests (2025-09-26)
 
+- Global search now writes best-configuration diagnostics to `outputs/o3_slip_global_best_diags.json` and, if matplotlib is installed, quick PNG plots per cluster (`outputs/o3_slip_best_<CLUSTER>.png`). These include z, Σ_mean(30–100 kpc), A3_eff, low-z veto flag, curvature band value, θE (arcsec), κ̄_max, κ̄(500 kpc), and decimated κ̄(r).
+- Run the search to refresh these artifacts:
+```
+powershell -NoProfile -Command "python -u 'concepts/cluster_lensing/g3_cluster_tests/find_o3_slip_global.py'"
+```
+
 - Evaluator now writes per-cluster diagnostics to `outputs/o3_slip_eval_diagnostics.json` with:
   - z, A3_base, Σ_mean(30–100 kpc), A3_eff, lowz_veto_applied, curvature_band,
   - κ̄_max, κ̄(500 kpc), and decimated profiles of r_kpc and κ̄(r).
