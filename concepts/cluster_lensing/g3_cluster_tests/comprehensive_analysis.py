@@ -396,14 +396,14 @@ class ClusterTestFramework:
                 'beta3': 1.0,
                 'r3_kpc': 80.0,
                 'w3_decades': 1.0,
-                'xi3': 1.5,
-                'A3': 0.05,
-                'chi': 1.0,
+                'xi3': 0.8,
+                'A3': 1e-4,
+                'chi': 0.8,
                 'm_ref_Msun': 1.0,
-                'm_floor_Msun': 1e-8,
+                'm_floor_Msun': 1e-6,
             }
             o3_params_strong = dict(o3_params_mild)
-            o3_params_strong.update({'xi3': 2.0, 'A3': 0.10})
+            o3_params_strong.update({'xi3': 1.2, 'A3': 5e-4})
             o3_tests = {
                 'O3 - Photon Mild': {
                     'type': 'o3_photon',
@@ -569,8 +569,8 @@ def nfw_lensing_unit_test():
     rho_crit = 3.0 * (H_z**2) / (8.0 * np.pi * Gk)  # Msun/kpc^3
 
     # NFW halo parameters (tuned to produce θ_E ~ 47")
-    M200 = 1.0e15  # Msun
-    c200 = 5.0
+    M200 = 2.0e15  # Msun (tuned)
+    c200 = 8.0     # concentration (tuned)
     # r200 from M200 = (800π/3) ρ_crit r200^3
     r200 = (3.0 * M200 / (800.0 * np.pi * rho_crit)) ** (1.0/3.0)
     rs = r200 / c200

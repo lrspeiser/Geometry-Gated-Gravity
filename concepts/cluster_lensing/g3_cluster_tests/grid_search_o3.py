@@ -16,14 +16,14 @@ from o3_lensing import apply_o3_lensing
 
 
 def run_grid_search_o3(output_dir: str = 'g3_cluster_tests/outputs',
-                       ell3_list=(300.0, 400.0, 500.0),
-                       Sigma_star3_list=(20.0, 30.0, 60.0),
-                       beta3_list=(1.0, 1.5, 2.0),
+                       ell3_list=(300.0, 400.0, 600.0),
+                       Sigma_star3_list=(30.0, 50.0, 80.0),
+                       beta3_list=(1.0, 1.5, 1.8),
                        r3_list=(60.0, 80.0, 120.0),
                        w3_list=(0.7, 1.0, 1.5),
-                       xi3_list=(0.8, 1.2, 1.8),
-                       A3_list=(0.02, 0.05, 0.10),
-                       chi_list=(0.8, 1.0, 1.5)):
+                       xi3_list=(0.5, 0.8, 1.2),
+                       A3_list=(1e-6, 1e-5, 1e-4, 5e-4),
+                       chi_list=(0.5, 0.8, 1.0)):
     os.makedirs(output_dir, exist_ok=True)
 
     fw = ClusterTestFramework()
@@ -63,7 +63,7 @@ def run_grid_search_o3(output_dir: str = 'g3_cluster_tests/outputs',
             'A3': float(A3),
             'chi': float(chi),
             'm_ref_Msun': 1.0,
-            'm_floor_Msun': 1e-8,
+'m_floor_Msun': 1e-6,
         }
         met = compute_metrics(params)
         rec = {
