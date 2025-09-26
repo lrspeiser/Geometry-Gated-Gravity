@@ -4,7 +4,14 @@ import glob
 import numpy as np
 import pandas as pd
 from pathlib import Path
-from rigor.scripts.gaia_to_mw_predictions import stream_bins, fit_baryon_baseline, vbar_mn_hern_kms
+import importlib.util as _ilu, sys as _sys
+from pathlib import Path as _P
+_mod_path = _P(__file__).resolve().parent / 'gaia_to_mw_predictions.py'
+spec = _ilu.spec_from_file_location('gaia_to_mw_predictions', str(_mod_path))
+_gaia = _ilu.module_from_spec(spec); _sys.modules['gaia_to_mw_predictions'] = _gaia; spec.loader.exec_module(_gaia)
+stream_bins = _gaia.stream_bins
+fit_baryon_baseline = _gaia.fit_baryon_baseline
+vbar_mn_hern_kms = _gaia.vbar_mn_hern_kms
 
 
 def main():
