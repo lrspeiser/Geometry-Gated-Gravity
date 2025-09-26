@@ -546,45 +546,30 @@ class ClusterTestFramework:
         return results
 
 
-def nfw_lensing_unit_test():
-    """Exact-cosmology NFW Einstein radius unit test.
-    Returns (theta_E_arcsec, passed_bool).
-    Uses Planck18 distances; if astropy is unavailable, returns (nan, False).
+def _theta_E_for(M200: float, c200: float, z_l: float = 0.184, z_s: float = 1.0) -> float:
+    """Compute θ_E (arcsec) for an NFW(M200,c200) at (z_l,z_s) using exact cosmology.
+    Returns np.nan if integral fails.
     """
     try:
         from astropy.cosmology import Planck18 as COSMO
         import astropy.units as u
     except Exception:
-        return float('nan'), False
-
-    # Reference: Abell 1689-like
-    z_l, z_s = 0.184, 1.0
+        return float('nan')
+    # Distances
     D_l = COSMO.angular_diameter_distance(z_l).to(u.kpc).value
     D_s = COSMO.angular_diameter_distance(z_s).to(u.kpc).value
     D_ls = COSMO.angular_diameter_distance_z1z2(z_l, z_s).to(u.kpc).value
-
-    # Cosmological critical density at z_l [Msun/kpc^3]
+    # Critical density at z_l
     H_z = COSMO.H(z_l).to(u.km / u.s / u.kpc).value  # km/s/kpc
-    Gk = G  # kpc (km/s)^2 Msun^-1 (from module constant)
-    rho_crit = 3.0 * (H_z**2) / (8.0 * np.pi * Gk)  # Msun/kpc^3
-
-    # NFW halo parameters (tuned to produce θ_E ~ 47")
-    M200 = 2.0e15  # Msun (tuned)
-    c200 = 8.0     # concentration (tuned)
-    # r200 from M200 = (800π/3) ρ_crit r200^3
+    rho_crit = 3.0 * (H_z**2) / (8.0 * np.pi * G)  # Msun/kpc^3
+    # NFW scalings
+    f = lambda c: (np.log(1.0 + c) - c/(1.0 + c))
     r200 = (3.0 * M200 / (800.0 * np.pi * rho_crit)) ** (1.0/3.0)
     rs = r200 / c200
-    # ρs from M200 and c
-    def f(c):
-        return np.log(1.0 + c) - c/(1.0 + c)
     rho_s = (M200) / (4.0 * np.pi * rs**3 * f(c200))
-
-    # Build radial grid and density
-    r = np.logspace(0.0, 3.5, 480)  # 1..3162 kpc
+    # Profiles and projection
+    r = np.logspace(0.0, 3.7, 600)  # 1..5e3 kpc
     rho = rho_s / ((r/rs) * (1.0 + r/rs)**2)
-
-    # Project to Sigma(R) and compute kappa_bar(R)
-    # Use local helpers mimicking class methods
     def sigma_from_rho_abel(r_arr, rho_arr, R_eval):
         Sig = np.zeros_like(R_eval)
         for j, Rv in enumerate(R_eval):
@@ -593,35 +578,41 @@ def nfw_lensing_unit_test():
             integ = 2.0 * rho_arr[mask] * rr / np.sqrt(np.maximum(rr**2 - Rv**2, 1e-20))
             Sig[j] = simpson(integ, rr)
         return Sig
-
     Sigma_kpc2 = sigma_from_rho_abel(r, rho, r)
     Sigma_pc2 = Sigma_kpc2 / 1e6
-
-    # Sigma_crit with exact cosmology [Msun/pc^2]
     c_kms = 299792.458
-    Sigma_crit_kpc2 = (c_kms**2 / (4.0 * np.pi * G)) * (D_s / (D_l * D_ls))
-    Sigma_crit_pc2 = Sigma_crit_kpc2 / 1e6
-
+    Sigma_crit_pc2 = (c_kms**2 / (4.0 * np.pi * G)) * (D_s / (D_l * D_ls)) / 1e6
     kappa = Sigma_pc2 / Sigma_crit_pc2
-    # mean kappa
     kbar = np.zeros_like(kappa)
     for i in range(1, len(r)):
         integrand = kappa[:i+1] * r[:i+1]
         val = simpson(integrand, r[:i+1])
         kbar[i] = 2.0 * val / (r[i]**2)
-
-    # Find Einstein radius where kbar ~ 1
     idx = np.where(kbar >= 1.0)[0]
     if idx.size == 0:
-        return float('nan'), False
-    # Use the outermost radius where kbar>=1 (Einstein radius)
+        return float('nan')
     R_E = r[idx[-1]]  # kpc
-    theta_E_rad = R_E / D_l
-    theta_E_arcsec = theta_E_rad * (180.0/np.pi) * 3600.0
+    theta_E_arcsec = (R_E / D_l) * (180.0/np.pi) * 3600.0
+    return float(theta_E_arcsec)
 
-    # Expect about 47" for Abell 1689; accept ±10%
-    passed = (abs(theta_E_arcsec - 47.0) <= 4.7)
-    return float(theta_E_arcsec), bool(passed)
+
+def nfw_lensing_unit_test():
+    """Exact-cosmology NFW Einstein radius unit test.
+    Returns (theta_E_arcsec, passed_bool).
+    Uses Planck18 distances; if astropy is unavailable, returns (nan, False).
+    """
+    try:
+        from astropy.cosmology import Planck18  # noqa: F401
+    except Exception:
+        return float('nan'), False
+    # Tuned reference for A1689-like
+    M200 = 2.0e15
+    c200 = 8.0
+    theta = _theta_E_for(M200, c200)
+    if not np.isfinite(theta):
+        return float('nan'), False
+    passed = (abs(theta - 47.0) <= 4.7)
+    return float(theta), bool(passed)
     
     def plot_results(self, results):
         """Create comprehensive comparison plots"""
