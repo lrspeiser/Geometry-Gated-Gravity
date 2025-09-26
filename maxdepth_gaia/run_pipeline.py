@@ -12,7 +12,7 @@ import pandas as pd
 from .utils import setup_logging, write_json, xp_name, get_xp, G_KPC
 from .data_io import detect_source, load_slices, load_mw_csv
 from .rotation import bin_rotation_curve
-from .models import v_c_baryon, v_c_baryon_multi, MW_DEFAULT, v2_saturated_extra, v_c_nfw, v_flat_from_anchor, lensing_alpha_arcsec, gate_c1
+from .models import v_c_baryon, v_c_baryon_multi, MW_DEFAULT, v2_saturated_extra, v_c_nfw, v_flat_from_anchor, lensing_alpha_arcsec, gate_c1, v_c_mond_from_vbar
 from .boundary import fit_baryons_inner, find_boundary_bic, find_boundary_consecutive, bootstrap_boundary, fit_saturated_well, fit_nfw, compute_metrics
 from .plotting import make_plot
 
@@ -165,16 +165,24 @@ def main():
     v_satwell = np.sqrt(np.clip(vbar_curve**2 + v2_extra, 0.0, None))
 
     v_nfw = np.sqrt(np.clip(vbar_curve**2 + v_c_nfw(Rf, nfw.params.get('V200', 200.0), nfw.params.get('c', 10.0))**2, 0.0, None))
+    # MOND curve based on the same GR baseline
+    v_mond = v_c_mond_from_vbar(Rf, vbar_curve, kind='simple')
 
-    curves_df = pd.DataFrame(dict(R_kpc=Rf, v_baryon=vbar_curve, v_baryon_satwell=v_satwell, v_baryon_nfw=v_nfw))
+    curves_df = pd.DataFrame(dict(R_kpc=Rf, v_baryon=vbar_curve, v_baryon_satwell=v_satwell, v_baryon_nfw=v_nfw, v_baryon_mond=v_mond))
     curves_path = os.path.join(out_dir, 'model_curves.csv')
     curves_df.to_csv(curves_path, index=False)
 
     # Metrics for baryons-only on bins_df
     if args.baryon_model == 'mw_multi':
-        stats_bary = compute_metrics(bins_df['vphi_kms'].to_numpy(), v_c_baryon_multi(bins_df['R_kpc_mid'].to_numpy(), MW_DEFAULT), np.maximum(bins_df['vphi_err_kms'].to_numpy(), 2.0), k_params=5)
+        vb_bins = v_c_baryon_multi(bins_df['R_kpc_mid'].to_numpy(), MW_DEFAULT)
+        stats_bary = compute_metrics(bins_df['vphi_kms'].to_numpy(), vb_bins, np.maximum(bins_df['vphi_err_kms'].to_numpy(), 2.0), k_params=5)
     else:
-        stats_bary = compute_metrics(bins_df['vphi_kms'].to_numpy(), v_c_baryon(bins_df['R_kpc_mid'].to_numpy(), inner.params), np.maximum(bins_df['vphi_err_kms'].to_numpy(), 2.0), k_params=5)
+        vb_bins = v_c_baryon(bins_df['R_kpc_mid'].to_numpy(), inner.params)
+        stats_bary = compute_metrics(bins_df['vphi_kms'].to_numpy(), vb_bins, np.maximum(bins_df['vphi_err_kms'].to_numpy(), 2.0), k_params=5)
+
+    # MOND metrics on bins
+    v_mond_bins = v_c_mond_from_vbar(bins_df['R_kpc_mid'].to_numpy(), vb_bins, kind='simple')
+    stats_mond = compute_metrics(bins_df['vphi_kms'].to_numpy(), v_mond_bins, np.maximum(bins_df['vphi_err_kms'].to_numpy(), 2.0), k_params=5)
 
     # Compose fit_params JSON
     fit_params = dict(
@@ -194,6 +202,10 @@ def main():
         nfw=dict(
             params=nfw.params,
             chi2=nfw.stats.get('chi2'), aic=nfw.stats.get('aic'), bic=nfw.stats.get('bic'),
+        ),
+        mond=dict(
+            kind='simple', a0_m_s2=1.2e-10,
+            chi2=stats_mond.get('chi2'), aic=stats_mond.get('aic'), bic=stats_mond.get('bic')
         ),
         baryons_only=dict(
             chi2=stats_bary.get('chi2'), aic=stats_bary.get('aic'), bic=stats_bary.get('bic')

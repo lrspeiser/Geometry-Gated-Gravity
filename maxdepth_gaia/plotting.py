@@ -29,6 +29,8 @@ def make_plot(bins_df: pd.DataFrame,
         plt.plot(curves_df['R_kpc'], curves_df['v_baryon'], color='steelblue', lw=2, label='Baryons only')
     if 'v_baryon_nfw' in curves_df:
         plt.plot(curves_df['R_kpc'], curves_df['v_baryon_nfw'], color='darkorange', lw=2, label='Baryons + NFW')
+    if 'v_baryon_mond' in curves_df:
+        plt.plot(curves_df['R_kpc'], curves_df['v_baryon_mond'], color='purple', lw=2, label='Baryons + MOND')
     if 'v_baryon_satwell' in curves_df:
         plt.plot(curves_df['R_kpc'], curves_df['v_baryon_satwell'], color='forestgreen', lw=2, label='Baryons + Saturated-well')
 
@@ -54,6 +56,7 @@ def make_plot(bins_df: pd.DataFrame,
     # Text box with stats
     sw = fit_json.get('saturated_well', {})
     nfw = fit_json.get('nfw', {})
+    mond = fit_json.get('mond', {})
     bo = fit_json.get('baryons_only', {})
     txt = []
     if sw:
@@ -66,6 +69,9 @@ def make_plot(bins_df: pd.DataFrame,
     if nfw:
         txt.append(f"NFW: V200={nfw.get('params',{}).get('V200', np.nan):.0f}, c={nfw.get('params',{}).get('c', np.nan):.1f}")
         txt.append(f"AIC/BIC/chi2: {nfw.get('aic', np.nan):.1f} / {nfw.get('bic', np.nan):.1f} / {nfw.get('chi2', np.nan):.1f}")
+    if mond:
+        txt.append(f"MOND(simple): a0=1.2e-10 m/s^2")
+        txt.append(f"AIC/BIC/chi2: {mond.get('aic', np.nan):.1f} / {mond.get('bic', np.nan):.1f} / {mond.get('chi2', np.nan):.1f}")
     if bo:
         txt.append(f"Baryons-only: AIC/BIC/chi2: {bo.get('aic', np.nan):.1f} / {bo.get('bic', np.nan):.1f} / {bo.get('chi2', np.nan):.1f}")
 

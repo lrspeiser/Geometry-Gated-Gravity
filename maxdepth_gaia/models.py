@@ -7,7 +7,7 @@ import numpy as np
 from dataclasses import dataclass
 from typing import Dict, List
 
-from .utils import G_KPC, C_KMS
+from .utils import G_KPC, C_KMS, KPC_M, A0_M_S2
 
 # -----------------------------
 # Baryonic components
@@ -140,3 +140,38 @@ def v_c_nfw(R: np.ndarray, V200: float, c: float, R200_kpc: float = 220.0) -> np
 def v_flat_from_anchor(M_enclosed: float, R_boundary: float, xi: float) -> float:
     # From M_encl and R_b: v_flat^2 ~ G M / R_b up to factor xi
     return np.sqrt(np.clip(xi * G_KPC * M_enclosed / max(R_boundary, 1e-6), 0.0, None))
+
+
+# -----------------------------
+# MOND baseline (from baryon GR curve)
+# -----------------------------
+
+def nu_simple(y: np.ndarray) -> np.ndarray:
+    # Simple mu: mu(x)=x/(1+x) => nu(y)=0.5+sqrt(0.25+1/y)
+    y = np.asarray(y, dtype=float)
+    eps = 1e-30
+    return 0.5 + np.sqrt(0.25 + 1.0 / np.maximum(y, eps))
+
+
+def nu_standard(y: np.ndarray) -> np.ndarray:
+    # Standard mu: mu(x)=x/sqrt(1+x^2) => nu(y)=sqrt(0.5+0.5*sqrt(1+4/y^2))
+    y = np.asarray(y, dtype=float)
+    eps = 1e-30
+    return np.sqrt(0.5 + 0.5 * np.sqrt(1.0 + 4.0 / (np.maximum(y, eps) ** 2)))
+
+
+def v_c_mond_from_vbar(R: np.ndarray, vbar_kms: np.ndarray, a0_m_s2: float = A0_M_S2, kind: str = 'simple') -> np.ndarray:
+    """Compute MOND circular speed from baryonic GR speed vbar(R).
+    Units: R [kpc], vbar [km/s], a0 [m/s^2]. Returns v_mond [km/s].
+    g_N = vbar^2 / R, with consistent units; MOND: g = nu(y) g_N, y=g_N/a0; v^2 = g R = nu * vbar^2.
+    """
+    R = np.asarray(R, dtype=float)
+    vbar_kms = np.asarray(vbar_kms, dtype=float)
+    # Compute y = g_N / a0 with consistent units: g_N(m/s^2) = vbar(km/s)^2 * 1e6 / (R(kpc) * KPC_M)
+    y = (np.power(vbar_kms, 2) * 1.0e6) / (np.maximum(R, 1e-9) * KPC_M * max(a0_m_s2, 1e-30))
+    if kind == 'standard':
+        nu = nu_standard(y)
+    else:
+        nu = nu_simple(y)
+    v_mond2 = np.maximum(nu, 0.0) * np.power(vbar_kms, 2)
+    return np.sqrt(np.clip(v_mond2, 0.0, None))

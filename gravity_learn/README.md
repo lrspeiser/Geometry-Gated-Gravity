@@ -108,12 +108,12 @@ Emergent principle (O2)
 
 Latest robust global fit (updated)
 - Objective: median APE (mape_median) across all points.
-- Best family: exp (fX ≈ α x^2 [exp(Σ̂) + c]).
-- Params: α ≈ 1.247, c ≈ 0.631 (see gravity_learn/experiments/eval/global_fit/best_family.json).
+- Best family: ratio_curv (fX ≈ x^2 / (a − b Σ̂ − d |∇lnΣ|)).
+- Params: a ≈ 0.669, b ≈ 0.140, d ≈ 0.087 (see gravity_learn/experiments/eval/global_fit/best_family.json).
 - Summary (per-galaxy):
-  - rmse_median ≈ 23.86 km/s (IQR ≈ 12.78–44.15)
-  - mape_median ≈ 0.254 (IQR ≈ 0.133–0.362)
-- Note: robust objective lifted Σ̂-gating vs MSE, consistent with overlays and NN distillation.
+  - rmse_median ≈ 24.40 km/s (IQR ≈ 14.69–39.36)
+  - mape_median ≈ 0.242 (IQR ≈ 0.135–0.358)
+- Note: adding the curvature/outer-slope term improved the robust objective vs the Σ̂-only exp family; this matches NN/distillation signals that |∇lnΣ| (or curvature) helps adjust outer behavior automatically.
 
 What’s next (prioritized)
 1) Robust global fit & stratified validation

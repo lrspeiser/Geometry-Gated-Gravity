@@ -15,6 +15,8 @@ except Exception:
 
 G_KPC = 4.300917270e-6  # (kpc km^2 s^-2) / Msun
 C_KMS = 299792.458      # km/s
+KPC_M = 3.0856775814913673e19  # meters in a kiloparsec
+A0_M_S2 = 1.2e-10              # MOND characteristic acceleration (m/s^2)
 
 
 def get_xp(prefer_gpu: bool = True):

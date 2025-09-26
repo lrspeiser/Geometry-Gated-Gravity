@@ -184,6 +184,11 @@ This writes `wedge_summary_phi{phi_bins}.csv/json` in `maxdepth_gaia/outputs/` w
 
 # Models
 
+- MOND: Added a baseline computed from the same GR baryon curve using a ν(y) function.
+  - Default: simple μ(x)=x/(1+x) ⇒ ν(y)=0.5+√(0.25+1/y), with a0=1.2×10^-10 m s^-2.
+  - v_MOND(R) = √ν · v_baryon(R) with y = g_N/a0, g_N = v_baryon^2/R in consistent units.
+  - Plotted as “Baryons + MOND” and included in metrics and fit_params.json.
+
 - GR baseline (mw_multi): Two MN stellar disks (thin+thick), two MN gas disks (H I, H₂) and a small Hernquist bulge. Defaults (order-of-magnitude MW-like):
   - Bulge ~5×10^9 Msun, a_b=0.6 kpc
   - Thin disk ~4.5×10^10 Msun, a=3.0 kpc, b=0.3 kpc
@@ -218,11 +223,11 @@ This writes `wedge_summary_phi{phi_bins}.csv/json` in `maxdepth_gaia/outputs/` w
 - NFW (MW-like priors): V200 ≈ 180 km/s, c ≈ 14.8.
 - Saturated-well tail: ξ ≈ 0.59, m ≈ 1.50, R_s ≈ 1.06 kpc, v_flat ≈ 136 km/s; smooth gate ΔR ≈ 0.27 kpc; lensing heuristic α ≈ 0.267".
 - Model comparison (per-bin residuals on vφ; MAE/RMSE in km/s; χ² per bin):
-  - 3–6 kpc (inside R_b): SatWell = GR (gate is zero). NFW slightly closer to data.
-  - 6–8 kpc: GR 74.9, NFW 68.1, SatWell 51.5 (χ²/bin ≈ 62.4 — best)
-  - 8–12 kpc: GR 45.7, NFW 36.8, SatWell 11.2 (χ²/bin ≈ 3.59e4 — best by orders of magnitude)
-  - 12–16.5 kpc: GR 73.2, NFW 62.4, SatWell 29.1 (χ²/bin ≈ 147.5 — best)
-  - Overall 3–16.5+ kpc: GR 69.5, NFW 61.7, SatWell 47.9 (χ²/bin ≈ 1.27e4 — best)
+  - 3–6 kpc (inside R_b): SatWell = GR (gate is zero). MOND performs best locally (χ²/bin ≈ 20.9).
+  - 6–8 kpc: GR 74.9, NFW 68.1, MOND 33.7 (χ²/bin ≈ 47.7), SatWell 51.5 (χ²/bin ≈ 62.4).
+  - 8–12 kpc: GR 45.7, NFW 36.8, MOND 15.3 (χ²/bin ≈ 4.08e4), SatWell 11.2 (χ²/bin ≈ 3.59e4 — best).
+  - 12–16.5 kpc: GR 73.2, NFW 62.4, MOND 25.0 (χ²/bin ≈ 241.0), SatWell 29.1 (χ²/bin ≈ 147.5 — best).
+  - Overall 3–16.5+ kpc: GR 69.5, NFW 61.7, MOND 33.7 (χ²/bin ≈ 1.45e4), SatWell 47.9 (χ²/bin ≈ 1.27e4 — best total χ²), while MOND gives the lowest MAE/RMSE overall.
 - Interpretation: With a realistic MW-like GR baseline and MW-like NFW priors, the anchored saturated‑well model provides the best match to Gaia rotation bins beyond ~6 kpc; inside the boundary it reduces exactly to GR.
 
 # How to run (recap)
@@ -248,6 +253,11 @@ This writes `wedge_summary_phi{phi_bins}.csv/json` in `maxdepth_gaia/outputs/` w
 
 2) Lensing benchmarks
 - Replace the heuristic α with a consistent deflection law for the saturated‑well potential; evaluate on a strong-lensing sample (e.g., SLACS), alongside GR+NFW and MOND.
+- A starter evaluator is included: `lensing_benchmark.py`. Provide a small CSV with columns `name,z_l,z_s,D_l,D_s,D_ls` and call:
+  ```bash
+  python -c "from maxdepth_gaia.lensing_benchmark import run_lensing_eval; run_lensing_eval('maxdepth_gaia/data/slacs_min.csv', 'maxdepth_gaia/outputs/fit_params.json', 'maxdepth_gaia/outputs/slacs_theta_pred.csv')"
+  ```
+  This uses a SIS-like mapping: θ_E = 2π (v_flat/c)^2 (D_ls/D_s). For GR/NFW/MOND, override with appropriate flat speeds or replace with a full relativistic lensing law as needed.
 
 3) Cross-galaxy generalization
 - Fix global tail shape (m, η=R_s/R_b, ΔR) across galaxies; fit only (R_b, ξ). Add SPARC ingestion to reuse published baryon curves.
