@@ -146,6 +146,55 @@ with two global geometry exponents that modulate an effective scale length and a
 
 ---
 
+## Latest analysis artifacts (robust fits, SR Pareto, MW diagnostics)
+
+This section lists the newest outputs and how to reproduce them.
+
+- Symbolic regression Pareto filtering (simplicity vs accuracy)
+  - Outputs: gravity_learn/experiments/sr/extended/run_20250925_233511/pareto_20250926_2259/
+  - Run:
+    ````
+    python gravity_learn/experiments/sr/extended/pareto_filter.py --inputs \
+      gravity_learn/experiments/sr/extended/run_20250925_233511/xi_excess_equations_20250925_233541.csv \
+      gravity_learn/experiments/sr/extended/run_20250925_233511/fX_over_bar_equations_20250925_233606.csv \
+      --outdir gravity_learn/experiments/sr/extended/run_20250925_233511/pareto_YYYYMMDD_HHMMSS --top_k 5
+    ````
+
+- Robust global O2 fits (objectives: median APE, Huber)
+  - Median APE outputs: gravity_learn/experiments/eval/global_fit/mape_median_20250926_2259/
+    - Command:
+      ````
+      python -m gravity_learn.eval.global_fit_o2 --objective mape_median --outdir gravity_learn/experiments/eval/global_fit/mape_median_YYYYMMDD_HHMMSS
+      ````
+  - Huber outputs (delta=0.1): gravity_learn/experiments/eval/global_fit/huber_d0.1_20250926_2259/
+    - Command:
+      ````
+      python -m gravity_learn.eval.global_fit_o2 --objective huber --huber_delta 0.1 --outdir gravity_learn/experiments/eval/global_fit/huber_d0.1_YYYYMMDD_HHMMSS
+      ````
+  - Notes: The family set includes ratio, exp, ratio_curv, exp_curv, and ratio_curv_gbar.
+
+- Overlays and SPARC residual diagnostics
+  - Overlays for best family per run are written alongside best_family.json
+  - SPARC diagnostics (per-point and per-galaxy, plus feature plots) live under each run’s diagnostics/ subfolder.
+  - Quick regenerate overlays for a given run:
+    ````
+    python -m gravity_learn.eval.plot_rc_overlays_best --best_json gravity_learn/experiments/eval/global_fit/<RUN>/best_family.json --outdir gravity_learn/experiments/eval/global_fit/<RUN> --limit_galaxies 16
+    ````
+
+- Milky Way (Gaia) diagnostics
+  - Outputs per run: gravity_learn/experiments/eval/global_fit/<RUN>/mw/
+  - Uses: data/milkyway/gaia_predictions_by_radius.csv for (R_kpc, Vobs_kms, Vbar_kms, Verr_kms)
+  - Geometry: Sigma(R) from data/mw_sigma_disk.csv, interpolated to RC radii; Rd estimated by a log-linear fit of ln Sigma vs R on [3, 15] kpc.
+  - Run:
+    ````
+    python -m gravity_learn.eval.mw_residual_diagnostics --best_json gravity_learn/experiments/eval/global_fit/<RUN>/best_family.json --outdir gravity_learn/experiments/eval/global_fit/<RUN>
+    ````
+
+Next steps planned
+- Lensing diagnostics: choose between the existing cluster lensing pipeline under concepts/cluster_lensing (O3-era tools) or extend the O2 geometry-gated families to lensing observables. See concepts/cluster_lensing/ for current scripts and outputs. If proceeding with a new O2-to-lensing mapping, we’ll add a reader and comparison script similar to the SPARC/MW diagnostics.
+
+---
+
 ### Notes for GitHub rendering
 
 * Prefer `v_{\rm bar}`-style math over `\text{}` (GitHub often won’t render `\text{}` inline).

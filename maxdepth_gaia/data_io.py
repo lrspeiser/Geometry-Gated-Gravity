@@ -1,10 +1,10 @@
 # data_io.py
 from __future__ import annotations
-import glob
 import os
-import json
-from typing import Optional, Tuple, Dict, Any
+import glob
 import numpy as np
+import pandas as pd
+from typing import Dict, Any, Tuple, List
 import pandas as pd
 
 from .utils import write_json
@@ -32,7 +32,7 @@ def _find_col(cols, aliases) -> Optional[str]:
     return None
 
 
-def detect_source(slices_glob: str, csv_path: str) -> str:
+def detect_source(slices_glob: str, mw_csv_path: str) -> str:
     """Return 'slices' if processed parquet slices exist else 'mw_csv' if CSV exists."""
     if glob.glob(slices_glob):
         return 'slices'
@@ -141,6 +141,71 @@ def load_slices(slices_glob: str,
         plot_sample_size=len(plot_sample),
     )
     return stars_df, meta
+
+
+# -----------------------------
+# SPARC ingestion
+# -----------------------------
+
+def _read_rotmod_dat(path: str) -> pd.DataFrame:
+    """Read a SPARC rotmod .dat file with header like:
+    # Rad  Vobs errV Vgas Vdisk Vbul ...
+    Returns DataFrame with columns: R_kpc, Vobs_kms, Verr_kms, Vgas_kms, Vdisk_kms, Vbul_kms.
+    """
+    rows = []
+    with open(path, 'r') as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith('#'):
+                continue
+            parts = line.split()
+            if len(parts) >= 6:
+                r, vobs, verr, vgas, vdisk, vbul = map(float, parts[:6])
+                rows.append((r, vobs, verr, vgas, vdisk, vbul))
+    if not rows:
+        raise RuntimeError(f"No data rows in {path}")
+    df = pd.DataFrame(rows, columns=['R_kpc','Vobs_kms','Verr_kms','Vgas_kms','Vdisk_kms','Vbul_kms'])
+    return df
+
+
+def load_sparc_catalog(rotmod_dir: str, master_sheet: str | None = None, names: List[str] | None = None, logger=None) -> List[Dict[str, Any]]:
+    """Load SPARC galaxies from Rotmod_LTG directory; optionally filter by names.
+    Returns list of dict(name, df) where df has R_kpc, vphi_kms, vphi_err_kms, vbar_kms.
+    """
+    if not os.path.isdir(rotmod_dir):
+        raise FileNotFoundError(f"rotmod_dir not found: {rotmod_dir}")
+    # discover available rotmod files
+    files = sorted(glob.glob(os.path.join(rotmod_dir, '*_rotmod.dat')))
+    if not files:
+        raise RuntimeError(f"No *_rotmod.dat files in {rotmod_dir}")
+    # map name->file
+    name_to_file = {}
+    for fp in files:
+        base = os.path.basename(fp)
+        name = base.replace('_rotmod.dat','')
+        name_to_file[name] = fp
+    # determine selection
+    selected = []
+    if names:
+        for n in names:
+            if n in name_to_file:
+                selected.append(n)
+            else:
+                if logger:
+                    logger.warning(f"SPARC galaxy not found in rotmod list: {n}")
+    else:
+        # pick first 10 by default
+        selected = list(name_to_file.keys())[:10]
+    out = []
+    for n in selected:
+        path = name_to_file[n]
+        df = _read_rotmod_dat(path)
+        vbar = np.sqrt(np.clip(np.power(df['Vgas_kms'],2) + np.power(df['Vdisk_kms'],2) + np.power(df['Vbul_kms'],2), 0.0, None))
+        gal = pd.DataFrame(dict(R_kpc=df['R_kpc'].to_numpy(), vphi_kms=df['Vobs_kms'].to_numpy(), vphi_err_kms=df['Verr_kms'].to_numpy(), vbar_kms=vbar))
+        out.append(dict(name=n, df=gal))
+    if logger:
+        logger.info(f"Loaded {len(out)} SPARC galaxies from {rotmod_dir}")
+    return out
 
 
 def load_mw_csv(csv_path: str,

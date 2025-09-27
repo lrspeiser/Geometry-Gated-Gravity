@@ -11,7 +11,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 from .utils import setup_logging, write_json, xp_name, get_xp, G_KPC
-from .data_io import detect_source, load_slices, load_mw_csv
+from .data_io import detect_source, load_slices, load_mw_csv, load_sparc_catalog
 from .rotation import bin_rotation_curve
 from .models import v_c_baryon, v_c_baryon_multi, MW_DEFAULT, v2_saturated_extra, v_c_nfw, v_flat_from_anchor, lensing_alpha_arcsec, gate_c1, v_c_mond_from_vbar
 from .boundary import fit_baryons_inner, find_boundary_bic, find_boundary_consecutive, bootstrap_boundary, fit_saturated_well, fit_nfw, compute_metrics
@@ -20,9 +20,11 @@ from .plotting import make_plot
 
 def main():
     ap = argparse.ArgumentParser(description='Gaia MW max-depth test (local data only).')
-    ap.add_argument('--use_source', choices=['auto','slices','mw_csv'], default='auto')
+    ap.add_argument('--use_source', choices=['auto','slices','mw_csv','sparc'], default='auto')
     ap.add_argument('--slices_glob', default=os.path.join('data','gaia_sky_slices','processed_*.parquet'))
     ap.add_argument('--mw_csv_path', default=os.path.join('data','gaia_mw_real.csv'))
+    ap.add_argument('--sparc_dir', default=os.path.join('data','Rotmod_LTG'))
+    ap.add_argument('--sparc_names', default=None, help='Comma-separated list of SPARC galaxy names to run (defaults to first 10).')
     ap.add_argument('--zmax', type=float, default=0.5)
     ap.add_argument('--sigma_vmax', type=float, default=30.0)
     ap.add_argument('--vRmax', type=float, default=40.0)
@@ -63,12 +65,97 @@ def main():
         src = args.use_source
         if src == 'auto':
             src = detect_source(args.slices_glob, args.mw_csv_path)
-        if src == 'slices':
+        if src == 'sparc':
+            # SPARC mode: iterate galaxies and process per-galaxy outputs
+            names = [s.strip() for s in args.sparc_names.split(',')] if args.sparc_names else None
+            gal_list = load_sparc_catalog(args.sparc_dir, master_sheet=None, names=names, logger=logger)
+            agg_rows = []
+            for gal in gal_list:
+                gname = gal['name']
+                gdf = gal['df'].copy().sort_values('R_kpc')
+                # Build a bins_df-compatible table
+                R = gdf['R_kpc'].to_numpy(); V = gdf['vphi_kms'].to_numpy(); S = gdf['vphi_err_kms'].to_numpy(); vbar = gdf['vbar_kms'].to_numpy()
+                # Create edges from midpoints
+                edges = np.zeros(len(R)+1)
+                edges[1:-1] = 0.5*(R[:-1] + R[1:])
+                dr0 = R[1]-R[0] if len(R)>1 else 0.1
+                drN = R[-1]-R[-2] if len(R)>1 else 0.1
+                edges[0] = max(0.0, R[0] - dr0/2.0)
+                edges[-1] = R[-1] + drN/2.0
+                bins_df = pd.DataFrame(dict(R_lo=edges[:-1], R_hi=edges[1:], R_kpc_mid=R, vphi_kms=V, vphi_err_kms=S, N=np.ones_like(R)))
+
+                # No inner renormalization in SPARC mode; use vbar as-is
+                R_bins = R
+                vbar_all = vbar
+
+                # Boundary detection
+                out1 = find_boundary_consecutive(bins_df, vbar_all, K=3, S_thresh=2.0, logger=logger)
+                out2 = find_boundary_bic(bins_df, vbar_all, gate_width_fixed=args.gate_width_kpc, fixed_m=args.fix_m, logger=logger)
+                boundary_obj = out2 if out2.get('found') else (out1 if out1.get('found') else dict(found=False))
+                if not boundary_obj.get('found'):
+                    logger.warning(f"[{gname}] Boundary not detected; skipping galaxy")
+                    continue
+                boundary_obj['method'] = boundary_obj.get('method','bic' if 'delta_bic_vs_baryons' in boundary_obj else 'consecutive')
+                R_boundary = float(boundary_obj['R_boundary'])
+
+                # Fit saturated well and NFW
+                sat = fit_saturated_well(bins_df, vbar_all, R_boundary, gate_width_fixed=args.gate_width_kpc, fixed_m=args.fix_m, eta_rs=args.eta_rs, logger=logger)
+                nfw = fit_nfw(bins_df, vbar_all, logger=logger)
+
+                # Dense curves for plotting (use observed R grid)
+                Rf = np.linspace(edges[0], edges[-1], 300)
+                # Interpolate vbar onto Rf
+                vbar_curve = np.interp(Rf, R, vbar)
+                # SatWell on Rf
+                xi = sat.params.get('xi', np.nan)
+                R_s = sat.params.get('R_s', np.nan)
+                m = sat.params.get('m', np.nan)
+                vflat = sat.params.get('v_flat', np.nan)
+                if np.isfinite(vflat) and np.isfinite(R_s) and np.isfinite(m):
+                    gw = sat.params.get('gate_width_kpc', args.gate_width_kpc if args.gate_width_kpc is not None else 0.8)
+                    v2_extra = v2_saturated_extra(Rf, vflat, R_s, m) * gate_c1(Rf, R_boundary, gw)
+                else:
+                    v2_extra = np.zeros_like(Rf)
+                v_satwell = np.sqrt(np.clip(vbar_curve**2 + v2_extra, 0.0, None))
+                v_nfw = np.sqrt(np.clip(vbar_curve**2 + v_c_nfw(Rf, nfw.params.get('V200', 200.0), nfw.params.get('c', 10.0))**2, 0.0, None))
+                # MOND on SPARC
+                v_mond = v_c_mond_from_vbar(Rf, vbar_curve, a0_m_s2=args.mond_a0, kind=args.mond_kind)
+                curves_df = pd.DataFrame(dict(R_kpc=Rf, v_baryon=vbar_curve, v_baryon_satwell=v_satwell, v_baryon_nfw=v_nfw, v_baryon_mond=v_mond))
+
+                # Metrics on SPARC bins
+                stats_bary = compute_metrics(V, vbar, np.maximum(S, 2.0), k_params=5)
+                v_mond_bins = v_c_mond_from_vbar(R, vbar, a0_m_s2=args.mond_a0, kind=args.mond_kind)
+                stats_mond = compute_metrics(V, v_mond_bins, np.maximum(S, 2.0), k_params=5)
+
+                # Write outputs per galaxy
+                gal_dir = os.path.join(out_dir, 'sparc', gname)
+                os.makedirs(gal_dir, exist_ok=True)
+                bins_path = os.path.join(gal_dir, 'rotation_curve_bins.csv')
+                bins_df.to_csv(bins_path, index=False)
+                curves_df.to_csv(os.path.join(gal_dir, 'model_curves.csv'), index=False)
+                fit_params = dict(
+                    data_source=dict(mode='sparc', name=gname, file=os.path.basename(name_to_file) if 'name_to_file' in locals() else ''),
+                    baryon_model='sparc_baryons',
+                    boundary=boundary_obj,
+                    saturated_well=dict(params=sat.params, chi2=sat.stats.get('chi2'), aic=sat.stats.get('aic'), bic=sat.stats.get('bic'), v_flat=sat.params.get('v_flat')),
+                    nfw=dict(params=nfw.params, chi2=nfw.stats.get('chi2'), aic=nfw.stats.get('aic'), bic=nfw.stats.get('bic')),
+                    mond=dict(kind=args.mond_kind, a0_m_s2=float(args.mond_a0), chi2=stats_mond.get('chi2'), aic=stats_mond.get('aic'), bic=stats_mond.get('bic')),
+                    baryons_only=dict(chi2=stats_bary.get('chi2'), aic=stats_bary.get('aic'), bic=stats_bary.get('bic')),
+                )
+                write_json(os.path.join(gal_dir, 'fit_params.json'), fit_params)
+                make_plot(bins_df, None, curves_df, fit_params, os.path.join(gal_dir, f'{gname}_rotation.png'), logger=logger)
+                # Aggregate row
+                agg_rows.append(dict(name=gname, Rb=R_boundary, xi=sat.params.get('xi'), sw_bic=sat.stats.get('bic'), nfw_bic=nfw.stats.get('bic'), mond_bic=stats_mond.get('bic'), bary_bic=stats_bary.get('bic')))
+
+            # write aggregate
+            if agg_rows:
+                pd.DataFrame(agg_rows).to_csv(os.path.join(out_dir, 'sparc_summary.csv'), index=False)
+            logger.info(f"SPARC processing complete ({len(agg_rows)} galaxies)")
+            return
+        elif src == 'slices':
             stars_df, meta = load_slices(args.slices_glob, zmax=args.zmax, sigma_vmax=args.sigma_vmax, vRmax=args.vRmax,
                                          phi_bins=args.phi_bins, phi_bin_index=args.phi_bin_index, logger=logger)
-            # write used files for provenance
             write_json(os.path.join(out_dir,'used_files.json'), dict(files=meta['files']))
-            # sample for plotting
             star_sample_df = stars_df.sample(n=min(len(stars_df), 200000), random_state=42)
         elif src == 'mw_csv':
             stars_df, meta = load_mw_csv(args.mw_csv_path, zmax=args.zmax, sigma_vmax=args.sigma_vmax, vRmax=args.vRmax, logger=logger)
