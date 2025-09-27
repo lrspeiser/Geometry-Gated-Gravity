@@ -219,6 +219,7 @@ powershell -NoProfile -Command "python -u 'concepts/cluster_lensing/g3_cluster_t
 - Evaluator now writes per-cluster diagnostics to `outputs/o3_slip_eval_diagnostics.json` with:
   - z, A3_base, Σ_mean(30–100 kpc), A3_eff, lowz_veto_applied, curvature_band,
   - κ̄_max, κ̄(500 kpc), and decimated profiles of r_kpc and κ̄(r).
+- Evaluator also saves quick κ̄(r) PNGs per cluster (if matplotlib available): `outputs/o3_slip_eval_<CLUSTER>.png`.
 - Added pytest `tests/test_lowz_veto.py` asserting that when low-z curvature veto conditions are met for Perseus (ABELL_0426), A3 is set to 0 and no Einstein crossing occurs.
 
 Run the test:

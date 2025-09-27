@@ -117,6 +117,17 @@ def main():
     tau_curv = 0.3
     lowz_veto_z = 0.03
 
+    # Outputs dir and plotting availability
+    out_dir = Path('concepts/cluster_lensing/g3_cluster_tests/outputs')
+    out_dir.mkdir(parents=True, exist_ok=True)
+    try:
+        import matplotlib
+        matplotlib.use('Agg')
+        import matplotlib.pyplot as plt
+        HAVE_PLOT = True
+    except Exception:
+        HAVE_PLOT = False
+
     summaries = {}
     diags = {}
     for name, z, theta_obs in clusters:
@@ -145,6 +156,28 @@ def main():
         # Diagnostics (decimate profiles to keep JSON small)
         step = max(1, int(np.ceil(len(r) / 400.0)))
         idx = slice(None, None, step)
+        # Quick plot per cluster, if available
+        if HAVE_PLOT:
+            try:
+                fig, ax = plt.subplots(figsize=(4.8, 3.2), dpi=120)
+                ax.plot(r[idx], kbar[idx], label='k̄(r)')
+                ax.axhline(1.0, color='k', lw=0.8, ls='--', label='k̄=1')
+                # Mark last crossing radius if any
+                idxs = np.where(kbar >= 1.0)[0]
+                if idxs.size > 0:
+                    RE_line = float(r[int(idxs[-1])])
+                    ax.axvline(RE_line, color='r', lw=0.8, ls=':', label='R_E')
+                ttl = f"{name}: θE={th:.2f} arcsec" if np.isfinite(th) else f"{name}: no θE"
+                ax.set_title(ttl)
+                ax.set_xlabel('r [kpc]')
+                ax.set_ylabel('k̄')
+                ax.grid(alpha=0.3)
+                ax.legend(loc='best', fontsize=7)
+                fig.tight_layout()
+                fig.savefig(out_dir / f"o3_slip_eval_{name}.png")
+                plt.close(fig)
+            except Exception:
+                pass
         diags[name] = {
             'z': float(z),
             'A3_base': A3_base,
