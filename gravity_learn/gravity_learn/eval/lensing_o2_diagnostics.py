@@ -15,6 +15,12 @@ import matplotlib.pyplot as plt
 from gravity_learn.features.geometry import dimensionless_radius, sigma_hat, grad_log_sigma
 from gravity_learn.eval.global_fit_o2 import FAMILIES
 
+# Conversion constants (match g3_cluster_tests/o3_lensing.py)
+MU_E = 1.17  # mean molecular weight per electron
+M_P_G = 1.67262192369e-24  # gram
+KPC_CM = 3.0856775814913673e21  # cm
+MSUN_G = 1.988409870698051e33  # gram
+
 # Physical constants
 G = 4.300917270e-6  # kpc km^2 s^-2 Msun^-1
 c_km_s = 299792.458
@@ -118,27 +124,105 @@ def load_best(best_json: str) -> Tuple[str, List[float]]:
     return fam, params
 
 
+def _load_real_cluster_profiles(name: str) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Load real cluster gas and star density profiles if available.
+    Returns (r_kpc, rho_gas+stars [Msun/kpc^3], has_data_mask). If no data, returns (None, None, None).
+    """
+    base = Path('data') / 'clusters' / name
+    if not base.exists():
+        return None, None, None
+    # Gas density: prefer rho_gas_Msun_per_kpc3, else convert from n_e_cm3
+    import pandas as pd
+    rho_total = None
+    r_all = None
+    gas_path = base / 'gas_profile.csv'
+    if gas_path.exists():
+        g = pd.read_csv(gas_path)
+        if 'rho_gas_Msun_per_kpc3' in g.columns:
+            r_g = g['r_kpc'].to_numpy(dtype=float)
+            rho_g = g['rho_gas_Msun_per_kpc3'].to_numpy(dtype=float)
+        elif 'n_e_cm3' in g.columns:
+            r_g = g['r_kpc'].to_numpy(dtype=float)
+            ne = g['n_e_cm3'].to_numpy(dtype=float)
+            rho_g_cm3 = MU_E * M_P_G * ne
+            rho_g = rho_g_cm3 * (KPC_CM**3) / MSUN_G
+        else:
+            r_g = None; rho_g = None
+    else:
+        r_g = None; rho_g = None
+    # Stars density
+    star_path = base / 'stars_profile.csv'
+    if star_path.exists():
+        s = pd.read_csv(star_path)
+        if 'rho_star_Msun_per_kpc3' in s.columns:
+            r_s = s['r_kpc'].to_numpy(dtype=float)
+            rho_s = s['rho_star_Msun_per_kpc3'].to_numpy(dtype=float)
+        else:
+            r_s = None; rho_s = None
+    else:
+        r_s = None; rho_s = None
+    if (r_g is None) and (r_s is None):
+        return None, None, None
+    if r_g is None:
+        r = r_s
+        rho = rho_s
+    elif r_s is None:
+        r = r_g
+        rho = rho_g
+    else:
+        r = np.union1d(r_g, r_s)
+        rho = np.interp(r, r_g, rho_g) + np.interp(r, r_s, rho_s)
+    # Clean
+    m = np.isfinite(r) & np.isfinite(rho) & (r > 0)
+    if not np.any(m):
+        return None, None, None
+    r = np.asarray(r[m]); rho = np.maximum(0.0, np.asarray(rho[m]))
+    i = np.argsort(r); r = r[i]; rho = rho[i]
+    return r, rho, np.ones_like(r, dtype=bool)
+
+
 def compute_lensing_o2_for_cluster(spec: ClusterSpec, fam_key: str, params: List[float], outdir: Path):
     f_entry = FAMILIES[fam_key]
     f = f_entry['func']
 
-    # Grids
-    r = np.logspace(np.log10(5.0), np.log10(spec.r200_kpc), 800)  # kpc
-    R = np.logspace(np.log10(1.0), np.log10(spec.r200_kpc), 600)
-
-    # Baryon mass and Vbar
-    M_bar = baryon_mass_profile(r, spec.r200_kpc, spec.M200_Msun)
-    Vbar = np.sqrt(G * np.maximum(M_bar, 0.0) / np.maximum(r, 1e-12))
-
-    # Baryon rho and projected Sigma (for O2 features)
-    rho_bar = enclosed_mass_to_density(r, M_bar)
-    Sigma_bar_kpc2 = abel_project_sigma(r, rho_bar, R)  # Msun/kpc^2
-    # Use same radii for features/evaluation on R
-    x = dimensionless_radius(R, r_half=spec.rhalf_kpc)
-    Sh = sigma_hat(Sigma_bar_kpc2)  # scale-free
+    # Prefer real data if available
+    r_real, rho_real, ok = _load_real_cluster_profiles(spec.name)
+    if r_real is not None:
+        r = r_real
+        # Build R grid from r
+        R = np.logspace(np.log10(max(1.0, r[0])), np.log10(spec.r200_kpc), 600)
+        rho_bar = rho_real
+        # Enclosed mass and Vbar
+        M_bar = np.zeros_like(r)
+        if r.size > 1:
+            integrand = rho_bar * r * r
+            M_bar[1:] = 4.0 * math.pi * np.cumsum(0.5 * (integrand[1:] + integrand[:-1]) * np.diff(r))
+        M_bar = np.maximum(M_bar, 0.0)
+        Vbar = np.sqrt(G * np.maximum(M_bar, 0.0) / np.maximum(r, 1e-12))
+        # Project Sigma_bar
+        Sigma_bar_kpc2 = abel_project_sigma(r, rho_bar, R)
+        # Derive rhalf from M_bar half-mass radius
+        Mb_tot = float(M_bar[-1]) if M_bar.size > 0 else 1.0
+        half = 0.5 * Mb_tot
+        idx = np.searchsorted(M_bar, half)
+        if 0 < idx < len(r):
+            rhalf_dyn = float(r[idx])
+        else:
+            rhalf_dyn = float(np.median(r))
+        x = dimensionless_radius(R, r_half=rhalf_dyn)
+    else:
+        # Fallback synthetic if no real data
+        r = np.logspace(np.log10(5.0), np.log10(spec.r200_kpc), 800)
+        R = np.logspace(np.log10(1.0), np.log10(spec.r200_kpc), 600)
+        M_bar = baryon_mass_profile(r, spec.r200_kpc, spec.M200_Msun)
+        Vbar = np.sqrt(G * np.maximum(M_bar, 0.0) / np.maximum(r, 1e-12))
+        rho_bar = enclosed_mass_to_density(r, M_bar)
+        Sigma_bar_kpc2 = abel_project_sigma(r, rho_bar, R)
+        x = dimensionless_radius(R, r_half=spec.rhalf_kpc)
+    # Features
+    Sh = sigma_hat(Sigma_bar_kpc2)
     dlnS = grad_log_sigma(R, Sigma_bar_kpc2)
-
-    # Map Vbar from r to R (same radial grid so we interpolate)
+    # gbar on R grid
     Vbar_R = np.interp(R, r, Vbar)
     gbar_R = Vbar_R ** 2 / np.maximum(R, 1e-12)
 

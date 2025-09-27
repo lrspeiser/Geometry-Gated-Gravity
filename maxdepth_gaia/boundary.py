@@ -251,8 +251,7 @@ def fit_saturated_well(bins_df: pd.DataFrame, vbar_all: np.ndarray, R_boundary: 
         # R_s is free
         if gate_width_fixed is None and fixed_m is None:
             def model_out(Rx, xi, R_s, m, dR):
-            vflat = v_flat_from_anchor(M_encl, R_boundary, xi) * np.sqrt(max(anchor_kappa, 1e-12))
-.sqrt(max(anchor_kappa, 1e-12))
+                vflat = v_flat_from_anchor(M_encl, R_boundary, xi) * np.sqrt(max(anchor_kappa, 1e-12))
                 v2_extra = v2_saturated_extra(Rx, vflat, R_s, m) * gate_c1(Rx, R_boundary, dR)
                 return np.sqrt(np.clip(np.power(np.interp(Rx, R, vbar_all), 2) + v2_extra, 0.0, None))
             p0 = [0.8, 10.0, 2.0, 0.8]
@@ -263,7 +262,7 @@ def fit_saturated_well(bins_df: pd.DataFrame, vbar_all: np.ndarray, R_boundary: 
             k_params = 9
         elif gate_width_fixed is not None and fixed_m is None:
             def model_out(Rx, xi, R_s, m):
-            vflat = v_flat_from_anchor(M_encl, R_boundary, xi) * np.sqrt(max(anchor_kappa, 1e-12))
+                vflat = v_flat_from_anchor(M_encl, R_boundary, xi) * np.sqrt(max(anchor_kappa, 1e-12))
                 v2_extra = v2_saturated_extra(Rx, vflat, R_s, m) * gate_c1(Rx, R_boundary, gate_width_fixed)
                 return np.sqrt(np.clip(np.power(np.interp(Rx, R, vbar_all), 2) + v2_extra, 0.0, None))
             popt, pcov = curve_fit(model_out, Rout, Vout, sigma=Sout, absolute_sigma=True,
@@ -272,7 +271,7 @@ def fit_saturated_well(bins_df: pd.DataFrame, vbar_all: np.ndarray, R_boundary: 
             k_params = 8
         elif gate_width_fixed is None and fixed_m is not None:
             def model_out(Rx, xi, R_s, dR):
-            vflat = v_flat_from_anchor(M_encl, R_boundary, xi) * np.sqrt(max(anchor_kappa, 1e-12))
+                vflat = v_flat_from_anchor(M_encl, R_boundary, xi) * np.sqrt(max(anchor_kappa, 1e-12))
                 v2_extra = v2_saturated_extra(Rx, vflat, R_s, fixed_m) * gate_c1(Rx, R_boundary, dR)
                 return np.sqrt(np.clip(np.power(np.interp(Rx, R, vbar_all), 2) + v2_extra, 0.0, None))
             popt, pcov = curve_fit(model_out, Rout, Vout, sigma=Sout, absolute_sigma=True,

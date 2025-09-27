@@ -13,9 +13,9 @@
   "M200_Msun": 2000000000000000.0,
   "Einstein_radius_arcsec_baryons": null,
   "Einstein_radius_kpc_baryons": null,
-  "Einstein_radius_arcsec_O2": 0.4780736689263827,
-  "Einstein_radius_kpc_O2": 1.4703335062704872,
-  "max_kappa_eff_mean": 2.3285012908118996,
-  "max_kappa_bar_mean": 0.17254520137664203,
+  "Einstein_radius_arcsec_O2": 0.5599643939396819,
+  "Einstein_radius_kpc_O2": 1.72219150361687,
+  "max_kappa_eff_mean": 1.0149349373997532,
+  "max_kappa_bar_mean": 0.9830447560744368,
   "note": "O2-effective lensing computed via g_total = gbar*(1+fX(x,Sh,|dlnS|,gbar))."
 }
