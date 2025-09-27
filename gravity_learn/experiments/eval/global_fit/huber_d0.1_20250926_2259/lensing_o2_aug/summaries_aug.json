@@ -1,0 +1,39 @@
+{
+  "best": {
+    "w_env": 0.0,
+    "w_curv": 0.30000000000000004,
+    "score": 4.946269997640425
+  },
+  "clusters": [
+    {
+      "cluster": "Abell_1689",
+      "theta_obs_arcsec": 47.0,
+      "theta_base_arcsec": 0.32514641714043,
+      "theta_aug_arcsec": 0.3320924012352245
+    },
+    {
+      "cluster": "A2029",
+      "theta_obs_arcsec": 28.0,
+      "theta_base_arcsec": 0.6881409586407735,
+      "theta_aug_arcsec": 0.7262181646089546
+    },
+    {
+      "cluster": "A478",
+      "theta_obs_arcsec": 31.0,
+      "theta_base_arcsec": 0.6070730675542577,
+      "theta_aug_arcsec": 0.6425631505727888
+    },
+    {
+      "cluster": "A1795",
+      "theta_obs_arcsec": null,
+      "theta_base_arcsec": 0.834288524614562,
+      "theta_aug_arcsec": 0.8896440695216201
+    },
+    {
+      "cluster": "ABELL_0426",
+      "theta_obs_arcsec": null,
+      "theta_base_arcsec": 2.7498809437708447,
+      "theta_aug_arcsec": 2.7683050480244873
+    }
+  ]
+}
