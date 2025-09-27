@@ -50,6 +50,7 @@ def main():
     ap.add_argument('--eta_rs', type=float, default=None, help='Optional: fix R_s as eta_rs * R_boundary (global tail shape).')
     ap.add_argument('--mond_kind', choices=['simple','standard'], default='simple')
     ap.add_argument('--mond_a0', type=float, default=1.2e-10)
+    ap.add_argument('--anchor_kappa', type=float, default=1.0, help='Global scale factor on v_flat^2 anchor (>=1.0 increases tail amplitude).')
     ap.add_argument('--debug', action='store_true')
     args = ap.parse_args()
 
@@ -99,7 +100,7 @@ def main():
                 R_boundary = float(boundary_obj['R_boundary'])
 
                 # Fit saturated well and NFW
-                sat = fit_saturated_well(bins_df, vbar_all, R_boundary, gate_width_fixed=args.gate_width_kpc, fixed_m=args.fix_m, eta_rs=args.eta_rs, logger=logger)
+                sat = fit_saturated_well(bins_df, vbar_all, R_boundary, gate_width_fixed=args.gate_width_kpc, fixed_m=args.fix_m, eta_rs=args.eta_rs, anchor_kappa=args.anchor_kappa, logger=logger)
                 nfw = fit_nfw(bins_df, vbar_all, logger=logger)
 
                 # Dense curves for plotting (use observed R grid)
@@ -234,7 +235,7 @@ def main():
     M_enclosed = float((Vb**2) * R_boundary / G_KPC)
 
     # Outer fits
-    sat = fit_saturated_well(bins_df, vbar_all, R_boundary, gate_width_fixed=args.gate_width_kpc, fixed_m=args.fix_m, eta_rs=args.eta_rs, logger=logger)
+    sat = fit_saturated_well(bins_df, vbar_all, R_boundary, gate_width_fixed=args.gate_width_kpc, fixed_m=args.fix_m, eta_rs=args.eta_rs, anchor_kappa=args.anchor_kappa, logger=logger)
     nfw = fit_nfw(bins_df, vbar_all, logger=logger)
 
     # Build dense curves for plotting
