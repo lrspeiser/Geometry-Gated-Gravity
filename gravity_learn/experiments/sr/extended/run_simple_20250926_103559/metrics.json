@@ -1,0 +1,21 @@
+{
+  "rmse": 1.8460772770674618,
+  "median_ape": 0.7222876082506952,
+  "best_loss": 3.1645396,
+  "chosen_complexity": 3,
+  "chosen_loss": 3.2551146,
+  "chosen_equation": "x0 * 2.560816",
+  "sympy_format": "x0*2.560816",
+  "lambda_format": "PySRFunction(X=>x0*2.560816)",
+  "features": [
+    "x_dimless",
+    "Sigma_hat",
+    "grad_ln_Sigma"
+  ],
+  "n_points": 767,
+  "config": {
+    "niterations": 350,
+    "maxsize": 14,
+    "rel_tol": 0.05
+  }
+}

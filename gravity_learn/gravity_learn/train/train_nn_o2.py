@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 
 from rigor.rigor.data import load_sparc
-from gravity_learn.features.geometry import dimensionless_radius, sigma_hat, grad_log_sigma
+from gravity_learn.features.geometry import dimensionless_radius, sigma_hat, grad_log_sigma, kappa_rho
 
 from sklearn.model_selection import GroupKFold
 from sklearn.neural_network import MLPRegressor
@@ -20,6 +20,34 @@ except Exception:
 
 G_KPC_KMS2_PER_MSUN = 4.30091e-6
 
+
+def _rolling_mean(x: np.ndarray, w: int) -> np.ndarray:
+    if w <= 1:
+        return x.copy()
+    kernel = np.ones(w, dtype=float) / float(w)
+    return np.convolve(x, kernel, mode='same')
+
+def _gaussian_smooth(x: np.ndarray, sigma_bins: float) -> np.ndarray:
+    if sigma_bins <= 0:
+        return x.copy()
+    # Build kernel with radius 3*sigma
+    radius = max(1, int(3 * sigma_bins))
+    xs = np.arange(-radius, radius + 1)
+    kern = np.exp(-(xs ** 2) / (2.0 * sigma_bins * sigma_bins))
+    kern /= kern.sum()
+    return np.convolve(x, kern, mode='same')
+
+def _align_len(a: np.ndarray, n: int) -> np.ndarray:
+    a = np.asarray(a)
+    if a.shape[0] == n:
+        return a
+    if a.shape[0] > n:
+        return a[:n]
+    # pad by edge value if shorter
+    if a.shape[0] == 0:
+        return np.zeros(n, dtype=float)
+    pad_width = n - a.shape[0]
+    return np.pad(a, (0, pad_width), mode='edge')
 
 def build_table(limit_galaxies: int = -1, use_outer_flag: bool = True) -> pd.DataFrame:
     ds = load_sparc()
@@ -39,6 +67,14 @@ def build_table(limit_galaxies: int = -1, use_outer_flag: bool = True) -> pd.Dat
         x = np.asarray(dimensionless_radius(R, Rd=(g.Rd_kpc or None)))
         Sh = np.asarray(sigma_hat(Sigma))
         dlnS = np.asarray(grad_log_sigma(R, Sigma))
+        # Non-local and curvature features
+        n = len(R)
+        Sh_rm3 = _align_len(_rolling_mean(Sh, 3), n)
+        Sh_rm5 = _align_len(_rolling_mean(Sh, 5), n)
+        Sh_rm9 = _align_len(_rolling_mean(Sh, 9), n)
+        Sh_g1 = _align_len(_gaussian_smooth(Sh, sigma_bins=1.0), n)
+        Sh_g2 = _align_len(_gaussian_smooth(Sh, sigma_bins=2.0), n)
+        kappa_sigma = _align_len(kappa_rho(R, Sigma), n)
         eps = 1e-12
         g_req = (Vobs * Vobs) / (R + eps)
         g_bar = (Vbar * Vbar) / (R + eps)
@@ -53,6 +89,7 @@ def build_table(limit_galaxies: int = -1, use_outer_flag: bool = True) -> pd.Dat
         # outer indicator
         if use_outer_flag and hasattr(g, 'outer_mask') and g.outer_mask is not None:
             outer = g.outer_mask[mask].astype(int)
+            outer = _align_len(outer, len(R)).astype(int)
         else:
             outer = (np.arange(len(R)) >= int(0.66 * len(R))).astype(int)
         df = pd.DataFrame({
@@ -68,6 +105,12 @@ def build_table(limit_galaxies: int = -1, use_outer_flag: bool = True) -> pd.Dat
             "invR": invR,
             "Sigma": Sigma,
             "Sigma_hat": Sh,
+            "Sigma_hat_rm3": Sh_rm3,
+            "Sigma_hat_rm5": Sh_rm5,
+            "Sigma_hat_rm9": Sh_rm9,
+            "Sigma_hat_g1": Sh_g1,
+            "Sigma_hat_g2": Sh_g2,
+            "kappa_sigma": kappa_sigma,
             "grad_ln_Sigma": dlnS,
             "outer": outer,
             "xi_emp": xi_emp,
@@ -84,7 +127,10 @@ def build_table(limit_galaxies: int = -1, use_outer_flag: bool = True) -> pd.Dat
 def pick_features(df: pd.DataFrame):
     feature_cols = [
         "x", "x2", "x3", "lnR", "invR", "g_bar",
-        "Sigma", "Sigma_hat", "grad_ln_Sigma", "outer",
+        "Sigma", "Sigma_hat",
+        "Sigma_hat_rm3", "Sigma_hat_rm5", "Sigma_hat_rm9",
+        "Sigma_hat_g1", "Sigma_hat_g2",
+        "kappa_sigma", "grad_ln_Sigma", "outer",
     ]
     X = df[feature_cols].to_numpy()
     groups = df["Galaxy"].to_numpy()

@@ -324,7 +324,7 @@ def fit_saturated_well(bins_df: pd.DataFrame, vbar_all: np.ndarray, R_boundary: 
                 return np.sqrt(np.clip(np.power(np.interp(Rx, R, vbar_all), 2) + v2_extra, 0.0, None))
             popt, pcov = curve_fit(model_out, Rout, Vout, sigma=Sout, absolute_sigma=True,
                                    p0=[0.8], bounds=([0.1], [1.0]), maxfev=20000)
-            xi = popt[0]; dR = gate_width_fixed
+            xi = popt[0]; dR = gate_width_fixed; m = fixed_m
             k_params = 6
 
     vflat = v_flat_from_anchor(M_encl, R_boundary, xi)
