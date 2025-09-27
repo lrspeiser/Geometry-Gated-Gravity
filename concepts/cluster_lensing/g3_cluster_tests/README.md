@@ -211,9 +211,17 @@ Outputs are saved under `concepts/cluster_lensing/g3_cluster_tests/outputs/`.
 ## New Diagnostics & Tests (2025-09-26)
 
 - Global search now writes best-configuration diagnostics to `outputs/o3_slip_global_best_diags.json` and, if matplotlib is installed, quick PNG plots per cluster (`outputs/o3_slip_best_<CLUSTER>.png`). These include z, Σ_mean(30–100 kpc), A3_eff, low-z veto flag, curvature band value, θE (arcsec), κ̄_max, κ̄(500 kpc), and decimated κ̄(r).
+- Global search also keeps the top-K configurations, with:
+  - `outputs/o3_slip_topk.json` (ranks, scores, params, per-cluster summaries)
+  - `outputs/o3_slip_topk_diags.json` (decimated r,k̄ for overlays)
+  - `outputs/o3_slip_topk_<CLUSTER>.png` (overlay, if matplotlib available)
 - Run the search to refresh these artifacts:
 ```
-powershell -NoProfile -Command "python -u 'concepts/cluster_lensing/g3_cluster_tests/find_o3_slip_global.py'"
+powershell -NoProfile -Command "python -u 'concepts/cluster_lensing/g3_cluster_tests/find_o3_slip_global.py' --topk 5"
+```
+- Regenerate overlays without rerunning search:
+```
+powershell -NoProfile -Command "python -u 'concepts/cluster_lensing/g3_cluster_tests/plot_topk_overlays.py' --diags 'concepts/cluster_lensing/g3_cluster_tests/outputs/o3_slip_topk_diags.json' --topn 5"
 ```
 
 - Evaluator now writes per-cluster diagnostics to `outputs/o3_slip_eval_diagnostics.json` with:
