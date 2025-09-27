@@ -1,0 +1,65 @@
+[
+  {
+    "cluster": "Abell_1689",
+    "family": "ratio_curv_gbar",
+    "params": [
+      0.5458113926490655,
+      0.2224877941704694,
+      0.22739213737163552,
+      0.04309146241123448
+    ],
+    "z_lens": 0.183,
+    "z_source": 1.0,
+    "r200_kpc": 2200.0,
+    "M200_Msun": 2000000000000000.0,
+    "Einstein_radius_arcsec_baryons": null,
+    "Einstein_radius_kpc_baryons": null,
+    "Einstein_radius_arcsec_O2": 0.4780736689263827,
+    "Einstein_radius_kpc_O2": 1.4703335062704872,
+    "max_kappa_eff_mean": 2.3285012908118996,
+    "max_kappa_bar_mean": 0.17254520137664203,
+    "note": "O2-effective lensing computed via g_total = gbar*(1+fX(x,Sh,|dlnS|,gbar))."
+  },
+  {
+    "cluster": "Coma",
+    "family": "ratio_curv_gbar",
+    "params": [
+      0.5458113926490655,
+      0.2224877941704694,
+      0.22739213737163552,
+      0.04309146241123448
+    ],
+    "z_lens": 0.0231,
+    "z_source": 0.8,
+    "r200_kpc": 2000.0,
+    "M200_Msun": 1500000000000000.0,
+    "Einstein_radius_arcsec_baryons": null,
+    "Einstein_radius_kpc_baryons": null,
+    "Einstein_radius_arcsec_O2": null,
+    "Einstein_radius_kpc_O2": null,
+    "max_kappa_eff_mean": 0.31434220385745915,
+    "max_kappa_bar_mean": 0.028987671909093037,
+    "note": "O2-effective lensing computed via g_total = gbar*(1+fX(x,Sh,|dlnS|,gbar))."
+  },
+  {
+    "cluster": "Bullet",
+    "family": "ratio_curv_gbar",
+    "params": [
+      0.5458113926490655,
+      0.2224877941704694,
+      0.22739213737163552,
+      0.04309146241123448
+    ],
+    "z_lens": 0.296,
+    "z_source": 1.2,
+    "r200_kpc": 1800.0,
+    "M200_Msun": 1000000000000000.0,
+    "Einstein_radius_arcsec_baryons": null,
+    "Einstein_radius_kpc_baryons": null,
+    "Einstein_radius_arcsec_O2": 0.3538188453293005,
+    "Einstein_radius_kpc_O2": 1.5614108614334496,
+    "max_kappa_eff_mean": 2.3196251911172405,
+    "max_kappa_bar_mean": 0.15641452390707672,
+    "note": "O2-effective lensing computed via g_total = gbar*(1+fX(x,Sh,|dlnS|,gbar))."
+  }
+]

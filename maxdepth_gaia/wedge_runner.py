@@ -65,6 +65,10 @@ def main():
     ap.add_argument("--gate_width_kpc", type=float, default=None)
     ap.add_argument("--fix_m", type=float, default=None)
     ap.add_argument("--eta_rs", type=float, default=None)
+    # Filtering controls for wedges
+    ap.add_argument("--zmax", type=float, default=0.5)
+    ap.add_argument("--sigma_vmax", type=float, default=30.0)
+    ap.add_argument("--vRmax", type=float, default=40.0)
     args = ap.parse_args()
 
     os.makedirs(args.outputs_dir, exist_ok=True)
@@ -72,7 +76,8 @@ def main():
     base_args: List[str] = ["--baryon_model", args.baryon_model,
                             "--rmin", str(args.rmin), "--rmax", str(args.rmax), "--nbins", str(args.nbins),
                             "--inner_fit_min", str(args.inner_fit_min), "--inner_fit_max", str(args.inner_fit_max),
-                            "--boundary_method", args.boundary_method]
+                            "--boundary_method", args.boundary_method,
+                            "--zmax", str(args.zmax), "--sigma_vmax", str(args.sigma_vmax), "--vRmax", str(args.vRmax)]
     if args.ad_correction:
         base_args.append("--ad_correction")
     if args.gate_width_kpc is not None:

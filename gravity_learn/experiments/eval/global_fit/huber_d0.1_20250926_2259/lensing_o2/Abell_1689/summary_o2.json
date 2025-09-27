@@ -1,0 +1,21 @@
+{
+  "cluster": "Abell_1689",
+  "family": "ratio_curv_gbar",
+  "params": [
+    0.5458113926490655,
+    0.2224877941704694,
+    0.22739213737163552,
+    0.04309146241123448
+  ],
+  "z_lens": 0.183,
+  "z_source": 1.0,
+  "r200_kpc": 2200.0,
+  "M200_Msun": 2000000000000000.0,
+  "Einstein_radius_arcsec_baryons": null,
+  "Einstein_radius_kpc_baryons": null,
+  "Einstein_radius_arcsec_O2": 0.4780736689263827,
+  "Einstein_radius_kpc_O2": 1.4703335062704872,
+  "max_kappa_eff_mean": 2.3285012908118996,
+  "max_kappa_bar_mean": 0.17254520137664203,
+  "note": "O2-effective lensing computed via g_total = gbar*(1+fX(x,Sh,|dlnS|,gbar))."
+}

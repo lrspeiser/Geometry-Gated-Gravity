@@ -1,0 +1,20 @@
+{
+  "cluster": "Bullet",
+  "family": "ratio_curv",
+  "params": [
+    0.6686576907182596,
+    0.14007773322620287,
+    0.08713057433850588
+  ],
+  "z_lens": 0.296,
+  "z_source": 1.2,
+  "r200_kpc": 1800.0,
+  "M200_Msun": 1000000000000000.0,
+  "Einstein_radius_arcsec_baryons": null,
+  "Einstein_radius_kpc_baryons": null,
+  "Einstein_radius_arcsec_O2": 0.2522424574900282,
+  "Einstein_radius_kpc_O2": 1.1131518799487172,
+  "max_kappa_eff_mean": 7.041547036135472,
+  "max_kappa_bar_mean": 0.15641452390707672,
+  "note": "O2-effective lensing computed via g_total = gbar*(1+fX(x,Sh,|dlnS|,gbar))."
+}

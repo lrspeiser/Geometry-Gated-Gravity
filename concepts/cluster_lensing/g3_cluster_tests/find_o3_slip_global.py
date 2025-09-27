@@ -159,6 +159,7 @@ def main():
     ap.add_argument('--gamma_sigma', type=float, default=0.5)
     ap.add_argument('--gamma_z', type=float, default=1.0)
     ap.add_argument('--Sigma_star', type=float, default=50.0)
+    ap.add_argument('--topk', type=int, default=5)
     args = ap.parse_args()
     W = _parse_weights(args.weights)
 
@@ -196,6 +197,7 @@ def main():
 
     best = None
     best_diags = None
+    topk = []  # list of {'score','params','clusters':{name:{...}}, 'profiles':{name:{'r_kpc','kbar'}}}
     for A3 in A3_list:
         for Sstar in Sigma_star_list:
             for beta in beta_list:
@@ -206,6 +208,8 @@ def main():
                                 params = {'A3':A3,'Sigma_star':Sstar,'beta':beta,'r_boost_kpc':rb,'w_dec':wd,'ell_kpc':ell,'c_curv':cc}
                                 total_err = 0.0
                                 ok_global = True
+                                cand_clusters = {}
+                                cand_profiles = {}
                                 for (name, z, theta_obs, r, rho, Sigma_dyn) in items:
                                     w = float(W.get(name, 1.0))
                                     # Environment + redshift amplitude regulation
@@ -222,7 +226,8 @@ def main():
                                     d2 = np.gradient(d1, logr)
                                     curv_band = float(np.min(d2[mask_band])) if np.any(mask_band) else float(np.min(d2))
                                     local_params = dict(params)
-                                    if (float(z) < args.lowz_veto_z) and (curv_band > -args.tau_curv):
+                                    veto_flag = (float(z) < args.lowz_veto_z) and (curv_band > -args.tau_curv)
+                                    if veto_flag:
                                         local_params['A3'] = 0.0
                                     else:
                                         local_params['A3'] = A3_eff
@@ -238,6 +243,22 @@ def main():
                                     kbar_500 = float(np.interp(500.0, r, kbar))
                                     if kbar_500 > args.kappa_500:
                                         total_err += w * 1.0 * (kbar_500 - args.kappa_500)
+                                    # collect candidate cluster summary and decimated profile
+                                    kbar_500 = float(np.interp(500.0, r, kbar))
+                                    step_c = max(1, int(np.ceil(len(r) / 400.0)))
+                                    idx_c = slice(None, None, step_c)
+                                    cand_clusters[name] = {
+                                        'z': float(z),
+                                        'theta_E_arcsec': float(th_arc) if np.isfinite(th_arc) else None,
+                                        'kappa_max': float(kmax) if np.isfinite(kmax) else None,
+                                        'kappa_500': kbar_500,
+                                        'veto_lowz_curv': bool(veto_flag),
+                                    }
+                                    cand_profiles[name] = {
+                                        'r_kpc': np.asarray(r, float)[idx_c].tolist(),
+                                        'kbar': np.asarray(kbar, float)[idx_c].tolist(),
+                                    }
+
                                     if theta_obs is not None:
                                         if not np.isfinite(th_arc):
                                             ok_global = False; total_err += w * 7.5
@@ -274,6 +295,14 @@ def main():
                                 # Overall score
                                 score = total_err if ok_global else (total_err + 10.0)
                                 rec = {'params': params, 'score': float(score)}
+                                # Maintain top-K list
+                                if (len(topk) < int(args.topk)):
+                                    topk.append({'params': params, 'score': float(score), 'clusters': cand_clusters, 'profiles': cand_profiles})
+                                    topk.sort(key=lambda x: x['score'])
+                                else:
+                                    if score < topk[-1]['score']:
+                                        topk[-1] = {'params': params, 'score': float(score), 'clusters': cand_clusters, 'profiles': cand_profiles}
+                                        topk.sort(key=lambda x: x['score'])
                                 if (best is None) or (score < best['score']):
                                     best = rec
                                     # Capture diagnostics for the current best across clusters
@@ -345,6 +374,64 @@ def main():
         diag_out = Path('concepts/cluster_lensing/g3_cluster_tests/outputs/o3_slip_global_best_diags.json')
         diag_out.write_text(json.dumps(best_diags, indent=2))
         print('Saved best diagnostics:', diag_out)
+
+    # Write top-K artifacts
+    if topk:
+        topk_path = Path('concepts/cluster_lensing/g3_cluster_tests/outputs/o3_slip_topk.json')
+        # lightweight summary per entry
+        topk_summary = []
+        for i, ent in enumerate(topk, start=1):
+            topk_summary.append({
+                'rank': i,
+                'score': ent['score'],
+                'params': ent['params'],
+                'clusters': ent['clusters'],
+            })
+        topk_path.write_text(json.dumps({'topk': topk_summary}, indent=2))
+        print('Saved top-K summary:', topk_path)
+        # full profiles for overlays
+        topk_diags = {'clusters': {}}
+        for i, ent in enumerate(topk, start=1):
+            for name, prof in ent['profiles'].items():
+                topk_diags['clusters'].setdefault(name, [])
+                topk_diags['clusters'][name].append({
+                    'rank': i,
+                    'score': ent['score'],
+                    'params': ent['params'],
+                    'r_kpc': prof['r_kpc'],
+                    'kbar': prof['kbar'],
+                })
+        topk_diag_path = Path('concepts/cluster_lensing/g3_cluster_tests/outputs/o3_slip_topk_diags.json')
+        topk_diag_path.write_text(json.dumps(topk_diags, indent=2))
+        print('Saved top-K diags:', topk_diag_path)
+        # Attempt PNG overlays per cluster
+        try:
+            import matplotlib
+            matplotlib.use('Agg')
+            import matplotlib.pyplot as plt
+            HAVE_PLOT = True
+        except Exception:
+            HAVE_PLOT = False
+        if HAVE_PLOT:
+            for name, lst in topk_diags['clusters'].items():
+                try:
+                    fig, ax = plt.subplots(figsize=(5.2, 3.4), dpi=120)
+                    for ent in lst:
+                        r_arr = np.asarray(ent['r_kpc'], float)
+                        kb_arr = np.asarray(ent['kbar'], float)
+                        ax.plot(r_arr, kb_arr, label=f"#{ent['rank']} (score {ent['score']:.2f})", lw=1.0)
+                    ax.axhline(1.0, color='k', lw=0.8, ls='--')
+                    ax.set_xlabel('r [kpc]')
+                    ax.set_ylabel('k̄')
+                    ax.set_title(f'Top-{len(lst)} O3 slip configs: {name}')
+                    ax.legend(fontsize=7)
+                    ax.grid(alpha=0.3)
+                    fig.tight_layout()
+                    fig.savefig(out_dir / f"o3_slip_topk_{name}.png")
+                    plt.close(fig)
+                except Exception:
+                    pass
+
     print('Best global O3 slip params:', best)
 
 if __name__ == '__main__':
