@@ -190,6 +190,24 @@ This section lists the newest outputs and how to reproduce them.
     python -m gravity_learn.eval.mw_residual_diagnostics --best_json gravity_learn/experiments/eval/global_fit/<RUN>/best_family.json --outdir gravity_learn/experiments/eval/global_fit/<RUN>
     ````
 
+- Lensing diagnostics (two paths)
+  - Existing cluster pipeline (universal G³):
+    - Run main analysis:
+      ````
+      python concepts/cluster_lensing/cluster_lensing_analysis.py
+      ````
+    - Diagnostics vs observations and NFW:
+      ````
+      python concepts/cluster_lensing/cluster_lensing_diagnostic.py
+      ````
+    - Outputs: out/cluster_lensing/<cluster> and out/cluster_lensing/summaries.json
+  - O2-based lensing mapping (uses best_family.json from robust O2 fits):
+    - Run (per run dir):
+      ````
+      python -m gravity_learn.eval.lensing_o2_diagnostics --best_json gravity_learn/experiments/eval/global_fit/<RUN>/best_family.json --outdir gravity_learn/experiments/eval/global_fit/<RUN>
+      ````
+    - Outputs under gravity_learn/experiments/eval/global_fit/<RUN>/lensing_o2/<cluster>/
+
 Next steps planned
 - Lensing diagnostics: choose between the existing cluster lensing pipeline under concepts/cluster_lensing (O3-era tools) or extend the O2 geometry-gated families to lensing observables. See concepts/cluster_lensing/ for current scripts and outputs. If proceeding with a new O2-to-lensing mapping, we’ll add a reader and comparison script similar to the SPARC/MW diagnostics.
 
