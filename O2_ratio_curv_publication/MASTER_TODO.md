@@ -35,10 +35,10 @@ This master TODO tracks all research paths for the O2 `ratio_curv` geometry-gate
 - [x] ✅ Document model formulation and parameters
 - [x] ✅ Include all results sections (SPARC, MW, cluster limitations)
 - [x] ✅ Write appendices (feature computation, sensitivity, comparison)
-- [ ] 🔄 **IN PROGRESS** Generate Figure 1: Rotation curve overlays (6 galaxies)
-- [ ] Generate Figure 2: Milky Way rotation curve (Gaia bins ±1σ)
-- [ ] Generate Figure 3: Residual diagnostics (4-panel)
-- [ ] Generate Figure 4: Cluster lensing failure (3-panel)
+- [x] ✅ Generate Figure 1: Rotation curve overlays (6 galaxies) - `Figure1_RC_Overlays.png`
+- [x] ✅ Generate Figure 2: Milky Way rotation curve (Gaia bins ±1σ) - `Figure2_MW_RotationCurve.png`
+- [x] ✅ Generate Figure 3: Residual diagnostics (4-panel) - `Figure3_Residual_Diagnostics.png/.pdf`
+- [x] ✅ Generate Figure 4: Cluster lensing failure (3-panel) - `Figure4_Cluster_Lensing.png/.pdf`
 - [ ] Create supplementary Table S1: Per-galaxy metrics (120 galaxies CSV)
 - [ ] Create supplementary Table S2: Cross-validation detailed results
 - [ ] Create supplementary Table S3: Parameter sensitivity analysis
