@@ -1,0 +1,5 @@
+cluster,z,theta_E_obs_arcsec,kT_median_keV,sigma_median_kms,kT_inner_keV,sigma_inner_kms,kT_outer_keV,sigma_outer_kms,n_temp_points,r_min_kpc,r_max_kpc,description,has_lensing
+ABELL_1689,0.1830,47.0000,9.8339,1263.3430,9.7910,1260.5811,9.8339,1263.3430,60,7.6400,909.1700,Massive lensing cluster,True
+A2029,0.0770,28.0000,7.9000,1132.3243,8.2000,1153.6238,7.5000,1103.2855,19,1.0000,1000.0000,Massive relaxed cluster,True
+A478,0.0880,31.0000,6.7500,1046.6685,7.0000,1065.8751,6.4500,1023.1449,19,1.0000,1000.0000,Intermediate-mass cluster,True
+ABELL_0426,0.0180,,4.8158,884.0799,4.4201,846.9851,6.3504,1015.2145,65,0.8950,115.4450,"Perseus - Cool-core, AGN feedback",False
