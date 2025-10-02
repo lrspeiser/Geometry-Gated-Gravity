@@ -189,46 +189,318 @@ This master TODO tracks all research paths for the O2 `ratio_curv` geometry-gate
 
 ## 5️⃣ Cluster-Adapted Gating (05_cluster_adapted_gating/) 🟢 P2
 
-**Goal:** Develop scale-dependent gating to handle clusters
+**Goal:** Systematically test 6 parallel approaches to extend geometry gating to cluster scales
 
-### Tasks:
-- [ ] Laplacian gating hypothesis
-  - Implement: fX_cluster = fX_galaxy × [1 + w_lap·∇²Σ]
-  - Fit w_lap on cluster lensing data
-  - Test if galaxy fits remain stable
-  - **Output:** `laplacian_gating_results.json`
+**Core Problem:** O2 ratio_curv underpredicts cluster Einstein radii by 40-140×. Need order-of-magnitude amplification boost while preserving galaxy fits (median APE < 0.30).
 
-- [ ] Multi-scale smoothing
-  - Smooth Σ over R_smooth ∈ [10, 50, 100, 200] kpc
-  - Weight by scale: Σ_eff = Σ + Σ_smooth(R_smooth) weighted
-  - Fit weights globally
-  - **Output:** `multiscale_gating_results.json`
+**Success Criterion (Universal):**
+```python
+cluster_pass = all(|θ_E_pred - θ_E_obs| / θ_E_obs < 0.3)  # Within 30%
+galaxy_pass = median_APE < 0.30  # Max 6-point degradation
+if cluster_pass and galaxy_pass: PUBLISH
+elif cluster_pass only: TWO_REGIME_MODEL
+else: NEXT_TEST
+```
 
-- [ ] Temperature-dependent screening
-  - For clusters: gate depends on kT(r) (X-ray temperature)
-  - Hypothesis: high-T regions amplify tail
-  - Test on Perseus, A1689, A2029, A478
-  - **Output:** `temperature_gating_results.json`
+---
 
-- [ ] Scale-dependent parameters
-  - Test: b(R) = b₀ (R/R₀)^α, d(R) = d₀ (R/R₀)^β
-  - Fit α, β to match clusters without breaking galaxies
-  - **Output:** `scale_dependent_params.json`
+### **Phase 1: Quick Wins (1 week each)** ⭐ TOP PRIORITY
 
-- [ ] Unified galaxy+cluster fit
-  - Combine SPARC + cluster lensing into single loss
-  - Weight balance: 80% galaxies, 20% clusters
-  - Optimize extended parameter set
-  - **Output:** `unified_fit_results.json`, `unified_einstein_radii.csv`
+#### Test 1: Velocity Dispersion Gating
+- [ ] **Hypothesis:** Deep potential wells (high σ) amplify tail. Clusters σ~1000 km/s vs galaxies σ~100 km/s → 10× natural factor
+- [ ] **Formula:** `fX = x² / (a - b·Σ̂ - d·|∇ln Σ| - e·(σ/σ₀)^α)`
+  - Add parameters: e (gate weight), α (power index)
+  - σ₀ = 100 km/s reference
+  - Prediction: α ≈ 1.5 → (1000/100)^1.5 = 31× cluster boost
+- [ ] **Implementation:**
+  - Code: `compute_velocity_dispersion_from_temperature(kT_keV)`
+  - Code: `fX_ratio_curv_sigma(params, x, Sigma_hat, grad_ln_Sigma, sigma_kms)`
+  - Script: `gravity_learn/eval/cluster_sigma_test.py`
+- [ ] **Data:** Load A1689, A2029, A478 X-ray temperatures from ACCEPT
+- [ ] **Fitting:**
+  - Fix (a, b, d) = (0.6687, 0.1401, 0.0871) from SPARC
+  - Fit (e, α) on 3 clusters to match θ_E
+  - Test on SPARC galaxies with σ from virial mass
+- [ ] **Critical Test:** Does galaxy median APE stay < 0.30?
+- [ ] **Decision:**
+  - ✅ PASS → 5-parameter model, publish immediately
+  - ⚠️ PARTIAL → Proceed to two-regime model (Test 1.7)
+  - ❌ FAIL → Move to Test 2
+- [ ] **Output:** `velocity_dispersion_gating/best_params.json`, `sigma_test_results.csv`
 
-**Estimated Timeline:** 3-4 weeks  
+**Estimated Time:** 1 week  
+**Priority:** 🔴 Highest - Test first
+
+---
+
+#### Test 2: Hot Gas Fraction Gating
+- [ ] **Hypothesis:** Hot X-ray gas (80% in clusters) gates differently than cold HI/stars (20% in galaxies). Baryon phase flip explains boost.
+- [ ] **Formula:** `fX = [x² / (a - b·Σ̂ - d·|∇ln Σ|)] · (1 + k · f_gas)`
+  - Add parameter: k (hot gas amplification factor)
+  - f_gas = M_gas / (M_gas + M_stars)
+  - Prediction: k ≈ 40 → galaxies 9× (f_gas=0.2), clusters 33× (f_gas=0.8)
+- [ ] **Implementation:**
+  - Code: `compute_gas_fraction(M_gas_Msun, M_stars_Msun)`
+  - Code: `fX_ratio_curv_gas_fraction(params, x, Sigma_hat, grad_ln_Sigma, f_gas)`
+  - Script: `gravity_learn/eval/cluster_gas_fraction_test.py`
+- [ ] **Data:** 
+  - Clusters: ACCEPT gas profiles + Halkola et al. (2006) stellar profiles
+  - Galaxies: SPARC HI fraction (~0.2 typical)
+- [ ] **Fitting:**
+  - Fix (a, b, d) from SPARC
+  - Fit k on clusters
+  - Test on galaxies with f_gas ≈ 0.2
+- [ ] **Critical Test:** Can single k fit clusters within 30% AND keep galaxy APE < 0.28?
+- [ ] **Decision:**
+  - ✅ PASS (k ~ 20-50) → 4-parameter model, publish
+  - ⚠️ MARGINAL (k > 100 or breaks galaxies) → Two-regime
+  - ❌ FAIL → Move to Test 3
+- [ ] **Output:** `hot_gas_gating/best_k.json`, `gas_fraction_test_results.csv`
+
+**Estimated Time:** 1 week  
+**Priority:** 🔴 Second highest
+
+---
+
+### **Phase 2: Medium Complexity (2 weeks each)**
+
+#### Test 3: Gravitational Potential Depth Gating
+- [ ] **Hypothesis:** Deeper wells (larger |Φ|/c²) amplify tail. GR-motivated scale-free measure.
+- [ ] **Formula:** `fX = [x² / (a - b·Σ̂ - d·|∇ln Σ|)] · exp(β · |Φ|/Φ₀)`
+  - Φ(R) = -∫ g(r) dr (gravitational potential)
+  - Φ₀ = 10⁴ km²/s² reference
+  - β = amplification strength
+  - Alternative: Power law `(|Φ|/Φ₀)^γ`
+- [ ] **Implementation:**
+  - Code: `compute_gravitational_potential(R_kpc, g_total_kms2)`
+  - Code: `fX_ratio_curv_potential(params, x, Sigma_hat, grad_ln_Sigma, Phi_km2s2)`
+  - Script: `gravity_learn/eval/cluster_potential_test.py`
+- [ ] **Data:** Compute Φ(R) from observed g(R) for clusters and 10 SPARC galaxies
+- [ ] **Diagnostic:** Plot |Φ_typical| vs. system type
+  - Expect: Galaxies |Φ| ~ 10⁴ km²/s², clusters |Φ| ~ 10⁵-10⁶ km²/s²
+  - If ratio < 3×, potential depth doesn't discriminate enough
+- [ ] **Fitting:** Fit β on clusters, test on galaxies
+- [ ] **Critical Test:** Clear factor-of-10 in |Φ| AND β ~ 0.5-2.0 (physical)?
+- [ ] **Decision:**
+  - ✅ PASS → 4-parameter potential-gated model
+  - ❌ FAIL (β > 10 or no |Φ| difference) → Move to Test 4
+- [ ] **Output:** `potential_gating/best_beta.json`, `potential_diagnostic.png`
+
+**Estimated Time:** 2 weeks  
+**Priority:** 🟡 Medium
+
+---
+
+#### Test 4: Multi-Scale Curvature (Laplacian)
+- [ ] **Hypothesis:** Second derivative ∇²Σ captures "curvature of curvature" at cluster scales (100-1000 kpc vs 10 kpc)
+- [ ] **Formula:** `fX = x² / (a - b·Σ̂ - d·|∇ln Σ| - f·|∇²ln Σ|)`
+  - ∇²ln Σ = d²(ln Σ)/dR² (Laplacian of log surface density)
+  - f = Laplacian weight parameter
+- [ ] **Hierarchical variant:** Separate local (10 kpc) and global (100 kpc) scales
+- [ ] **Implementation:**
+  - Code: `compute_laplacian_log_sigma(R_kpc, Sigma_Msun_pc2, smoothing_window=3)`
+  - Code: `fX_ratio_curv_laplacian(params, x, Sigma_hat, grad_ln_Sigma, laplacian_ln_Sigma)`
+  - Script: `gravity_learn/eval/cluster_laplacian_test.py`
+- [ ] **Diagnostic First:** Run `diagnose_laplacian_importance(sparc_data, cluster_data)`
+  - Compute median |∇²ln Σ| for galaxies vs clusters
+  - If ratio < 2×, Laplacian not discriminative → SKIP this test
+  - If ratio > 5×, proceed with full fit
+- [ ] **Fitting:** Fit f on clusters if diagnostic passes
+- [ ] **Critical Test:** Cluster |∇²Σ| > 5× galaxy values AND f helps significantly?
+- [ ] **Decision:**
+  - ✅ PASS → 4-parameter Laplacian-gated model
+  - ❌ FAIL (ratio < 2× or f < 0.01) → Move to Test 5
+- [ ] **Output:** `laplacian_gating/diagnostic.csv`, `laplacian_test_results.json`
+
+**Estimated Time:** 2 weeks  
+**Priority:** 🟡 Medium
+
+---
+
+### **Phase 3: Complex (1 month each)**
+
+#### Test 5: Dynamical State / Merger History
+- [ ] **Hypothesis:** Disturbed/merging clusters (e.g., Bullet) have enhanced lensing due to non-equilibrium dynamics
+- [ ] **Formula:** `fX = fX_base · (1 + h · w_substructure)`
+  - w_substructure = morphological asymmetry metric
+  - Examples: |BCG_offset| / R_500, Gini coefficient, X-ray asymmetry
+- [ ] **Implementation:**
+  - Code: `compute_substructure_metric(xray_centroid_kpc, BCG_position_kpc, R500_kpc)`
+  - Code: `fX_ratio_curv_dynamical(params, x, Sigma_hat, grad_ln_Sigma, w_substructure)`
+  - Script: `gravity_learn/eval/cluster_dynamical_test.py`
+- [ ] **Data Requirements:**
+  - X-ray centroid from Chandra/XMM maps
+  - BCG position from optical imaging
+  - R_500 from mass estimates
+- [ ] **Critical Test:** Do disturbed clusters (w > 0.1) systematically have larger θ_E than relaxed (w < 0.05)?
+- [ ] **Expected Outcome:** Explains scatter, not mean offset → Keep as covariate, not solution
+- [ ] **Output:** `dynamical_state/substructure_metrics.csv`, `w_vs_einstein_radius.png`
+
+**Estimated Time:** 1 month (data acquisition bottleneck)  
+**Priority:** 🟢 Low - mostly explains scatter
+
+---
+
+#### Test 6: Environmental Density (Large-Scale Structure)
+- [ ] **Hypothesis:** Clusters in overdense cosmic web nodes experience stronger modification
+- [ ] **Formula:** `fX = fX_base · (1 + g · log(δ_LSS / δ₀))`
+  - δ_LSS = (ρ_local - ρ_cosmic) / ρ_cosmic at R ~ 5-10 Mpc
+- [ ] **Implementation:**
+  - Code: `compute_environmental_overdensity(cluster_ra_dec, z, catalog)`
+  - Code: `fX_ratio_curv_environmental(params, x, Sigma_hat, grad_ln_Sigma, delta_LSS)`
+  - Script: `gravity_learn/eval/cluster_environment_test.py`
+- [ ] **Data Requirements:**
+  - Galaxy counts around clusters (SDSS, DES photometric redshifts)
+  - Weak lensing convergence maps (optional)
+  - Or: Cosmological simulation LSS density field
+- [ ] **Critical Test:** Correlate θ_E with local overdensity δ measured at 5 Mpc scale
+- [ ] **Expected Outcome:** Requires new large-scale structure data → **Future work**
+- [ ] **Output:** `environmental_density/delta_LSS_catalog.csv`, `theta_E_vs_delta.png`
+
+**Estimated Time:** 1 month (requires LSS data)  
+**Priority:** 🟢 Low - data-intensive, future work
+
+---
+
+### **Master Decision Tree**
+
+```
+START (Week 1)
+│
+├─ Run Test 1 (Velocity Dispersion) [Week 1]
+│  ├─ ✅ PASS → Publish 5-param model, DONE
+│  ├─ ⚠️ PARTIAL → Run Test 2
+│  └─ ❌ FAIL → Run Test 2
+│
+├─ Run Test 2 (Hot Gas Fraction) [Week 2]
+│  ├─ ✅ PASS → Publish 4-param model, DONE
+│  └─ ❌ FAIL → Run Test 3
+│
+├─ Run Test 3 (Potential Depth) [Weeks 3-4]
+│  ├─ ✅ PASS + Test 1 PARTIAL → Combined velocity+potential model
+│  └─ ❌ FAIL → Run Test 4
+│
+├─ Run Test 4 (Multi-Scale Curvature) [Weeks 5-6]
+│  ├─ Diagnostic shows 5× difference → Fit full model
+│  │  ├─ ✅ PASS → Publish Laplacian-gated model
+│  │  └─ ❌ FAIL → Run Test 5
+│  └─ Diagnostic shows <2× → Skip to Test 5
+│
+├─ Run Test 5 (Dynamical State) [Weeks 7-10]
+│  └─ Explains scatter only → Document as covariate, proceed to two-regime
+│
+└─ Run Test 6 (Environmental Density) [Future Work]
+   └─ Requires new LSS data → Defer to follow-up project
+```
+
+**If ALL tests fail:** Accept two-regime interpretation
+- Galaxy scale (R < 30 kpc): Pure O2 ratio_curv with (a, b, d)
+- Cluster scale (R > 100 kpc): Requires dark matter OR different physics
+- Publish honest assessment: "Geometry gating solves galaxies, not clusters"
+
+---
+
+### **Immediate Action Plan (Next 2 Weeks)**
+
+**Week 1: Velocity Dispersion Test**
+```bash
+# Day 1-2: Data preparation
+python -m gravity_learn.data.prepare_cluster_velocity_dispersions \
+    --clusters A1689,A2029,A478 \
+    --output data/clusters/velocity_dispersions.csv
+
+# Day 3-5: Fit model
+python -m gravity_learn.eval.fit_sigma_model \
+    --galaxy_params O2_ratio_curv_publication/results/best_fit/mape_median_20250926_2259/best_family.json \
+    --cluster_data data/clusters/velocity_dispersions.csv \
+    --output experiments/cluster_extensions/sigma_test_$(date +%Y%m%d)
+
+# Day 6-7: Validation
+python -m gravity_learn.eval.validate_sigma_on_galaxies \
+    --sigma_params experiments/cluster_extensions/sigma_test_YYYYMMDD/best_params.json \
+    --sparc_data data/SPARC_Lelli2016_MasterFile.mrt
+```
+
+**Week 2: Hot Gas Fraction Test** (if Week 1 fails or partial)
+```bash
+# Day 1-2: Compute gas fractions
+python -m gravity_learn.data.compute_gas_fractions \
+    --clusters data/clusters/ \
+    --output data/clusters/gas_fractions.csv
+
+# Day 3-5: Fit model
+python -m gravity_learn.eval.fit_gas_model \
+    --galaxy_params O2_ratio_curv_publication/results/best_fit/mape_median_20250926_2259/best_family.json \
+    --cluster_data data/clusters/gas_fractions.csv \
+    --output experiments/cluster_extensions/gas_test_$(date +%Y%m%d)
+
+# Day 6-7: Validation + comparison with Test 1
+python -m gravity_learn.eval.compare_cluster_models \
+    --models sigma_test,gas_test \
+    --output experiments/cluster_extensions/model_comparison.csv
+```
+
+---
+
+### **Unified Success Evaluation Function**
+
+```python
+def evaluate_cluster_extension(model_name, cluster_results, galaxy_results):
+    """
+    Universal success criterion for all cluster extension tests.
+    
+    Parameters:
+    -----------
+    model_name : str
+        Name of test (e.g., 'velocity_dispersion', 'hot_gas_fraction')
+    cluster_results : list of dict
+        Each dict: {'cluster', 'theta_E_obs', 'theta_E_pred', 'z', ...}
+    galaxy_results : dict
+        {'median_APE', 'median_RMSE', 'IQR_APE', ...}
+    
+    Returns:
+    --------
+    decision : str
+        'PUBLISH' | 'TWO_REGIME_MODEL' | 'NEXT_TEST'
+    """
+    # Cluster criterion: All Einstein radii within 30%
+    cluster_pass = all([
+        abs(r['theta_E_pred'] - r['theta_E_obs']) / r['theta_E_obs'] < 0.3
+        for r in cluster_results
+    ])
+    
+    # Galaxy criterion: Median APE must not degrade beyond 0.30
+    # (6-point degradation from baseline 0.242 is max acceptable)
+    galaxy_pass = galaxy_results['median_APE'] < 0.30
+    
+    if cluster_pass and galaxy_pass:
+        print(f"✅ {model_name} SUCCEEDS")
+        print(f"   Cluster accuracy: {[r['theta_E_pred']/r['theta_E_obs'] for r in cluster_results]}")
+        print(f"   Galaxy APE: {galaxy_results['median_APE']:.3f}")
+        return "PUBLISH"
+    
+    elif cluster_pass and not galaxy_pass:
+        print(f"⚠️ {model_name} PARTIAL - clusters work, galaxies break")
+        print(f"   Consider two-regime model or combined approach")
+        return "TWO_REGIME_MODEL"
+    
+    else:
+        print(f"❌ {model_name} FAILS")
+        print(f"   Cluster fit inadequate, move to next test")
+        return "NEXT_TEST"
+```
+
+---
+
+**Estimated Timeline:** 6-10 weeks (depends on how many tests needed)  
 **Deliverables:**
-- 4 gating extension variants tested
-- Performance on galaxies + clusters
-- Comparison table vs. baseline O2
-- Recommendation report
+- 6 test implementations (Python scripts + functions)
+- Test results for each attempted approach (JSON/CSV)
+- Decision tree outcome report
+- Either: Extended parameter model OR two-regime interpretation
+- Follow-up paper draft
 
-**Publication Impact:** Major follow-up paper if successful
+**Publication Impact:** Major follow-up paper if any test succeeds, honest assessment paper if all fail
 
 ---
 
