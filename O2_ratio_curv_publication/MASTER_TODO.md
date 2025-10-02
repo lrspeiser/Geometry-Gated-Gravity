@@ -39,9 +39,9 @@ This master TODO tracks all research paths for the O2 `ratio_curv` geometry-gate
 - [x] ✅ Generate Figure 2: Milky Way rotation curve (Gaia bins ±1σ) - `Figure2_MW_RotationCurve.png`
 - [x] ✅ Generate Figure 3: Residual diagnostics (4-panel) - `Figure3_Residual_Diagnostics.png/.pdf`
 - [x] ✅ Generate Figure 4: Cluster lensing failure (3-panel) - `Figure4_Cluster_Lensing.png/.pdf`
-- [ ] Create supplementary Table S1: Per-galaxy metrics (120 galaxies CSV)
-- [ ] Create supplementary Table S2: Cross-validation detailed results
-- [ ] Create supplementary Table S3: Parameter sensitivity analysis
+- [x] ✅ Create supplementary Table S1: Per-galaxy metrics (120 galaxies CSV) - `TableS1_Per_Galaxy_Metrics.csv`
+- [ ] 🔄 Create supplementary Table S2: Cross-validation detailed results (needs 5-fold CV script)
+- [ ] 🔄 Create supplementary Table S3: Parameter sensitivity analysis (needs sensitivity script)
 
 ### Phase 2: Pre-submission Review
 - [ ] Internal review pass (check for typos, clarity, consistency)

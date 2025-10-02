@@ -1,0 +1,4 @@
+Fold,n_train,n_test,train_median_ape,test_median_ape,overfit_pct
+# TO BE COMPUTED: Requires 5-fold cross-validation implementation
+# Script: generate_tables.py (to be created)
+# Expected runtime: 30-60 minutes (5x global fits)

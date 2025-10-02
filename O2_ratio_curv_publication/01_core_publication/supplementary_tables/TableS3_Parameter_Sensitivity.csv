@@ -1,0 +1,4 @@
+Parameter,Nominal,Perturb_Minus10,Perturb_Plus10,APE_Minus10,APE_Plus10,Sensitivity
+# TO BE COMPUTED: Requires ±10% parameter perturbation analysis
+# Script: generate_tables.py (to be created)
+# Expected runtime: 15-30 minutes (6 model evaluations)
