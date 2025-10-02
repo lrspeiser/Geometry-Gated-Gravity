@@ -1,0 +1,20 @@
+{
+  "cluster": "Coma",
+  "family": "ratio_curv",
+  "params": [
+    0.6686576907182596,
+    0.14007773322620287,
+    0.08713057433850588
+  ],
+  "z_lens": 0.0231,
+  "z_source": 0.8,
+  "r200_kpc": 2000.0,
+  "M200_Msun": 1500000000000000.0,
+  "Einstein_radius_arcsec_baryons": null,
+  "Einstein_radius_kpc_baryons": null,
+  "Einstein_radius_arcsec_O2": null,
+  "Einstein_radius_kpc_O2": null,
+  "max_kappa_eff_mean": 0.7091710626033337,
+  "max_kappa_bar_mean": 0.028987671909093037,
+  "note": "O2-effective lensing computed via g_total = gbar*(1+fX(x,Sh,|dlnS|,gbar))."
+}
