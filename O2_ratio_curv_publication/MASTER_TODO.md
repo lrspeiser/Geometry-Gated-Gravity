@@ -212,11 +212,12 @@ else: NEXT_TEST
   - Add parameters: e (gate weight), α (power index)
   - σ₀ = 100 km/s reference
   - Prediction: α ≈ 1.5 → (1000/100)^1.5 = 31× cluster boost
-- [ ] **Implementation:**
-  - Code: `compute_velocity_dispersion_from_temperature(kT_keV)`
-  - Code: `fX_ratio_curv_sigma(params, x, Sigma_hat, grad_ln_Sigma, sigma_kms)`
-  - Script: `gravity_learn/eval/cluster_sigma_test.py`
-- [ ] **Data:** Load A1689, A2029, A478 X-ray temperatures from ACCEPT
+- [x] ✅ **Implementation:**
+  - Code: ✅ `compute_velocity_dispersion_from_temperature(kT_keV)` - Working
+  - Code: ✅ `fX_ratio_curv_sigma(params, x, Sigma_hat, grad_ln_Sigma, sigma_kms)` - Working
+  - Script: ✅ `velocity_dispersion_model.py` with unit tests (269 lines)
+  - Folder: `05_cluster_adapted_gating/test1_velocity_dispersion/`
+- [x] ✅ **Data:** Have A1689, A2029, A478, ABELL_0426 temperature profiles
 - [ ] **Fitting:**
   - Fix (a, b, d) = (0.6687, 0.1401, 0.0871) from SPARC
   - Fit (e, α) on 3 clusters to match θ_E
