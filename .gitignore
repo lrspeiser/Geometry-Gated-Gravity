@@ -3,3 +3,14 @@ __pycache__/
 *.pyo
 *.pyd
 .DS_Store
+
+# Do not version large CLASH data or FITS artifacts
+# Keep analysis code and small CSV summaries in git, but exclude bulk data
+/data/clash/
+/data/clash/**
+/data/**/*.fits
+/data/**/*.fits.fz
+/data/**/*.fz
+
+# Ignore generated cluster test outputs
+concepts/cluster_lensing/g3_cluster_tests/outputs/
