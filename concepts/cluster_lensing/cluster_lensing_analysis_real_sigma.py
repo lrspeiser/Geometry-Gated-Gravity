@@ -164,7 +164,13 @@ def load_real_cluster_profiles(name: str) -> Tuple[np.ndarray, np.ndarray]:
     return r[i], rho[i]
 
 
-def g3_tail_with_real_sigma(r: np.ndarray, r_half: float, Sigma_bar_kpc2: np.ndarray, params: Dict) -> np.ndarray:
+def g3_tail_with_real_sigma(r: np.ndarray, r_half: float, Sigma_bar_kpc2: np.ndarray, params: Dict,
+                              beta: float = 0.0, phi0_km2s2: float = 1.0e4,
+                              Phi_km2s2: np.ndarray | None = None) -> np.ndarray:
+    """Compute tail acceleration with real-Σ gating and optional potential amplification.
+
+    If beta > 0 and Phi_km2s2 is provided, the tail is multiplied by exp(beta * Phi / phi0_km2s2).
+    """
     p = params
     # Convert Σ from Msun/kpc^2 to Msun/pc^2 for screening
     Sigma_pc2 = Sigma_bar_kpc2 / 1e6
@@ -185,10 +191,32 @@ def g3_tail_with_real_sigma(r: np.ndarray, r_half: float, Sigma_bar_kpc2: np.nda
     screen = 1.0 / (1.0 + (np.maximum(Sigma_pc2, 1e-12) / (p["sigma_star"] + 1e-12))**p["alpha"])**p["kappa"]
     g_tail = (p["v0_kms"]**2 / np.maximum(r, 1e-12)) * gate * screen
     g_tail = p["g_sat"] * np.tanh(g_tail / (p["g_sat"] + 1e-12))
+    # Potential amplification (optional)
+    if (Phi_km2s2 is not None) and (beta is not None) and (float(beta) > 0.0) and (phi0_km2s2 > 0.0):
+        amp = np.exp(np.clip(beta * (np.asarray(Phi_km2s2, float) / float(phi0_km2s2)), -100.0, 100.0))
+        g_tail = g_tail * amp
     return g_tail
 
 
-def compute_cluster(name: str, z_lens: float, z_source: float, outdir: Path) -> Dict:
+def compute_potential_depth(R: np.ndarray, M_enc_R: np.ndarray) -> np.ndarray:
+    """Compute |Phi|(R) = ∫_R^∞ g(r) dr, where g=G M(<r)/r^2 (km^2/s^2/kpc), so Phi in km^2/s^2.
+    We approximate ∞ by the max radius of the grid and integrate outward from each R via cumulative trapezoid.
+    """
+    R = np.asarray(R, float)
+    M_enc_R = np.asarray(M_enc_R, float)
+    g = G * np.maximum(M_enc_R, 0.0) / np.maximum(R**2, 1e-12)
+    # reverse and integrate
+    rr = R[::-1]
+    gg = g[::-1]
+    Phi_rev = np.cumsum(0.5 * (gg[:-1] + gg[1:]) * np.diff(rr))
+    Phi_rev = np.concatenate([[0.0], Phi_rev])
+    Phi = Phi_rev[::-1]
+    return np.abs(Phi)
+
+
+def compute_cluster(name: str, z_lens: float, z_source: float, outdir: Path,
+                    beta: float = 0.0, phi0_km2s2: float = 1.0e4,
+                    generate_plots: bool = True) -> Dict:
     params = UNIVERSAL_PARAMS
     r, rho = load_real_cluster_profiles(name)
     # Enclosed mass and g_bar
@@ -209,8 +237,13 @@ def compute_cluster(name: str, z_lens: float, z_source: float, outdir: Path) -> 
         r_half = float(r[idx])
     else:
         r_half = float(np.median(r))
-    # Tail using real Σ
-    g_tail_R = g3_tail_with_real_sigma(R, r_half, Sigma_bar, params)
+    # Tail using real Σ with optional potential amplification
+    # Interpolate M_enc to R for potential calculation
+    M_enc_R = np.interp(R, r, np.maximum(M_enc, 0.0))
+    Phi_R = compute_potential_depth(R, M_enc_R)
+    g_tail_R = g3_tail_with_real_sigma(R, r_half, Sigma_bar, params,
+                                       beta=float(beta), phi0_km2s2=float(phi0_km2s2),
+                                       Phi_km2s2=Phi_R)
     # gbar on R
     Vbar_R = np.interp(R, r, V_bar)
     gbar_R = Vbar_R**2 / np.maximum(R, 1e-12)
@@ -251,31 +284,32 @@ def compute_cluster(name: str, z_lens: float, z_source: float, outdir: Path) -> 
 
     # Plots
     outdir.mkdir(parents=True, exist_ok=True)
-    fig1, ax = plt.subplots(1, 2, figsize=(13, 5))
-    ax[0].loglog(R, kappa_bar, label='κ_bar', lw=2)
-    ax[0].loglog(R, kappa_eff, label='κ_eff (G³ real-Σ)', lw=2)
-    ax[0].loglog(R, kappa_bar_mean, '--', label='\u0304κ_bar(<R)')
-    ax[0].loglog(R, kappa_eff_mean, '--', label='\u0304κ_eff(<R)')
-    ax[0].axhline(1.0, color='k', ls=':')
-    ax[0].set_xlabel('R (kpc)'); ax[0].set_ylabel('Convergence κ')
-    ax[0].set_title(f'{name}: Convergence (real-Σ)')
-    ax[0].grid(True, which='both', alpha=0.3); ax[0].legend(fontsize=8)
+    if generate_plots:
+        fig1, ax = plt.subplots(1, 2, figsize=(13, 5))
+        ax[0].loglog(R, kappa_bar, label='κ_bar', lw=2)
+        ax[0].loglog(R, kappa_eff, label='κ_eff (G³ real-Σ)', lw=2)
+        ax[0].loglog(R, kappa_bar_mean, '--', label='\u0304κ_bar(<R)')
+        ax[0].loglog(R, kappa_eff_mean, '--', label='\u0304κ_eff(<R)')
+        ax[0].axhline(1.0, color='k', ls=':')
+        ax[0].set_xlabel('R (kpc)'); ax[0].set_ylabel('Convergence κ')
+        ax[0].set_title(f'{name}: Convergence (real-Σ)')
+        ax[0].grid(True, which='both', alpha=0.3); ax[0].legend(fontsize=8)
 
-    ax[1].loglog(R, kappa_bar_mean - kappa_bar, label='γ_t (baryons)', lw=2)
-    ax[1].loglog(R, kappa_eff_mean - kappa_eff, label='γ_t (G³ real-Σ)', lw=2)
-    ax[1].set_xlabel('R (kpc)'); ax[1].set_ylabel('Tangential shear γ_t')
-    ax[1].set_title(f'{name}: Shear (real-Σ)')
-    ax[1].grid(True, which='both', alpha=0.3); ax[1].legend(fontsize=8)
-    fig1.tight_layout(); fig1.savefig(outdir / 'kappa_gamma_realSigma.png', dpi=150)
+        ax[1].loglog(R, kappa_bar_mean - kappa_bar, label='γ_t (baryons)', lw=2)
+        ax[1].loglog(R, kappa_eff_mean - kappa_eff, label='γ_t (G³ real-Σ)', lw=2)
+        ax[1].set_xlabel('R (kpc)'); ax[1].set_ylabel('Tangential shear γ_t')
+        ax[1].set_title(f'{name}: Shear (real-Σ)')
+        ax[1].grid(True, which='both', alpha=0.3); ax[1].legend(fontsize=8)
+        fig1.tight_layout(); fig1.savefig(outdir / 'kappa_gamma_realSigma.png', dpi=150)
 
-    fig2, ax2 = plt.subplots(figsize=(6,5))
-    ax2.loglog(R, Sigma_bar, label='Σ_bar', lw=2)
-    ax2.loglog(R, Sigma_eff, label='Σ_eff (G³ real-Σ)', lw=2)
-    ax2.axhline(Sigma_crit, color='k', ls=':', label='Σ_crit')
-    ax2.set_xlabel('R (kpc)'); ax2.set_ylabel('Σ (Msun/kpc^2)')
-    ax2.set_title(f'{name}: Surface density (real-Σ)')
-    ax2.grid(True, which='both', alpha=0.3); ax2.legend(fontsize=8)
-    fig2.tight_layout(); fig2.savefig(outdir / 'surface_density_realSigma.png', dpi=150)
+        fig2, ax2 = plt.subplots(figsize=(6,5))
+        ax2.loglog(R, Sigma_bar, label='Σ_bar', lw=2)
+        ax2.loglog(R, Sigma_eff, label='Σ_eff (G³ real-Σ)', lw=2)
+        ax2.axhline(Sigma_crit, color='k', ls=':', label='Σ_crit')
+        ax2.set_xlabel('R (kpc)'); ax2.set_ylabel('Σ (Msun/kpc^2)')
+        ax2.set_title(f'{name}: Surface density (real-Σ)')
+        ax2.grid(True, which='both', alpha=0.3); ax2.legend(fontsize=8)
+        fig2.tight_layout(); fig2.savefig(outdir / 'surface_density_realSigma.png', dpi=150)
 
     # Save
     import csv
