@@ -205,11 +205,41 @@ def g3_tail_with_real_sigma(r: np.ndarray, r_half: float, Sigma_bar_kpc2: np.nda
     # Use mean Σ within r_half as scale for rc_eff's Sigma dependence
     mean_S = float(np.mean(Sigma_pc2[r <= r_half])) if np.any(r <= r_half) else float(np.mean(Sigma_pc2))
     rc_eff = rc_eff * (max(mean_S, 1e-8) / 100.0) ** (-p["beta"])  # same exponent use
-    # Variable exponent (logistic_r)
+
+    # Optional: couple sigma(R) into rc_eff
+    if disp_params is not None and bool(disp_params.get('rc_enable', False)) and (sigma_kms is not None):
+        try:
+            sigma0 = float(disp_params.get('sigma0_kms', 100.0))
+            rc_alpha = float(disp_params.get('rc_alpha', 1.0))
+            rc_coef = float(disp_params.get('rc_coef', 0.0))
+            rc_mode = str(disp_params.get('rc_mode', 'mul')).lower()
+            # sigma at r_half
+            sigma_at = float(np.interp(max(r_half, r[0]), r, np.asarray(sigma_kms, float))) if len(r) > 0 else 0.0
+            sigma_norm_scalar = (max(sigma_at, 0.0) / max(sigma0, 1e-9)) ** rc_alpha
+            if rc_mode == 'div':
+                rc_eff = rc_eff / max(1.0 + rc_coef * sigma_norm_scalar, 1e-6)
+            else:
+                rc_eff = rc_eff * max(1.0 + rc_coef * sigma_norm_scalar, 1e-6)
+        except Exception:
+            pass
+
+    # Variable exponent (logistic_r) with optional sigma coupling into p_r
     transition_r = p["eta"] * r_half
     x = (r - transition_r) / (p["delta_kpc"] + 1e-12)
     gate_exp = 1.0 / (1.0 + np.exp(-x))
     p_r = p["p_in"] * (1 - gate_exp) + p["p_out"] * gate_exp
+
+    if disp_params is not None and bool(disp_params.get('pr_enable', False)) and (sigma_kms is not None):
+        try:
+            sigma0 = float(disp_params.get('sigma0_kms', 100.0))
+            pr_alpha = float(disp_params.get('pr_alpha', 1.0))
+            pr_coef = float(disp_params.get('pr_coef', 0.0))
+            pr_sign = float(disp_params.get('pr_sign', -1.0))  # negative reduces p_r
+            sigma_norm = np.power(np.maximum(np.asarray(sigma_kms, float), 0.0) / max(sigma0, 1e-9), pr_alpha)
+            p_r = p_r + pr_sign * pr_coef * sigma_norm
+            p_r = np.clip(p_r, 0.1, 3.0)
+        except Exception:
+            pass
     # Gating (rational) with optional dispersion gating modification
     with np.errstate(divide='ignore', invalid='ignore'):
         denom_base = r**p_r + rc_eff**p_r

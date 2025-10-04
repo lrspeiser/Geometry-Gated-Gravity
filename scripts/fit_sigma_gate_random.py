@@ -45,12 +45,12 @@ def sample_params(rng: np.random.Generator) -> tuple[Dict, Dict]:
     # Dispersion params (continuous sampling)
     sigma0 = rng.uniform(80.0, 200.0)
     alpha = rng.uniform(0.8, 3.0)
-    e = rng.uniform(0.5, 5.0)
+    e = rng.uniform(0.0, 5.0)
     b = rng.uniform(0.0, 2.0)
     d = rng.uniform(0.0, 2.0)
     a = rng.uniform(-2.0, 2.0)
     # log-uniform for scale
-    log_sc = rng.uniform(np.log10(0.1), np.log10(10.0))
+    log_sc = rng.uniform(np.log10(0.05), np.log10(20.0))
     scale = float(10**log_sc)
     dp = {
         'sigma0_kms': float(sigma0),
@@ -59,11 +59,20 @@ def sample_params(rng: np.random.Generator) -> tuple[Dict, Dict]:
         'b': float(b),
         'd': float(d),
         'a': float(a),
-        'scale': float(scale)
+        'scale': float(scale),
+        # Enable sigma couplings
+        'rc_enable': bool(rng.random() < 0.7),
+        'rc_mode': 'mul' if rng.random() < 0.5 else 'div',
+        'rc_coef': float(rng.uniform(0.0, 2.0)),
+        'rc_alpha': float(rng.uniform(0.5, 2.5)),
+        'pr_enable': bool(rng.random() < 0.7),
+        'pr_coef': float(rng.uniform(0.0, 1.5)),
+        'pr_alpha': float(rng.uniform(0.5, 2.5)),
+        'pr_sign': float(-1.0 if rng.random() < 0.7 else 1.0),
     }
     # Gate exponent/rc scaling
-    p_out = rng.uniform(0.6, 1.4)
-    rc_scale = rng.uniform(0.7, 1.4)
+    p_out = rng.uniform(0.5, 1.8)
+    rc_scale = rng.uniform(0.6, 1.6)
     par = {
         'p_out': float(p_out),
         'rc0_kpc': float(UNIVERSAL_PARAMS['rc0_kpc'] * rc_scale)
