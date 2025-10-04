@@ -22,6 +22,9 @@ from pathlib import Path
 from dataclasses import dataclass
 from typing import Dict, List, Tuple
 
+KEV_TO_ERG = 1.602176634e-9  # 1 keV in erg
+CM_PER_KM = 1.0e5
+
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -183,7 +186,10 @@ def g3_tail_with_real_sigma(r: np.ndarray, r_half: float, Sigma_bar_kpc2: np.nda
                               beta: float = 0.0, phi0_km2s2: float = 1.0e4,
                               Phi_km2s2: np.ndarray | None = None,
                               return_diag: bool = False,
-                              amp_mode: str = 'exp') -> np.ndarray | tuple[np.ndarray, dict]:
+                              amp_mode: str = 'exp',
+                              gate_mode: str = 'standard',
+                              sigma_kms: np.ndarray | None = None,
+                              disp_params: Dict | None = None) -> np.ndarray | tuple[np.ndarray, dict]:
     """Compute tail acceleration with real-Σ gating and optional potential amplification.
 
     IMPORTANT: The amplification (exp or linear) MUST be applied BEFORE saturation,
@@ -204,9 +210,39 @@ def g3_tail_with_real_sigma(r: np.ndarray, r_half: float, Sigma_bar_kpc2: np.nda
     x = (r - transition_r) / (p["delta_kpc"] + 1e-12)
     gate_exp = 1.0 / (1.0 + np.exp(-x))
     p_r = p["p_in"] * (1 - gate_exp) + p["p_out"] * gate_exp
-    # Gating (rational)
+    # Gating (rational) with optional dispersion gating modification
     with np.errstate(divide='ignore', invalid='ignore'):
-        gate = (r**p_r) / (r**p_r + rc_eff**p_r + 1e-20)
+        denom_base = r**p_r + rc_eff**p_r
+        if str(gate_mode).lower() == 'sigma':
+            # Build dispersion gating denominator adjustment
+            # Σ_hat in Msun/pc^2 normalized by sigma_star
+            Sigma_pc2 = Sigma_bar_kpc2 / 1e6
+            Sigma_hat = np.maximum(Sigma_pc2, 1e-30) / max(params.get("sigma_star", 84.49), 1e-12)
+            # |d ln Σ / d ln r|
+            S = np.maximum(Sigma_bar_kpc2, 1e-30)
+            dS_dr = np.gradient(S, r, edge_order=2)
+            grad_ln_S = np.abs((r / S) * dS_dr)
+            # sigma profile normalization
+            dp = disp_params or {}
+            sigma0 = float(dp.get('sigma0_kms', 100.0))
+            alpha = float(dp.get('alpha', 1.5))
+            e_c = float(dp.get('e', 1.0))
+            b_c = float(dp.get('b', 1.0))
+            d_c = float(dp.get('d', 1.0))
+            a_c = float(dp.get('a', 1.0))
+            sscale = float(dp.get('scale', 1.0))
+            if sigma_kms is None:
+                sigma_norm = np.zeros_like(r)
+            else:
+                sigma_norm = np.power(np.maximum(np.asarray(sigma_kms, float), 0.0) / max(sigma0, 1e-9), alpha)
+            D = e_c * sigma_norm + b_c * Sigma_hat + d_c * grad_ln_S
+            # Effective denominator adjustment: subtract (D - a) scaled
+            denom_eff = denom_base - sscale * (D - a_c)
+            denom_eff = np.maximum(denom_eff, 1e-12)
+            gate = (r**p_r) / (denom_eff + 1e-20)
+            gate = np.clip(gate, 0.0, 1.0)
+        else:
+            gate = (r**p_r) / (denom_base + 1e-20)
     # Screening (sigmoid) on real Σ
     screen = 1.0 / (1.0 + (np.maximum(Sigma_pc2, 1e-12) / (p["sigma_star"] + 1e-12))**p["alpha"])**p["kappa"]
     # Base tail before saturation
@@ -235,7 +271,7 @@ def g3_tail_with_real_sigma(r: np.ndarray, r_half: float, Sigma_bar_kpc2: np.nda
             'raw_tail_max': float(np.nanmax(raw_tail)),
             'tail_pre_sat_min': float(np.nanmin(tail_pre_sat)),
             'tail_pre_sat_max': float(np.nanmax(tail_pre_sat)),
-            'g_tail_min': float(np.nanmin(g_tail)),
+'g_tail_min': float(np.nanmin(g_tail)),
             'g_tail_max': float(np.nanmax(g_tail))
         }
         return g_tail, diag
@@ -265,7 +301,9 @@ def compute_cluster(name: str, z_lens: float, z_source: float, outdir: Path,
                     params_override: Dict | None = None,
                     phi_iterations: int = 0,
                     phi_relax: float = 0.5,
-                    amp_mode: str = 'exp') -> Dict:
+                    amp_mode: str = 'exp',
+                    gate_mode: str = 'standard',
+                    disp_params: Dict | None = None) -> Dict:
     params = dict(UNIVERSAL_PARAMS)
     if params_override:
         params.update(params_override)
@@ -288,10 +326,24 @@ def compute_cluster(name: str, z_lens: float, z_source: float, outdir: Path,
         r_half = float(r[idx])
     else:
         r_half = float(np.median(r))
-    # Tail using real Σ with optional potential amplification
+    # Tail using real Σ with optional potential amplification and dispersion gating
     # Interpolate M_enc to R for potential calculation
     M_enc_R = np.interp(R, r, np.maximum(M_enc, 0.0))
     Phi_R = compute_potential_depth(R, M_enc_R)
+    # Velocity dispersion from kT profile if available
+    sigma_kms = None
+    tpath = Path('data') / 'clusters' / name / 'temp_profile.csv'
+    if tpath.exists():
+        try:
+            tdf = pd.read_csv(tpath)
+            rk = tdf['r_kpc'].astype(float).to_numpy()
+            kT = tdf['kT_keV'].astype(float).to_numpy()
+            kT_R = np.interp(R, rk, kT)
+            # sigma^2 (cm^2/s^2) = (kT (erg)) / (mu * m_p)
+            sigma2_cms2 = np.maximum(kT_R, 0.0) * KEV_TO_ERG / (MU_GAS * M_P_G)
+            sigma_kms = np.sqrt(np.maximum(sigma2_cms2, 0.0)) / CM_PER_KM
+        except Exception:
+            sigma_kms = None
     if debug:
         # Report representative |Phi| values for initial (baryon-only) potential
         def interp_at(x):
@@ -306,9 +358,10 @@ def compute_cluster(name: str, z_lens: float, z_source: float, outdir: Path,
     g_tail_R = None
     for it in range(max(0, int(phi_iterations)) + 1):
         # Compute tail for current Phi
-        g_tail_call = g3_tail_with_real_sigma(R, r_half, Sigma_bar, params,
-                                              beta=float(beta), phi0_km2s2=float(phi0_km2s2),
-                                              Phi_km2s2=Phi_R, return_diag=debug, amp_mode=amp_mode)
+    g_tail_call = g3_tail_with_real_sigma(R, r_half, Sigma_bar, params,
+                                          beta=float(beta), phi0_km2s2=float(phi0_km2s2),
+                                          Phi_km2s2=Phi_R, return_diag=debug, amp_mode=amp_mode,
+                                          gate_mode=gate_mode, sigma_kms=sigma_kms, disp_params=disp_params)
         if debug:
             g_tail_R, diag_tail = g_tail_call
         else:
@@ -433,9 +486,11 @@ def compute_cluster(name: str, z_lens: float, z_source: float, outdir: Path,
 'amp_factor_min': None if not debug else float(diag_tail.get('amp_min', float('nan'))),
             'amp_factor_max': None if not debug else float(diag_tail.get('amp_max', float('nan'))),
             'amp_mode': amp_mode,
-            'phi_iterations': int(phi_iterations),
+'phi_iterations': int(phi_iterations),
             'phi_relax': float(phi_relax),
             'iter_records': iter_records,
+            'gate_mode': gate_mode,
+            'disp_params': disp_params,
             'kappa_eff_max': float(np.nanmax(kappa_eff)),
             'kappa_eff_mean_max': float(np.nanmax(kappa_eff_mean)),
             'g_tail_min': None if not debug else float(diag_tail.get('g_tail_min', float('nan'))),
