@@ -238,8 +238,13 @@ def compute_potential_depth(R: np.ndarray, M_enc_R: np.ndarray) -> np.ndarray:
 def compute_cluster(name: str, z_lens: float, z_source: float, outdir: Path,
                     beta: float = 0.0, phi0_km2s2: float = 1.0e4,
                     generate_plots: bool = True,
-                    debug: bool = False) -> Dict:
-    params = UNIVERSAL_PARAMS
+                    debug: bool = False,
+                    params_override: Dict | None = None,
+                    phi_iterations: int = 0,
+                    phi_relax: float = 0.5) -> Dict:
+    params = dict(UNIVERSAL_PARAMS)
+    if params_override:
+        params.update(params_override)
     r, rho = load_real_cluster_profiles(name)
     # Enclosed mass and g_bar
     M_enc = np.zeros_like(r)
@@ -264,24 +269,53 @@ def compute_cluster(name: str, z_lens: float, z_source: float, outdir: Path,
     M_enc_R = np.interp(R, r, np.maximum(M_enc, 0.0))
     Phi_R = compute_potential_depth(R, M_enc_R)
     if debug:
-        # Report representative |Phi| values
+        # Report representative |Phi| values for initial (baryon-only) potential
         def interp_at(x):
             return float(np.interp(x, R, Phi_R))
         phi_50 = interp_at(50.0)
         phi_100 = interp_at(100.0)
         phi_250 = interp_at(250.0)
-    g_tail_call = g3_tail_with_real_sigma(R, r_half, Sigma_bar, params,
-                                          beta=float(beta), phi0_km2s2=float(phi0_km2s2),
-                                          Phi_km2s2=Phi_R, return_diag=debug)
-    if debug:
-        g_tail_R, diag_tail = g_tail_call
-    else:
-        g_tail_R = g_tail_call
-    # gbar on R
+    # Fixed-point iteration to compute Phi including tail contribution (optional)
+    iter_records = [] if debug and phi_iterations > 0 else None
     Vbar_R = np.interp(R, r, V_bar)
     gbar_R = Vbar_R**2 / np.maximum(R, 1e-12)
+    g_tail_R = None
+    for it in range(max(0, int(phi_iterations)) + 1):
+        # Compute tail for current Phi
+        g_tail_call = g3_tail_with_real_sigma(R, r_half, Sigma_bar, params,
+                                              beta=float(beta), phi0_km2s2=float(phi0_km2s2),
+                                              Phi_km2s2=Phi_R, return_diag=debug)
+        if debug:
+            g_tail_R, diag_tail = g_tail_call
+        else:
+            g_tail_R = g_tail_call
+        g_total_R = gbar_R + g_tail_R
+        # Update Phi from total mass if doing iterations
+        if it < max(0, int(phi_iterations)):
+            M_eff_R_it = g_total_R * R**2 / G
+            rho_eff_it = enclosed_mass_to_density(R, M_eff_R_it)
+            Sigma_eff_it = abel_project_sigma(R, rho_eff_it, R)
+            Mproj_it, _ = sigma_to_Mproj(R, Sigma_eff_it)
+            # For spherical approx, M_enc_total ~ M_eff along R (monotonic). Use Mproj as proxy for mass scale.
+            # To keep consistent dimensions, rebuild M_enc proxy by differentiating Mproj w.r.t R and integrating assuming spherical symmetry is approximate.
+            # Simpler: compute Phi_total by integrating g_total directly: Phi(R) = ∫_R^{Rmax} g_total(r) dr
+            rr = R[::-1]
+            gg = g_total_R[::-1]
+            Phi_rev = np.cumsum(0.5 * (gg[:-1] + gg[1:]) * np.diff(rr))
+            Phi_rev = np.concatenate([[0.0], Phi_rev])
+            Phi_total = Phi_rev[::-1]
+            # Relaxation
+            Phi_R = float(phi_relax) * Phi_total + (1.0 - float(phi_relax)) * Phi_R
+            if iter_records is not None:
+                iter_records.append({
+                    'iter': it,
+                    'amp_min': None if not debug else float(diag_tail.get('amp_min', float('nan'))),
+                    'amp_max': None if not debug else float(diag_tail.get('amp_max', float('nan'))),
+                    'g_tail_min': float(np.nanmin(g_tail_R)),
+                    'g_tail_max': float(np.nanmax(g_tail_R))
+                })
+    # After iterations, finalize lensing quantities
     g_total_R = gbar_R + g_tail_R
-    # Effective mass and lensing
     M_eff_R = g_total_R * R**2 / G
     rho_eff = enclosed_mass_to_density(R, M_eff_R)
     Sigma_eff = abel_project_sigma(R, rho_eff, R)
@@ -367,14 +401,17 @@ def compute_cluster(name: str, z_lens: float, z_source: float, outdir: Path,
         debug_info = {
             'beta': float(beta),
             'phi0_km2s2': float(phi0_km2s2),
-            'Phi_km2s2_at_kpc': {
+'Phi_km2s2_at_kpc': {
                 '50': None if 'phi_50' not in locals() else float(phi_50),
                 '100': None if 'phi_100' not in locals() else float(phi_100),
                 '250': None if 'phi_250' not in locals() else float(phi_250)
             },
             'amp_factor_min': None if not debug else float(diag_tail.get('amp_min', float('nan'))),
             'amp_factor_max': None if not debug else float(diag_tail.get('amp_max', float('nan'))),
-'kappa_eff_max': float(np.nanmax(kappa_eff)),
+            'phi_iterations': int(phi_iterations),
+            'phi_relax': float(phi_relax),
+            'iter_records': iter_records,
+            'kappa_eff_max': float(np.nanmax(kappa_eff)),
             'kappa_eff_mean_max': float(np.nanmax(kappa_eff_mean)),
             'g_tail_min': None if not debug else float(diag_tail.get('g_tail_min', float('nan'))),
             'g_tail_max': None if not debug else float(diag_tail.get('g_tail_max', float('nan')))
