@@ -166,10 +166,12 @@ def load_real_cluster_profiles(name: str) -> Tuple[np.ndarray, np.ndarray]:
 
 def g3_tail_with_real_sigma(r: np.ndarray, r_half: float, Sigma_bar_kpc2: np.ndarray, params: Dict,
                               beta: float = 0.0, phi0_km2s2: float = 1.0e4,
-                              Phi_km2s2: np.ndarray | None = None) -> np.ndarray:
+                              Phi_km2s2: np.ndarray | None = None,
+                              return_diag: bool = False) -> np.ndarray | tuple[np.ndarray, dict]:
     """Compute tail acceleration with real-Σ gating and optional potential amplification.
 
-    If beta > 0 and Phi_km2s2 is provided, the tail is multiplied by exp(beta * Phi / phi0_km2s2).
+    IMPORTANT: The amplification exp(beta * |Phi| / phi0_km2s2) MUST be applied BEFORE saturation,
+    otherwise saturation will clip first and the amplification can explode kappa when applied later.
     """
     p = params
     # Convert Σ from Msun/kpc^2 to Msun/pc^2 for screening
@@ -189,12 +191,29 @@ def g3_tail_with_real_sigma(r: np.ndarray, r_half: float, Sigma_bar_kpc2: np.nda
         gate = (r**p_r) / (r**p_r + rc_eff**p_r + 1e-20)
     # Screening (sigmoid) on real Σ
     screen = 1.0 / (1.0 + (np.maximum(Sigma_pc2, 1e-12) / (p["sigma_star"] + 1e-12))**p["alpha"])**p["kappa"]
-    g_tail = (p["v0_kms"]**2 / np.maximum(r, 1e-12)) * gate * screen
-    g_tail = p["g_sat"] * np.tanh(g_tail / (p["g_sat"] + 1e-12))
-    # Potential amplification (optional)
+    # Base tail before saturation
+    raw_tail = (p["v0_kms"]**2 / np.maximum(r, 1e-12)) * gate * screen
+    # Potential amplification (apply BEFORE saturation)
     if (Phi_km2s2 is not None) and (beta is not None) and (float(beta) > 0.0) and (phi0_km2s2 > 0.0):
-        amp = np.exp(np.clip(beta * (np.asarray(Phi_km2s2, float) / float(phi0_km2s2)), -100.0, 100.0))
-        g_tail = g_tail * amp
+        amp = np.exp(np.clip(float(beta) * (np.asarray(Phi_km2s2, float) / float(phi0_km2s2)), -100.0, 100.0))
+        tail_pre_sat = raw_tail * amp
+    else:
+        amp = np.ones_like(raw_tail)
+        tail_pre_sat = raw_tail
+    # Saturation to keep g_total physical
+    g_tail = p["g_sat"] * np.tanh(tail_pre_sat / (p["g_sat"] + 1e-12))
+    if return_diag:
+        diag = {
+            'amp_min': float(np.nanmin(amp)),
+            'amp_max': float(np.nanmax(amp)),
+            'raw_tail_min': float(np.nanmin(raw_tail)),
+            'raw_tail_max': float(np.nanmax(raw_tail)),
+            'tail_pre_sat_min': float(np.nanmin(tail_pre_sat)),
+            'tail_pre_sat_max': float(np.nanmax(tail_pre_sat)),
+            'g_tail_min': float(np.nanmin(g_tail)),
+            'g_tail_max': float(np.nanmax(g_tail))
+        }
+        return g_tail, diag
     return g_tail
 
 
@@ -216,7 +235,8 @@ def compute_potential_depth(R: np.ndarray, M_enc_R: np.ndarray) -> np.ndarray:
 
 def compute_cluster(name: str, z_lens: float, z_source: float, outdir: Path,
                     beta: float = 0.0, phi0_km2s2: float = 1.0e4,
-                    generate_plots: bool = True) -> Dict:
+                    generate_plots: bool = True,
+                    debug: bool = False) -> Dict:
     params = UNIVERSAL_PARAMS
     r, rho = load_real_cluster_profiles(name)
     # Enclosed mass and g_bar
@@ -241,9 +261,20 @@ def compute_cluster(name: str, z_lens: float, z_source: float, outdir: Path,
     # Interpolate M_enc to R for potential calculation
     M_enc_R = np.interp(R, r, np.maximum(M_enc, 0.0))
     Phi_R = compute_potential_depth(R, M_enc_R)
-    g_tail_R = g3_tail_with_real_sigma(R, r_half, Sigma_bar, params,
-                                       beta=float(beta), phi0_km2s2=float(phi0_km2s2),
-                                       Phi_km2s2=Phi_R)
+    if debug:
+        # Report representative |Phi| values
+        def interp_at(x):
+            return float(np.interp(x, R, Phi_R))
+        phi_50 = interp_at(50.0)
+        phi_100 = interp_at(100.0)
+        phi_250 = interp_at(250.0)
+    g_tail_call = g3_tail_with_real_sigma(R, r_half, Sigma_bar, params,
+                                          beta=float(beta), phi0_km2s2=float(phi0_km2s2),
+                                          Phi_km2s2=Phi_R, return_diag=debug)
+    if debug:
+        g_tail_R, diag_tail = g_tail_call
+    else:
+        g_tail_R = g_tail_call
     # gbar on R
     Vbar_R = np.interp(R, r, V_bar)
     gbar_R = Vbar_R**2 / np.maximum(R, 1e-12)
@@ -330,6 +361,22 @@ def compute_cluster(name: str, z_lens: float, z_source: float, outdir: Path,
         'max_kappa_eff_mean': float(np.nanmax(kappa_eff_mean)),
         'note': 'G³ tail gated by real Σ(R) with universal params.'
     }
+    if debug:
+        debug_info = {
+            'beta': float(beta),
+            'phi0_km2s2': float(phi0_km2s2),
+            'Phi_km2s2_at_kpc': {
+                '50': None if 'phi_50' not in locals() else float(phi_50),
+                '100': None if 'phi_100' not in locals() else float(phi_100),
+                '250': None if 'phi_250' not in locals() else float(phi_250)
+            },
+            'amp_factor_min': None if not debug else float(diag_tail.get('amp_min', float('nan'))),
+            'amp_factor_max': None if not debug else float(diag_tail.get('amp_max', float('nan'))),
+            'kappa_eff_max': float(np.nanmax(kappa_eff)),
+            'kappa_eff_mean_max': float(np.nanmax(kappa_eff_mean))
+        }
+        with open(outdir / 'debug_realSigma.json', 'w') as f:
+            json.dump(debug_info, f, indent=2)
     with open(outdir / 'summary_realSigma.json', 'w') as f:
         json.dump(summary, f, indent=2)
     return summary
