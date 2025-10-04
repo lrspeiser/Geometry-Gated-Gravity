@@ -61,6 +61,20 @@ M_P_G = 1.67262192369e-24
 KPC_CM = 3.0856775814913673e21
 MSUN_G = 1.988409870698051e33
 
+# Mean molecular weight for fully ionized ICM (by particles)
+MU_GAS = 0.59  # dimensionless
+
+
+def ne_to_rho_gas_Msun_kpc3(n_e_cm3: np.ndarray, mu: float = MU_GAS) -> np.ndarray:
+    """Convert electron density [cm^-3] to gas mass density [Msun/kpc^3].
+
+    ρ_gas = n_e ⋅ μ ⋅ m_p, then convert g/cm^3 → Msun/kpc^3.
+    μ≈0.59 is typical mean molecular weight for fully ionized ICM.
+    """
+    n_e = np.asarray(n_e_cm3, float)
+    rho_g_cm3 = np.maximum(n_e, 0.0) * float(mu) * M_P_G
+    return rho_g_cm3 * (KPC_CM**3) / MSUN_G
+
 
 def Ez(z):
     return np.sqrt(Omega_m * (1 + z) ** 3 + Omega_L)
@@ -144,8 +158,7 @@ def load_real_cluster_profiles(name: str) -> Tuple[np.ndarray, np.ndarray]:
         elif 'n_e_cm3' in g.columns:
             r_g = g['r_kpc'].to_numpy(float)
             ne = g['n_e_cm3'].to_numpy(float)
-            rho_g_cm3 = MU_E * M_P_G * ne
-            rho_g = rho_g_cm3 * (KPC_CM**3) / MSUN_G
+            rho_g = ne_to_rho_gas_Msun_kpc3(ne)
     if star_path.exists():
         s = pd.read_csv(star_path)
         if 'rho_star_Msun_per_kpc3' in s.columns:
