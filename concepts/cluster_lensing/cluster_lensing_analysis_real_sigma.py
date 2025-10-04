@@ -303,7 +303,7 @@ def compute_cluster(name: str, z_lens: float, z_source: float, outdir: Path,
             gg = g_total_R[::-1]
             Phi_rev = np.cumsum(0.5 * (gg[:-1] + gg[1:]) * np.diff(rr))
             Phi_rev = np.concatenate([[0.0], Phi_rev])
-            Phi_total = Phi_rev[::-1]
+            Phi_total = np.abs(Phi_rev[::-1])
             # Relaxation
             Phi_R = float(phi_relax) * Phi_total + (1.0 - float(phi_relax)) * Phi_R
             if iter_records is not None:
