@@ -120,14 +120,22 @@ def main():
 
     for cid, local in CLUSTERS:
         r_g, rho_g, r_s, rho_s = load_cluster_profiles(local)
+        # Sort raw profiles to keep aligned (needed for interpolation by r)
+        idxg = np.argsort(r_g)
+        r_g_sorted_raw = r_g[idxg]
+        rho_g_sorted_raw = rho_g[idxg]
+        idxs = np.argsort(r_s)
+        r_s_sorted_raw = r_s[idxs]
+        rho_s_sorted_raw = rho_s[idxs]
+
         # Gas mass profile
         r_g_sorted, Mgas = enclosed_mass_from_density(r_g, rho_g)
         # Stars mass profile
         r_s_sorted, Mstar = enclosed_mass_from_density(r_s, rho_s)
         # Combine on a common grid to compute |Phi| at R_REPORT
         r_union = np.union1d(r_g_sorted, r_s_sorted)
-        rho_g_u = np.interp(r_union, r_g_sorted, rho_g)
-        rho_s_u = np.interp(r_union, r_s_sorted, rho_s)
+        rho_g_u = np.interp(r_union, r_g_sorted_raw, rho_g_sorted_raw)
+        rho_s_u = np.interp(r_union, r_s_sorted_raw, rho_s_sorted_raw)
         rho_tot = rho_g_u + rho_s_u
 
         # Values at R_REPORT
