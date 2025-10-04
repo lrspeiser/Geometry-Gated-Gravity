@@ -80,11 +80,10 @@ def load_cluster_profiles(cluster_local: str) -> Tuple[np.ndarray, np.ndarray, n
 
 
 def measured_phi_at(Rq: float, r: np.ndarray, rho: np.ndarray) -> float:
-    # Build an R grid spanning available range
-    R = np.logspace(np.log10(max(1.0, r[0])), np.log10(max(1.0, r[-1])), 600)
-    # M_enc and potential depth
-    _, M_enc = enclosed_mass_from_density(r, rho)
-    M_R = np.interp(R, r, np.maximum(M_enc, 0.0))
+    # Sort and build an R grid spanning available range
+    r_sorted, M_enc = enclosed_mass_from_density(r, rho)
+    R = np.logspace(np.log10(max(1.0, r_sorted[0])), np.log10(max(1.0, r_sorted[-1])), 600)
+    M_R = np.interp(R, r_sorted, np.maximum(M_enc, 0.0))
     Phi = compute_potential_depth(R, M_R)
     return float(np.interp(Rq, R, Phi))
 
