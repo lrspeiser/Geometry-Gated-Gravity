@@ -306,9 +306,9 @@ def compute_cluster(name: str, z_lens: float, z_source: float, outdir: Path,
     g_tail_R = None
     for it in range(max(0, int(phi_iterations)) + 1):
         # Compute tail for current Phi
-    g_tail_call = g3_tail_with_real_sigma(R, r_half, Sigma_bar, params,
-                                          beta=float(beta), phi0_km2s2=float(phi0_km2s2),
-                                          Phi_km2s2=Phi_R, return_diag=debug, amp_mode=amp_mode)
+        g_tail_call = g3_tail_with_real_sigma(R, r_half, Sigma_bar, params,
+                                              beta=float(beta), phi0_km2s2=float(phi0_km2s2),
+                                              Phi_km2s2=Phi_R, return_diag=debug, amp_mode=amp_mode)
         if debug:
             g_tail_R, diag_tail = g_tail_call
         else:
