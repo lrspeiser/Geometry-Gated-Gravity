@@ -1,0 +1,11 @@
+{
+  "cluster": "ABELL_0209",
+  "z_lens": 0.206,
+  "z_source": 2.0,
+  "Einstein_radius_arcsec_baryons": 2.575145556256214,
+  "Einstein_radius_kpc_baryons": 8.69542840495472,
+  "Einstein_radius_arcsec_realSigma": 2.567918313120403,
+  "Einstein_radius_kpc_realSigma": 8.671024357152463,
+  "max_kappa_eff_mean": 6.617881048165104,
+  "note": "G\u00b3 tail gated by real \u03a3(R) with universal params."
+}

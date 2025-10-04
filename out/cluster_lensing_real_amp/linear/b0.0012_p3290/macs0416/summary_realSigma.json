@@ -1,0 +1,11 @@
+{
+  "cluster": "MACSJ0416",
+  "z_lens": 0.396,
+  "z_source": 2.0,
+  "Einstein_radius_arcsec_baryons": 0.19256197076052814,
+  "Einstein_radius_kpc_baryons": 1.0282941433665258,
+  "Einstein_radius_arcsec_realSigma": 0.19256171260781332,
+  "Einstein_radius_kpc_realSigma": 1.0282927648133062,
+  "max_kappa_eff_mean": 18.503719009432313,
+  "note": "G\u00b3 tail gated by real \u03a3(R) with universal params."
+}

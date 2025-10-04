@@ -49,7 +49,7 @@ class GeometricExponentGravity:
         return np.clip(base, lo, hi)
 
     def Sigma_effective(self, R_kpc, Sigma_bar_kpc2, Rd_kpc):
-        """Compute Σ_eff proxy from Σ_bar with exponent model."""
+        """Compute Σ_eff proxy from Σ_bar with exponent model (NumPy)."""
         Sigma_pc2 = Sigma_bar_kpc2 / 1e6
         Sigma_hat = self.sigma_hat_from_Sigma_pc2(Sigma_pc2)
         glnS = self.grad_ln_Sigma(R_kpc, Sigma_bar_kpc2)
@@ -57,3 +57,33 @@ class GeometricExponentGravity:
         beta = self.compute_beta(Sigma_hat, R_kpc)
         M_factor = np.power(1.0 + fX, beta)
         return Sigma_bar_kpc2 * M_factor, fX, beta
+
+    def Sigma_effective_xp(self, xp, R_kpc, Sigma_bar_kpc2, Rd_kpc):
+        """Compute Σ_eff on the provided array backend (CuPy/NumPy) with identical physics to CPU path."""
+        # Backend arrays
+        R = xp.asarray(R_kpc)
+        Sb = xp.asarray(Sigma_bar_kpc2)
+
+        # Sigma_hat from Σ in pc^-2 (same as CPU): Σ_pc2 = Σ_kpc2 / 1e6; Σ̂ = log10(max(Σ_pc2, 1e-30)/100)
+        Sigma_pc2 = Sb / 1e6
+        Sigma_hat = xp.log10(xp.maximum(Sigma_pc2, 1e-30) / 100.0)
+
+        # grad ln Σ = (R/Σ) dΣ/dR
+        dS = xp.gradient(Sb, R)
+        glnS = (R / xp.maximum(Sb, 1e-30)) * dS
+
+        # fX = (R/Rd)^2 / clip(a - b Σ̂ - d |∇ln Σ|, 1e-6)
+        Rd = float(Rd_kpc)
+        x = R / max(Rd, 1e-6)
+        denom = self.a - self.b * Sigma_hat - self.d * xp.abs(glnS)
+        denom = xp.maximum(denom, 1e-6)
+        fX = xp.maximum((x * x) / denom, 0.0)
+
+        # β = clip(1 + γ1 |Σ̂| + γ2 log10(clip(R/R_scale, 1e-6)), beta_clip)
+        base = 1.0 + self.gamma1 * xp.abs(Sigma_hat) + self.gamma2 * xp.log10(xp.maximum(R / self.R_scale, 1e-6))
+        lo, hi = self.beta_clip
+        beta = xp.clip(base, lo, hi)
+
+        # Σ_eff = Σ_bar × (1 + fX)^β
+        M_factor = xp.power(1.0 + fX, beta)
+        return Sb * M_factor, fX, beta

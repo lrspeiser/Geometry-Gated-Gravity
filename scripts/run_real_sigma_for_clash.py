@@ -3,6 +3,11 @@ from __future__ import annotations
 import json
 from pathlib import Path
 from typing import Dict, List, Tuple
+import sys
+
+# Ensure project root on sys.path for imports
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
 
 # Reuse real-Σ pipeline
 from concepts.cluster_lensing.cluster_lensing_analysis_real_sigma import compute_cluster
@@ -51,7 +56,7 @@ def main() -> None:
     for cid, local_name, z_l in CLASH_CLUSTERS:
         outdir = OUT_ROOT / cid
         try:
-            s = compute_cluster(local_name, z_l, DEFAULT_ZS, outdir)
+            s = compute_cluster(local_name, z_l, DEFAULT_ZS, outdir, beta=0.0, phi0_km2s2=1.0e4, generate_plots=False)
             theta = s.get('Einstein_radius_arcsec_realSigma')
             preds.append({
                 'cluster_id': cid,
