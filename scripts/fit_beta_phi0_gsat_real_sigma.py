@@ -66,7 +66,7 @@ def main():
         outdir = ROOT / 'out' / 'cluster_lensing_real_beta_phi0_gsat' / f'b{beta:.3f}_p{int(phi0):d}_g{int(gsat):d}' / cid
         try:
             s = compute_cluster(local, zl, DEFAULT_ZS, outdir, beta=float(beta), phi0_km2s2=float(phi0), generate_plots=False,
-                                params_override={'g_sat': float(gsat)})
+                                params_override={'g_sat': float(gsat)}, phi_iterations=2, phi_relax=0.5)
             return s.get('Einstein_radius_arcsec_realSigma')
         except Exception:
             return None
