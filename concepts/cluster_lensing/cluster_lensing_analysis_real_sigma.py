@@ -104,13 +104,15 @@ def abel_project_sigma(r: np.ndarray, rho: np.ndarray, R: np.ndarray) -> np.ndar
     R = np.asarray(R)
     Sigma = np.zeros_like(R)
     for i, Rp in enumerate(R):
-        mask = r >= max(Rp, r[0])
+        # Avoid the integrable singularity at rr = Rp by requiring rr > Rp strictly
+        mask = r > max(Rp, r[0])
         rr = r[mask]
         rh = rho[mask]
         if rr.size < 2:
             Sigma[i] = 0.0
             continue
-        integrand = rh * rr / np.sqrt(np.clip(rr ** 2 - Rp ** 2, 1e-20, None))
+        denom = np.sqrt(np.clip(rr**2 - Rp**2, 1e-12, None))
+        integrand = rh * rr / denom
         Sigma[i] = 2.0 * np.trapezoid(integrand, rr)
     return Sigma
 
