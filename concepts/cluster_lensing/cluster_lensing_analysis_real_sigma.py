@@ -372,8 +372,10 @@ def compute_cluster(name: str, z_lens: float, z_source: float, outdir: Path,
             },
             'amp_factor_min': None if not debug else float(diag_tail.get('amp_min', float('nan'))),
             'amp_factor_max': None if not debug else float(diag_tail.get('amp_max', float('nan'))),
-            'kappa_eff_max': float(np.nanmax(kappa_eff)),
-            'kappa_eff_mean_max': float(np.nanmax(kappa_eff_mean))
+'kappa_eff_max': float(np.nanmax(kappa_eff)),
+            'kappa_eff_mean_max': float(np.nanmax(kappa_eff_mean)),
+            'g_tail_min': None if not debug else float(diag_tail.get('g_tail_min', float('nan'))),
+            'g_tail_max': None if not debug else float(diag_tail.get('g_tail_max', float('nan')))
         }
         with open(outdir / 'debug_realSigma.json', 'w') as f:
             json.dump(debug_info, f, indent=2)
