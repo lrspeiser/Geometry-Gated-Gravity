@@ -182,11 +182,14 @@ def load_real_cluster_profiles(name: str) -> Tuple[np.ndarray, np.ndarray]:
 def g3_tail_with_real_sigma(r: np.ndarray, r_half: float, Sigma_bar_kpc2: np.ndarray, params: Dict,
                               beta: float = 0.0, phi0_km2s2: float = 1.0e4,
                               Phi_km2s2: np.ndarray | None = None,
-                              return_diag: bool = False) -> np.ndarray | tuple[np.ndarray, dict]:
+                              return_diag: bool = False,
+                              amp_mode: str = 'exp') -> np.ndarray | tuple[np.ndarray, dict]:
     """Compute tail acceleration with real-Σ gating and optional potential amplification.
 
-    IMPORTANT: The amplification exp(beta * |Phi| / phi0_km2s2) MUST be applied BEFORE saturation,
+    IMPORTANT: The amplification (exp or linear) MUST be applied BEFORE saturation,
     otherwise saturation will clip first and the amplification can explode kappa when applied later.
+
+    amp_mode: 'exp' for exponential amp = exp(beta * Phi/phi0), or 'linear' for amp = 1 + beta * Phi/phi0.
     """
     p = params
     # Convert Σ from Msun/kpc^2 to Msun/pc^2 for screening
@@ -210,7 +213,13 @@ def g3_tail_with_real_sigma(r: np.ndarray, r_half: float, Sigma_bar_kpc2: np.nda
     raw_tail = (p["v0_kms"]**2 / np.maximum(r, 1e-12)) * gate * screen
     # Potential amplification (apply BEFORE saturation)
     if (Phi_km2s2 is not None) and (beta is not None) and (float(beta) > 0.0) and (phi0_km2s2 > 0.0):
-        amp = np.exp(np.clip(float(beta) * (np.asarray(Phi_km2s2, float) / float(phi0_km2s2)), -100.0, 100.0))
+        x = np.asarray(Phi_km2s2, float) / float(phi0_km2s2)
+        if str(amp_mode).lower() == 'linear':
+            amp = 1.0 + float(beta) * x
+            # Guard against negative amp; enforce non-negative
+            amp = np.maximum(amp, 0.0)
+        else:
+            amp = np.exp(np.clip(float(beta) * x, -100.0, 100.0))
         tail_pre_sat = raw_tail * amp
     else:
         amp = np.ones_like(raw_tail)
@@ -219,8 +228,9 @@ def g3_tail_with_real_sigma(r: np.ndarray, r_half: float, Sigma_bar_kpc2: np.nda
     g_tail = p["g_sat"] * np.tanh(tail_pre_sat / (p["g_sat"] + 1e-12))
     if return_diag:
         diag = {
-            'amp_min': float(np.nanmin(amp)),
+'amp_min': float(np.nanmin(amp)),
             'amp_max': float(np.nanmax(amp)),
+            'amp_mode': str(amp_mode),
             'raw_tail_min': float(np.nanmin(raw_tail)),
             'raw_tail_max': float(np.nanmax(raw_tail)),
             'tail_pre_sat_min': float(np.nanmin(tail_pre_sat)),
@@ -254,7 +264,8 @@ def compute_cluster(name: str, z_lens: float, z_source: float, outdir: Path,
                     debug: bool = False,
                     params_override: Dict | None = None,
                     phi_iterations: int = 0,
-                    phi_relax: float = 0.5) -> Dict:
+                    phi_relax: float = 0.5,
+                    amp_mode: str = 'exp') -> Dict:
     params = dict(UNIVERSAL_PARAMS)
     if params_override:
         params.update(params_override)
@@ -295,9 +306,9 @@ def compute_cluster(name: str, z_lens: float, z_source: float, outdir: Path,
     g_tail_R = None
     for it in range(max(0, int(phi_iterations)) + 1):
         # Compute tail for current Phi
-        g_tail_call = g3_tail_with_real_sigma(R, r_half, Sigma_bar, params,
-                                              beta=float(beta), phi0_km2s2=float(phi0_km2s2),
-                                              Phi_km2s2=Phi_R, return_diag=debug)
+    g_tail_call = g3_tail_with_real_sigma(R, r_half, Sigma_bar, params,
+                                          beta=float(beta), phi0_km2s2=float(phi0_km2s2),
+                                          Phi_km2s2=Phi_R, return_diag=debug, amp_mode=amp_mode)
         if debug:
             g_tail_R, diag_tail = g_tail_call
         else:
@@ -419,8 +430,9 @@ def compute_cluster(name: str, z_lens: float, z_source: float, outdir: Path,
                 '100': None if 'phi_100' not in locals() else float(phi_100),
                 '250': None if 'phi_250' not in locals() else float(phi_250)
             },
-            'amp_factor_min': None if not debug else float(diag_tail.get('amp_min', float('nan'))),
+'amp_factor_min': None if not debug else float(diag_tail.get('amp_min', float('nan'))),
             'amp_factor_max': None if not debug else float(diag_tail.get('amp_max', float('nan'))),
+            'amp_mode': amp_mode,
             'phi_iterations': int(phi_iterations),
             'phi_relax': float(phi_relax),
             'iter_records': iter_records,
