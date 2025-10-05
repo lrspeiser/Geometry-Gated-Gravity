@@ -24,17 +24,21 @@ import sys
 import glob
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.patches import Circle
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from concepts.cluster_lensing.cluster_lensing_analysis_real_sigma import (
     load_real_cluster_profiles, abel_project_sigma, sigma_crit_Msun_per_kpc2,
+    angular_diameter_distance_kpc,
 )
 
-# Optional: astropy for FITS
+# Optional: astropy for FITS+WCS
 try:
     from astropy.io import fits  # type: ignore
+    from astropy.wcs import WCS  # type: ignore
+    from astropy.wcs.utils import proj_plane_pixel_scales  # type: ignore
     ASTROPY_OK = True
 except Exception:
     ASTROPY_OK = False
@@ -91,26 +95,51 @@ def kappa_bar_grid(Rmax_kpc: float, npx: int, R_kpc: np.ndarray, kappa_radial: n
     return kappa_img
 
 
-def find_hlsp_kappa(cluster_id: str) -> np.ndarray | None:
+def find_hlsp_kappa(cluster_id: str):
+    """Return (kappa2d, arcsec_per_pix) if available, else (None, None)."""
     if not ASTROPY_OK:
-        return None
+        return None, None
     base = ROOT / 'data' / 'clash' / 'hlsp' / cluster_id.lower()
     pats = [str(base / '**' / '*kappa*.fits'), str(base / '**' / '*kappa1*.fits')]
     files = []
     for p in pats:
         files.extend(glob.glob(p, recursive=True))
-    # Prefer files with 'kappa.fits' (not kappa1/2 component) if available
     files_sorted = sorted(files, key=lambda s: (0 if 'kappa.fits' in Path(s).name else 1, len(s)))
     for fp in files_sorted:
         try:
             with fits.open(fp) as hdul:
+                hdr = hdul[0].header
                 arr = hdul[0].data
-                if arr is not None and arr.size > 0:
-                    return np.array(arr, dtype=float)
+                if arr is None or arr.size == 0:
+                    continue
+                arr = np.array(arr, dtype=float)
+                arcsec_per_pix = None
+                try:
+                    w = WCS(hdr)
+                    # proj_plane_pixel_scales returns deg/pix; take mean for square pixels
+                    scales = proj_plane_pixel_scales(w)  # deg/pix
+                    if scales is not None and len(scales) >= 2:
+                        arcsec_per_pix = float(np.mean(scales[:2]) * 3600.0)
+                except Exception:
+                    arcsec_per_pix = None
+                return arr, arcsec_per_pix
         except Exception:
             continue
-    return None
+    return None, None
 
+
+def _find_theta_E_from_kbar_mean(R: np.ndarray, kbar_mean: np.ndarray) -> float | None:
+    idx = np.where(kbar_mean >= 1.0)[0]
+    if idx.size == 0:
+        return None
+    i = int(idx[0])
+    if i == 0:
+        return float(R[0])
+    x0, y0 = float(R[i-1]), float(kbar_mean[i-1])
+    x1, y1 = float(R[i]), float(kbar_mean[i])
+    if y1 == y0:
+        return float(x1)
+    return float(x0 + (1 - y0) * (x1 - x0) / (y1 - y0))
 
 def main():
     ap = argparse.ArgumentParser()
@@ -128,6 +157,20 @@ def main():
 
     local_name, z_lens = CLASH[cid]
 
+    # Load observed θE (arcsec) if available
+    theta_obs = None
+    obs_csv = ROOT / 'data' / 'clash' / 'einstein_radii_observed.csv'
+    if obs_csv.exists():
+        try:
+            import pandas as pd  # type: ignore
+            df = pd.read_csv(obs_csv)
+            df['cluster_id'] = df['cluster_id'].str.lower()
+            row = df[df['cluster_id'] == cid]
+            if len(row) > 0:
+                theta_obs = float(row.iloc[0]['theta_E_observed_arcsec'])
+        except Exception:
+            theta_obs = None
+
     # Load 1D baryon profiles
     r, rho = load_real_cluster_profiles(local_name)
 
@@ -140,12 +183,25 @@ def main():
     Sigma_crit = sigma_crit_Msun_per_kpc2(z_lens, args.zs)
     kappa_radial = Sigma_bar / Sigma_crit
 
-    # Build 2D κ_bar image
-    Rmax = float(R[-1])
-    kappa_img = kappa_bar_grid(Rmax_kpc=Rmax, npx=512, R_kpc=R, kappa_radial=kappa_radial)
+    # Mean kappa inside R and GR θE
+    Mproj = np.array([2*np.pi*np.trapezoid(Sigma_bar[:i+1]*R[:i+1], R[:i+1]) for i in range(len(R))])
+    area = np.pi * R**2
+    Sbar = np.divide(Mproj, area, out=np.zeros_like(Mproj), where=area>0)
+    kbar_mean = Sbar / Sigma_crit
+    R_E_GR = _find_theta_E_from_kbar_mean(R, kbar_mean)
 
-    # Try to load HLSP κ map
-    kappa_hlsp = find_hlsp_kappa(cid)
+    # Convert R and R_E_GR to arcsec
+    Dd_kpc = angular_diameter_distance_kpc(z_lens)
+    R_arcsec = (R / max(Dd_kpc, 1e-12)) * (180.0/np.pi) * 3600.0
+    theta_GR_arcsec = None if R_E_GR is None else float((R_E_GR / max(Dd_kpc, 1e-12)) * (180.0/np.pi) * 3600.0)
+
+    # Build 2D κ_bar image in arcsec coordinates (using arcsec extent)
+    Rmax_kpc = float(R[-1])
+    Rmax_arcsec = float(R_arcsec[-1])
+    kappa_img = kappa_bar_grid(Rmax_kpc=Rmax_kpc, npx=512, R_kpc=R, kappa_radial=kappa_radial)
+
+    # Try to load HLSP κ map + arcsec per pixel
+    kappa_hlsp, arcsec_per_pix = find_hlsp_kappa(cid)
 
     outdir = ROOT / 'out' / 'visualizations' / cid
     outdir.mkdir(parents=True, exist_ok=True)
@@ -157,29 +213,58 @@ def main():
         # Color by radius
         rr = np.sqrt(np.sum(pts**2, axis=1))
         ax.scatter(pts[:,0], pts[:,1], pts[:,2], c=np.log10(rr+1e-6), s=1, cmap='viridis', alpha=0.5)
-    ax.set_title(f'{cid}: 3D baryon cloud (samples), r_max ≈ {Rmax:.0f} kpc')
+    ax.set_title(f'{cid}: 3D baryon cloud (samples), r_max ≈ {Rmax_kpc:.0f} kpc')
     ax.set_xlabel('x (kpc)'); ax.set_ylabel('y (kpc)'); ax.set_zlabel('z (kpc)')
     ax.set_box_aspect([1,1,1])
     fig.tight_layout(); fig.savefig(outdir / 'baryons_3d.png', dpi=150)
     plt.close(fig)
 
-    # Figure 2: κ_bar vs HLSP κ
+    # Figure 2: κ_bar vs HLSP κ with shared annotations
     cols = 2 if kappa_hlsp is not None else 1
-    fig2, axes = plt.subplots(1, cols, figsize=(6*cols, 5))
+    fig2, axes = plt.subplots(1, cols, figsize=(7*cols, 6))
     if cols == 1:
         axes = [axes]
-    im0 = axes[0].imshow(kappa_img, origin='lower', extent=[-Rmax, Rmax, -Rmax, Rmax], cmap='magma')
-    axes[0].set_title('κ_bar (GR, baryons) [radial, model]')
-    axes[0].set_xlabel('x (kpc)'); axes[0].set_ylabel('y (kpc)')
-    plt.colorbar(im0, ax=axes[0], fraction=0.046, pad=0.04)
 
+    # Choose a common color scale using percentiles
+    vmax_list = [np.nanpercentile(kappa_img, 99)]
     if kappa_hlsp is not None:
-        im1 = axes[1].imshow(kappa_hlsp, origin='lower', cmap='magma')
-        axes[1].set_title('κ (CLASH HLSP model) [pixel grid]')
-        axes[1].set_xlabel('x (pix)'); axes[1].set_ylabel('y (pix)')
-        plt.colorbar(im1, ax=axes[1], fraction=0.046, pad=0.04)
+        vmax_list.append(np.nanpercentile(kappa_hlsp, 99))
+    vmin, vmax = 0.0, float(max(vmax_list))
 
-    fig2.suptitle(f'{cid}: κ comparison (no WCS alignment)')
+    # Left: GR baryons in arcsec extent
+    im0 = axes[0].imshow(kappa_img, origin='lower', extent=[-Rmax_arcsec, Rmax_arcsec, -Rmax_arcsec, Rmax_arcsec], cmap='magma', vmin=vmin, vmax=vmax)
+    axes[0].set_title('Predicted: GR (baryons only) [arcsec]')
+    axes[0].set_xlabel('x (arcsec)'); axes[0].set_ylabel('y (arcsec)')
+    # Overlay observed θE and GR θE
+    if theta_obs is not None:
+        c = Circle((0,0), theta_obs, fill=False, color='red', lw=1.8, label='Observed θE')
+        axes[0].add_patch(c)
+    if theta_GR_arcsec is not None:
+        c2 = Circle((0,0), theta_GR_arcsec, fill=False, color='cyan', lw=1.5, ls='--', label='GR-baryons θE')
+        axes[0].add_patch(c2)
+    axes[0].legend(loc='upper right', fontsize=8)
+    plt.colorbar(im0, ax=axes[0], fraction=0.046, pad=0.04, label='κ')
+
+    # Right: HLSP κ map with arcsec axes if pixel scale known
+    if kappa_hlsp is not None:
+        if arcsec_per_pix is not None and np.isfinite(arcsec_per_pix) and arcsec_per_pix > 0:
+            ny, nx = kappa_hlsp.shape
+            halfx = (nx/2.0) * arcsec_per_pix
+            halfy = (ny/2.0) * arcsec_per_pix
+            extent = [-halfx, halfx, -halfy, halfy]
+            axes[1].set_xlabel('x (arcsec)'); axes[1].set_ylabel('y (arcsec)')
+        else:
+            extent = None
+            axes[1].set_xlabel('x (pix)'); axes[1].set_ylabel('y (pix)')
+        im1 = axes[1].imshow(kappa_hlsp, origin='lower', cmap='magma', vmin=vmin, vmax=vmax, extent=extent)
+        axes[1].set_title('Actual: HLSP κ (observational model)')
+        # Overlay observed θE ring if we have arcsec axes and θE_obs
+        if extent is not None and theta_obs is not None:
+            c3 = Circle((0,0), theta_obs, fill=False, color='red', lw=1.8, label='Observed θE')
+            axes[1].add_patch(c3)
+        plt.colorbar(im1, ax=axes[1], fraction=0.046, pad=0.04, label='κ')
+
+    fig2.suptitle(f'{cid}: Predicted vs Actual (Einstein-radius overlays)')
     fig2.tight_layout(rect=[0, 0.03, 1, 0.95])
     fig2.savefig(outdir / 'kappa_bar_vs_hlsp.png', dpi=150)
     plt.close(fig2)
