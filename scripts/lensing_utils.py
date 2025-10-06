@@ -95,6 +95,8 @@ def alpha_fun_HLSP(cluster_id: str, theta_obs_arcsec: float):
         return None
     # FFT Poisson solve: ∇²ψ = 2κ, α = ∇ψ
     img = np.asarray(kappa, float)
+    # Replace NaNs in the HLSP map to avoid contaminating FFT with NaNs
+    img = np.nan_to_num(img, nan=0.0)
     ny, nx = img.shape
     K = np.fft.fft2(img)
     fx = np.fft.fftfreq(nx)
@@ -141,9 +143,24 @@ def alpha_fun_HLSP(cluster_id: str, theta_obs_arcsec: float):
     def alpha_y_of(y_arcsec: float) -> float:
         y_pix = cy + (y_arcsec / arcsec_per_pix)
         x_pix = cx
-        x0 = int(np.floor(x_pix)); y0 = int(np.floor(y_pix))
-        x1 = min(x0 + 1, nx - 1); y1 = min(y0 + 1, ny - 1)
-        tx = x_pix - x0; ty = y_pix - y0
-        ay_here_arcsec = ( (1-tx)*(1-ty)*ay_arcsec[y0, x0] + tx*(1-ty)*ay_arcsec[y0, x1] + (1-tx)*ty*ay_arcsec[y1, x0] + tx*ty*ay_arcsec[y1, x1] )
+        # Clamp indices to valid range to avoid negative or overflow indexing
+        x0f = np.floor(x_pix)
+        y0f = np.floor(y_pix)
+        x0 = int(np.clip(x0f, 0, nx - 2))
+        y0 = int(np.clip(y0f, 0, ny - 2))
+        x1 = x0 + 1
+        y1 = y0 + 1
+        tx = float(np.clip(x_pix - x0, 0.0, 1.0))
+        ty = float(np.clip(y_pix - y0, 0.0, 1.0))
+        v00 = ay_arcsec[y0, x0]
+        v10 = ay_arcsec[y0, x1]
+        v01 = ay_arcsec[y1, x0]
+        v11 = ay_arcsec[y1, x1]
+        # All values should be finite after nan_to_num; extra guard just in case
+        v00 = 0.0 if not np.isfinite(v00) else v00
+        v10 = 0.0 if not np.isfinite(v10) else v10
+        v01 = 0.0 if not np.isfinite(v01) else v01
+        v11 = 0.0 if not np.isfinite(v11) else v11
+        ay_here_arcsec = ( (1-tx)*(1-ty)*v00 + tx*(1-ty)*v10 + (1-tx)*ty*v01 + tx*ty*v11 )
         return float(ay_here_arcsec / 206265.0)
     return alpha_y_of
