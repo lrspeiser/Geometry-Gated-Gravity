@@ -34,6 +34,8 @@ from concepts.cluster_lensing.cluster_lensing_analysis_real_sigma import (
 
 try:
     from astropy.io import fits  # type: ignore
+    from astropy.wcs import WCS  # type: ignore
+    from astropy.wcs.utils import proj_plane_pixel_scales  # type: ignore
     ASTROPY_OK = True
 except Exception:
     ASTROPY_OK = False
@@ -50,9 +52,9 @@ CLASH = {
     'rxj1347': ('RXJ1347', 0.451), 'rxj1532': ('RXJ1532', 0.345), 'rxj2129': ('RXJ2129', 0.234), 'rxj2248': ('RXJ2248', 0.348),
 }
 
-def find_hlsp_kappa(cluster_id: str):
+def find_hlsp_kappa_with_scale(cluster_id: str):
     if not ASTROPY_OK:
-        return None
+        return None, None
     base = ROOT / 'data' / 'clash' / 'hlsp' / cluster_id.lower()
     pats = [str(base / '**' / '*kappa*.fits'), str(base / '**' / '*kappa1*.fits')]
     files = []
@@ -62,12 +64,23 @@ def find_hlsp_kappa(cluster_id: str):
     for fp in files_sorted:
         try:
             with fits.open(fp) as hdul:
+                hdr = hdul[0].header
                 arr = hdul[0].data
-                if arr is not None and arr.size > 0:
-                    return np.array(arr, dtype=float)
+                if arr is None or arr.size == 0:
+                    continue
+                arr = np.array(arr, dtype=float)
+                arcsec_per_pix = None
+                try:
+                    w = WCS(hdr)
+                    scales = proj_plane_pixel_scales(w)  # deg/pix
+                    if scales is not None and len(scales) >= 2:
+                        arcsec_per_pix = float(np.mean(scales[:2]) * 3600.0)
+                except Exception:
+                    arcsec_per_pix = None
+                return arr, arcsec_per_pix
         except Exception:
             continue
-    return None
+    return None, None
 
 
 def radial_cummean_kappa_from_map(kappa2d: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
@@ -94,34 +107,41 @@ def radial_cummean_kappa_from_map(kappa2d: np.ndarray) -> tuple[np.ndarray, np.n
     return rmid, kcum
 
 
-def alpha_at_theta_GR_baryons(local_name: str, z_lens: float, z_source: float, theta_arcsec: float) -> float:
-    # Build GR(baryons) kappa_bar_mean and evaluate α(θ) = κ̄(<θ)·θ
+def alpha_fun_GR_baryons(local_name: str, z_lens: float, z_source: float):
+    """Return a function alpha_GR(θ_arcsec) -> radians using κ̄(<θ) from baryons."""
     r, rho = load_real_cluster_profiles(local_name)
     R = np.logspace(np.log10(max(1.0, r[0])), np.log10(max(1.0, r[-1])), 600)
     Sigma_bar = abel_project_sigma(r, rho, R)
     Sigma_crit = sigma_crit_Msun_per_kpc2(z_lens, z_source)
-    # mean Σ inside R
     Mproj = np.array([2*np.pi*np.trapezoid(Sigma_bar[:i+1]*R[:i+1], R[:i+1]) for i in range(len(R))])
     area = np.pi * R**2
     Sbar = np.divide(Mproj, area, out=np.zeros_like(Mproj), where=area>0)
     kbar_mean = Sbar / Sigma_crit
-    # convert θ to kpc radius
     Dd = angular_diameter_distance_kpc(z_lens)
-    theta_rad = theta_arcsec / 206265.0
-    R0 = theta_rad * Dd
-    kbar0 = float(np.interp(R0, R, kbar_mean, left=kbar_mean[0], right=kbar_mean[-1]))
-    return float(kbar0 * theta_rad)  # radians
+    theta_arcsec_grid = (R / max(Dd, 1e-12)) * 206265.0
+    # Build interpolator for alpha(θ) = κ̄(<R) * θ_rad
+    def alpha_of(theta_arcsec: float) -> float:
+        kbar = float(np.interp(theta_arcsec, theta_arcsec_grid, kbar_mean,
+                               left=kbar_mean[0], right=kbar_mean[-1]))
+        theta_rad = theta_arcsec / 206265.0
+        return kbar * theta_rad
+    return alpha_of
 
 
-def alpha_at_theta_HLSP(cluster_id: str, theta_arcsec: float) -> float | None:
-    # Radialize HLSP κ to get κ̄(<θ) then α(θ)=κ̄(<θ)·θ (dimensionless thin-lens units)
-    kappa = find_hlsp_kappa(cluster_id)
-    if kappa is None:
+def alpha_fun_HLSP(cluster_id: str):
+    """Return alpha_HLSP(θ_arcsec) -> radians by radializing κ and using WCS pixel scale.
+    Falls back to None if κ or WCS scale unavailable.
+    """
+    kappa, arcsec_per_pix = find_hlsp_kappa_with_scale(cluster_id)
+    if kappa is None or arcsec_per_pix is None or not np.isfinite(arcsec_per_pix) or arcsec_per_pix <= 0:
         return None
     r_pix, kcum = radial_cummean_kappa_from_map(kappa)
-    # We don't know WCS here; for a qualitative path we'll assume α scales so α(θ_E)≈θ_E
-    # Normalize so at the observed θ_E, α ≈ θ (the strong-lensing condition)
-    return None  # Will compute normalization with observed θE outside
+    theta_arcsec_grid = r_pix * arcsec_per_pix
+    def alpha_of(theta_arcsec: float) -> float:
+        kbar = float(np.interp(theta_arcsec, theta_arcsec_grid, kcum,
+                               left=kcum[0], right=kcum[-1]))
+        return kbar * (theta_arcsec / 206265.0)
+    return alpha_of
 
 
 def build_3d_paths(theta0_arcsec: float, alpha_gr_rad: float, alpha_hlsp_rad: float,
@@ -188,11 +208,13 @@ def main():
         print('No observed θE for this cluster; cannot build comparison path.')
         sys.exit(0)
 
-    # Deflection under GR(baryons) at θ_obs
-    alpha_gr = alpha_at_theta_GR_baryons(local_name, z_lens, args.zs, theta_obs)
-
-    # For HLSP, we set α(θ_obs) ≈ θ_obs (in radians) to represent the actual strong-lensing bending at the ring
-    alpha_hlsp = theta_obs / 206265.0
+    # Deflection functions
+    alpha_gr_fun = alpha_fun_GR_baryons(local_name, z_lens, args.zs)
+    alpha_hl_fun = alpha_fun_HLSP(cid)
+    # Fallback: if HLSP WCS missing, normalize so α(θ_obs)=θ_obs
+    if alpha_hl_fun is None:
+        def alpha_hl_fun(theta_arcsec: float) -> float:
+            return theta_arcsec / 206265.0
 
     # Build a set of impact parameters around θE
     nr = max(1, int(args.rays))
@@ -201,7 +223,9 @@ def main():
     paths_hl = []
     for s in scales:
         theta0 = s * theta_obs
-        pgr, phl = build_3d_paths(theta0, alpha_gr, alpha_hlsp, mag=args.mag)
+        alpha_gr0 = alpha_gr_fun(theta0)
+        alpha_hl0 = alpha_hl_fun(theta0)
+        pgr, phl = build_3d_paths(theta0, alpha_gr0, alpha_hl0, mag=args.mag)
         paths_gr.append(pgr)
         paths_hl.append(phl)
 
