@@ -1,0 +1,38 @@
+{
+  "a370": {
+    "name": "Abell 370",
+    "z_lens": 0.375,
+    "accepted": { "zs": 2.0, "theta_E_arcsec": 38.0, "sigma": 2.0 },
+    "notes": "HFF Tier 1; 6+ models; 114+ images"
+  },
+  "macs0416": {
+    "name": "MACS J0416.1-2403",
+    "z_lens": 0.396,
+    "accepted": { "zs": 2.0, "theta_E_arcsec": 35.0, "sigma": 1.5 },
+    "notes": "HFF Tier 1; 194 images; 7 models"
+  },
+  "a2744": {
+    "name": "Abell 2744",
+    "z_lens": 0.308,
+    "accepted": { "zs": 2.0, "theta_E_arcsec": 26.0, "sigma": 2.0 },
+    "notes": "HFF Tier 1; complex merger"
+  },
+  "macs0717": {
+    "name": "MACS J0717.5+3745",
+    "z_lens": 0.545,
+    "accepted": { "zs": 2.5, "theta_E_arcsec": 55.0, "sigma": 3.0 },
+    "notes": "Tier 2; largest lensing cluster"
+  },
+  "rxj1347": {
+    "name": "RXJ1347.5-1145",
+    "z_lens": 0.451,
+    "accepted": { "zs": 2.0, "theta_E_arcsec": 32.0, "sigma": 2.0 },
+    "notes": "Tier 2; brightest X-ray cluster"
+  },
+  "a1689": {
+    "name": "Abell 1689",
+    "z_lens": 0.183,
+    "accepted": { "zs": 2.0, "theta_E_arcsec": 47.0, "sigma": 3.0 },
+    "notes": "Tier 3 classic benchmark"
+  }
+}

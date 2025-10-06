@@ -42,12 +42,36 @@ CLASH = {
 
 ROOT = Path(__file__).resolve().parents[1]
 
+
+def load_gold_standard_catalog():
+    """Load gold-standard cluster metadata if present.
+
+    Returns mapping: cluster_id -> { 'z_lens': float, 'accepted': { 'zs': float, 'theta_E_arcsec': float }, 'notes': str }
+    """
+path = ROOT / 'data' / 'frontier' / 'gold_standard' / 'gold_standard_clusters.json'
+    if path.exists():
+        try:
+            import json
+            with open(path, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except Exception:
+            return {}
+    return {}
+
 def find_hlsp_kappa_with_scale(cluster_id: str):
-    base = ROOT / 'data' / 'clash' / 'hlsp' / cluster_id.lower()
-    pats = [str(base / '**' / '*kappa*.fits'), str(base / '**' / '*kappa1*.fits')]
+    """Locate a kappa FITS map and derive arcsec/pixel via WCS.
+
+    Searches both CLASH and Frontier HLSP folder conventions:
+      - data/clash/hlsp/<cluster_id>/**/kappa*.fits
+      - data/frontier/hlsp/<cluster_id>/**/kappa*.fits
+    """
+    search_roots = [ROOT / 'data' / 'clash' / 'hlsp' / cluster_id.lower(),
+                    ROOT / 'data' / 'frontier' / 'hlsp' / cluster_id.lower()]
     files = []
-    for p in pats:
-        files.extend(glob.glob(p, recursive=True))
+    for base in search_roots:
+        pats = [str(base / '**' / '*kappa*.fits'), str(base / '**' / '*kappa1*.fits')]
+        for p in pats:
+            files.extend(glob.glob(p, recursive=True))
     files_sorted = sorted(files, key=lambda s: (0 if 'kappa.fits' in Path(s).name else 1, len(s)))
     for fp in files_sorted:
         try:
