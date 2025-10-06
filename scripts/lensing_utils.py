@@ -26,6 +26,7 @@ from concepts.cluster_lensing.cluster_lensing_analysis_real_sigma import (
     load_real_cluster_profiles, abel_project_sigma, sigma_crit_Msun_per_kpc2,
     angular_diameter_distance_kpc,
 )
+from concepts.squared_gravity.geometric_exponent import GeometricExponentGravity
 
 # Short-name to (HLSP folder name, redshift)
 CLASH = {
@@ -164,3 +165,36 @@ def alpha_fun_HLSP(cluster_id: str, theta_obs_arcsec: float):
         ay_here_arcsec = ( (1-tx)*(1-ty)*v00 + tx*(1-ty)*v10 + (1-tx)*ty*v01 + tx*ty*v11 )
         return float(ay_here_arcsec / 206265.0)
     return alpha_y_of
+
+
+def alpha_fun_GE(local_name: str, z_lens: float, z_source: float,
+                 a: float, b: float, d: float, gamma1: float, gamma2: float,
+                 Rd_kpc: float = 1000.0, R_scale_kpc: float = 100.0,
+                 beta_clip=(1.0, 5.0)):
+    """Deflection alpha(theta) for the geometry-exponent model using Σ_eff.
+
+    Returns a callable alpha_of(theta_arcsec) -> radians.
+    """
+    try:
+        r, rho = load_real_cluster_profiles(local_name)
+        R = np.logspace(np.log10(max(1.0, r[0])), np.log10(max(1.0, r[-1])), 600)
+        Sigma_bar = abel_project_sigma(r, rho, R)
+        model = GeometricExponentGravity(a=a, b=b, d=d, gamma1=gamma1, gamma2=gamma2,
+                                         R_scale_kpc=R_scale_kpc, beta_clip=beta_clip)
+        Sigma_eff, _, _ = model.Sigma_effective(R, Sigma_bar, Rd_kpc=Rd_kpc)
+        Sigma_crit = sigma_crit_Msun_per_kpc2(z_lens, z_source)
+        # Mean Σ_eff within R
+        Mproj = np.array([2*np.pi*np.trapezoid(Sigma_eff[:i+1]*R[:i+1], R[:i+1]) for i in range(len(R))])
+        area = np.pi * R**2
+        Sbar_eff = np.divide(Mproj, area, out=np.zeros_like(Mproj), where=area>0)
+        kbar_mean = Sbar_eff / Sigma_crit
+        Dd = angular_diameter_distance_kpc(z_lens)
+        theta_arcsec_grid = (R / max(Dd, 1e-12)) * 206265.0
+        def alpha_of(theta_arcsec: float) -> float:
+            kbar = float(np.interp(theta_arcsec, theta_arcsec_grid, kbar_mean,
+                                   left=kbar_mean[0], right=kbar_mean[-1]))
+            theta_rad = theta_arcsec / 206265.0
+            return kbar * theta_rad
+        return alpha_of
+    except Exception:
+        return None

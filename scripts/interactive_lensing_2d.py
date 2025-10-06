@@ -29,12 +29,12 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from scripts.lensing_utils import CLASH, alpha_fun_GR_baryons, alpha_fun_HLSP
+from scripts.lensing_utils import CLASH, alpha_fun_GR_baryons, alpha_fun_HLSP, alpha_fun_GE
 
 import plotly.graph_objects as go  # type: ignore
 
 
-def build_ray_paths(y0_arcsec: float, alpha_gr_y_rad: float, alpha_hl_y_rad: float, mag: float, x_extent: float):
+def build_ray_paths(y0_arcsec: float, alpha_gr_y_rad: float, alpha_hl_y_rad: float, alpha_ge_y_rad: float | None, mag: float, x_extent: float):
     # Pre-lens: from -x_extent to 0 at constant y0
     x_pre = np.linspace(-x_extent, 0.0, 200)
     y_pre = np.full_like(x_pre, y0_arcsec)
@@ -42,10 +42,13 @@ def build_ray_paths(y0_arcsec: float, alpha_gr_y_rad: float, alpha_hl_y_rad: flo
     x_post = np.linspace(0.0, x_extent, 400)
     y_post_gr = y0_arcsec - (alpha_gr_y_rad * mag) * x_post
     y_post_hl = y0_arcsec - (alpha_hl_y_rad * mag) * x_post
-    return (x_pre, y_pre, x_post, y_post_gr, y_post_hl)
+    y_post_ge = None if alpha_ge_y_rad is None else y0_arcsec - (alpha_ge_y_rad * mag) * x_post
+    return (x_pre, y_pre, x_post, y_post_gr, y_post_hl, y_post_ge)
 
 
-def fig_2d(cid: str, zs: float, y_src_frac: float, edge_factor: float, mag: float, x_extent_factor: float) -> Path:
+def fig_2d(cid: str, zs: float, y_src_frac: float, edge_factor: float, mag: float, x_extent_factor: float,
+           ge_gamma1: float, ge_gamma2: float, ge_a: float, ge_b: float, ge_d: float,
+           ge_Rd_kpc: float, ge_Rscale_kpc: float) -> Path:
     # observed theta_E
     obs_csv = ROOT / 'data' / 'clash' / 'einstein_radii_observed.csv'
     df = pd.read_csv(obs_csv)
@@ -65,6 +68,10 @@ def fig_2d(cid: str, zs: float, y_src_frac: float, edge_factor: float, mag: floa
     if alpha_hl_y_fun is None:
         def alpha_hl_y_fun(theta_arcsec: float) -> float:
             return theta_arcsec / 206265.0
+    alpha_ge_fun = alpha_fun_GE(local_name, z_lens, zs, a=ge_a, b=ge_b, d=ge_d,
+                                gamma1=ge_gamma1, gamma2=ge_gamma2,
+                                Rd_kpc=ge_Rd_kpc, R_scale_kpc=ge_Rscale_kpc,
+                                beta_clip=(1.0, 5.0))
 
     # source position (one side)
     y0 = float(y_src_frac) * theta_obs
@@ -72,12 +79,13 @@ def fig_2d(cid: str, zs: float, y_src_frac: float, edge_factor: float, mag: floa
     # compute deflections (radians)
     a_gr_y = np.sign(y0) * alpha_gr(abs(y0))
     a_hl_y = alpha_hl_y_fun(y0)
+    a_ge_y = None if alpha_ge_fun is None else np.sign(y0) * alpha_ge_fun(abs(y0))
 
     # choose extent in arcsec
     x_extent = x_extent_factor * theta_obs
 
     # paths
-    x_pre, y_pre, x_post, y_post_gr, y_post_hl = build_ray_paths(y0, a_gr_y, a_hl_y, mag, x_extent)
+    x_pre, y_pre, x_post, y_post_gr, y_post_hl, y_post_ge = build_ray_paths(y0, a_gr_y, a_hl_y, a_ge_y, mag, x_extent)
 
     # figure
     fig = go.Figure()
@@ -105,31 +113,54 @@ def fig_2d(cid: str, zs: float, y_src_frac: float, edge_factor: float, mag: floa
     fig.add_trace(go.Scatter(x=np.concatenate([x_pre, x_post]), y=np.concatenate([y_pre, y_post_gr]), mode='lines',
                              line=dict(color='#dd2222', width=4, dash='dash'), name='GR (baryons)'))
 
+    # GE (our formula): green
+    if y_post_ge is not None:
+        fig.add_trace(
+            go.Scatter(x=np.concatenate([x_pre, x_post]), y=np.concatenate([y_pre, y_post_ge]), mode='lines',
+                       line=dict(color='#00aa55', width=4, dash='dot'), name='GE (ours)')
+        )
+
     # deflection annotations (arcsec)
     a_gr_arcsec = abs(a_gr_y) * 206265.0
     a_hl_arcsec = abs(a_hl_y) * 206265.0
+    a_ge_arcsec = None if a_ge_y is None else abs(a_ge_y) * 206265.0
     annos = [
         dict(x=0.02*x_extent, y=y0 + 0.05*theta_obs, xref='x', yref='y', text=f"α_actual ≈ {a_hl_arcsec:.2f} arcsec",
              showarrow=False, font=dict(color='#0077ff')),
         dict(x=0.02*x_extent, y=y0 - 0.10*theta_obs, xref='x', yref='y', text=f"α_GR ≈ {a_gr_arcsec:.2f} arcsec",
              showarrow=False, font=dict(color='#dd2222')),
     ]
+    if a_ge_arcsec is not None:
+        annos.append(
+            dict(x=0.02*x_extent, y=y0 - 0.25*theta_obs, xref='x', yref='y', text=f"α_GE ≈ {a_ge_arcsec:.2f} arcsec",
+                 showarrow=False, font=dict(color='#00aa55'))
+        )
 
     # visibility toggle: Actual / GR / Both
-    vis_actual = [True, True, True, True, False]   # lens plane, circle, source, actual, gr
-    vis_gronly = [True, True, True, False, True]
-    vis_both   = [True, True, True, True, True]
+    # Build visibility lists including optional GE trace
+    has_ge = (y_post_ge is not None)
+    # Index layout: [lens, circle, source, actual, gr, ge?]
+    if has_ge:
+        vis_actual = [True, True, True, True, False, False]
+        vis_gronly = [True, True, True, False, True, False]
+        vis_geonly = [True, True, True, False, False, True]
+        vis_all    = [True, True, True, True, True, True]
+    else:
+        vis_actual = [True, True, True, True, False]
+        vis_gronly = [True, True, True, False, True]
+        vis_all    = [True, True, True, True, True]
 
-    fig.update_layout(title=f"{cid}: 2D ray (Actual vs GR). α labeled in arcsec; thin-lens kink at x=0",
+    fig.update_layout(title=f"{cid}: 2D ray (Actual vs GR vs GE). α labeled in arcsec; thin-lens kink at x=0",
                       xaxis_title='x (arcsec)', yaxis_title='y (arcsec)',
                       xaxis=dict(scaleanchor='y', scaleratio=1),
                       showlegend=True,
                       updatemenus=[
-                          dict(type='buttons', direction='left', x=0.0, y=1.15, buttons=[
-                              dict(label='Actual only', method='update', args=[{'visible': vis_actual}, {'annotations': annos[:1]}]),
-                              dict(label='GR only', method='update', args=[{'visible': vis_gronly}, {'annotations': annos[1:]}]),
-                              dict(label='Both', method='update', args=[{'visible': vis_both}, {'annotations': annos}]),
-                          ])
+                          dict(type='buttons', direction='left', x=0.0, y=1.15, buttons=(
+                              [dict(label='Actual only', method='update', args=[{'visible': vis_actual}, {'annotations': annos[:1]}]),
+                               dict(label='GR only', method='update', args=[{'visible': vis_gronly}, {'annotations': annos[1:2]}])]
+                              + ([dict(label='GE only', method='update', args=[{'visible': vis_geonly}, {'annotations': annos[2:3]}])] if has_ge else [])
+                              + [dict(label='All', method='update', args=[{'visible': vis_all}, {'annotations': annos}])]
+                          ))
                       ],
                       annotations=annos)
 
@@ -154,10 +185,20 @@ def main():
     ap.add_argument('--edge_factor', type=float, default=0.5, help='Circle radius = edge_factor * θE')
     ap.add_argument('--mag', type=float, default=2000.0, help='Visual slope magnification for bends')
     ap.add_argument('--x_extent_factor', type=float, default=2.5, help='Ray extent in x as factor of θE')
+    # GE params
+    ap.add_argument('--ge_gamma1', type=float, default=0.6)
+    ap.add_argument('--ge_gamma2', type=float, default=0.2)
+    ap.add_argument('--ge_a', type=float, default=1.0)
+    ap.add_argument('--ge_b', type=float, default=0.5)
+    ap.add_argument('--ge_d', type=float, default=0.5)
+    ap.add_argument('--ge_Rd_kpc', type=float, default=1000.0)
+    ap.add_argument('--ge_Rscale_kpc', type=float, default=100.0)
     args = ap.parse_args()
 
     cid = args.cluster_id.lower()
-    out_html = fig_2d(cid, args.zs, args.y_src_frac, args.edge_factor, args.mag, args.x_extent_factor)
+    out_html = fig_2d(cid, args.zs, args.y_src_frac, args.edge_factor, args.mag, args.x_extent_factor,
+                      args.ge_gamma1, args.ge_gamma2, args.ge_a, args.ge_b, args.ge_d,
+                      args.ge_Rd_kpc, args.ge_Rscale_kpc)
     print(f'Wrote {out_html}')
 
 
