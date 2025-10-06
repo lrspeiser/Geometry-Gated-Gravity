@@ -125,10 +125,11 @@ def alpha_at_theta_HLSP(cluster_id: str, theta_arcsec: float) -> float | None:
 
 
 def build_3d_paths(theta0_arcsec: float, alpha_gr_rad: float, alpha_hlsp_rad: float,
-                   xspan_arcsec: float = None) -> tuple[np.ndarray, np.ndarray]:
+                   xspan_arcsec: float = None, mag: float = 1.0) -> tuple[np.ndarray, np.ndarray]:
     """Return two 3D paths (N,3): GR (red) and HLSP-like (cyan), in arcsec units.
     Thin-lens kink at x=0, y0=+theta0, z=0.
-    Post-lens slope dy/dx ≈ -alpha (small-angle, radians), x in arcsec.
+    Post-lens slope dy/dx ≈ - alpha_rad * mag (small-angle), x in arcsec.
+    The mag factor exaggerates deflection for visualization.
     """
     if xspan_arcsec is None:
         xspan_arcsec = 2.5 * theta0_arcsec
@@ -139,8 +140,8 @@ def build_3d_paths(theta0_arcsec: float, alpha_gr_rad: float, alpha_hlsp_rad: fl
     z_pre = np.zeros_like(x_pre)
     # post-lens segments
     x_post = np.linspace(0.0, xspan_arcsec, 200)
-    y_post_gr = y0 - alpha_gr_rad * x_post
-    y_post_hl = y0 - alpha_hlsp_rad * x_post
+    y_post_gr = y0 - (alpha_gr_rad * mag) * x_post
+    y_post_hl = y0 - (alpha_hlsp_rad * mag) * x_post
     z_post = np.zeros_like(x_post)
     # stack
     path_gr = np.vstack([
@@ -160,6 +161,8 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--cluster_id', required=True)
     ap.add_argument('--zs', type=float, default=2.0)
+    ap.add_argument('--mag', type=float, default=1.0, help='Exaggeration factor for deflection angles (visual only)')
+    ap.add_argument('--rays', type=int, default=3, help='Number of impact-parameter rays to draw (>=1)')
     args = ap.parse_args()
 
     cid = args.cluster_id.lower()
@@ -191,8 +194,16 @@ def main():
     # For HLSP, we set α(θ_obs) ≈ θ_obs (in radians) to represent the actual strong-lensing bending at the ring
     alpha_hlsp = theta_obs / 206265.0
 
-    # Build paths
-    path_gr, path_hl = build_3d_paths(theta_obs, alpha_gr, alpha_hlsp)
+    # Build a set of impact parameters around θE
+    nr = max(1, int(args.rays))
+    scales = np.linspace(0.6, 1.4, nr) if nr > 1 else np.array([1.0])
+    paths_gr = []
+    paths_hl = []
+    for s in scales:
+        theta0 = s * theta_obs
+        pgr, phl = build_3d_paths(theta0, alpha_gr, alpha_hlsp, mag=args.mag)
+        paths_gr.append(pgr)
+        paths_hl.append(phl)
 
     # Draw sphere representing the cluster (radius = 0.5 θE in arcsec units)
     r_sph = 0.5 * theta_obs
@@ -213,8 +224,13 @@ def main():
         # sphere
         ax.plot_surface(xs, ys, zs, rstride=2, cstride=2, color='lightgray', alpha=0.25, linewidth=0)
         # paths
-        ax.plot(path_hl[:,0], path_hl[:,1], path_hl[:,2], color='cyan', lw=2.5, label='Actual (HLSP-like)')
-        ax.plot(path_gr[:,0], path_gr[:,1], path_gr[:,2], color='red', lw=2.5, label='Predicted (GR baryons)')
+        for phl in paths_hl:
+            ax.plot(phl[:,0], phl[:,1], phl[:,2], color='cyan', lw=2.0, alpha=0.9)
+        for pgr in paths_gr:
+            ax.plot(pgr[:,0], pgr[:,1], pgr[:,2], color='red', lw=2.0, alpha=0.9)
+        # One legend handle
+        ax.plot([], [], color='cyan', lw=2.5, label='Actual (HLSP-like)')
+        ax.plot([], [], color='red', lw=2.5, label='Predicted (GR baryons)')
         ax.set_xlabel('x (arcsec)'); ax.set_ylabel('y (arcsec)'); ax.set_zlabel('z (arcsec)')
         ax.set_title(title)
         ax.view_init(elev=elev, azim=azim)
