@@ -29,7 +29,7 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from scripts.lensing_utils import CLASH, alpha_fun_GR_baryons, alpha_fun_HLSP, alpha_fun_GE
+from scripts.lensing_utils import CLASH, alpha_fun_GR_baryons, alpha_fun_HLSP, alpha_fun_GE, solve_theta_E_from_alpha
 
 import plotly.graph_objects as go  # type: ignore
 from scripts.lensing_utils import load_gold_standard_catalog
@@ -114,6 +114,12 @@ def fig_2d(cid: str, zs: float, y_src_frac: float, edge_factor: float, mag: floa
     fig.add_trace(go.Scatter(x=np.concatenate([x_pre, x_post]), y=np.concatenate([y_pre, y_post_gr]), mode='lines',
                              line=dict(color='#dd2222', width=4, dash='dash'), name='GR (baryons)'))
 
+    # Accepted reference: purple (α_ref = θE_accepted)
+    alpha_acc_rad = (theta_obs / 206265.0)
+    y_post_acc = y0 - (alpha_acc_rad * mag) * x_post
+    fig.add_trace(go.Scatter(x=np.concatenate([x_pre, x_post]), y=np.concatenate([y_pre, y_post_acc]), mode='lines',
+                             line=dict(color='#6f42c1', width=3, dash='dashdot'), name='Accepted (θE ref)'))
+
     # GE (our formula): green
     if y_post_ge is not None:
         fig.add_trace(
@@ -125,41 +131,51 @@ def fig_2d(cid: str, zs: float, y_src_frac: float, edge_factor: float, mag: floa
     a_gr_arcsec = abs(a_gr_y) * 206265.0
     a_hl_arcsec = abs(a_hl_y) * 206265.0
     a_ge_arcsec = None if a_ge_y is None else abs(a_ge_y) * 206265.0
+    # Predict θE for GR/GE against accepted θE (simple bisection on α(θ)=θ)
+    thetaE_gr = solve_theta_E_from_alpha(lambda th: np.sign(y0)*alpha_gr(abs(th)) if alpha_gr else 0.0,
+                                         theta_obs, 0.2*theta_obs, 2.0*theta_obs) if alpha_gr else None
+    thetaE_ge = solve_theta_E_from_alpha(lambda th: np.sign(y0)*alpha_ge_fun(abs(th)) if alpha_ge_fun else 0.0,
+                                         theta_obs, 0.2*theta_obs, 2.0*theta_obs) if alpha_ge_fun else None
     annos = [
+        dict(x=0.02*x_extent, y=y0 + 0.09*theta_obs, xref='x', yref='y', text=f"Accepted θE ≈ {theta_obs:.2f} arcsec",
+             showarrow=False, font=dict(color='#6f42c1')),
         dict(x=0.02*x_extent, y=y0 + 0.05*theta_obs, xref='x', yref='y', text=f"α_actual ≈ {a_hl_arcsec:.2f} arcsec",
              showarrow=False, font=dict(color='#0077ff')),
-        dict(x=0.02*x_extent, y=y0 - 0.10*theta_obs, xref='x', yref='y', text=f"α_GR ≈ {a_gr_arcsec:.2f} arcsec",
+        dict(x=0.02*x_extent, y=y0 - 0.06*theta_obs, xref='x', yref='y', text=f"α_GR ≈ {a_gr_arcsec:.2f} arcsec; θE_GR {(thetaE_gr if thetaE_gr else float('nan')):.2f}",
              showarrow=False, font=dict(color='#dd2222')),
     ]
     if a_ge_arcsec is not None:
         annos.append(
-            dict(x=0.02*x_extent, y=y0 - 0.25*theta_obs, xref='x', yref='y', text=f"α_GE ≈ {a_ge_arcsec:.2f} arcsec",
+            dict(x=0.02*x_extent, y=y0 - 0.16*theta_obs, xref='x', yref='y', text=f"α_GE ≈ {a_ge_arcsec:.2f} arcsec; θE_GE {(thetaE_ge if thetaE_ge else float('nan')):.2f}",
                  showarrow=False, font=dict(color='#00aa55'))
         )
 
     # visibility toggle: Actual / GR / Both
     # Build visibility lists including optional GE trace
     has_ge = (y_post_ge is not None)
-    # Index layout: [lens, circle, source, actual, gr, ge?]
+    # Index layout: [lens, circle, source, actual, gr, accepted, ge?]
     if has_ge:
-        vis_actual = [True, True, True, True, False, False]
-        vis_gronly = [True, True, True, False, True, False]
-        vis_geonly = [True, True, True, False, False, True]
-        vis_all    = [True, True, True, True, True, True]
+        vis_actual = [True, True, True, True, False, True, False]
+        vis_gronly = [True, True, True, False, True, True, False]
+        vis_accepted = [True, True, True, False, False, True, False]
+        vis_geonly = [True, True, True, False, False, True, True]
+        vis_all    = [True, True, True, True, True, True, True]
     else:
-        vis_actual = [True, True, True, True, False]
-        vis_gronly = [True, True, True, False, True]
-        vis_all    = [True, True, True, True, True]
+        vis_actual = [True, True, True, True, False, True]
+        vis_gronly = [True, True, True, False, True, True]
+        vis_accepted = [True, True, True, False, False, True]
+        vis_all    = [True, True, True, True, True, True]
 
-    fig.update_layout(title=f"{cid}: 2D ray (Actual vs GR vs GE). α labeled in arcsec; thin-lens kink at x=0",
+    fig.update_layout(title=f"{cid}: 2D ray (Actual vs GR vs Accepted vs GE). α and θE labels; thin-lens kink at x=0",
                       xaxis_title='x (arcsec)', yaxis_title='y (arcsec)',
                       xaxis=dict(scaleanchor='y', scaleratio=1),
                       showlegend=True,
                       updatemenus=[
                           dict(type='buttons', direction='left', x=0.0, y=1.15, buttons=(
-                              [dict(label='Actual only', method='update', args=[{'visible': vis_actual}, {'annotations': annos[:1]}]),
-                               dict(label='GR only', method='update', args=[{'visible': vis_gronly}, {'annotations': annos[1:2]}])]
-                              + ([dict(label='GE only', method='update', args=[{'visible': vis_geonly}, {'annotations': annos[2:3]}])] if has_ge else [])
+                              [dict(label='Actual only', method='update', args=[{'visible': vis_actual}, {'annotations': annos}]),
+                               dict(label='GR only', method='update', args=[{'visible': vis_gronly}, {'annotations': annos}]),
+                               dict(label='Accepted only', method='update', args=[{'visible': vis_accepted}, {'annotations': annos}])]
+                              + ([dict(label='GE only', method='update', args=[{'visible': vis_geonly}, {'annotations': annos}] )] if has_ge else [])
                               + [dict(label='All', method='update', args=[{'visible': vis_all}, {'annotations': annos}])]
                           ))
                       ],
@@ -255,6 +271,12 @@ def build_cluster_bundle(cid: str, zs: float, y_src_frac: float, edge_factor: fl
     else:
         traces.append(go.Scatter(x=[], y=[], mode='lines', line=dict(color='#dd2222', width=4, dash='dash'), name='GR (baryons)'))
 
+    # Accepted path
+    alpha_acc_rad = ( (accepted['theta_E_arcsec'] if accepted else theta_obs) / 206265.0 )
+    y_post_acc = y0 - (alpha_acc_rad * mag) * x_post
+    traces.append(go.Scatter(x=np.concatenate([x_pre, x_post]), y=np.concatenate([y_pre, y_post_acc]), mode='lines',
+                             line=dict(color='#6f42c1', width=3, dash='dashdot'), name='Accepted (θE ref)'))
+
     # GE
     if a_ge_y is not None:
         y_post_ge = y0 - (a_ge_y * mag) * x_post
@@ -265,8 +287,9 @@ def build_cluster_bundle(cid: str, zs: float, y_src_frac: float, edge_factor: fl
 
     # annotations
     annos = []
+    acc_te = (accepted['theta_E_arcsec'] if accepted else theta_obs)
     annos.append(dict(x=0.02*x_extent, y=y0 + 0.08*theta_obs, xref='x', yref='y',
-                      text=f"Accepted θE(zs={accepted['zs'] if accepted else zs:.1f}) ≈ {accepted['theta_E_arcsec'] if accepted else theta_obs:.1f} ± {accepted.get('sigma', 0) if accepted else 0} arcsec",
+                      text=f"Accepted θE(zs={accepted['zs'] if accepted else zs:.1f}) ≈ {acc_te:.1f} ± {accepted.get('sigma', 0) if accepted else 0} arcsec",
                       showarrow=False, font=dict(color='#444')))
     if a_hl_y is not None:
         annos.append(dict(x=0.02*x_extent, y=y0 + 0.03*theta_obs, xref='x', yref='y',
@@ -278,18 +301,19 @@ def build_cluster_bundle(cid: str, zs: float, y_src_frac: float, edge_factor: fl
         annos.append(dict(x=0.02*x_extent, y=y0 - 0.17*theta_obs, xref='x', yref='y',
                           text=f"α_GE ≈ {abs(a_ge_y)*206265.0:.2f} arcsec", showarrow=False, font=dict(color='#00aa55')))
 
-    # visibility map for this cluster: order [lens, circle, source, actual, gr, ge]
-    vis_all = [True, True, True, True, True, True]
-    vis_actual = [True, True, True, True, False, False]
-    vis_gr = [True, True, True, False, True, False]
-    vis_ge = [True, True, True, False, False, True]
+    # visibility map for this cluster: order [lens, circle, source, actual, gr, accepted, ge]
+    vis_all = [True, True, True, True, True, True, True]
+    vis_actual = [True, True, True, True, False, True, False]
+    vis_gr = [True, True, True, False, True, True, False]
+    vis_acc = [True, True, True, False, False, True, False]
+    vis_ge = [True, True, True, False, False, True, True]
 
     # axis extent for this cluster
     xlim = (-x_extent, x_extent)
     ylim = (-1.3*theta_obs, 1.3*theta_obs)
 
     meta = {'cid': cid, 'z_lens': z_lens, 'theta_obs': theta_obs, 'xlim': xlim, 'ylim': ylim, 'annos': annos,
-            'vis': {'all': vis_all, 'actual': vis_actual, 'gr': vis_gr, 'ge': vis_ge}}
+            'vis': {'all': vis_all, 'actual': vis_actual, 'gr': vis_gr, 'accepted': vis_acc, 'ge': vis_ge}}
     return traces, meta
 
 
@@ -385,7 +409,7 @@ def main():
                 vis.extend(setv)
             return vis
         name = gold.get(m['cid'], {}).get('name', m['cid'])
-        for mode, label in [('all','All'), ('actual','Actual only'), ('gr','GR only'), ('ge','GE only')]:
+        for mode, label in [('all','All'), ('actual','Actual only'), ('gr','GR only'), ('accepted','Accepted only'), ('ge','GE only')]:
             buttons.append(dict(label=f"{name}: {label}", method='update',
                                 args=[{'visible': vis_for(mode)},
                                       {'annotations': m['annos'], 'title': f"Gold clusters: {name} (z_l={m['z_lens']:.3f}) — 2D ray (Actual/GR/GE)"}]))

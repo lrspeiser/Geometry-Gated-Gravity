@@ -48,7 +48,7 @@ def load_gold_standard_catalog():
 
     Returns mapping: cluster_id -> { 'z_lens': float, 'accepted': { 'zs': float, 'theta_E_arcsec': float }, 'notes': str }
     """
-path = ROOT / 'data' / 'frontier' / 'gold_standard' / 'gold_standard_clusters.json'
+    path = ROOT / 'data' / 'frontier' / 'gold_standard' / 'gold_standard_clusters.json'
     if path.exists():
         try:
             import json
@@ -220,5 +220,41 @@ def alpha_fun_GE(local_name: str, z_lens: float, z_source: float,
             theta_rad = theta_arcsec / 206265.0
             return kbar * theta_rad
         return alpha_of
+    except Exception:
+        return None
+
+
+def solve_theta_E_from_alpha(alpha_fun, theta_guess_arcsec: float, theta_min_arcsec: float, theta_max_arcsec: float) -> float | None:
+    """Solve α(θ) = θ for θ_E using a safe bracket and bisection.
+
+    alpha_fun takes θ in arcsec and returns radians.
+    Returns θ_E in arcsec or None if not bracketed.
+    """
+    try:
+        def f(theta_arcsec: float) -> float:
+            return (alpha_fun(theta_arcsec) * 206265.0) - theta_arcsec
+        a, b = float(theta_min_arcsec), float(theta_max_arcsec)
+        fa, fb = f(a), f(b)
+        # Expand bracket if needed up to a factor
+        expand = 0
+        while fa * fb > 0 and expand < 5:
+            span = b - a
+            a = max(1e-3, a - 0.5*span)
+            b = b + 0.5*span
+            fa, fb = f(a), f(b)
+            expand += 1
+        if fa * fb > 0:
+            return None
+        # Bisection
+        for _ in range(60):
+            m = 0.5*(a + b)
+            fm = f(m)
+            if abs(fm) < 1e-6:
+                return float(m)
+            if fa * fm <= 0:
+                b, fb = m, fm
+            else:
+                a, fa = m, fm
+        return float(0.5*(a + b))
     except Exception:
         return None
