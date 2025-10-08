@@ -66,6 +66,28 @@ GE_PARAMS = {
         "c": 0.5,
         "d": 0.1,
     },
+    # NEW: Interior-anchored non-local formula
+    # Core density exports boost to larger radii
+    "ratio_curv_nonlocal": {
+        "a": 0.669,
+        "b": 0.140,
+        "d": 0.087,
+        # Non-local parameters
+        "A_core": 0.25,      # Amplitude of interior-driven boost
+        "p_core": 2.0,       # How exported boost grows with R: fX ~ (R/Rd)^p
+        "Sigma0_hat": 0.1,   # Threshold before exporting (log10 units)
+        "beta_core": 0.4,    # Exponent for interior term
+    },
+    # AGGRESSIVE TEST: Try to maximize boost
+    "ratio_curv_nonlocal_aggressive": {
+        "a": 0.669,
+        "b": 0.140,
+        "d": 0.087,
+        "A_core": 10.0,      # 40× higher amplitude
+        "p_core": 3.0,       # Steeper radial dependence
+        "Sigma0_hat": -2.0,  # Lower threshold (export even from low density)
+        "beta_core": 2.0,    # Higher exponent (quadratic boost)
+    },
 }
 
 
@@ -315,6 +337,127 @@ def compute_fX_exp_curv(
     return np.maximum(0.0, alpha * (x * x) * (np.exp(Sh) + c + d * np.abs(dlnS)))
 
 
+def _cum_enclosed_mean(R_kpc: np.ndarray, Sigma_kpc2: np.ndarray) -> np.ndarray:
+    """Compute cumulative mean surface density Σ̄(<R) = M(<R)/(πR²)"""
+    R = np.asarray(R_kpc, float)
+    S = np.asarray(Sigma_kpc2, float)
+    
+    # Enclosed mass via integration
+    M_enc = np.zeros_like(R)
+    for i in range(len(R)):
+        if i == 0:
+            M_enc[i] = np.pi * R[0]**2 * S[0]
+        else:
+            integrand = S[:i+1] * R[:i+1]
+            M_enc[i] = 2.0 * np.pi * simpson(integrand, x=R[:i+1])
+    
+    # Mean surface density
+    A_enc = np.pi * np.maximum(R, 1e-9)**2
+    Sigma_mean = M_enc / A_enc
+    
+    return Sigma_mean
+
+
+def _rollmax(x: np.ndarray) -> np.ndarray:
+    """Running maximum (exports peak value outward)"""
+    return np.maximum.accumulate(np.asarray(x, float))
+
+
+def compute_fX_ratio_curv_nonlocal(
+    x: np.ndarray,
+    Sh: np.ndarray,
+    dlnS: np.ndarray,
+    R_kpc: np.ndarray,
+    Sigma_Msun_kpc2: np.ndarray,
+    params: Dict,
+    debug: bool = False,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Non-local interior-anchored formula.
+    
+    Combines local geometry gating with interior-exported boost:
+    fX_total = (1 + fX_local)^β_local * (1 + fX_core)^β_core - 1
+    
+    where fX_core = A_core * (R/Rd)^p_core * max(Σ̂_peak(<R) - Σ̂_0, 0)
+    
+    This ensures dense cores export their gravitational strength to larger radii.
+    """
+    # Local term (same as ratio_curv)
+    a = params["a"]
+    b = params["b"]
+    d = params["d"]
+    denom = a - b * Sh - d * np.abs(dlnS)
+    denom = np.where(np.abs(denom) < 1e-6, np.sign(denom) * 1e-6, denom)
+    fX_local = np.maximum(0.0, (x * x) / denom)
+    
+    # Interior-anchored term
+    A_core = params.get("A_core", 0.25)
+    p_core = params.get("p_core", 2.0)
+    Sigma0_hat = params.get("Sigma0_hat", 0.1)
+    beta_core = params.get("beta_core", 0.4)
+    
+    # Peak Sigma_hat at each radius (exports core density outward)
+    Sh_peak = _rollmax(Sh)
+    
+    # Core signal: how much interior peak exceeds threshold
+    core_signal = np.maximum(Sh_peak - Sigma0_hat, 0.0)
+    
+    # Core boost grows with radius and core density
+    fX_core = A_core * np.power(x, p_core) * core_signal
+    
+    if debug:
+        print(f"\n  [NONLOCAL DEBUG]")
+        print(f"    Sh range: [{Sh.min():.2f}, {Sh.max():.2f}]")
+        print(f"    Sh_peak range: [{Sh_peak.min():.2f}, {Sh_peak.max():.2f}]")
+        print(f"    core_signal range: [{core_signal.min():.4f}, {core_signal.max():.4f}]")
+        print(f"    x range: [{x.min():.2f}, {x.max():.2f}]")
+        print(f"    fX_local range: [{fX_local.min():.4e}, {fX_local.max():.4e}]")
+        print(f"    fX_core range: [{fX_core.min():.4e}, {fX_core.max():.4e}]")
+        print(f"    Parameters: A_core={A_core}, p_core={p_core}, Sigma0_hat={Sigma0_hat}, beta_core={beta_core}")
+    
+    # Combine multiplicatively (ensures Σ_eff >= Σ_bar)
+    # Use beta_core as exponent for interior term
+    M_factor = np.power(1.0 + fX_local, 1.0) * np.power(1.0 + fX_core, beta_core)
+    
+    # Return total fX (minus 1 to get boost factor)
+    fX_total = M_factor - 1.0
+    
+    return fX_total, fX_local, fX_core
+
+
+def sigma_gate(x: np.ndarray, x0: float = 0.3, w: float = 0.3) -> np.ndarray:
+    return 1.0 / (1.0 + np.exp(-(x - x0) / w))
+
+
+def slip_S_theta(
+    theta_arcsec: np.ndarray,
+    R_kpc: np.ndarray,
+    Sigma_Msun_kpc2: np.ndarray,
+    D_d_kpc: float,
+    Smax: float = 30.0,
+    Rs_kpc: float = 100.0,
+    p: float = 1.2,
+    x0: float = 0.3,
+    w: float = 0.3,
+    S_cap: float = 50.0,
+) -> np.ndarray:
+    """Option C lensing-only slip S(R), mapped to theta grid.
+    - Ensures core preservation, monotone export, and upper cap.
+    """
+    Sigma_pc2 = np.maximum(Sigma_Msun_kpc2 / 1e6, 1e-6)
+    Shat = np.log10(Sigma_pc2 / 100.0)
+    R = np.asarray(R_kpc)
+    ramp = 1.0 - np.exp(-(np.maximum(R, 1e-6) / Rs_kpc) ** p)
+    gate = 1.0 - sigma_gate(Shat, x0=x0, w=w)
+    S_R = 1.0 + Smax * (ramp * gate)
+    # preserve core and enforce monotone non-decreasing outside
+    S_R[R < 5.0] = 1.0
+    S_R = np.maximum.accumulate(S_R)
+    S_R = np.clip(S_R, 1.0, S_cap)
+    # map to theta grid
+    theta_R_arcsec = (R / max(D_d_kpc, 1e-6)) * 206265.0
+    return np.interp(theta_arcsec, theta_R_arcsec, S_R, left=S_R[0], right=S_R[-1])
+
+
 def apply_ge_boost(
     formula: str,
     R_kpc: np.ndarray,
@@ -332,7 +475,9 @@ def apply_ge_boost(
         kbar_GE: Boosted mean convergence
     """
     # Compute geometry features
-    Sigma_Msun_pc2 = Sigma_Msun_kpc2 * 1e6  # kpc² -> pc²
+    # CRITICAL: 1 kpc = 1000 pc, so 1 kpc² = 10^6 pc²
+    # Surface density: Σ [Msun/pc²] = Σ [Msun/kpc²] / 10^6
+    Sigma_Msun_pc2 = Sigma_Msun_kpc2 / 1e6  # kpc² -> pc²
     Sh = sigma_hat(Sigma_Msun_pc2)
     dlnS = grad_log_sigma(R_kpc, Sigma_Msun_kpc2)
     x = dimensionless_radius(R_kpc, Rd_kpc)
@@ -361,6 +506,12 @@ def apply_ge_boost(
         fX = compute_fX_ratio_curv(x, Sh, dlnS, params)
     elif formula == "ratio_curv_gbar":
         fX = compute_fX_ratio_curv_gbar(x, Sh, dlnS, gbar, params)
+    elif "nonlocal" in formula:  # Handles both normal and aggressive
+        # Non-local formula needs full R and Sigma arrays
+        debug_flag = ("aggressive" in formula)  # Debug aggressive variant
+        fX, fX_local, fX_core = compute_fX_ratio_curv_nonlocal(
+            x, Sh, dlnS, R_kpc, Sigma_Msun_kpc2, params, debug=debug_flag
+        )
     elif formula == "exp":
         fX = compute_fX_exp(x, Sh, params)
     elif formula == "exp_curv":
@@ -433,6 +584,9 @@ def plot_comparison(
         "ratio": "#1f77b4",
         "ratio_curv": "#ff7f0e",
         "ratio_curv_gbar": "#2ca02c",
+        "ratio_curv_nonlocal": "#17becf",  # cyan for non-local
+        "ratio_curv_nonlocal_aggressive": "#e377c2",  # pink for aggressive
+        "slip": "#8c564b",  # brown for slip S(R)
         "exp": "#d62728",
         "exp_curv": "#9467bd",
     }
@@ -580,17 +734,41 @@ def main():
                 R_2d_kpc, Sigma_Msun_kpc2, args.z_lens, args.z_source
             )
             
-            # 4. Apply all GE formulas
+            # 4. Apply all GE formulas + slip S(R)
             print("Applying GE formulas...")
             alpha_formulas = {}
             
+            # Print baseline convergence diagnostics
+            print(f"\n  [CONVERGENCE BASELINE]")
+            print(f"    kbar_GR range: [{kbar_GR.min():.4e}, {kbar_GR.max():.4e}]")
+            print(f"    kbar_GR at 50\": {kbar_GR[np.argmin(np.abs(theta_arcsec-50))]:.4e}")
+            print(f"    alpha_GR at 50\": {alpha_GR[np.argmin(np.abs(theta_arcsec-50))]:.4f}\"")
+            
+            # Slip S(R) on deflection (Option C)
+            from astropy.cosmology import FlatLambdaCDM
+            cosmo_local = FlatLambdaCDM(H0=70.0, Om0=0.3)
+            D_d_kpc = cosmo_local.angular_diameter_distance(args.z_lens).value * 1e3
+            S_theta = slip_S_theta(
+                theta_arcsec, R_2d_kpc, Sigma_Msun_kpc2, D_d_kpc,
+                Smax=30.0, Rs_kpc=100.0, p=1.2, x0=0.3, w=0.3, S_cap=50.0
+            )
+            alpha_formulas["slip"] = alpha_GR * S_theta
+            
             for formula, params in GE_PARAMS.items():
-                print(f"  - {formula}: {params}")
+                print(f"\n  - {formula}: {params}")
                 kbar_GE = apply_ge_boost(
                     formula, R_2d_kpc, Sigma_Msun_kpc2, kbar_GR, params, args.Rd_kpc
                 )
                 alpha_GE = kbar_GE * theta_arcsec
                 alpha_formulas[formula] = alpha_GE
+                
+                if "nonlocal" in formula:
+                    idx_50 = np.argmin(np.abs(theta_arcsec-50))
+                    print(f"    kbar_GE range: [{kbar_GE.min():.4e}, {kbar_GE.max():.4e}]")
+                    print(f"    kbar_GE at 50\": {kbar_GE[idx_50]:.4e}")
+                    print(f"    alpha_GE at 50\": {alpha_GE[idx_50]:.4f}\"")
+                    boost = kbar_GE[idx_50]/kbar_GR[idx_50] if kbar_GR[idx_50] > 0 else 0
+                    print(f"    Boost factor: {boost:.2f}x")
             
             # 5. Load observed deflection
             print("Loading observed deflection...")
