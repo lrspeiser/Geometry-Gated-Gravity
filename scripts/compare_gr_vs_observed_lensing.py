@@ -158,7 +158,7 @@ def compute_gr_baryons_deflection(cluster_name: str, z_lens: float, z_source: fl
 
 def plot_comparison(cluster: str, team: str, version: str, z_lens: float, z_source: float,
                     theta_grid: np.ndarray, alpha_gr: np.ndarray, alpha_obs: np.ndarray,
-                    alpha_tanh: np.ndarray, alpha_edge: np.ndarray,
+                    alpha_tanh: np.ndarray, alpha_edge: np.ndarray, alpha_resp: np.ndarray,
                     outdir: Path):
     """Create comparison plots: deflection, convergence, and ratio."""
     
@@ -171,6 +171,7 @@ def plot_comparison(cluster: str, team: str, version: str, z_lens: float, z_sour
     ax1.plot(theta_grid, alpha_gr, 'k-', lw=2.0, label='GR (baryons only)', alpha=0.9)
     ax1.plot(theta_grid, alpha_tanh, color='#8c564b', lw=2.0, label='Slip: tanh', alpha=0.9)
     ax1.plot(theta_grid, alpha_edge, color='#17becf', lw=2.0, label='Slip: edge-peaked', alpha=0.9)
+    ax1.plot(theta_grid, alpha_resp, color='#d62728', lw=2.0, label='Response halo', alpha=0.9)
     ax1.set_xlabel('θ (arcsec)', fontsize=11)
     ax1.set_ylabel('α(θ) (arcsec)', fontsize=11)
     ax1.set_title(f'{cluster.upper()} {team} {version}: Deflection', fontsize=12, fontweight='bold')
@@ -185,10 +186,12 @@ def plot_comparison(cluster: str, team: str, version: str, z_lens: float, z_sour
     kbar_gr = alpha_gr / np.maximum(theta_grid, eps)
     kbar_tanh = alpha_tanh / np.maximum(theta_grid, eps)
     kbar_edge = alpha_edge / np.maximum(theta_grid, eps)
+    kbar_resp = alpha_resp / np.maximum(theta_grid, eps)
     ax2.plot(theta_grid, kbar_obs, 'b-', lw=2.5, label='Observed k̄(<θ)', alpha=0.8)
     ax2.plot(theta_grid, kbar_gr, 'k-', lw=2.0, label='GR k̄(<θ)', alpha=0.9)
     ax2.plot(theta_grid, kbar_tanh, color='#8c564b', lw=2.0, label='tanh k̄(<θ)', alpha=0.9)
     ax2.plot(theta_grid, kbar_edge, color='#17becf', lw=2.0, label='edge k̄(<θ)', alpha=0.9)
+    ax2.plot(theta_grid, kbar_resp, color='#d62728', lw=2.0, label='response k̄(<θ)', alpha=0.9)
     ax2.axhline(1.0, color='k', ls='--', lw=1.0, alpha=0.5)
     ax2.set_xlabel('θ (arcsec)', fontsize=11)
     ax2.set_ylabel('k̄(<θ)', fontsize=11)
@@ -202,9 +205,11 @@ def plot_comparison(cluster: str, team: str, version: str, z_lens: float, z_sour
     ratio_gr = np.divide(alpha_obs, np.maximum(alpha_gr, eps))
     ratio_tanh = np.divide(alpha_obs, np.maximum(alpha_tanh, eps))
     ratio_edge = np.divide(alpha_obs, np.maximum(alpha_edge, eps))
+    ratio_resp = np.divide(alpha_obs, np.maximum(alpha_resp, eps))
     ax3.plot(theta_grid, ratio_gr, 'purple', lw=2.5, alpha=0.8, label='obs/GR')
     ax3.plot(theta_grid, ratio_tanh, color='#8c564b', lw=2.0, alpha=0.9, label='obs/tanh')
     ax3.plot(theta_grid, ratio_edge, color='#17becf', lw=2.0, alpha=0.9, label='obs/edge')
+    ax3.plot(theta_grid, ratio_resp, color='#d62728', lw=2.0, alpha=0.9, label='obs/response')
     ax3.legend(loc='upper right', fontsize=10)
     ax3.axhline(1.0, color='k', ls='--', lw=1.0, alpha=0.5, label='No DM (ratio=1)')
     ax3.set_xlabel('θ (arcsec)', fontsize=11)
@@ -228,6 +233,7 @@ def plot_comparison(cluster: str, team: str, version: str, z_lens: float, z_sour
     textstr += f'  α_GR = {alpha_gr[idx_50]:.2f}″\n'
     textstr += f'  α_tanh = {alpha_tanh[idx_50]:.2f}″\n'
     textstr += f'  α_edge = {alpha_edge[idx_50]:.2f}″\n'
+    textstr += f'  α_resp = {alpha_resp[idx_50]:.2f}″\n'
     textstr += f'  obs/GR = {ratio_gr[idx_50]:.1f}x'
     ax3.text(0.97, 0.97, textstr, transform=ax3.transAxes, fontsize=9,
              verticalalignment='top', horizontalalignment='right',
@@ -240,6 +246,44 @@ def plot_comparison(cluster: str, team: str, version: str, z_lens: float, z_sour
     print(f"Saved: {outpath}")
 
 
+def response_kernel(delta_R_kpc: np.ndarray, kernel: str = 'power', lam_kpc: float = 100.0, nu: float = 2.0) -> np.ndarray:
+    d = np.maximum(delta_R_kpc, 1e-9)
+    if kernel == 'exp':
+        return np.exp(-d/lam_kpc)
+    else:
+        return np.power(1.0 + d/lam_kpc, -nu)
+
+
+def build_sigma_response(R_kpc: np.ndarray, Sigma_kpc2: np.ndarray,
+                         kernel: str = 'power', lam_kpc: float = 100.0, nu: float = 2.0) -> np.ndarray:
+    R = np.asarray(R_kpc)
+    S = np.asarray(Sigma_kpc2)
+    dR = np.abs(R[:, None] - R[None, :])
+    K = response_kernel(dR, kernel=kernel, lam_kpc=lam_kpc, nu=nu)
+    dRj = np.gradient(R)
+    weights = 2.0 * np.pi * (R[None, :]) * (dRj[None, :])
+    num = (K * (S[None, :]) * weights).sum(axis=1)
+    denom = (K * weights).sum(axis=1)
+    denom = np.maximum(denom, 1e-30)
+    Sigma_resp = num / denom
+    return Sigma_resp
+
+
+def deflection_from_sigma(R_kpc: np.ndarray, Sigma_kpc2: np.ndarray, z_lens: float, z_source: float):
+    Sigma_crit = sigma_crit_Msun_per_kpc2(z_lens, z_source)
+    kappa = Sigma_kpc2 / Sigma_crit
+    kbar = np.zeros_like(kappa)
+    for i in range(len(R_kpc)):
+        Rint = R_kpc[:i+1]
+        kin = kappa[:i+1]
+        Menc = 2.0 * np.pi * np.trapezoid(kin * Rint, Rint)
+        kbar[i] = Menc / (np.pi * R_kpc[i]**2)
+    Dd = angular_diameter_distance_kpc(z_lens)
+    theta_R = (R_kpc / Dd) * 206265.0
+    alpha_R = kbar * theta_R
+    return theta_R, alpha_R
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('--cluster', required=True, help='Cluster ID (e.g., macs0416)')
@@ -247,6 +291,11 @@ def main():
     ap.add_argument('--version', required=True, help='Model version (e.g., v4.1)')
     ap.add_argument('--zs', type=float, default=2.0, help='Source redshift')
     ap.add_argument('--theta-max', type=float, default=100.0, help='Max angle in arcsec')
+    # Response halo parameters
+    ap.add_argument('--resp-kernel', type=str, default='power', choices=['exp','power'])
+    ap.add_argument('--resp-eps', type=float, default=15.0, help='Response mass fraction ε')
+    ap.add_argument('--resp-lambda-kpc', type=float, default=100.0, help='Kernel scale λ [kpc]')
+    ap.add_argument('--resp-nu', type=float, default=2.0, help='Kernel power ν (for power kernel)')
     args = ap.parse_args()
     
     # Get redshift
@@ -341,8 +390,15 @@ def main():
     alpha_tanh = alpha_gr * S_tanh_theta
     alpha_edge = alpha_gr * S_edge_theta
 
+    # Option B: response halo from Σ
+    Sigma_resp = build_sigma_response(R, Sigma_baryons, kernel=args.resp_kernel,
+                                      lam_kpc=args.resp_lambda_kpc, nu=args.resp_nu)
+    Sigma_eff = Sigma_baryons + max(args.resp_eps, 0.0) * Sigma_resp
+    theta_R_resp, alpha_R_resp = deflection_from_sigma(R, Sigma_eff, z_lens, args.zs)
+    alpha_resp = np.interp(theta_grid, theta_R_resp, alpha_R_resp, left=alpha_R_resp[0], right=alpha_R_resp[-1])
+
     plot_comparison(args.cluster, args.team, args.version, z_lens, args.zs,
-                   theta_grid, alpha_gr, alpha_obs, alpha_tanh, alpha_edge,
+                   theta_grid, alpha_gr, alpha_obs, alpha_tanh, alpha_edge, alpha_resp,
                    outdir)
     
     print(f"\n{'='*60}")
