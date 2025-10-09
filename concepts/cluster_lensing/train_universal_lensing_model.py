@@ -547,13 +547,19 @@ def create_demo_training_data():
         D_d_kpc = 1000.0  # typical angular diameter distance
         R_theta = theta / 206265.0 * D_d_kpc  # convert theta[arcsec] -> R[kpc]
         
-        # Enclosed mass from baryons
-        M_enc = np.zeros_like(R_theta)
-        for i, r in enumerate(R_theta):
-            idx = R < r
-            if idx.any():
-                # Integrate Σ × 2πR dR
-                M_enc[i] = np.trapz(Sigma_kpc2[idx] * 2 * np.pi * R[idx], R[idx])
+        # Enclosed mass from baryons (vectorized for speed)
+        try:
+            from scipy.integrate import cumulative_trapezoid
+            cumtrapz = cumulative_trapezoid
+        except ImportError:
+            from scipy.integrate import cumtrapz
+        
+        # M(<R) = ∫ Σ(R') 2πR' dR' from 0 to R
+        integrand = Sigma_kpc2 * 2 * np.pi * R
+        M_enc_full = cumtrapz(integrand, R, initial=0)
+        
+        # Interpolate to theta grid
+        M_enc = np.interp(R_theta, R, M_enc_full)
         
         # GR deflection (normalize to ~few arcsec at 50")
         alpha_gr = 4.0 * M_enc / (R_theta + 1.0) / 1e11  # simplified units
