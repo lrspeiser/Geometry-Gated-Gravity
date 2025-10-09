@@ -1,0 +1,1 @@
+viz: 2D adds GE (our formula) green ray + α_GE label; shared utils gains alpha_fun_GE

@@ -1,0 +1,2252 @@
+A&A 588, A99 (2016)
+DOI: 10.1051/0004-6361/201527638
+c(cid:13) ESO 2016
+
+Astronomy
+&
+Astrophysics
+
+Strong-lensing analysis of MACS J0717.5+3745
+from Hubble Frontier Fields observations:
+How well can the mass distribution be constrained?
+
+M. Limousin1, J. Richard2, E. Jullo1, M. Jauzac3,4,5, H. Ebeling6, M. Bonamigo1, A. Alavi7, B. Clément2, C. Giocoli1,
+J.-P. Kneib8,1, T. Verdugo9,10, P. Natarajan11, B. Siana7, H. Atek8,11, and M. Rexroth8,(cid:63)
+
+1 Laboratoire d’Astrophysique de Marseille, UMR 6610, CNRS-Université de Provence, 38 rue Frédéric Joliot-Curie,
+
+13388 Marseille Cedex 13, France
+e-mail: marceau.limousin@lam.fr
+
+2 CRAL, Observatoire de Lyon, Université Lyon 1, 9 avenue Ch. André, 69561 Saint-Genis Laval Cedex, France
+3 Centre for Extragalactic Astronomy, Department of Physics, Durham University, Durham DH1 3LE, UK
+4 Institute for Computational Cosmology, Durham University, South Road, Durham DH1 3LE, UK
+5 Astrophysics and Cosmology Research Unit, School of Mathematical Sciences, University of KwaZulu-Natal, 4041 Durban,
+
+South Africa
+
+6 Institute for Astronomy, University of Hawaii, 2680 Woodlawn Dr, Honolulu, HI 96822, USA
+7 Department of Physics and Astronomy, University of California Riverside, CA 92521, USA
+8 Laboratoire d’Astrophysique, École Polytechnique Fédérale de Lausanne, Observatoire de Sauverny, 1290 Versoix, Switzerland
+9 Universidad Nacional Autónoma de México, Instituto de Astronomía, Apdo. Postal 106, Ensenada, B.C., 22860 México, Mexico
+10 Instituto de Física y Astronomía, Universidad de Valparaíso, Avenida Gran Bretaña 1111, Valparaíso, Chile
+11 Department of Astronomy, Yale University, 260 Whitney Avenue, New Haven, CT 06511, USA
+
+Received 25 October 2015 / Accepted 11 December 2015
+
+ABSTRACT
+
+We present a strong-lensing analysis of MACSJ0717.5+3745 (hereafter MACS J0717), based on the full depth of the Hubble Frontier
+Field (HFF) observations, which brings the number of multiply imaged systems to 61, ten of which have been spectroscopically
+conﬁrmed. The total number of images comprised in these systems rises to 165, compared to 48 images in 16 systems before the
+HFF observations. Our analysis uses a parametric mass reconstruction technique, as implemented in the L software, and
+the subset of the 132 most secure multiple images to constrain a mass distribution composed of four large-scale mass components
+(spatially aligned with the four main light concentrations) and a multitude of galaxy-scale perturbers. We ﬁnd a superposition of cored
+isothermal mass components to provide a good ﬁt to the observational constraints, resulting in a very shallow mass distribution for
+the smooth (large-scale) component. Given the implications of such a ﬂat mass proﬁle, we investigate whether a model composed
+of “peaky” non-cored mass components can also reproduce the observational constraints. We ﬁnd that such a non-cored mass model
+reproduces the observational constraints equally well, in the sense that both models give comparable total rms. Although the total
+(smooth dark matter component plus galaxy-scale perturbers) mass distributions of both models are consistent, as are the integrated
+two-dimensional mass proﬁles, we ﬁnd that the smooth and the galaxy-scale components are very diﬀerent. We conclude that, even
+in the HFF era, the generic degeneracy between smooth and galaxy-scale components is not broken, in particular in such a complex
+galaxy cluster. Consequently, insights into the mass distribution of MACS J0717 remain limited, emphasizing the need for additional
+probes beyond strong lensing. Our ﬁndings also have implications for estimates of the lensing magniﬁcation. We show that the am-
+pliﬁcation diﬀerence between the two models is larger than the error associated with either model, and that this additional systematic
+uncertainty is approximately the diﬀerence in magniﬁcation obtained by the diﬀerent groups of modelers using pre-HFF data. This
+uncertainty decreases the area of the image plane where we can reliably study the high-redshift Universe by 50 to 70%.
+Key words. gravitational lensing: strong – galaxies: clusters: individual: MACS J0717.5+3745
+
+1. MACS J0717 in the Hubble Frontier Field era
+
+MACS J0717, a galaxy cluster located at z = 0.55, is well
+established as one of the most massive and complex merging
+structures known so far, based on extensive optical (Ebeling
+et al. 2004, 2007; Ma et al. 2008; Ma & Ebeling 2010), ra-
+dio (Edge et al. 2003; van Weeren et al. 2009; Bonafede
+et al. 2009; Pandey-Pommier et al. 2013), X-ray (Ma et al.
+2009), and Sunyaev Zel’dovich studies (LaRoque et al. 2003;
+Mroczkowski et al. 2012; Sayers et al. 2013). Acting as a
+
+(cid:63) Based on observations obtained with the Hubble Space Telescope.
+
+powerful gravitational lens, the system has been investigated
+both in the strong- (Zitrin et al. 2009; Limousin et al. 2012;
+Richard et al. 2014; Diego et al. 2015b) and in the weak-lensing
+regimes (Jauzac et al. 2012; Medezinski et al. 2013), further un-
+derlining its position as one of the most complex, dynamically
+active, and massive clusters studied to date.
+
+As a result, MACS J0717 has been selected as a target by the
+CLASH program (Postman et al. 2012) and more recently by the
+Hubble Frontier Field (HFF) initiative. The HFF project consti-
+tutes the largest commitment of Hubble Space Telescope (HST)
+time ever made to the exploration of the high-redshift Universe
+
+Article published by EDP Sciences
+
+A99, page 1 of 14
+
+A&A 588, A99 (2016)
+
+via gravitational lensing by massive galaxy clusters: 140 orbits
+of HST time have been devoted to deep imaging observations of
+six galaxy clusters. Each cluster is observed for 20 orbits in each
+of three ACS ﬁlters (F435W, F606W and F814W), and in each
+of four WFC3 passbands (F105W, F125W, F140W and F160W).
+More information on the HFF initiative can be found on their
+website1.
+
+In this paper, we use the full set of HFF observations in
+order to pursue a strong-lensing analysis of MACS J0717. Our
+aims are twofold: (i) ﬁrst, to study the mass distribution in de-
+tail, which entails estimating the total projected mass of the core
+of MACS J0717, quantifying the location and shape of the mass
+components relative to the gas and galaxy distribution, and us-
+ing the results to gain further insight into the ongoing merging
+processes in MACS J0717, which may have broader implica-
+tions for our understanding of structure formation and evolution.
+(ii) Second, to provide the community with a calibrated mass
+model of MACS J0717, thereby enabling its use as an eﬃcient
+gravitational telescope for studies of the high-redshift Universe,
+which is the primary scientiﬁc goal of the HFF program.
+
+Previous analyses revealed that MACS J0717 is undergo-
+ing multiple merger events, reﬂected in its quadri-modal mass
+distribution, with a ﬁlament extending to the south-east. Using
+X-ray and optical data (both imaging and spectroscopy), Ma
+et al. (2009) were the ﬁrst to identify four major concentra-
+tions of large elliptical cluster galaxies, referred to as A, B, C,
+and D in their work. This scenario was later conﬁrmed in a para-
+metric strong-lensing analysis by Limousin et al. (2012). More
+recently, Diego et al. (2015b), exploiting the ﬁrst third of the
+HFF data and using a non-parametric strong-lensing technique,
+has again found evidence for a quadri-modal mass distribution
+for the smooth component, i.e., once cluster members are re-
+moved. This agreement between the results from both paramet-
+ric and non-parametric, grid-based modelling approaches (the
+latter having much more freedom than the former) is further evi-
+dence in favour of the four-component model. Like all the above-
+mentioned strong-lensing studies of MACS J0717, ours also uses
+the original labelling by Ma et al. (2009) of these four compo-
+nents (see Fig. 2). In fact, we assume in this paper that the mass
+distribution of MACS J0717 is quadri-modal.
+
+All our results use the ΛCDM concordance cosmology
+with ΩM = 0.3, ΩΛ = 0.7, and a Hubble constant H0 =
+70 km s−1 Mpc−1. At the redshift of MACS J0717 this cosmol-
+ogy implies a scale of 6.4 kpc/(cid:48)(cid:48). Magnitudes are quoted in the
+AB system. Figures are aligned with the conventional equatorial
+axes, i.e. north is up, and east is left.
+
+2. Multiple images
+
+2.1. Previous work
+
+Prior to the HFF observations, 16 multiple-image systems, com-
+prising 48 individual images, had been reported (Johnson et al.
+2014; Richard et al. 2014; Coe et al. 2015). The analysis by
+Diego et al. (2015b), using the ﬁrst third of the data from the
+HFF observations, identiﬁed an additional 17 multiple-image
+systems, as well as 10 elongated features, assumed to be single
+images of lensed background galaxies.
+
+More recently, at the same time as this paper, Kawamata
+et al. (2016) has presented a mass model for MACS J0717 based
+on the full depth of the HFF observations. We brieﬂy discuss
+their ﬁndings in Sect. 5.4.
+
+1 http://www.stsci.edu/hst/campaigns/frontier-fields/
+
+A99, page 2 of 14
+
+2.2. This work
+
+In this work, we revisit the strong-lensing identiﬁcations by
+Diego et al. (2015b), agree with most of them (discarding, how-
+ever, their system 30), and, using the full depth of the HFF obser-
+vations, add 28 new multiple-image systems. The HFF observa-
+tions thus enabled the discovery of 45 new systems (consisting
+of 117 images), bringing the grand total to 61 multiple-image
+systems in MACS J0717, comprised of 165 individual images.
+Here we use as constraints only a subset of 132 multiple images
+that we consider to be the most reliably identiﬁed ones.
+
+For clarity, we present an overview of these images in two
+tables: Table A.1 lists the multiple images known before the
+HFF observations and is thus identical to the one published in
+Richard et al. (2014); the corresponding strong-lensing features
+are shown in red in Fig. 1. Table A.2 lists the multiple images
+discovered thanks to the HFF observations; they are shown in
+blue and cyan in Fig. 1. Where relevant, we use the notation of
+Diego et al. (2015b).
+
+We note that we have not been able to securely identify
+counter-images for some systems. We also report two radial arcs
+(systems 27 and 37). It is very likely that more multiple-image
+systems are present in the HFF data of MACS J0717.
+
+2.3. Comparison with Diego et al.
+
+Diego et al. (2015b) identiﬁed ten elongated features, interpreted
+as single-image arclets. These arclets are of potential interest in
+the region beyond the Einstein radius where strong-lensing con-
+straints largely disappear. Combined with photometric estimates
+of their redshifts, the shape of these features (elongation, orienta-
+tion) may provide valuable constraints. However, in our analysis,
+we do not use these features.
+
+We agree with the identiﬁcations by Diego et al. (2015b),
+
+except for the following few cases:
+
+– image 25.3: we removed this image on the grounds of un-
+clear morphology and colour. Adding 25.3 leads to a larger
+rms for this system (2(cid:48)(cid:48) instead of 1.3(cid:48)(cid:48)).
+
+– image 29.3: as for 25.3 we ﬁnd the morphology and colour
+of 29.3 poorly determined; adding 29.3 leads to a larger rms
+for this system (2.6(cid:48)(cid:48) instead of 1.9(cid:48)(cid:48)).
+
+– system 30: we disagree with this identiﬁcation. Image 30.1
+as proposed by Diego et al. (2015b) is a faint long arc located
+between images 1.2 and 1.3. In Limousin et al. (2012), we
+previously interpreted this feature as the merged tail of 1.2
+and 1.3. This merged tail corresponds to the counter image
+of the tail associated with 1.1, for which we measured a spec-
+troscopic of 2.963 (labelled 1.1∗ in Limousin et al. 2012). In
+addition, our parametric mass model is not able to reproduce
+system 30 as proposed by Diego et al. (2015b).
+
+– system 34: we propose an alternative identiﬁcation for im-
+age 34.1 which signiﬁcantly improves the rms of this system
+(1.6(cid:48)(cid:48) instead of 3.7(cid:48)(cid:48) when using the identiﬁcation by Diego
+et al. 2015b). We note that Diego et al. (2015b) has already
+reported a possible problem with this system. The identiﬁca-
+tion we propose is supported by the geometry of systems 50
+and 56.
+
+– system 39: Diego et al. (2015b) consider image 39.1 an elon-
+gated single-image feature. We associate this image with an-
+other one located on the other side of the arc, forming sys-
+tem 39. A third image is predicted, at least 1 mag fainter.
+Although we identify several candidates for this third image,
+none is suﬃciently compelling, causing us to use only im-
+ages 39.1 and 39.2 for this system.
+
+M. Limousin et al.: MACS J0717
+
+Fig. 1. Colour image (240(cid:48)(cid:48) × 184(cid:48)(cid:48)) of MACS J0717 based on HST images in the F435W, F606W, and F814W ACS pass bands. Multiple-image
+systems used in this work are marked: in red, the 48 multiple images identiﬁed prior to the HFF observations; in blue, the 84 images discovered
+thanks to the HFF observations; in cyan, the 33 candidate images discovered in the HFF observations. Shown in white is the critical line for a
+source redshift of 7.
+
+2.4. Photometric redshifts
+
+In addition to the Frontier Fields observations, we include
+WFC3/UVIS (F275W, F336W) photometry in our analysis in
+order to estimate photometric redshifts for the multiple im-
+ages. The corresponding data were obtained for HST program
+ID 13389 (PI: B. Siana), which obtained deep UV imaging
+(8 orbits per ﬁlter) of three Frontier Field clusters (Abell 2744,
+MACS J0717, and MACS J1149.5+2223). A complete descrip-
+tion of the data reduction and photometry catalogues will be
+given in Siana et al. (in prep.). Here, we brieﬂy summarize
+the photometric redshift measurements; a more detailed dis-
+cussion will be presented in a forthcoming paper (Alavi et al.,
+in prep.).
+
+We derived photometric redshifts of the galaxies using
+the EAZY software package (Brammer et al. 2008) with the
+PÉGASE (Fioc & Rocca-Volmerange 1997) stellar synthetic
+templates and a χ2 ﬁtting procedure. When doing so, we in-
+cluded an additional spectral energy distribution (SED) template
+of a dusty starburst SED. EAZY parameterizes absorption from
+the intergalactic medium following the description presented in
+Madau (1995). We did not use the magnitude priors in EAZY, as
+
+the lensed galaxies are much fainter than the luminosity range
+covered by the priors.
+
+We note that the resulting photometric redshift estimates
+(listed in Tables A.1 and A.2) are not used as constraints in the
+strong-lensing analysis; they are, however, very helpful for asso-
+ciating images with each other while looking for multiple-image
+systems.
+
+3. Strong-lensing analysis
+
+3.1. Arc spectroscopy
+
+Previous work (Limousin et al. 2012; Schmidt et al. 2014;
+Vanzella et al. 2014; Treu et al. 2015) reported spectroscopic
+redshifts for nine multiple-image systems (systems 1, 3, 4, 6,
+12, 13, 14, 15 and 19). In addition, a spectroscopic redshift of
+z = 5.51 was measured for system 68 (Clement et al., in prep.),
+bringing to ten the total number of multiple-image systems in
+MACS J0717 for which spectroscopic redshifts are available.
+
+Treu et al. (2015) reported a “probable” redshift of z = 0.928
+for image 5.1. We disregard this value. Given the colour and
+morphology of the three images constituting system 5, we are
+
+A99, page 3 of 14
+
+Table 1. dPIE parameters inferred for the dark matter components considered in the optimization procedure: the four large-scale dark matter
+clumps (A, B, C, D) and the galaxy-scale component.
+
+A&A 588, A99 (2016)
+
+Component
+C
+D
+B
+A
+L∗ galaxy
+
+∆RA
+–9.1+1.5
+−0.5
+26.6 ± 0.9
+37.3 ± 3.9
+114.9 ± 2.9
+–
+
+∆Dec
+–8.7 ± 1.4
+–19.3 ± 1.1
+34.9 ± 1.8
+64.7 ± 1.1
+–
+
+e
+0.34 ± 0.03
+0.65 ± 0.03
+0.50 ± 0.06
+0.68 ± 0.01
+–
+
+θ
+54 ± 4
+52 ± 3
+3+9
+−2
+9 ± 5
+–
+
+rcore ((cid:48)(cid:48))
+16.1 ± 2.0
+4.5 ± 0.8
+27.6 ± 2.1
+20.7 ± 2.1
+[0.05]
+
+rs ((cid:48)(cid:48))
+[1000]
+[1000]
+[1000]
+[1000]
+8.3 ± 0.7
+
+σ (km s−1)
+895 ± 29.0
+494±15
+800 ± 38
+880 ± 22
+250.3 ± 8.4
+
+Notes. These parameters correspond to the cored mass model. Coordinates are given in arcseconds with respect to α = 109.3982, δ = 37.745778.
+The ellipticity e is for the mass distribution. Error bars correspond to 1σ conﬁdence level. Parameters in brackets are not optimized. For the scaling
+relations, the zero point is set to a magnitude equal to 20.66.
+
+conﬁdent in this multiply imaged system, whose geometrical
+conﬁguration does not support a low redshift as reported by Treu
+et al. (2015). Indeed, our model predicts a redshift around 4
+(Table A.1), in agreement with the predictions from Diego et al.
+(2015b) and Kawamata et al. (2016). In addition, a non-detection
+in all ﬁlters bluer than the B-band can suggest a high-redshift so-
+lution (z > 3), as this possibility is also favoured by the CLASH
+survey which estimates a photometric redshift of 4.5 for im-
+ages 5.1 and 5.2 (Jouvel et al. 2014).
+
+3.2. Methodology
+
+As in our previous work (see, e.g. Limousin et al. 2007b), our
+mass model consists of large-scale dark matter (DM) haloes,
+whose individual mass is larger than that of a galaxy group
+(typically of the order of 1014 M(cid:12) within 50(cid:48)(cid:48)), and perturba-
+tions associated with individual cluster galaxies. For our analy-
+sis of MACS J0717, we consider the 90 most luminous galaxies
+in the ACS ﬁeld as perturbers (corresponding to a magnitude
+limit equal to 23.4). We characterize these mass components
+(both on the cluster and the galaxy scale) with dual Pseudo
+Isothermal Elliptical Mass Distribution (dPIE, Limousin et al.
+2005; Elíasdóttir et al. 2007), parametrized by a ﬁducial velocity
+dispersion σ, a core radius rcore, and a scale radius rs. For the
+individual cluster galaxies, empirical scaling relations (without
+any scatter) are used to derive their dynamical dPIE parameters
+(central velocity dispersion and scale radius) from their lumi-
+nosity (the core radius being set to a vanishingly small value
+of 0.3 kpc), whereas all geometrical parameters (centre, elliptic-
+ity, position angle) are set to the values measured from the light
+distribution. More precisely, the scaling relations are given by:
+
+In principle, deep HST images like the ones used in this pa-
+per allow compact images to be located to an astrometric pre-
+cision of the order of 0.(cid:48)(cid:48)05. However, parametric cluster lens
+models often fail to reproduce or predict image positions to this
+precision, yielding instead typical image-plane rms values be-
+tween 0.2(cid:48)(cid:48) and a few arc seconds. Nominal positional uncer-
+tainties of 1.4(cid:48)(cid:48) are usually chosen (Zitrin et al. 2015) to account
+for the contribution of fore- or background structures that are not
+included in our simple mass models (Jullo et al. 2010; D’Aloisio
+& Natarajan 2011; Host 2012). In this work, we use an even
+larger positional uncertainty of 2.0(cid:48)(cid:48) (i.e., a value of the order of
+the image plane rms), in order to attain a reduced χ2 of order 1.
+Finally, we should keep in mind that we are trying to repro-
+duce observed and, to some extent, poorly understood structures
+located far away using rather simple parameterized mass models.
+
+3.3. A multimodal mass model
+
+Acknowledging previous results, we adopt and optimize a
+quadri-modal mass distribution for MACS J0717. Each mass
+component is associated with one of the four components (A,
+B, C and D), its location set to coincide with the correspond-
+ing light peak (red diamonds in Fig. 2). As in prior studies, we
+allow the positions of these components to vary within ±20(cid:48)(cid:48)
+of the associated light peak, while the ellipticity is limited to a
+range from 0 to 0.7 (in units of (a2 − b2)/(a2 + b2)). The veloc-
+ity dispersion of each component is allowed to vary between 400
+and 1500 km s−1, and the core radius may take any value between
+1 and 30(cid:48)(cid:48). Finally, the scale radius – unconstrained by our data
+– is ﬁxed at 1000(cid:48)(cid:48).
+
+rs = r∗
+s
+
+(cid:19) 1
+2
+
+(cid:18) L
+L∗
+
+and σ = σ ∗
+
+(cid:19) 1
+4
+
+·
+
+(cid:18) L
+L∗
+
+(1)
+
+4. Mass distribution from strong lensing
+
+We allow the velocity dispersion of an L∗ galaxy to vary be-
+tween 100 and 250 km s−1, whereas its scale radius is forced
+to be less than 70 kpc, thus accounting for tidal stripping of
+galaxy-size dark matter haloes (see, e.g. Limousin et al. 2007a,
+2009; Natarajan et al. 2009; Wetzel & White 2010, and refer-
+ences therein). Model optimisation is performed in the image
+plane using the 2 software (Jullo et al. 2007).
+
+Positional uncertainty. The positional uncertainties of the im-
+ages is an important ingredient for the χ2 computation. They af-
+fect the derivation of errors, in the sense that smaller positional
+uncertainties will, in general, result in smaller statistical uncer-
+tainties, which may in fact be underestimated.
+
+2 http://www.oamp.fr/cosmology/lenstool/
+
+4.1. Cored mass components: A ﬂat DM distribution?
+
+Our quadri-modal mass model is able to reproduce the lensing
+constraints with an image-plane rms of 1.9(cid:48)(cid:48). The resulting pa-
+rameters of all mass components are given in Table 1; the corre-
+sponding mass contours are shown in yellow in Fig. 2.
+
+We ﬁnd that
+
+the total mass distribution (i.e., smooth
+DM component + galaxy-scale perturbers) follows the light dis-
+tribution. The centre of each component is oﬀset from the asso-
+ciated light concentration by 19(cid:48)(cid:48), 27(cid:48)(cid:48), 13(cid:48)(cid:48), and 14(cid:48)(cid:48) for compo-
+nents A, B, C, and D, respectively. In light of the large core radii
+of most of the four components (21(cid:48)(cid:48), 28(cid:48)(cid:48), 21(cid:48)(cid:48), and 5(cid:48)(cid:48) for A,
+B, C, and D, respectively); however, these oﬀsets are not neces-
+sarily signiﬁcant. Speciﬁcally, our analysis does not support the
+hypothesis advanced by Diego et al. (2015b) that component A
+
+A99, page 4 of 14
+
+M. Limousin et al.: MACS J0717
+
+Fig. 2. Mass maps inferred from the cored (yellow), the non-cored (green) and the NFW (magenta) models. Contours show where the surface mass
+density equals 4, 7 × 1010 M(cid:12) arcsec−2. Red diamonds correspond to the light peaks associated with each mass component. The white cross shows
+the barycentre of the Einstein ring as estimated by Meneghetti et al. (2011) at α = 109.38002, δ = 37.752214. The underlying image covers an
+area of 236(cid:48)(cid:48) × 166(cid:48)(cid:48).
+
+is signiﬁcantly oﬀset from the closest light peak. These authors
+argued that this oﬀset is probably due to the lack of lensing con-
+straints in that area.
+
+Since three of the four components have core radii larger
+than 15(cid:48)(cid:48), i.e., larger than 100 kpc at the redshift of MACS J0717,
+their superposition leads to a relatively ﬂat mass distribution.
+In the following, this model is referred to as the cored mass
+model.
+
+Various mechanisms that could lead to such large cores have
+been proposed (see also Diego et al. 2015b,a, for a thorough dis-
+cussion). Large cores in massive central galaxies are thought to
+be caused by massive black holes that clear the centre of galax-
+ies of stars (see, e.g. López-Cruz et al. 2014). This may aﬀect
+dark matter as well, but the scales on which this mechanism
+can be expected to be eﬀective (less than 10 kpc) are smaller
+than the scale we are interested in here (∼100 kpc). Actif galac-
+tic nucleus feedback can also contribute to the ﬂattening of the
+central region (Martizzi et al. 2012), but once again this mech-
+anism is eﬃcient only on small scales (up to 10–15 kpc). On
+scales of 100 kpc, large cores may result from violent interac-
+tions related to merging events in this actively evolving cluster,
+although several studies ﬁnd that DM proﬁles are not strongly
+altered by a collision (Ricker & Sarazin 2001; Dekel et al. 2003;
+Molnar et al. 2010). Finally, heating of massive galaxies by dy-
+namical friction against the diﬀuse dark matter distribution of
+
+the cluster can ﬂatten the slope of the DM density proﬁle, and
+sometimes even dominate over adiabatic contraction (see, e.g.
+El-Zant et al. 2001, 2004). Another explanation might be self-
+interacting dark matter particles (Natarajan et al. 2008; Rocha
+et al. 2013), known to ﬂatten the cusps of cluster scale haloes on
+scales up to 100 kpc, or the multi-coupled Dark Energy scenario
+(Garaldi et al. 2016).
+Given the
+
+for
+MACS J0717, we investigate its mass distribution further by test-
+ing whether large-core components are really required by the
+data. To this end, we explore in the next subsection a peaky, non-
+cored mass model.
+
+a ﬂat mass proﬁle
+
+implications of
+
+4.2. Non-cored mass components: a peaky DM distribution?
+The diﬀerences between the non-cored and the cored mass mod-
+els lie in the shape and location of each mass component: the
+position of each mass component is required to lie within 5(cid:48)(cid:48) of
+the associated light peak in both right ascension and declination,
+and its core radius is forced to be smaller than 5(cid:48)(cid:48). Interestingly,
+we ﬁnd that this non-cored mass model is also able to reproduce
+the observational constraints, with an image-plane rms of 2.4(cid:48)(cid:48),
+similar to that of the cored mass model. Therefore, both models
+ﬁt the data equally well, in the sense that they give comparable
+total rms.
+
+A99, page 5 of 14
+
+Table 2. Same as Table 1 for the non-cored mass model.
+
+A&A 588, A99 (2016)
+
+Component
+C
+D
+B
+A
+L∗ galaxy
+
+∆RA
+–0.9 ± 0.5
+31.8 ± 0.5
+64.9 ± 1.0
+134.9+0.1
+−0.7
+–
+
+∆Dec
+4.9+0.1
+−0.5
+–14.5 ± 0.5
+39.9+0.1
+−0.2
+75.0+0.5
+−0.1
+–
+
+e
+>0.38
+>0.69
+>0.54
+0.61 ± 0.03
+–
+
+θ
+63 ± 2
+46 ± 3
+173 ± 18
+12.0 ± 9
+–
+
+rcore ((cid:48)(cid:48))
+4.9+0.1
+−0.2
+4.8 ± 0.2
+4.9+0.1
+−0.6
+2.7 ± 0.4
+[0.05]
+
+rs ((cid:48)(cid:48))
+[1000]
+[1000]
+[1000]
+[1000]
+11.4 ± 1.4
+
+σ (km s−1)
+889 ± 11
+617 ± 8
+733 ± 13
+795 ± 16
+161 ± 6
+
+Table 3. NFW parameters inferred for the four large-scale dark matter clumps (A, B, C, D) and the dPIE parameters for the galaxy-scale component
+(core radius ﬁxed to 0.3 kpc).
+
+Component
+C
+D
+B
+A
+L∗ galaxy
+
+∆RA
+–2.3 ± 0.6
+32.6 ± 0.4
+63.3 ± 1.2
+133.7 ± 0.9
+–
+
+∆Dec
+–0.7 ± 0.8
+–13.5 ± 0.5
+44.6 ± 0.4
+77.4 ± 1.4
+–
+
+e
+0.13 ± 0.02
+0.55 ± 0.03
+0.51 ± 0.06
+0.23 ± 0.04
+–
+
+θ
+53 ± 4
+50 ± 2
+5 ± 2
+165 ± 15
+–
+
+c200
+3.4 ± 0.2
+5.3 ± 0.3
+3.0+0.1
+−0.0
+5.5 ± 0.3
+–
+
+rs ((cid:48)(cid:48))
+81.8 ± 6.0
+25.3 ± 2.2
+63.9 ± 3.7
+32.5 ± 0.35
+9.2 ± 0.4
+
+σ (km s−1)
+–
+–
+–
+–
+188 ± 9
+
+Notes. These parameters correspond to the NFW mass model. Coordinates are given in arcseconds with respect to α = 109.3982, δ = 37.745778.
+The ellipticity e is for the mass distribution. Error bars correspond to 1σ conﬁdence level. Concerning the scaling relations, the zero point is set to
+a magnitude equal to 20.66.
+
+Best-ﬁt parameters for this mass model are listed in Table 2.
+We can appreciate that they diﬀer signiﬁcantly from the best-ﬁt
+parameters obtained for the cored mass model. The correspond-
+ing mass contours are shown in green in Fig. 2. Essentially,
+the total mass distribution of this model also follows the light
+distribution.
+
+4.3. NFW proﬁle
+
+We further investigate the impact of the proﬁle of the DM com-
+ponents on our model’s ability to satisfy the lensing constraints
+by adopting an NFW proﬁle (Navarro et al. 1996), parametrized
+by a scale radius rs and a concentration parameter c200, for each
+of the four cluster-scale components. We note that this exercise is
+not physically motivated. Although NFW proﬁles are well suited
+to describe isolated, relaxed DM haloes, they are not necessarily
+expected to be adequate for the parameterization of this com-
+plex merging system. While the four subclusters may have had
+an NFW mass proﬁle before their collision, it is not obvious that
+they will keep this shape during the violent merging process act-
+ing in MACS J0717.
+
+Here we test two NFW models. In the ﬁrst, the location of
+each mass component is allowed to vary within ±20(cid:48)(cid:48) of its as-
+sociated light peak (the same limits used for the cored mass
+model); in the second, this limitation is tightened to 5(cid:48)(cid:48) (the same
+limits used for the non-cored mass model). In both cases, the
+scale radius is allowed to vary between 80 and 750 kpc, and
+the concentration parameter between 3 and 6.
+
+We ﬁnd that
+
+the best-ﬁt parameters derived for either
+NFW model agree with each other. Even when the position of
+the components is allowed to deviate from that of the corre-
+sponding light peak, the best-ﬁt position ends up consistent with
+the light distribution. We conclude that an NFW cusp without
+a luminous counterpart is not favoured by the data. In light of
+this result, we thus only discuss further the second NFW model.
+It too is able to reproduce the observational constraints, with an
+image-plane rms of 2.2(cid:48)(cid:48), comparable to that of both the cored
+and non-cored models. Best-ﬁt parameters for this mass model
+are listed in Table 3; the corresponding mass contours are shown
+in magenta in Fig. 2.
+
+A99, page 6 of 14
+
+This test thus further conﬁrms that a peaky DM distribu-
+tion for the large-scale mass components can accommodate the
+strong lensing constraints.
+
+4.4. A hybrid mass model
+
+A key assumption of all models so far has been that each mass
+component is associated with one of the four light peaks in
+MACS J0717 (we note that this hypothesis is supported by pre-
+vious studies, in particular by the series of “blind tests” per-
+formed in Limousin et al. 2012). Consistent with this assump-
+tion, Fig. 2 shows the light distributions corresponding to the
+mass components A, C, and D to be dominated by a bright ellip-
+tical galaxy; however, this is not the case for mass component B,
+whose light peak coincides with a group of small elliptical galax-
+ies. Acknowledging this peculiarity, we consider a hybrid mass
+model that combines some of the properties of the cored and the
+non-cored mass models. Components A, C, and D are described
+by a dPIE mass proﬁle, whose right ascension and declination
+are required to remain within ±5(cid:48)(cid:48) of the associated light peak
+and whose core radius is forced to be smaller than 5(cid:48)(cid:48), whereas
+component B is modelled by a dPIE mass proﬁle whose posi-
+tion is allowed to vary within ±20(cid:48)(cid:48) of the associated light peak,
+and whose core radius is allowed to reach 35(cid:48)(cid:48). Not surprisingly,
+this hybrid model is also able to reproduce the observational con-
+straints with an rms of 2.2(cid:48)(cid:48). The best-ﬁt location of component B
+is 8.5(cid:48)(cid:48) away from the associated light peak, and its best-ﬁt core
+radius is 20 ± 2(cid:48)(cid:48).
+
+5. Model comparison
+The small diﬀerence in rms between the cored and the non-cored
+model (0.5(cid:48)(cid:48)) suggests that the observational constraints, even in
+the HFF era, cannot discriminate between a ﬂat and a peaky dark
+matter distribution for the smooth component. This diﬀerence
+in rms is comparable to or smaller than that due to an image
+mis-identiﬁcation (see, e.g. the case of image 3.3 in Abell 2744
+presented in Jauzac et al. 2015), or to the diﬀerence caused by
+an unaccounted for structure along the line of sight (e.g. Host
+2012), two eﬀects that may also aﬀect our analysis.
+
+M. Limousin et al.: MACS J0717
+
+Fig. 3. Comparison between the mass maps of the cored (left) and the non-cored (right) mass models. Top: total mass (smooth component +
+galaxies). Contours show where the surface mass density equals 4, 7 × 1010 M(cid:12) arcsec−2. Middle: contribution from the smooth component only.
+Contours delineate where the surface mass density equals 4, 5.5, 6.0 × 1010 M(cid:12) arcsec−2. Bottom: contribution from the galaxies component only.
+Contours mark where the surface mass density equals 0.5, 2 × 1010 M(cid:12) arcsec−2. We note that the galaxies gain more weight in the cored mass
+model, in order to compensate for the smoothness of the underlying large-scale mass components. Each panel measures 260(cid:48)(cid:48) × 190(cid:48)(cid:48).
+
+5.1. Mass maps
+
+Figure 3 shows that the total mass maps generated by these two
+mass models are quite similar (top row) and follow the light dis-
+tribution. In the middle and bottom row of Fig. 3 this comparison
+is decomposed into the smooth component and the galaxy-scale
+component. In that decomposition, one can see important diﬀer-
+ences between the smooth components. It is peaky in the non-
+cored mass model, and the four mass components are clearly
+visible. By contrast, the dark matter distribution of the cored
+mass model is much more diﬀuse, leading to a very shallow mass
+
+proﬁle. However, this eﬀect is compensated for by the galaxy-
+scale component, which is much more massive in the cored mass
+model (lower plots of Fig. 3).
+
+5.2. Convergence proﬁle of the smooth component
+
+Figure 4 (top left) compares the resulting convergence proﬁle
+of the smooth component for the two models. Following Diego
+et al. (2015b), we take the centre of the proﬁle to be the position
+of the most massive galaxy that is closest to the centre of group C
+(α = 109.3982, δ = 37.745778). As expected from Fig. 3, the
+
+A99, page 7 of 14
+
+A&A 588, A99 (2016)
+
+Fig. 4. Top left: surface-mass-density proﬁle for the smooth component of the cored (yellow) and the non-cored (green) mass model. The blue line
+shows the same quantity, as derived by Diego et al. (2015b). Shaded areas represent 3σ uncertainties. Top right: cumulative two-dimensional mass
+proﬁle for the cored (yellow) and the non-cored (green) mass model (abscissa in arc seconds). Bottom: absolute value of the relative diﬀerence
+between each models. Blue contours mark where the diﬀerence is 20%, and cyan contours where it is 30%. The mass contours corresponding to
+the non-cored model are shown in green. The size of the ﬁeld is 226(cid:48)(cid:48) × 155(cid:48)(cid:48).
+
+proﬁles diﬀer visibly. For the cored mass model, the convergence
+proﬁle is basically ﬂat out to 20 kpc and then decreases mono-
+tonically, whereas the proﬁle for the non-cored model features
+bumps corresponding to the mass components D, B, and A. For
+comparison, the same ﬁgure also shows the convergence proﬁle
+for the smooth component inferred by Diego et al. (2015b). It re-
+sembles the proﬁle of our cored model, but remains very ﬂat to a
+much larger radius (∼100 kpc) before decreasing monotonically.
+
+5.3. Total mass proﬁle
+
+Although the large-scale (smooth) components of our two mod-
+els results in noticeably diﬀerent radial mass proﬁles, the mod-
+els’ cumulative total two-dimensional mass proﬁles are nearly
+indistinguishable (Fig. 4, right). Owing to the complex spatial
+
+A99, page 8 of 14
+
+distribution of the mass, the centre of MACS J0717 (needed to
+integrate the two-dimensional mass map) is not easily deﬁned.
+Following Meneghetti et al. (2011), we choose the barycentre
+of the Einstein ring, at α = 109.38002, δ = 37.752214 (white
+cross on Fig. 2), near the centre of the ACS frame. The projected
+mass within 990 kpc (156(cid:48)(cid:48)) of this location is found to be M =
+(2.229±0.022)×1015 M(cid:12) for the cored model, and M = (2.199±
+0.021) × 1015 M(cid:12) for the non-cored model (1σ statistical errors).
+As for other cluster mass models based on HFF data (Jauzac
+et al. 2015, 2016, 2014), the errors thus imply 1% precision.
+However, such claims disregard the additional, systematic uncer-
+tainty that we investigate here and which, based on the choice of
+mass model, leads to larger error bars on the mass. Averaging
+the two mass measurements yields M = (2.214 ± 0.037) ×
+1015 M(cid:12). It is likely that other systematic uncertainties, not
+
+M. Limousin et al.: MACS J0717
+
+taken into account here, further aﬀect the reported value and its
+error.
+
+A ﬁnal comparison is presented in Fig. 4, which shows the
+absolute value of the relative diﬀerence between the mass maps
+inferred for the cored and the non-cored model. We ﬁnd diﬀer-
+ences of 30% near massive cluster ellipticals and, importantly,
+also in the cores of the four large-scale components.
+
+5.4. Comparison with other studies
+
+Diego et al. (2015b), using the ﬁrst third of the HFF ob-
+servations, reported an image plane rms of 2.8(cid:48)(cid:48). More re-
+cently, Kawamata et al. (2016), using 173 images from the full
+depth of the HFF observations, reported an image plane rms
+of 0.52(cid:48)(cid:48). Their modelling approach is parametric. They place
+nine NFW components on the positions of bright cluster mem-
+bers (of which six have a mass larger than 1014 h−1 M(cid:12)), plus
+multipole perturbations modelling the external perturbations on
+the lens potential and the asymmetry of the cluster mass distri-
+bution. Compared to our approach, their model involves many
+more parameters, which may explain why their rms is signiﬁ-
+cantly smaller than ours. Their paper focusses on the detection
+of high-redshift galaxies, and so modelling results that allow to
+pursue a more detailed comparison are not provided. In particu-
+lar, it is not possible to see if their best mass model is closer to
+our cored or to our non-cored mass model.
+
+6. Discussion
+Our analysis reveals that two very diﬀerent models (in term of
+mass component parameters) are able to reproduce all observa-
+tional constraints equally well, in the sense that the total rms
+is comparable. While we can state that the mass distribution in
+MACS J0717 is quadri-modal, further insights remain limited;
+in particular, we are not able to constrain the shape and the pre-
+cise location of the four mass clumps, even with the exquisite
+data provided by the HFF project. Although this problem is
+likely exacerbated by the complexity of the mass distribution in
+MACS J0717, it is likely to aﬀect and limit our understanding of
+the mass distribution in other clusters too.
+
+In the following we discuss ways to discriminate between
+
+these models.
+
+6.1. Stellar velocity dispersions
+As our two models lead to diﬀerent mass distributions for the
+galaxy-scale component (see Fig. 3), here we investigate the role
+of the galaxy-scale perturbers in an attempt to ﬁnd ways to dis-
+criminate between the two models.
+
+The parameters characterizing the galaxy-scale perturbers,
+the velocity dispersion σ and the scale radius rs, diﬀer notice-
+ably: we ﬁnd σ = 250 km s−1 and rs = 53 kpc for the cored mass
+model, and σ = 161 km s−1 and rs = 73 kpc for the non-cored
+mass model (for a magnitude of 20.66). Both of these parameters
+can be constrained independently by weak and strong galaxy-
+galaxy lensing in clusters, and by measurements of the stellar
+velocity dispersion from low-resolution spectroscopy. Recently,
+Monna et al. (2015) conducted the latter type of investigation
+for the galaxies in Abell 383 and also presented a compilation
+of similar measurements in the literature (Fig. 11 of their paper).
+The parameter σ is found to range from 80 to 300 km s−1 and rs
+from 5 to 85 kpc, which are consistent with the values obtained
+for both of our two models. Measurements of these parameters
+
+for a signiﬁcant number of individual galaxies in MACS J0717
+may allow us to discriminate between the cored and the non-
+cored mass model.
+
+6.2. Redshift estimates and measurements
+
+In principle, the redshift predictions of either model might
+prove useful to discriminate between them. However, all esti-
+mated redshifts predicted by the diﬀerent mass models (listed in
+Tables A.1 and A.2) agree with each other at the 3σ conﬁdence
+level. We also note that for all systems but one (system 39), these
+model-based estimates agree with the photometric redshifts.
+
+6.3. Beyond strong lensing
+Using diﬀerent probes beyond strong lensing might also allow
+us to at least alleviate the degeneracies between the cluster-
+and galaxy-scale mass components. Measuring the weak-lensing
+shear around cluster members is a very interesting avenue in this
+context, in particular in the ﬂexion regime, which is well suited
+to probe galaxy-scale dark matter haloes. Although ﬂexion is
+challenging to measure, its signal has already been detected in
+much shallower space-based images than the ones provided by
+the HFF (see, e.g. Leonard et al. 2007, on Abell 1689).
+
+7. Implications for magniﬁcation estimates
+
+The primary science goal of the HFF campaign is to use clus-
+ters as gravitational telescopes in order to probe deeper into the
+high-redshift Universe. Whether, or how well, this goal can be
+achieved depends critically on the accuracy with which one can
+recover the ampliﬁcation that allows us to convert observed into
+intrinsic properties of said high-redshift objects.
+
+Not surprisingly, the cored and the non-cored mass models
+presented in this paper lead to diﬀerent magniﬁcation estimates,
+thus adding a systematic error that is in general larger than the
+statistical error derived from a single mass model. This system-
+atic error is deﬁned as the diﬀerence between the ampliﬁcation
+derived from the best-ﬁt cored model and the ampliﬁcation de-
+rived from the best-ﬁt non-cored model. It can sometimes be
+larger than the diﬀerence between the magniﬁcation values ob-
+tained by the diﬀerent groups of modellers, using pre-HFF data.
+To quantify the eﬀect for a given image, we compute the am-
+pliﬁcations obtained by the diﬀerent groups of modellers using
+pre-HFF data3 and take the diﬀerence between the smallest and
+largest value as the “modellers” uncertainty.
+
+For a given source redshift, the implications of these sys-
+tematic uncertainties for magniﬁcation estimates depends on
+where one looks through the cluster. To illustrate this, for a few
+multiply imaged galaxies we list the following informations in
+Table 4: the ampliﬁcation with associated error bars and signal-
+to-noise ratio (in square brackets), for the cored and the non-
+cored models; the diﬀerence between these two ampliﬁcations
+(the systematic error developed in this paper), and the previously
+mentioned modellers uncertainty. The images used for this exer-
+cise were chosen to represent a wide range of magniﬁcations:
+several are located far from the critical lines (images 19.3, 68.2,
+71.2, and 61.2), one is close to the critical line in one model but
+not in the other (image 57.1), and another one lies close to the
+critical lines in both models (23.2).
+
+In regions where the ampliﬁcation is estimated with high
+conﬁdence, we note how the ampliﬁcation diﬀerence between
+
+3 http://archive.stsci.edu/prepds/frontier/lensmodels/
+
+A99, page 9 of 14
+
+A&A 588, A99 (2016)
+
+Fig. 5. Map (310(cid:48)(cid:48) × 310(cid:48)(cid:48)) of the signal-to-noise ratio of the ampliﬁcation, for the cored (left) and the non-cored (right) mass models. White lines
+indicate where the signal-to-noise ratio equals 3. Darker areas interior to these lines correspond to regions where the signal-to-noise ratio is less
+than 3.
+
+Table 4. Illustration of the implication of the systematic uncertainty on magniﬁcation estimates.
+
+ID
+19.3
+68.2
+71.2
+61.2
+57.1
+23.2
+
+Ampli (cored)
+3.2 ± 0.15 [21]
+24 ± 2.0 [12]
+12.0 ± 1.4 [8.5]
+2.3 ± 0.2 [11.5]
+12.3 ± 6.0 [2]
+1083 ± 9167 [<1]
+
+Ampli (non-cored)
+2.8 ± 0.07 [40]
+8.7 ± 0.6 [14.5]
+10.0 ± 0.7 [14]
+1.6 ± 0.1 [16]
+32.4 ± 846 [<1]
+21.8 ± 2.5 [<1]
+
+∆ [cored – noncored]
+0.4
+15.3
+2.0
+0.7
+>100
+>1000
+
+∆ [pre-HFF]
+1.7
+4.0
+63.5
+1.62
+205
+69
+
+Notes. For diﬀerent multiple images, the value of the ampliﬁcation with associated errors and signal-to-noise ratio (in brackets), for the cored and
+the non-cored model; the diﬀerence in ampliﬁcation between the cored and the non-cored mass model; the diﬀerence in ampliﬁcation considering
+pre-HFF data and the diﬀerent modelling/group software. Magniﬁcations computed for z = 3.0.
+
+the cored and the non-cored models is larger than the error as-
+sociated with a given model and comparable to the modellers
+uncertainty. In the case of image 57.1, we also note how the
+ampliﬁcation is reasonably well constrained in the cored model
+(signal-to-noise ratio of 2), but essentially unconstrained in the
+non-cored model.
+
+This additional systematic uncertainty needs to be taken into
+account in all practical applications of a gravitational telescope,
+as it will decrease the area of the image plane where ampliﬁca-
+tions are well determined enough for credible studies of the high-
+redshift Universe. We quantify this eﬀect by computing the area
+of the image plane for which the signal-to-noise ratio on the am-
+pliﬁcation is less than 3 for a source redshift of 7. We ﬁnd 1.1
+and 1.3 arcmin2 for the cored and non-cored models, respec-
+tively. When both models are considered valid descriptions, thus
+adding the above-mentioned systematic error, this area increases
+to 1.9 arcmin2, i.e., by 50 and 70%, respectively. A graphic pre-
+sentation of this change in area is provided by Fig. 5 which
+shows the signal-to-noise ratio for the cored and the non-cored
+mass models; the white line marks a value of 3.
+
+8. Conclusion
+
+We present a strong-lensing analysis of MACS J0717 based on
+the full depth of the HFF data.
+
+A99, page 10 of 14
+
+We ﬁnd that the lensing constraints can be equally well sat-
+isﬁed by a mass model with a shallow large-scale DM compo-
+nent and one for which this component is peaky. Given the clear
+physical diﬀerence between the two models, we conclude that
+our insights into the DM distribution remain limited, even in
+the HFF era. One way to discriminate between the two models
+would be to model the mass distribution while constraining si-
+multaneously the large-scale smooth component and the galaxy-
+scale component, i.e. the two ingredients of our mass models
+that display generic degeneracies.
+
+Our ﬁndings have important implications for magniﬁcation
+estimates. We show that the ambiguity between the two mod-
+els leads to an additional systematic error that varies with po-
+sition and needs to be taken into account when looking at the
+high-redshift Universe through MACS J0717. Generally speak-
+ing, it decreases the area available for studying the high-redshift
+Universe by 50–70%.
+
+Acknowledgements. M.L. thanks Jose M. Diego for helpful exchanges dur-
+ing the writing of this paper. M.L. acknowledges the Centre National de la
+Recherche Scientiﬁque (CNRS) for its support. This work was performed using
+facilities oﬀered by CeSAM (Centre de donnéeS Astrophysique de Marseille-
+(http://lam.oamp.fr/cesam/). This work was granted access to the HPC
+resources of Aix-Marseille Université ﬁnanced by the project Equip@Meso
+(ANR-10-EQPX-29-01) of the program “Investissements d’Avenir” supervised
+by the Agence Nationale pour la Recherche (ANR). We acknowledge support
+
+M. Limousin et al.: MACS J0717
+
+from the Programme National de Cosmologie et Galaxie (PNCG). C.G. is grate-
+ful to CNES for ﬁnancial support. This work was carried out with support of the
+OCEVU Labex (ANR-11-LABX-0060) and the A*MIDEX project (ANR-11-
+IDEX-0001-02) funded by the “Investissements d’Avenir” French government
+program managed by the ANR. M.J. is supported by the Science and Technology
+Facilities Council [grant number ST/L00075X/1 & ST/F001166/1]. This work
+used the DiRAC Data Centric system at Durham University, operated by the
+Institute for Computational Cosmology on behalf of the STFC DiRAC HPC
+Facility (www.dirac.ac.uk [www.dirac.ac.uk]), using equipment funded
+by BIS National E-infrastructure capital grant ST/K00042X/1, STFC capital
+grant ST/H008519/1, and STFC DiRAC Operations grant ST/K003267/1 and
+Durham University. DiRAC is part of the National E-Infrastructure. This study
+used gravitational-lensing models produced by PIs Bradac, Ebeling, Merten &
+Zitrin, Sharon, and Williams funded as part of the HST Frontier Fields pro-
+gram conducted by STScI. STScI is operated by the Association of Universities
+for Research in Astronomy, Inc. under NASA contract NAS 5-26555. The
+lens models were obtained from the Mikulski Archive for Space Telescopes
+(MAST); we thank Dan Coe for kindly making them available to the commu-
+nity. PN acknowledges support from the National Science Foundation through
+grant AST-1044455.
+
+References
+
+Bonafede, A., Feretti, L., Giovannini, G., et al. 2009, A&A, 503, 707
+Brammer, G. B., van Dokkum, P. G., & Coppi, P. 2008, ApJ, 686, 1503
+Coe, D., Bradley, L., & Zitrin, A. 2015, ApJ, 800, 84
+D’Aloisio, A., & Natarajan, P. 2011, MNRAS, 411, 1628
+Dekel, A., Devor, J., & Hetzroni, G. 2003, MNRAS, 341, 326
+Diego, J. M., Broadhurst, T., Molnar, S. M., Lam, D., & Lim, J. 2015a, MNRAS,
+
+447, 3130
+
+Diego, J. M., Broadhurst, T., Zitrin, A., et al. 2015b, MNRAS, 451, 3920
+Ebeling, H., Barrett, E., & Donovan, D. 2004, ApJ, 609, L49
+Ebeling, H., Barrett, E., Donovan, D., et al. 2007, ApJ, 661, L33
+Edge, A. C., Ebeling, H., Bremer, M., et al. 2003, MNRAS, 339, 913
+El-Zant, A., Shlosman, I., & Hoﬀman, Y. 2001, ApJ, 560, 636
+El-Zant, A. A., Hoﬀman, Y., Primack, J., Combes, F., & Shlosman, I. 2004, ApJ,
+
+607, L75
+
+Elíasdóttir, Á., Limousin, M., Richard, J., et al. 2007, ArXiv e-prints
+
+[arXiv:0710.5636]
+
+Fioc, M., & Rocca-Volmerange, B. 1997, A&A, 326, 950
+Garaldi, E., Baldi, M., & Moscardini, L. 2016, J. Cosmol. Astropart. Phys., 1,
+
+050
+
+Host, O. 2012, MNRAS, 420, L18
+Jauzac, M., Jullo, E., Kneib, J.-P., et al. 2012, MNRAS, 426, 3369
+
+Jauzac, M., Clément, B., Limousin, M., et al. 2014, MNRAS, 443, 1549
+Jauzac, M., Richard, J., Jullo, E., et al. 2015, MNRAS, 452, 1437
+Jauzac, M., Richard, J., Limousin, M., et al. 2016, MNRAS, 457, 2029
+Johnson, T. L., Sharon, K., Bayliss, M. B., et al. 2014, ApJ, 797, 48
+Jouvel, S., Host, O., Lahav, O., et al. 2014, A&A, 562, A86
+Jullo, E., Kneib, J.-P., Limousin, M., et al. 2007, New J. Phys., 9, 447
+Jullo, E., Natarajan, P., Kneib, J.-P., et al. 2010, Science, 329, 924
+Kawamata, R., Oguri, M., Ishigaki, M., Shimasaku, K., & Ouchi, M. 2016, ApJ,
+
+819, 114
+
+LaRoque, S. J., Joy, M., Carlstrom, J. E., et al. 2003, ApJ, 583, 559
+Leonard, A., Goldberg, D. M., Haaga, J. L., & Massey, R. 2007, ApJ, 666, 51
+Limousin, M., Kneib, J.-P., & Natarajan, P. 2005, MNRAS, 356, 309
+Limousin, M., Kneib, J. P., Bardeau, S., et al. 2007a, A&A, 461, 881
+Limousin, M., Richard, J., Jullo, E., et al. 2007b, ApJ, 668, 643
+Limousin, M., Sommer-Larsen, J., Natarajan, P., & Milvang-Jensen, B. 2009,
+
+ApJ, 696, 1771
+
+Limousin, M., Ebeling, H., Richard, J., et al. 2012, A&A, 544, A71
+López-Cruz, O., Añorve, C., Birkinshaw, M., et al. 2014, ApJ, 795, L31
+Ma, C., & Ebeling, H. 2010, MNRAS, 1646
+Ma, C.-J., Ebeling, H., Donovan, D., & Barrett, E. 2008, ApJ, 684, 160
+Ma, C.-J., Ebeling, H., & Barrett, E. 2009, ApJ, 693, L56
+Martizzi, D., Teyssier, R., Moore, B., & Wentz, T. 2012, MNRAS, 422, 3081
+Medezinski, E., Umetsu, K., Nonino, M., et al. 2013, ApJ, 777, 43
+Meneghetti, M., Fedeli, C., Zitrin, A., et al. 2011, A&A, 530, A17
+Molnar, S. M., Chiu, I.-N., Umetsu, K., et al. 2010, ApJ, 724, L1
+Monna, A., Seitz, S., Zitrin, A., et al. 2015, MNRAS, 447, 1224
+Mroczkowski, T., Dicker, S., Sayers, J., et al. 2012, ApJ, 761, 47
+Natarajan, P., Croton, D., & Bertone, G. 2008, MNRAS, 388, 1652
+Natarajan, P., Kneib, J.-P., Smail, I., et al. 2009, ApJ, 693, 970
+Navarro, J. F., Frenk, C. S., & White, S. D. M. 1996, ApJ, 462, 563
+Pandey-Pommier, M., Richard, J., Combes, F., et al. 2013, A&A, 557, A117
+Postman, M., Coe, D., Benítez, N., et al. 2012, ApJS, 199, 25
+Richard, J., Jauzac, M., Limousin, M., et al. 2014, MNRAS, 444, 268
+Ricker, P. M., & Sarazin, C. L. 2001, ApJ, 561, 621
+Rocha, M., Peter, A. H. G., Bullock, J. S., et al. 2013, MNRAS, 430, 81
+Sayers, J., Mroczkowski, T., Zemcov, M., et al. 2013, ApJ, 778, 52
+Schmidt, K. B., Treu, T., Brammer, G. B., et al. 2014, ApJ, 782, L36
+Treu, T., Schmidt, K. B., Brammer, G. B., et al. 2015, ApJ, 812, 114
+van Weeren, R. J., Röttgering, H. J. A., Brüggen, M., & Cohen, A. 2009, A&A,
+
+505, 991
+
+Vanzella, E., Fontana, A., Zitrin, A., et al. 2014, ApJ, 783, L12
+Wetzel, A. R., & White, M. 2010, MNRAS, 403, 1072
+Zitrin, A., Broadhurst, T., Rephaeli, Y., & Sadeh, S. 2009, ApJ, 707, L102
+Zitrin, A., Fabris, A., Merten, J., et al. 2015, ApJ, 801, 44
+
+A99, page 11 of 14
+
+Table A.1. Multiple-image systems found before the FF observations.
+
+A&A 588, A99 (2016)
+
+ID
+1.1
+1.2
+1.3
+1.4
+1.5
+2.1
+2.2
+3.1
+3.2
+3.3
+4.1
+4.2
+4.3
+5.1
+5.2
+5.3
+6.1
+6.2
+6.3
+7.1
+7.2
+7.3
+8.1
+8.2
+8.3
+12.1
+12.2
+12.3
+13.1
+13.2
+13.3
+14.1
+14.2
+14.3
+15.1
+15.2
+15.3
+16.1
+16.2
+16.3
+17.1
+17.2
+17.3
+18.1
+18.2
+19.1
+19.2
+19.3
+
+RA
+109.39534
+109.39382
+109.39098
+109.38436
+109.40578
+109.39281
+109.39043
+109.39855
+109.39446
+109.40715
+109.38088
+109.37644
+109.39109
+109.37991
+109.37791
+109.40003
+109.36436
+109.36271
+109.37388
+109.36657
+109.36505
+109.35905
+109.36665
+109.36208
+109.35652
+109.38516
+109.37762
+109.39122
+109.38567
+109.37756
+109.39621
+109.38879
+109.37966
+109.39619
+109.36766
+109.35862
+109.35654
+109.36916
+109.35856
+109.35694
+109.36938
+109.35938
+109.35822
+109.36425
+109.36121
+109.40906
+109.40772
+109.38105
+
+Dec
+37.741178
+37.740095
+37.738280
+37.736945
+37.761378
+37.741010
+37.739245
+37.741495
+37.739176
+37.753827
+37.750127
+37.744696
+37.763296
+37.746861
+37.742810
+37.767399
+37.757091
+37.752693
+37.769711
+37.766343
+37.764125
+37.751780
+37.769694
+37.763125
+37.751928
+37.751844
+37.742878
+37.760626
+37.750733
+37.739627
+37.763333
+37.752163
+37.739707
+37.760427
+37.772059
+37.760127
+37.754641
+37.773279
+37.759558
+37.753691
+37.771869
+37.758792
+37.753609
+37.768628
+37.764326
+37.754681
+37.742731
+37.731391
+
+zspec
+–
+2.963
+2.963
+–
+–
+–
+–
+1.855
+1.855
+1.855
+1.855
+1.855
+1.855
+–
+–
+–
+2.393
+2.393
+2.393
+–
+–
+–
+–
+–
+–
+1.699
+1.699
+1.699
+2.547
+–
+2.540
+1.855
+1.855
+1.855
+2.405
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+6.40
+6.40
+6.40
+
+zmodel (non-cored, cored, NFW)
+–
+–
+–
+–
+–
+2.6 ± 0.3, 2.2 ± 0.4, 3.0 ± 0.3
+–
+–
+–
+–
+–
+–
+–
+4.1 ± 0.2, 3.8 ± 0.2, 3.7 ± 0.1
+–
+–
+–
+–
+–
+1.9 ± 0.1, 2.0 ± 0.1, 2.0 ± 0.1
+–
+–
+2.5 ± 0.1, 2.9 ± 0.2, 2.8 ± 0.1
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+3.2 ± 0.3, 3.6 ± 0.3, 3.1 ± 0.1
+–
+–
+2.7 ± 0.2, 2.8 ± 0.2, 2.7 ± 0.1
+–
+–
+2.0 ± 0.1, 2.6 ± 0.5, 2.2 ± 0.1
+–
+–
+–
+–
+
+zphot
+3.07 ± 0.06
+2.91 ± 0.09
+2.72 ± 0.17
+3.11 ± 0.06
+3.11 ± 0.07
+2.72 ± 0.12
+2.72 ± 0.07
+1.87 ± 0.04
+1.84 ± 0.04
+1.84 ± 0.04
+1.93 ± 0.05
+1.84 ± 0.04
+1.82 ± 0.04
+–
+–
+–
+2.37 ± 0.06
+2.27 ± 0.07
+–
+–
+–
+2.23 ± 0.13
+–
+–
+–
+1.62 ± 0.05
+1.73 ± 0.06
+1.71 ± 0.05
+2.47 ± 0.06
+2.54 ± 0.07
+2.61 ± 0.09
+1.84 ± 0.04
+1.84 ± 0.04
+1.84 ± 0.02
+–
+–
+3.40 ± 0.08
+–
+–
+–
+–
+–
+3.15 ± 0.14
+–
+–
+–
+–
+–
+
+Notes. Uncertainties quoted for redshifts predicted by our model, zmodel, correspond to the 1σ conﬁdence level. They are given for the non-cored,
+the cored, and the NFW models. In the last column, we show the estimate of the photometric redshift, when possible, together with the 1σ error
+bars.
+
+A99, page 12 of 14
+
+Table A.2. Multiple-image systems found after the FF observations.
+
+M. Limousin et al.: MACS J0717
+
+ID
+20.1
+20.2
+21.1∗
+21.2∗
+22.1∗
+22.2∗
+23.1∗
+23.2∗
+24.1
+24.2
+25.1
+25.2
+25.3
+27.1
+27.2
+29.1
+29.2
+31.1
+31.2
+31.3
+32.1
+32.2
+32.3
+33.1
+33.2
+33.3
+34.1
+34.2
+34.3
+36.1
+36.2
+36.3
+37.1
+37.2
+39.1
+39.2
+39.3∗
+45.1
+45.2
+45.3
+49.1
+49.2
+50.1
+50.2
+50.3∗
+52.1
+52.2
+52.3
+55.1
+55.2
+55.3
+56.1
+56.2
+56.3∗
+57.1
+57.2
+58.1
+58.2
+59.1
+59.2
+59.3∗
+
+RA
+109.37420
+109.37340
+109.37241
+109.37673
+109.36773
+109.36769
+109.37958
+109.37897
+109.392290
+109.410560
+109.380290
+109.379510
+109.402910
+109.397390
+109.397560
+109.400870
+109.392840
+109.374720
+109.371000
+109.381610
+109.369500
+109.380950
+109.366250
+109.383770
+109.386620
+109.370370
+109.391580
+109.379110
+109.373300
+109.364330
+109.358240
+109.353290
+109.397090
+109.396720
+109.402270
+109.404950
+109.414740
+109.389820
+109.383480
+109.404470
+109.402800
+109.393000
+109.374440
+109.379580
+109.392800
+109.368380
+109.360230
+109.357040
+109.373760
+109.370240
+109.385020
+109.373150
+109.378400
+109.391820
+109.379030
+109.379530
+109.379420
+109.379260
+109.376840
+109.379960
+109.400700
+
+Dec
+37.7651450
+37.7646610
+37.746392
+37.752029
+37.755897
+37.755556
+37.762879
+37.761983
+37.732946
+37.748427
+37.744746
+37.742762
+37.766411
+37.747883
+37.747567
+37.743174
+37.738612
+37.756347
+37.750538
+37.764973
+37.757729
+37.769382
+37.749210
+37.758259
+37.764144
+37.738712
+37.766308
+37.751227
+37.744211
+37.771976
+37.763325
+37.755808
+37.754736
+37.754793
+37.731234
+37.732519
+37.743276
+37.739214
+37.737879
+37.761960
+37.733260
+37.730812
+37.743736
+37.750708
+37.767181
+37.771761
+37.760497
+37.752486
+37.755778
+37.748743
+37.768411
+37.744015
+37.751095
+37.766216
+37.744097
+37.745110
+37.762383
+37.762129
+37.743245
+37.748146
+37.768628
+
+zspec
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+
+zmodel (non-cored, cored, NFW)
+3.4 ± 1.0, >2.6, uncons.
+–
+–
+–
+–
+–
+–
+–
+2.7 ± 0.1, 2.5 ± 0.1, 2.5 ± 0.1
+–
+4.0 ± 0.1, 3.8 ± 0.1, 3.8 ± 0.2
+–
+–
+1.6 ± 0.9, 3.0 ± 1.1, uncons.
+–
+1.7 ± 0.1, 1.7 ± 0.1, 1.7 ± 0.1
+–
+1.6 ± 0.1, 1.6 ± 0.1, 1.6 ± 0.1
+–
+–
+2.3 ± 0.1, 2.8 ± 0.1, 2.5 ± 0.1
+–
+–
+3.5 ± 0.3, 3.7 ± 0.2, 3.7 ± 0.1
+–
+–
+2.6 ± 0.2, 2.7 ± 0.2, 2.6 ± 0.1
+–
+–
+2.4 ± 0.2, 2.9 ± 0.2, 2.6 ± 0.1
+–
+–
+3.8 ± 0.8, 3.3 ± 0.7, 3.3 ± 0.4
+–
+4.3 ± 0.3, 4.1 ± 0.3, 4.1 ± 0.3
+–
+–
+2.7 ± 0.1, 2.7 ± 0.1, 2.6 ± 0.1
+–
+–
+>4.8, 4.1 ± 0.3, 3.8 ± 0.2
+–
+3.7 ± 0.4, 3.6 ± 0.3, 3.6 ± 0.2
+–
+–
+3.0 ± 0.2, 3.3 ± 0.2, 3.3 ± 0.3
+–
+–
+2.2 ± 0.1, 2.4 ± 0.1, 2.4 ± 0.1
+–
+–
+3.2 ± 0.2, 3.2 ± 0.2, 3.0 ± 0.1
+–
+–
+1.7 ± 0.1, 1.8 ± 0.2, 1.7 ± 0.1
+–
+4.2 ± 1.4, 4.2 ± 1.2, uncons.
+–
+3.4 ± 0.8, 4.2 ± 0.5, 3.6 ± 0.5
+–
+–
+
+zphot
+–
+–
+2.61 ± 0.16
+2.65 ± 0.12
+0.87 ± 0.11
+0.93 ± 0.05
+–
+–
+–
+–
+–
+–
+–
+2.95 ± 0.18
+2.17 ± 0.32
+1.45 ± 0.07
+1.62 ± 0.06
+1.55 ± 0.08
+1.52 ± 0.06
+1.57 ± 0.08
+–
+–
+2.40 ± 0.05
+–
+–
+–
+–
+1.03 ± 0.05
+1.11 ± 0.09
+–
+–
+–
+–
+–
+1.82 ± 0.04
+2.14 ± 0.19
+–
+–
+–
+–
+3.40 ± 0.08
+3.54 ± 0.06
+3.19 ± 0.10
+–
+–
+–
+–
+–
+–
+2.17 ± 0.11
+–
+–
+–
+–
+–
+–
+3.03 ± 0.34
+–
+3.11 ± 0.23
+–
+–
+
+Notes. Images with (∗) are the ones we propose as candidates and that are not used as constraints in the mass model. Uncertainties quoted for
+redshifts predicted by our model, zmodel, correspond to the 1σ conﬁdence level. They are given for the non-cored, the cored, and the NFW model.
+uncons means unconstrained, i.e. when the output PDF is ﬂat. In the last column, we show the estimate of the photometric redshift, when possible,
+together with the 1σ error bars.
+
+A99, page 13 of 14
+
+Table A.2. continued.
+
+A&A 588, A99 (2016)
+
+ID
+62.1
+62.2
+63.1
+63.2
+64.1∗
+64.2∗
+65.1
+65.2
+66.1
+66.2
+67.1
+67.2
+67.3∗
+68.1
+68.2
+68.3∗
+69.1
+69.2
+69.3∗
+70.1
+70.2
+70.3∗
+71.1
+71.2
+71.3
+71.4
+72.1
+72.2
+73.1∗
+73.2∗
+73.3∗
+74.1∗
+74.2∗
+74.3∗
+75.1
+75.2
+75.3∗
+76.1
+76.2
+76.3
+77.1∗
+77.2∗
+77.3∗
+78.1∗
+78.2∗
+79.1
+79.2
+79.3
+80.1
+80.2
+80.3
+81.1∗
+81.2∗
+81.3∗
+82.1∗
+82.2∗
+
+RA
+109.372220
+109.375510
+109.369420
+109.368360
+109.372250
+109.371790
+109.383120
+109.382250
+109.383310
+109.380290
+109.367470
+109.365120
+109.382090
+109.392330
+109.382350
+109.406780
+109.380400
+109.375320
+109.396440
+109.392210
+109.389380
+109.375110
+109.382700
+109.380650
+109.402550
+109.387210
+109.380120
+109.374810
+109.375970
+109.375500
+109.391470
+109.370890
+109.383420
+109.371310
+109.382000
+109.388640
+109.40496
+109.411230
+109.412840
+109.413660
+109.377000
+109.386260
+109.399110
+109.371840
+109.379010
+109.393150
+109.387350
+109.375740
+109.390940
+109.400250
+109.410080
+109.408320
+109.409010
+109.410160
+109.383660
+109.379500
+
+Dec
+37.747464
+37.752276
+37.756278
+37.753695
+37.765391
+37.765066
+37.762595
+37.760394
+37.765079
+37.759228
+37.756509
+37.749544
+37.771629
+37.738083
+37.736508
+37.763803
+37.749467
+37.743383
+37.768591
+37.760496
+37.757279
+37.735945
+37.744711
+37.741346
+37.763610
+37.741295
+37.765496
+37.762346
+37.748883
+37.748483
+37.767033
+37.751182
+37.769708
+37.751974
+37.738429
+37.739263
+37.764678
+37.731990
+37.733789
+37.734646
+37.736456
+37.751928
+37.764959
+37.742478
+37.752778
+37.762795
+37.755963
+37.735628
+37.733628
+37.738496
+37.753576
+37.728127
+37.728544
+37.729344
+37.766146
+37.756303
+
+zspec
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+5.51
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+
+zmodel (non-cored, cored, NFW)
+2.7 ± 0.3, 2.9 ± 0.3, 2.7 ± 0.3
+–
+1.3 ± 0.1, 1.6 ± 0.1, 1.7 ± 0.1
+–
+–
+–
+5.4 ± 0.3, >4.6, >5.0
+–
+>6.5, 6.4 ± 0.8, 6.5 ± 0.4
+–
+3.0 ± 0.1, 4.2 ± 0.9, 4.5 ± 0.5
+–
+–
+–
+–
+–
+3.4 ± 0.5, 3.3 ± 0.4, 3.1 ± 0.4
+–
+–
+3.7 ± 0.4, 3.1 ± 0.2, 3.9 ± 0.3
+–
+–
+3.0 ± 0.1, 2.6 ± 0.1, 2.6 ± 0.1
+–
+–
+–
+>4.1, >4.0, 3.9 ± 0.4
+–
+–
+–
+–
+–
+–
+–
+3.6 ± 0.4, 4.7 ± 0.4, 4.3 ± 0.5
+–
+–
+4.5 ± 0.4, 5.4 ± 0.3,3.7 ± 0.4
+–
+–
+–
+–
+–
+–
+–
+3.7 ± 0.3, 3.4 ± 0.2,3.7 ± 0.3
+–
+–
+3.7 ± 0.3, 3.3 ± 0.1, 3.8 ± 0.2
+–
+–
+–
+–
+–
+–
+–
+
+zphot
+2.23 ± 0.08
+2.23 ± 0.06
+2.20 ± 0.24
+2.20 ± 0.18
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+2.72 ± 0.06
+3.11 ± 0.07
+2.14 ± 0.09
+2.91 ± 0.10
+1.82 ± 0.04
+2.65 ± 0.16
+–
+3.32 ± 0.14
+3.32 ± 0.22
+–
+–
+–
+1.52 ± 0.06
+–
+1.60 ± 0.15
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+2.37 ± 0.15
+2.50 ± 0.11
+2.40 ± 0.14
+–
+–
+–
+2.65 ± 0.48
+2.72 ± 0.21
+
+A99, page 14 of 14
+
+

@@ -116,19 +116,42 @@ def enclosed_mass_to_density(r: np.ndarray, M_enc: np.ndarray) -> np.ndarray:
 
 
 def abel_project_sigma(r: np.ndarray, rho: np.ndarray, R: np.ndarray) -> np.ndarray:
-    r = np.asarray(r)
-    rho = np.asarray(rho)
-    R = np.asarray(R)
+    r = np.asarray(r, float)
+    rho = np.asarray(rho, float)
+    R = np.asarray(R, float)
+    # Extend tail to reduce edge bias at large R
+    if r.size >= 3:
+        i0 = max(0, int(0.8 * len(r)))
+        try:
+            # Ensure log-spaced r values have sufficient spacing for gradient
+            r_tail_sec = r[i0:]
+            rho_tail_sec = rho[i0:]
+            # Remove consecutive duplicates or near-duplicates
+            dr = np.diff(r_tail_sec)
+            mask_keep = np.concatenate([[True], dr > 1e-9])
+            r_tail_sec = r_tail_sec[mask_keep]
+            rho_tail_sec = rho_tail_sec[mask_keep]
+            if len(r_tail_sec) >= 2:
+                log_r = np.log(np.maximum(r_tail_sec, 1e-40))
+                log_rho = np.log(np.maximum(rho_tail_sec, 1e-40))
+                # Use finite-difference slope
+                slope = (log_rho[-1] - log_rho[0]) / (log_r[-1] - log_r[0]) if (log_r[-1] - log_r[0]) > 1e-12 else -3.0
+            else:
+                slope = -3.0
+        except Exception:
+            slope = -3.0
+        r_tail = np.geomspace(r[-1], r[-1]*10.0, 64)[1:]
+        rho_tail = rho[-1] * (r_tail / r[-1])**slope
+        r = np.concatenate([r, r_tail]); rho = np.concatenate([rho, rho_tail])
     Sigma = np.zeros_like(R)
     for i, Rp in enumerate(R):
-        # Avoid the integrable singularity at rr = Rp by requiring rr > Rp strictly
         mask = r > max(Rp, r[0])
         rr = r[mask]
         rh = rho[mask]
         if rr.size < 2:
             Sigma[i] = 0.0
             continue
-        denom = np.sqrt(np.clip(rr**2 - Rp**2, 1e-12, None))
+        denom = np.sqrt(np.clip(rr**2 - Rp**2, 1e-30, None))
         integrand = rh * rr / denom
         Sigma[i] = 2.0 * np.trapezoid(integrand, rr)
     return Sigma

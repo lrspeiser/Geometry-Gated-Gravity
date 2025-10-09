@@ -1,0 +1,2520 @@
+Astronomy & Astrophysics manuscript no. main
+October 5, 2017
+
+c(cid:13)ESO 2017
+
+7
+1
+0
+2
+
+t
+c
+O
+4
+
+]
+
+A
+G
+.
+h
+p
+-
+o
+r
+t
+s
+a
+[
+
+3
+v
+2
+6
+4
+3
+0
+.
+7
+0
+6
+1
+:
+v
+i
+X
+r
+a
+
+A reﬁned mass distribution of the cluster MACS J0416.1−2403 from
+a new large set of spectroscopic multiply lensed sources
+
+G. B. Caminha1(cid:63), C. Grillo2, 3, P. Rosati1, I. Balestra4, 5, A. Mercurio6, E. Vanzella7, A. Biviano5, K. I. Caputi8,
+C. Delgado-Correal1, W. Karman8, M. Lombardi2, M. Meneghetti7, 9, B. Sartoris10, and P. Tozzi11
+
+1 Dipartimento di Fisica e Scienze della Terra, Università degli Studi di Ferrara, Via Saragat 1, I-44122 Ferrara, Italy
+2 Dipartimento di Fisica, Università degli Studi di Milano, via Celoria 16, I-20133 Milano, Italy
+3 Dark Cosmology Centre, Niels Bohr Institute, University of Copenhagen, Juliane Maries Vej 30, DK-2100 Copenhagen, Denmark
+4 University Observatory Munich, Scheinerstrasse 1, 81679 Munich, Germany
+5 INAF - Osservatorio Astronomico di Trieste, via G. B. Tiepolo 11, I-34143, Trieste, Italy
+6 INAF - Osservatorio Astronomico di Capodimonte, Via Moiariello 16, I-80131 Napoli, Italy
+7 INAF - Osservatorio Astronomico di Bologna, Via Ranzani 1, I- 40127 Bologna, Italy
+8 Kapteyn Astronomical Institute, University of Groningen, Postbus 800, 9700 AV Groningen, The Netherlands
+9 INFN - Sezione di Bologna, viale Berti Pichat 6/2, 40127 Bologna, Italy
+10 Dipartimento di Fisica, Università degli Studi di Trieste, via G. B. Tiepolo 11, I-34143 Trieste, Italy
+11 INAF - Osservatorio Astroﬁsico di Arcetri, Largo E. Fermi, I-50125, Firenze, Italy
+
+October 5, 2017
+
+ABSTRACT
+
+We report the spectroscopic conﬁrmation of 22 new multiply lensed sources behind the Hubble Frontier Field (HFF) galaxy cluster
+MACS J0416.1−2403 (MACS 0416), using archival data from the Multi Unit Spectroscopic Explorer (MUSE) on the VLT. Combining
+with previous spectroscopic measurements of 15 other multiply imaged sources, we have obtained a sample of 102 secure multiple
+images with measured redshifts, the largest to date in a single strong lensing system. The newly conﬁrmed sources are largely low-
+luminosity Lyman-α emitters with redshift in the range [3.08−6.15]. With such a large number of secure constraints, and a signiﬁcantly
+improved sample of galaxy members in the cluster core, we have improved our previous strong lensing model and obtained a robust
+determination of the projected total mass distribution of MACS 0416. We ﬁnd evidence of three cored dark-matter halos, adding to
+the known complexity of this merging system. The total mass density proﬁle, as well as the sub-halo population, are found to be in
+good agreement with previous works. We update and make public the redshift catalog of MACS 0416 from our previous spectroscopic
+campaign with the new MUSE redshifts. We also release lensing maps (convergence, shear, magniﬁcation) in the standard HFF format.
+
+Key words. Galaxies: clusters: individual: MACS J0416.1−2403 – Gravitational lensing: strong – cosmology: observations
+
+1. Introduction
+
+The use of gravitational lensing by galaxy clusters has intensiﬁed
+in recent years and has led to signiﬁcant progress in our under-
+standing of the mass distribution in clusters, as well as to the
+discovery of some of the most distant galaxies (e.g., Coe et al.
+2013; Bouwens et al. 2014) thanks to the magniﬁcation of se-
+lected cluster lenses. Key to this progress has been the combi-
+nation of homogeneous multi-band surveys of a sizeable num-
+ber of massive clusters with the Hubble Space Telescope (HST),
+primarily with the Cluster Lensing And Supernova survey with
+Hubble (CLASH, Postman et al. 2012), with wide-ﬁeld imag-
+ing (e.g., Umetsu et al. 2014, 2016) and spectroscopic follow-
+up work from the ground and space. Studies with HST have in-
+evitably focused on the cluster cores, where a variety of strong
+lensing models have been developed to cope with the increasing
+data quality and to deliver the precision needed to determine the
+physical properties of background lensed galaxies (such as stel-
+lar masses, sizes and star formation rates), which critically de-
+pend on the magniﬁcation measurement across the cluster cores.
+Following the CLASH project, which has provided a panchro-
+matic, relatively shallow imaging of 25 massive clusters, the
+
+(cid:63) e-mail address: gbcaminha@fe.infn.it
+
+Hubble Frontier Fields (HFF) program (Lotz et al. 2016) has
+recently targeted six clusters (three in common with CLASH) to
+much greater depth (∼ 2 mag) in seven optical and near-IR bands
+with the ACS and WFC3 cameras. This has provided a very
+rich legacy data set to investigate the best methodologies to infer
+mass distributions of the inner (R (cid:46) 300 kpc) regions of galaxy
+clusters, and is stimulating a transition to precision strong lens-
+ing modeling with parametric (e.g., Richard et al. 2014; Jauzac
+et al. 2015b; Limousin et al. 2016; Kawamata et al. 2016) and
+non-parametric lens models (e.g., Lam et al. 2014; Diego et al.
+2016; Wang et al. 2015; Hoag et al. 2016).
+
+Spectroscopic follow-up information on a large number of
+multiply lensed sources is critical to achieve high-precision clus-
+ter mass reconstruction through strong lensing modeling. Early
+works heavily relied on photometric redshifts or color informa-
+tion to identify multiple images. While this method has been
+shown to be adequate for determining robust mass density pro-
+ﬁles (e.g., Zitrin et al. 2015), it is prone to systematics due to pos-
+sible misidentiﬁcations of multiple images and degeneracies be-
+tween angular diameter distances and the cluster mass distribu-
+tion. This typically leads to root-mean-square oﬀsets (∆rms) be-
+tween the observed and lens model-predicted positions of ∆rms (cid:38)
+1(cid:48)(cid:48) (see Zitrin et al. 2015, for the CLASH sample). Using exten-
+
+Article number, page 1 of 20
+
+ 
+ 
+ 
+ 
+ 
+ 
+A&A proofs: manuscript no. main
+
+sive redshift measurements for both cluster member galaxies and
+background lensed galaxies, high-ﬁdelity mass maps can be ob-
+tained with ∆rms ≈ 0(cid:48)(cid:48).3, as shown for example, in the study of
+the HFF clusters MACS J0416.3−2403 (hereafter MACS 0416)
+(Grillo et al. 2015, hereafter Gr15) and MACS J1149.5+2223
+with the sucessful prediction of the lensed supernova Refsdal
+(Treu et al. 2016; Grillo et al. 2016).
+
+Exploiting these new high-quality spectroscopic data sets in
+clusters that are relatively free from other intervening line-of-
+sight structures, strong lensing modeling even becomes sensi-
+tive to the adopted cosmology (Caminha et al. 2016, hereafter
+Ca16). In addition, new large spectroscopic samples of cluster
+member galaxies over a suﬃciently wide area allow the cluster
+total mass to be derived based on galaxy dynamics (e.g., Biviano
+et al. 2013). This provides an independent, complementary probe
+of the cluster mass out to large radii, which, when combined
+with high-quality weak-lensing determinations, can in principle
+be used to infer dark-matter properties (Sartoris et al. 2014) or
+to test modiﬁed theories of gravity (Pizzuti et al. 2016).
+
+The combination of photometric and spectroscopic data now
+available for MACS 0416, from extensive HST and VLT obser-
+vations, makes it one of the best data sets with which to in-
+vestigate the dark-matter distribution in the central region of a
+massive merging cluster through strong lensing techniques and
+to unveil high-redshift magniﬁed galaxies owing to its large
+magniﬁcation area. The high-precision strong lensing model of
+MACS 0416 presented by Gr15 was based on CLASH imag-
+ing data and spectroscopic information obtained as part of the
+CLASH-VLT survey, presented in Balestra et al. (2016).
+
+MACS 0416 is a massive and X-ray luminous (M200 ≈
+0.9 × 1015M(cid:12) and LX ≈ 1045 erg s−1, Balestra et al. 2016) galaxy
+cluster at z = 0.396, originally selected as one of the ﬁve clus-
+ters with high magniﬁcation in the CLASH sample. This sys-
+tem was readily identiﬁed as a merger, given its unrelaxed X-
+ray morphology and the observed projected separation (∼ 200
+kpc) of the two brightest cluster galaxies (BCGs) (see Mann
+& Ebeling 2012). Zitrin et al. (2013) performed the ﬁrst strong
+lensing analysis using the available CLASH HST photometry,
+which revealed a quite elongated projected mass distribution in
+the cluster core (∼ 250 kpc). In subsequent works Jauzac et al.
+(2014, 2015a) combined weak and strong lensing analyses, de-
+tecting two main central mass concentrations. When comparing
+their mass reconstruction with shallow Chandra observations,
+they were not able to unambiguously discern between a pre-
+collisional or post-collisional merger.
+
+The CLASH-VLT spectroscopic sample of about 800 cluster
+member galaxies out to ∼ 4 Mpc has recently allowed a detailed
+dynamical and phase-space distribution analyses, which revealed
+a very complex structure in the cluster core (Balestra et al. 2016).
+The most likely scenario, supported also by deep X-ray Chandra
+observations and VLA radio data, suggests a merger composed
+of two main subclusters observed in a pre-collisional phase.
+
+In this work, we present a further improved strong lensing
+model of MACS 0416, which exploits a new unprecendeted sam-
+ple of more than 100 spectroscopically conﬁrmed multiple im-
+ages (corresponding to 37 multiply imaged sources) and ∼ 200
+cluster member galaxies in the cluster core. In Section 2, we de-
+scribe the MUSE spectroscopic data set, the data reduction pro-
+cedure and the method used for redshift measurements. In Sec-
+tion 3, we describe the strong lensing model and discuss the re-
+sults of our strong lensing analysis. In Section 4, we summarize
+our conclusions.
+
+Throughout this article, we adopt a ﬂat ΛCDM cosmology
+with Ωm = 0.3 and H0 = 70 km/s/Mpc. In this cosmology, 1(cid:48)(cid:48)
+
+Article number, page 2 of 20
+
+corresponds to a physical scale of 5.34 kpc at the cluster redshift
+(zlens = 0.396). All magnitudes are given in the AB system.
+
+2. Data
+
+In this work, we take advantage of the enhanced imaging data
+from the HFF campaign (Lotz et al. 2016) and signiﬁcantly aug-
+ment the CLASH-VLT wide-ﬁeld spectroscopic campaign of
+MACS 0416 (Balestra et al. 2016) with a large number of new
+spectroscopic redshifts obtained with the MUSE integral-ﬁeld
+spectrograph at the VLT, over the central area of 2 arcmin2. The
+latter has led us to identify more than three times the number of
+secure multiple images with spectroscopic redshift used in Gr15
+and two times when comparing with Hoag et al. (2016), as well
+as to deﬁne a highly complete and pure sample of cluster mem-
+bers. Details on MUSE data reduction and analysis are given in
+Section 2.1.
+
+2.1. MUSE observations and data reduction
+
+We used archival MUSE (Bacon et al. 2012) data from two dif-
+ferent programs which covered the North-East (NE) and South-
+West (SW) regions of MACS 0416. The footprints of these
+two MUSE pointings are shown in Figure 2 (see the magenta
+squares), overlaid onto the HST color image of the cluster. The
+NE region was observed within a GTO program (ID 094.A-
+0115B, PI: J. Richard) in November 2014, for a total of two
+hours split into four exposures. Signiﬁcantly deeper observa-
+tions in the SW region of the cluster were carried out by the
+program ID 094.A-0525(A) (PI: F.E. Bauer). The latter includes
+58 exposures of approximately 11 minutes each, executed over
+the period October 2014 – February 2015. In both programs,
+each exposure was oﬀset by fractions of arcseconds and rotated
+by 90 degrees to improve sky subtraction. The seeing condi-
+tions of the NE pointing were very good, ≈ 0(cid:48)(cid:48).5, based on the
+DIMM monitor at Paranal (the lack of bright stars in both point-
+ings did not allow us to directly measure the seeing on MUSE
+data). Most of the exposures of the SW pointing, 30 out of 58,
+were taken in seeing conditions < 1(cid:48)(cid:48), whereas the others have
+FWHM(cid:39) 1(cid:48)(cid:48) − 1(cid:48)(cid:48).3. Moreover, a visual inspection of all SW
+exposures from the stacked data-cubes did not show evidence
+of signiﬁcant variations in observational conditions. Only one
+exposure was discarded due to the presence of a satellite track,
+leading to a total of 11 hours of exposure time in the SW point-
+ing.
+
+We used the MUSE reduction pipeline version 1.2.1 to pro-
+cess the raw calibration and science exposures of each single
+night, and to combine the data into the two ﬁnal data-cubes.
+During this process we applied all the standard calibration pro-
+cedures (bias and ﬂat ﬁeld corrections, wavelength and ﬂux cal-
+ibration, etc) provided by the pipeline. We then combined the
+observing blocks of the NE and SW observations (taking into
+account the oﬀset of each observation) into two ﬁnal data-cubes.
+Diﬀerent conﬁgurations of the MUSE pipeline recipes were ex-
+perimented to improve the quality of the ﬁnal data-cubes, partic-
+ularly the sky subtraction, with no signiﬁcant diﬀerences how-
+ever. The ﬁnal WCS adjustment was made matching compact
+sources detected with SExtractor (Bertin & Arnouts 1996) in the
+broad-band images of the two ﬁnal data-cubes with the corre-
+sponding objects in the HFF catalog for the ﬁlter F606W. As a
+ﬁnal post-processing step to minimize the sky residuals, we ap-
+plied the Zurich Atmosphere Purge (ZAP, Soto et al. 2016) tool
+using SExtractor segmentation maps to deﬁne sky regions.
+
+G. B. Caminha et al.: A reﬁned mass distribution of the cluster MACS J0416.1-2403
+
+Fig. 1: Color composite image of MACS 0416 from Hubble Frontier Fields data. Blue, green and red channels are the combination
+of ﬁlters F435W, F606W+F814W and F105W+F125W+F140W+F160W, respectively. White circles mark the positions of the 59
+multiple images belonging to 22 families with new spectroscopic conﬁrmation in this work, while red circles show multiple images
+previously known in spectroscopic families. Magenta circles show the model-predicted positions of multiple images not included in
+our model, lacking secure identiﬁcations (see Table A.1). The inset is a blow-up of the region around family 14, around two galaxy
+cluster members, G1 and G2, with total mass density proﬁle parameters free to vary in our model (see Section 3). The blue circles
+indicate the positions of the BCGs (BCG,N and BCG,S).
+
+The two ﬁnal data-cubes have a spatial pixel scale of 0(cid:48)(cid:48).2, a
+spectral coverage from 4750 Å to 9350 Å, with a dispersion of
+1.25 Å/pixel and a fairly constant spectral resolution of ≈ 2.4 Å
+over the entire spectral range. We noticed that after using diﬀer-
+ent conﬁgurations of the MUSE pipeline and applying the ZAP
+tool, an overall improvement was achieved in the sky subtraction
+
+even though artefacts in the background at speciﬁc wavelengths
+still remain particularly in the SW pointing, due to residual in-
+strumental signatures and sky subtraction. Nonetheless, the qual-
+ity of the reduced data-cubes allows the spectroscopic identiﬁ-
+cations of approximately one hundred sources in each pointing,
+reaching very faint levels as described below.
+
+Article number, page 3 of 20
+
+A&A proofs: manuscript no. main
+
+rious detections in the ASTRODEEP catalog were not consid-
+ered. In total, we extracted 716 and 699 spectra in the SW and
+NE MUSE pointings, respectively.
+
+Two team members used the software EZ (Garilli et al.
+2010) and SpecPro (Masters & Capak 2011) to measure inde-
+pendently redshifts, assigning quality ﬂags following the scheme
+described in Caminha et al. (2016) and Balestra et al. (2016), that
+is 3=secure, 2=likely, 1=not-reliable and 9= based on a single
+emission line. Since the MUSE spectral resolution allows us to
+distinguish the shape or doublet nature of narrow emission lines
+(Lyman-α and O ii, for instance), the redshifts with quality ﬂag
+equal to 9 are considered very reliable. With this procedure, we
+measured ≈ 300 reliable redshifts with quality ﬂag greater than
+1. Approximately one-third of the objects show emission lines in
+their spectra.
+
+As an additional step, we visually inspected the original and
+continuum-subtracted cubes. Continuum subtraction was ob-
+tained at each wavelength frame by considering two windows,
+ten spectral pixels (= 12.5 Å) wide, in the blue and red side of
+each frame, separated by ten spectral pixels. The continuum is
+estimated from the mean of the median counts in each of these
+two regions and then subtracted from each wavelength slice. The
+inspection of such a continuum subtracted data-cube allowed us
+to identify faint emission lines of sources close to bright galax-
+ies. In this way, we identiﬁed 14 additional faint sources, mostly
+Lyman-α emitters, with very faint or non-detectable counterpart
+in the HFF images.
+
+In summary, the analysis of the available MUSE observa-
+tions of MACS 0416 led us to extend the previous redshift
+catalog from the CLASH-VLT survey, published in Balestra
+et al. (2016), which now contains 301 MUSE based redshifts,
+of which 208 are new. With this paper, we also electronically re-
+lease the updated version of the redshift catalog, combining the
+VIMOS and MUSE observations, which now contains approxi-
+mately 4600 objects with redshifts (quality ﬂag greater than 1).
+A direct comparison between MUSE and VIMOS spectra can be
+done with Figure A.1 and Figure 2 of Gr15.
+
+The GLASS survey (Treu et al. 2015) has provided redshift
+measurements of 170 sources in an area of ≈ 4 arcmin2 around
+the cluster core. We have found that 103 redshifts from the
+CLASH-VLT and MUSE data sets are in common with GLASS.
+Within the MUSE ﬁeld of view, we were not able to measure
+redshifts for ten GLASS sources, of which six are close to the
+edge of the MUSE observations. The remaining four have red-
+shifts below z = 2.9, the lower limit of a Lyman-α emission to
+appear in the MUSE spectrum.
+
+Regarding the identiﬁcation of multiple images for the strong
+lensing model described below, in this work we conﬁrm 11 of the
+15 spectroscopic multiple-image families from previous studies
+(Richard et al. 2014; Johnson et al. 2014; Jauzac et al. 2014;
+Grillo et al. 2015; Hoag et al. 2016) and measure secure red-
+shifts for additional 56 multiple images, belonging to 21 new
+families, thus more than doubling the number of multiple im-
+ages with spectroscopic redshift known to date for MACS 0416.
+We also measure the redshift of additional ﬁve multiple images
+belonging to known spectroscopic families but with no previ-
+ous spectroscopic conﬁrmation. Finally, we update the redshift
+of family 1 to z = 3.238, previously reported in the GLASS cat-
+alog at z = 2.19 with quality ﬂag “probable” in their deﬁnition.
+We therefore spectroscopically determine with MUSE a total of
+21+1 new multiply lensed systems. All except one of these 37
+families have at least two images with measured redshift. All
+these multiple images are indicated in Figure 1, while spectra
+and image cutouts are shown in Figure A.1. Many of these lensed
+
+Fig. 2: Color image of MACS 0416 from the Hubble Frontier
+Fields data (using the ACS ﬁlters F435W, F606W and F814W
+for the blue, green and red channels respectively) with the two
+overlaid MUSE pointings (magenta boxes), each ≈ 1(cid:48) across.
+The green circles indicate the 193 selected galaxy cluster mem-
+bers (75% of which spectroscopically conﬁrmed), with the radii
+proportional to the values of σv obtained from the best-ﬁtting
+lensing model and using Eq. 1. The three red contours show the
+95% conﬁdence level of the dark-matter halo centers included in
+the lensing model.
+
+We notice that despite the signiﬁcant longer exposure, the
+signal-to-noise of spectra in the SW pointing does not scale ac-
+cording to expectations, resulting only in a moderately larger
+depth when compared to the NE pointing. We attribute this dif-
+ference to the signiﬁcantly better seeing of the NE pointing (0(cid:48)(cid:48).5
+versus 1(cid:48)(cid:48)) and the large number of short exposures used in the
+observations of the SW pointing, which due to residual system-
+atics in the background subtraction, did not yield the expected
+depth in the coadded datacube.
+
+2.2. Spectra extraction and redshift measurements
+
+We describe here the strategy and methodology to extract spec-
+tra and measure redshifts for all detectable objects in the MUSE
+ﬁelds, speciﬁcally cluster members and multiple images of back-
+ground lensed sources, which are critical inputs of our strong
+lensing model.
+
+To maximize the completeness of spectroscopic identiﬁca-
+tions in the two MUSE data-cubes we proceeded in two steps.
+Firstly, we used the ASTRODEEP Frontier Fields catalog by
+Castellano et al. (2016), and blindly extracted spectra at each
+object position from the MUSE data-cubes, whose world co-
+ordinate system is aligned with the HFF within ∼ 0(cid:48)(cid:48).1. Spec-
+tra were extracted within 0(cid:48)(cid:48).8-radius circular apertures, which
+provide a good compromise in the eﬀort to maximize signal-to-
+noise and minimize source confusion. The ASTRODEEP HFF
+catalog reaches a 90% completeness limit at magF160W ≈ 27.25
+for disk-like galaxies. Objects which are ﬂagged as possible spu-
+
+Article number, page 4 of 20
+
+NE160.2 kpc30 "G. B. Caminha et al.: A reﬁned mass distribution of the cluster MACS J0416.1-2403
+
+els that can be found on the HFF webpage1. For Abell 1689,
+only one strong lensing model is publicly available, so no error
+bars are provided. These two parameters enter a ﬁgure of merit
+for the quality of the reconstructed mass distribution of a cluster,
+since the ﬁdelity of the mass map strictly depends on the number
+of multiple images with spectroscopic redshift, while the spatial
+resolution of this map depends on the number of strong lensing
+constraints for a given extent of the magniﬁcation area.
+
+In Table 1, we quote strong lensing constraints and refer-
+ences for the HFF clusters and Abell 1689. We show the progress
+in the identiﬁcation of multiple-image families for MACS 0416,
+from Gr15 (using VLT/VIMOS), to Hoag et al. (2016) (us-
+ing HST/GLASS), to this work (with VLT/MUSE). The 21 ad-
+ditional spectroscopic multiply lensed sources presented here
+make MACS 0416 arguably the best-studied strong lensing clus-
+ter to date.
+
+Table 1: Comparison of strong lensing constraints, that is the
+number of multiple image families with spectroscopic conﬁrma-
+tion (Nspec), for the the best-studied strong lensing clusters to
+date.
+
+Cluster
+MACS 0416
+MACS 0416
+MACS 0416
+Abell 1689
+Abell S1063
+MACS J1149.5+2223
+Abell 2744
+MACS J0717.5+3745
+Abell 370
+
+Nspec
+37
+15
+8
+24
+17
+8
+10
+9
+3
+
+Reference
+this work
+Hoag et al. (2016)
+Grillo et al. (2015)
+Diego et al. (2015a)
+Karman et al. (2016)
+Treu et al. (2016)
+Jauzac et al. (2015b)
+Limousin et al. (2016)
+Richard et al. (2010)
+
+The MUSE data also allow us to extend and check the pu-
+rity of the catalog of 175 cluster members presented in Gr15.
+In that work, 12 CLASH photometric bands were used to deﬁne
+the distribution in color space of spectroscopic members from
+the CLASH-VLT campaign, thereby assigning a probability to
+all other galaxies to be a member based on their N-dimensional
+color. We have already emphasized that the completeness and
+purity of the sample of sub-halos associated to cluster members
+play an important role in the quality of the strong lensing model.
+Interestingly, we ﬁnd that only four galaxies were misidenti-
+ﬁed as galaxy members in Gr15, and add 22 new spectroscopic
+members brighter than magF160W = 24. The latter is the limit-
+ing magnitude adopted in Gr15 to deﬁne the photometric sample
+within the HST/WFC3 FoV (≈ 5.5 arcmin2). Following Gr15,
+we used the redshift range [0.382 − 0.410] to deﬁne member-
+ship. This interval, corresponding to approximately three times
+the cluster velocity dispersion in the rest frame, is somewhat
+wider than the velocity range of members selected with kine-
+matic methods in Balestra et al. (2016). In Figure 4, we show the
+magnitude distribution of the cluster members, highlighting the
+improvement enabled by the MUSE data, which provides also
+nine members fainter than magF160W = 24. This is not surpris-
+ing, considering that MUSE observations outperform VIMOS
+spectroscopy (with 1-2 hr exposure) when measuring redshifts
+of faint early-type galaxies, and that the Gr15 cluster member
+catalog was constructed maximizing purity over completeness.
+Thus, the new sample of cluster members inlcudes 193 galaxies,
+of which 144 (75%) have measured spectroscopic redshifts. Fi-
+
+1 https://archive.stsci.edu/prepds/frontier/
+lensmodels/
+
+Article number, page 5 of 20
+
+Fig. 3: Number of spectroscopically conﬁrmed families of mul-
+tiple images identiﬁed to date, as a function of the physical area
+on the lens plane with absolute magniﬁcation greater than 10,
+for a source at z = 4. In addition to the HFF clusters, we also
+include Abell 1689. The error bars of the magniﬁcation area re-
+ﬂect the variance (ninetieth percentile) of the most recent HFF
+strong lensing models.
+
+sources have faint magnitudes for ordinary ground-based spec-
+troscopic work, ranging from magF814W = 24 down to ≈ 29 (see
+Table A.1) and redshifts z (cid:38) 3.08 (reﬂecting the visibility of the
+Lyman-α in the MUSE window). These sources are primarily
+low-luminosity Lyman-α emitters, whose spectro-photometric
+properties can be used to constrain physical properties of low-
+mass galaxies which are considered to be the main candidates
+for reionization (Wise et al. 2014; Kimm & Cen 2014). More-
+over, the rest-frame equivalent widths of these lensed Lyman-α
+emitters range between ≈ 10 Å to ≈ 120 Å and have extremely
+low luminosities (L ≈ 1040 L(cid:12) − 1042 L(cid:12)), which are comparable
+to those measured in the sample of lensed LAEs in Karman et al.
+(2016).
+
+When combined with previous measurements, from the
+CLASH-VLT and GLASS surveys, the multiple-image systems
+span a redshift range from z ≈ 0.94 up to z ≈ 6.15. The highest
+redshift source is a remarkable giant arc with three multiple im-
+ages (2a, 2b and 2c), as revealed by the MUSE data-cube at the
+8686 Å. A very interesting multiply imaged system is System 9,
+which consists of a complex, double-peaked, extended Lyman-α
+emission in which three faint galaxies, detected on the HST im-
+age, are embedded. This system has been studied in detail in
+Vanzella et al. (2016). We also note that two families (IDs 21
+and 35) do not have signiﬁcant counterparts in the deep HFF im-
+ages (see Table A.1), showing the remarkable ability that MUSE
+has in identifying very faint emission line objects.
+
+In Figure 3, we compare the number of spectroscopically
+conﬁrmed multiple-image families and physical magniﬁcation
+areas for all HFF clusters, as well as for Abell 1689, which has
+long been a reference cluster for high-quality lensing studies (in
+this case, we computed the magniﬁcation area using the pub-
+lic lens model in Limousin et al. 2007). The error bars show
+the variance of the results of the diﬀerent strong lensing mod-
+
+10−1Area(|µ|>10)[Mpc2]0510152025303540NumberoffamilieswithspectroscopicredshiftMACSJ0416A2744A370AS1063MACSJ0717MACSJ1149A1689*MACSJ0416thisworkDiego2015Hoag2016Jauzac2015Richard2014Karman2016Limousin2016Treu2016A&A proofs: manuscript no. main
+
+tectable images or spectroscopic emission is found, or the im-
+age association is not unique (see magenta circles in Figure 1).
+Speciﬁcally, we ﬁnd more than one candidate image at the loca-
+tion where we expected to ﬁnd the multiple images 9c, 11a, 14d,
+16e, 18c and 23c, making their identiﬁcation uncertain. In the
+case of multiple image 12a, its strong distortion due to a galaxy
+member does not allow us to identify the luminosity peak corre-
+sponding to the images 12b and 12c. Moreover, we do not ﬁnd
+clear counterparts of 21a, 22a, 33c and 34a in the HFF imaging.
+On the other hand, although we do not have spectroscopic con-
+ﬁrmation of the multiple images 17b, 17c and 28a, their color,
+morphology and parity are in very good agreement with other
+images with measured redshifts, resulting in secure multiple-
+image systems. Interestingly, the families 21 and 35 show very
+clear Lyman-α emission but no evident counterparts in the HFF
+imaging. For these two families, we consider multiple-image po-
+sitions at the peaks of the emission in the MUSE data. In sum-
+mary, we build a secure set of 102 multiple images (belonging to
+37 families) with spectroscopic redshifts, to reconstruct the to-
+tal mass distribution of MACS 0416. The coordinates, redshifts,
+magnitudes, previous literature information of the multiple im-
+ages in our ﬁnal set are presented in Table A.1.
+
+We adopt an uncertainty on the observed multiple image po-
+sitions (σobs) of 0(cid:48)(cid:48).5, which takes into account possible pertur-
+bations form line-of-sight structures, as discussed in Gr15 and
+Ca16 and close to the theoretical expectations (Jullo et al. 2010;
+Host 2012). We show below that this value yields a reduced χ2
+value very close to one. To compute the posterior probability dis-
+tributions of the model parameters, hence their statistical errors
+and correlations, lenstool uses a Bayesian Markov Chain Monte
+Carlo (MCMC) technique.
+
+3.1. Mass model components
+
+The overall total mass distribution of the cluster is modeled with
+a smooth component, made of one or more halos which repre-
+sent the dominant dark matter, the hot gas and the intra-cluster
+light, and a clumpy sub-halo population traced by the member
+galaxies.
+
+Each smooth component is parametrized with a pseudo-
+isothermal elliptical mass distribution (PIEMD; Kassiola &
+Kovner 1993). This model is characterized by the values of
+an eﬀective velocity dispersion (σv), core radius (rcore), ellip-
+ticity (ε) and position angle (θ). The ellipticity is deﬁned as
+ε ≡ (a2 − b2)/(a2 + b2), where a and b are the semi-major and
+minor axis, respectively. Since the distribution of dark matter is
+not necessarily associated to an observable counterpart, the cen-
+ter of this component (x and y) is also a free parameter in the
+model.
+
+As for the clumpy component, we exploit the new highly
+complete sample of cluster members described above, attaching
+a halo to each of the 193 member galaxies. Each halo is mod-
+eled with a circular pseudo-isothermal mass distribution (dPIE;
+Elíasdóttir et al. 2007; Suyu & Halkola 2010). The position of
+each dPIE is ﬁxed at the luminosity center of member galaxies,
+while the values of eﬀective velocity dispersion σgals
+v,i and trunca-
+tion radius rgals
+cut,i are free parameters. Following Gr15 anf Ca16,
+we scale these parameters with the observed luminosity in the
+ﬁlter F160W of each galaxy, using:
+
+σgals
+v,i
+
+= σgals
+v
+
+(cid:33)0.35
+
+(cid:32)
+
+Li
+L0
+
+and rgals
+cut,i
+
+= rgals
+cut
+
+(cid:33)0.5
+
+,
+
+(cid:32)
+
+Li
+L0
+
+(1)
+
+Fig. 4: Stacked distribution of F160W magnitudes of galaxy
+members in the core of MACS 0416. Spectroscopically con-
+ﬁrmed members from CLASH-VLT (Balestra et al. 2016) are
+shown in blue (80), the newly identiﬁed members by MUSE
+in green (73) and the remaining photometrically selected galax-
+ies with magF160W < 24 from Gr15 in red (193 in total). The
+stellar mass on the top axis is computed from log(M∗/M(cid:12)) =
+18.541 − 0.416 × magF160W from Gr15.
+
+nally, we note that all cluster members with measured GLASS
+redshifts are conﬁrmed by MUSE.
+
+3. Strong lensing modeling
+
+We use the positions of the new large set of multiple images de-
+scribed above to study the mass distribution of MACS 0416 with
+the strong lensing technique described in Ca16 (see Section 3 of
+that paper for details and equations). We brieﬂy summarize here
+the main characteristics of our strong lensing model. We use the
+public software lenstool (Kneib et al. 1996; Jullo et al. 2007) to
+reconstruct the projected total mass distribution in a parametric
+form, by minimizing the distances between the model-predicted
+and observed positions of the multiple images.
+
+As emphasized in Gr15 and Ca16, we only rely on secure
+multiple images with spectroscopic redshift, since additional
+photometric multiply lensed systems lead to systematic uncer-
+tainties in the model, due to possible misidentiﬁcation of mul-
+tiple images, and introduce degeneracies in the mass distribu-
+tion, due to uncertain angular diameter distances associated with
+photometric or unknown redshﬁts. We select the new multiple
+images ﬁrstly from our spectroscopic catalog, identifying the
+sources with very similar redshifts. Only a few sources are found
+to be at the same redshift but are not multiple images. These
+sources likely belong to a proto-cluster or group of galaxies be-
+hind MACS 0416. Notice that we did not use our previous strong
+lensing model of Gr15 to select the new multiple image families.
+Our selection strongly relies on the spectroscopic identiﬁcations.
+In order not to bias our model, we do not include any family
+without spectroscopic conﬁrmation and do not exclude spectro-
+scopically conﬁrmed multiple images that cannot be reproduced
+well by our model. Moreover, we do not include multiple im-
+ages when the identiﬁcation is not secure, either because no de-
+
+Article number, page 6 of 20
+
+1820222426magF160W010203040NumberofmembersBalestra2016MUSEonlyPhotometric10710810910101011M∗[M⊙]G. B. Caminha et al.: A reﬁned mass distribution of the cluster MACS J0416.1-2403
+
+v
+
+where L0 is a reference luminosity which we choose to coincide
+with that of the northern BCG (BCG,N in Figure 1, magF160W =
+and rgals
+17.02). We are thus left with only two parameters (σgals
+cut )
+describing the overall sub-halo population. These speciﬁc rela-
+tions yield a shallow dependence of the galaxy total mass-to-
+light ratio with their luminosity, that is Mtotal/L ∝ L0.2. Such
+a “tilted” scaling relation is known from studies on the Funda-
+mental Plane (Faber et al. 1987; Bender et al. 1992) of early-
+type galaxies and has been shown to better reproduce the ob-
+served positions of multiple images in previous high-precision
+lensing models, such as those for MACS 0416 itself (Gr15) and
+MACS J1149.5+2223 (Grillo et al. 2016), when predicting the
+reappearance of SN Refsdal (Kelly et al. 2016).
+
+The inset in Figure 1 shows a galaxy-scale lensing system
+(family 14) embedded in the cluster potential. Since the cluster
+galaxies G1 and G2 are the main contributors to the creation of
+the multiple images of this system, the total mass density param-
+eters of these two galaxies are left free to vary in the modeling.
+For the more luminous galaxy G1, we consider an elliptical pro-
+ﬁle and optimise also its values of ellipticity and position angle.
+We therefore have six extra free parameters describing G1 and
+G2: (σG1
+
+cut, εG1, θG1) and (σG2
+v
+
+, rG1
+
+, rG2
+
+cut).
+
+v
+
+Similarly to previous works (Gr15, Johnson et al. 2014;
+Richard et al. 2014; Kawamata et al. 2016), we take into account
+the lensing contribution of a foreground galaxy at z = 0.112 lo-
+cated in the South-West region of MACS 0416, very close to
+family 37 (see Figure 1). To do that, we include an extra dPIE
+mass component at the galaxy position (RA = 04:16:06.82 and
+DEC=−24:05:08.4) and cluster redshift, making its “eﬀective”
+parameters σ f ore
+cut also free to vary. This is a ﬁrst simple
+approximation to a correct multi-plane lensing model, which is
+not included yet in the lenstool software.
+
+and r f ore
+
+v
+
+3.2. Results
+
+Following Gr15, we ﬁrst use two halos for the smooth total
+mass component of MACS 0416, a complex merging cluster,
+as clearly indicated by the distribution of cluster galaxies in two
+main clumps around the BCG North and South. This model has a
+total of 22 free parameters describing the cluster total mass dis-
+tribution and can reproduce the observed positions of the mul-
+tiple images with values of root-mean-square oﬀset (∆rms) of
+0(cid:48)(cid:48).82 and minimum χ2 of 275. In this case, the number of de-
+grees of freedom (i.e., the number of observables minus the num-
+ber of free parameters) is 108, resulting in a reduced χ2 of 2.55,
+signiﬁcantly higher than what was found in previous strong lens-
+ing studies on this cluster.
+
+By inspecting the spatial distribution of the oﬀsets between
+the observed and model-predicted positions of the multiple im-
+ages, we notice larger oﬀsets in the region NE of the northern
+BCG. We then add a third extended spherical pseudo-isothermal
+halo with four free parameters, namely σv3, rcore,3 and its center
+(x3, y3) free to vary across the entire FoV. We ﬁnd that the addi-
+tion of this third halo reduces signiﬁcantly the ∆rms and χ2 values
+to 0(cid:48)(cid:48).59 and 143, respectively, and that the best-ﬁtting center of
+this extra component is very close to a relatively minor clump in
+the galaxy distribution (see Figure 2). Interestingly, such a clump
+was not selected as an overdensity in the phase-space analysis of
+cluster galaxies over the entire cluster by Balestra et al. (2016),
+however its center is in good agreement with a peak in the con-
+vergence map obtained by Hoag et al. (2016) (the oﬀset is only
+≈ 5(cid:48)(cid:48).5, see their Figure 5), who performed a free form recon-
+
+Fig. 5: The top panel shows the distribution of the absolute value
+of the oﬀsets ∆ between the observed and predicted (from our
+best-ﬁtting model) positions of the multiple images. The bottom
+map shows the spatial distribution of these oﬀsets. The circles
+indicate the positions of the observed multiple images (relatively
+to the northern BCG), with colors and sizes scaling with their
+positional oﬀsets.
+
+struction of the total mass distribution of MACS 0416, combin-
+ing both weak and strong lensing.
+
+In summary, the cluster total mass distribution adopted here
+has 26 free parameters: 1) 16 describing the three smooth dark-
+matter components; 2) six describing the galaxy-scale lensing
+system; 3) two for the prominent foreground galaxy; and 4)
+two describing the mass-luminosity scaling relation of galaxy
+members. Overall, the number of constraints from the posi-
+tions of the 102 multiple images associated to 37 sources is 130
+(102×2−37×2), and therefore the number of degrees of freedom
+is 104 (130 − 26). Notably, these constraints are well distributed
+across the entire central region of MACS 0416, spanning a wide
+redshift range (0.94 − 6.15), which is key to the ﬁdelity of the
+reconstructed cluster total mass distribution and break the mass-
+sheet degeneracy (Falco et al. 1985; Seitz & Schneider 1997).
+
+In Table 2, we show the median values of the parameters of
+our strong lensing models with their intervals at the 68%, 95%
+and 99.7% conﬁdence levels (CL). The coordinates are relative
+to the position of the northern BCG and the angles are counted
+counterclockwise from the horizontal axis. The ﬁnal reduced χ2
+
+Article number, page 7 of 20
+
+2468101214Numberofimages 40 200204060x[arcsec] 60 40 20020y[arcsec]0.20.40.60.81.01.21.41.6 [arcsec]A&A proofs: manuscript no. main
+
+Table 2: Median values and conﬁdence levels of the cluster total
+mass distribution parameters from the MCMC analysis of the
+strong lensing model. Coordinates are relative to the position of
+the BCG,N (RA=04:16:09.15 and Dec=−24:04:03.0)
+
+Median
+
+68% CL 95% CL
+
+99.7% CL
+
+Halo around BCG-North (relative position = (0(cid:48)(cid:48), 0(cid:48)(cid:48)))
+
++2.2
+−1.8
++1.2
+−1.8
++0.04
+−0.04
++2.4
+−2.5
++1.9
+−1.9
++79
+−83
+
++1.4
+−1.2
++0.8
+−1.1
++0.03
+−0.03
++1.7
+−1.7
++1.3
+−1.3
++50
+−56
+
+−2.4
+1.8
+0.85
+143.9
+6.3
+707
+
++0.7
+x1((cid:48)(cid:48))
+−0.6
++0.4
+y1((cid:48)(cid:48))
+−0.5
++0.01
+ε1
+−0.01
++0.8
+θ1(deg)
+−0.8
++0.7
+rcore,1((cid:48)(cid:48))
+−0.7
++26
+σv1(km/s)
+−28
+Halo around BCG-South (relative position = (20(cid:48)(cid:48).3, −35(cid:48)(cid:48).8))
++0.3
+−0.2
++0.4
+−0.5
++0.01
+−0.01
++0.4
+−0.4
++0.6
+−0.5
++16
+−17
+
+x2((cid:48)(cid:48))
+19.6
+y2((cid:48)(cid:48))
+−36.4
+ε2
+0.77
+θ2(deg)
+125.6
+rcore,2((cid:48)(cid:48))
+12.5
+σv2(km/s)
+1102
+Third spherical halo
+
++0.8
+−0.5
++0.8
+−1.2
++0.02
+−0.03
++0.8
+−0.8
++1.1
+−1.1
++32
+−33
+
++1.3
+−0.7
++1.2
+−1.8
++0.03
+−0.04
++1.2
+−1.1
++1.6
+−1.6
++47
+−48
+
+x3((cid:48)(cid:48))
+y3((cid:48)(cid:48))
+rcore,3((cid:48)(cid:48))
+σv3(km/s)
+Galaxy scale system 14
+
+−34.4
+7.9
+6.4
+434
+
+σG2
+
+εG1
+θG1(deg)
+σG1
+v (km/s)
+cut((cid:48)(cid:48))
+rG1
+v (km/s)
+cut((cid:48)(cid:48))
+rG2
+
+0.3
+115
+143
+8.1
+48
+5.2
+Sub-halo population
+10.5
+251
+
+rgals
+cut ((cid:48)(cid:48))
+(km/s)
+
+σgals
+v
+
++0.8
+−1.0
++0.7
+−0.6
++2.2
+−2.0
++58
+−52
+
++0.2
+−0.2
++39
+−75
++15
+−11
++4.6
+−4.7
++29
+−24
++3.4
+−3.6
+
++2.7
+−2.4
++14
+−14
+
++1.4
+−2.5
++1.9
+−1.1
++4.7
+−4.0
++121
+−101
+
++0.3
+−0.3
++60
+−111
++34
+−22
++6.5
+−6.8
++46
+−34
++4.6
+−4.9
+
++6.2
+−4.6
++31
+−26
+
++2.1
+−4.2
++3.0
+−1.7
++6.8
+−5.9
++170
+−145
+
++0.3
+−0.3
++65
+−115
++40
+−32
++6.9
+−7.5
++49
+−36
++4.8
+−5.1
+
++10.3
+−6.2
++48
+−40
+
+value is close to one (= 1.37), while the rms oﬀset is ∆rms =
+0(cid:48)(cid:48).59 (∆median = 0(cid:48)(cid:48).5, see Figure 5).
+
+The best-ﬁtting centers of the three diﬀuse halos are shown
+as red contours (corresponding to a 95% signiﬁcance level) in
+Figure 2. In Gr15, we discussed the apparent oﬀest in the pro-
+jected distance between the centers of the two main halos and the
+corresponding BCGs. We cautioned that while an oﬀset of 9(cid:48)(cid:48).3
+and 5(cid:48)(cid:48).8, relative to BCG,N and BCG,S respectively, was statis-
+tically signiﬁcant, systematics inherent in the parametric form of
+the lens model, as well as projection eﬀects, made it diﬃcult to
+claim such an oﬀset, which has often been used to constrain the
+collisionless nature of DM (Williams & Saha 2011; Kahlhoefer
+et al. 2015), between the DM and stellar component. Interest-
+ingly, our new model, which is based on ≈ 3-times the number
+of multiple images of Gr15, albeit with an extra halo component,
+leads to a projected distance of only 3(cid:48)(cid:48).0+2.1
+−1.4 (99.7
+% CL) of the two main halos from the BCG North and South, re-
+spectively. The statistical signiﬁcance of the oﬀset between each
+DM halo and its hosting BCG is therefore reduced when com-
+pared with Gr15. We defer a further analysis on this issue to
+a future paper, where the velocity dispersions of the BCGs are
+used to alleviate the degeneracy between the parameters (centers
+and scale) of the DM halos and those associated to the BCGs.
+
+−2.6 and 1(cid:48)(cid:48).0+0.5
+
+Article number, page 8 of 20
+
+The center of the third dark matter halo (x3 and y3) is on the
+top of a clump of three galaxy members in the the north-east
+region of the cluster (see Figure 2) and its mass is signiﬁcantly
+smaller than that of the other two halos. However, the possibility
+of having a vanishing mass (i.e., σv3 = 0) is excluded by the pos-
+terior distribution computed from the MCMC, statistically con-
+ﬁrming the existence of this halo. Finally, within a circle with
+radius of ≈ 15(cid:48)(cid:48) from this halo there is no evidence of a back-
+ground or foreground structure in our redshift measurements and
+in the HST imaging, thus excluding a possible existence in this
+region of a signiﬁcant perturber not belonging to MACS 0416.
+
+Regarding the galaxy-scale lensing system 14, it is worth
+noticing that although the value of the position angle of G1 is
+not well constrained (see Table 2), its median value is in very
+good agreement with that of the light distribution, θlight
+= 119◦,
+G1
+measured with SExtractor. On the other hand, the ellipticity is
+unconstrained due to degeneracies with the smooth dark-matter
+halos. Moreover, the values of eﬀective velocity dispersion from
+the best-ﬁtting scaling relation of the cluster members (using Eq.
+1 and the MCMC chain used to compute the values in Table 2)
+are 108+21
+−9.4km/s (99.7% CL) for the luminosities
+of G1 and G2, respectively. Interestingly, they agree, within the
+statistical errors, with the values optimized separately for σG1
+and σG2
+(see Table 2), thus indicating that the total intrinsic
+scatter in the total mass-to-light ratios of the sub-halo popula-
+tion does not seem to play an important role in the cluster strong
+lensing modeling.
+
+−17km/s and 59+11
+
+v
+
+v
+
+In Figure 6, we compare the cumulative projected total mass
+proﬁle resulting from our best-ﬁtting strong lensing model with
+that obtained from the X-ray emission and dynamical analysis
+of ∼ 800 cluster galaxies. Interestingly, the latter is also best de-
+scribed by a softened (i.e., cored) isothermal sphere model, as
+discussed in Balestra et al. (2016). The new strong lensing total
+mass proﬁle is perfectly consistent with that of Gr15, who used
+∼ 1/3 of the multiple images and the GLEE (Suyu & Halkola
+2010; Suyu et al. 2012) software for the modeling. Although
+the sub-halo total mass distribution in our model is lower than
+in Gr15, both measurements agree within the statistical errors
+(99.7% CL). This diﬀerence in mainly related to the inclusion of
+the third dark matter halo and the extra constraints in our strong
+lensing model. In the right panel, we also compare the projected
+total mass and the X-ray surface brightness distribution. As dis-
+cussed in Balestra et al. (2016) the close resemblance of the total
+mass and gas component, adds further evidence to a pre-merger
+scenario for MACS 0416.
+
+In addition, we compare our magniﬁcation map for a source
+at redshift 4 with the HFF models in Figure 7. The models cover
+diﬀerent methodologies: 1) free-form, meaning that no paramet-
+ric form is assumed for the total mass distribution, Bradac v3
+(Hoag et al. 2016), Willians v3 (using the GRALE software
+Liesenborgs et al. 2006, 2010) and Diego v3 (a pre-HFF mod-
+eling is presetend in Diego et al. 2015b); 2) hybrid, that scales
+the smooth dark matter component with the light, Zitrin-LTM-
+Gauss v3 (Broadhurst et al. 2005; Zitrin et al. 2009); 3) para-
+metric models using diﬀerent codes, Sharon v3 (see Johnson
+et al. 2014, for their pre-HFF modeling) and CATS v3 (pre-HFF
+presented in Richard et al. 2014) with lenstool and GLAFIC v3
+(Kawamata et al. 2016). Diﬀerences in parametric and free-form
+models are expected on small spatial scales. In the case of the
+parametric models, the main diﬀerence is related to the north-
+east region due to the presence of the third halo, however the
+overall shape of the critical lines is very similar.
+
+We emphasize that a full comparison of these maps becomes
+meaningful only when the input constraints (number and qual-
+
+G. B. Caminha et al.: A reﬁned mass distribution of the cluster MACS J0416.1-2403
+
+Fig. 6: In the left panel we cumulative projected mass distribution of MACS 0416 from our new strong lensing model (total mass
+and sub-halo component), relative to the position of the BCG,N. The black regions correspond to the 99.7% conﬁdence level, while
+the magenta line and shaded area show the best-ﬁtting proﬁles from our previous model presented in Gr15. The green and blue
+regions are the 1 σ determination of the mass proﬁle from the dynamical analysis of ∼ 800 cluster galaxies and the X-ray emission,
+respectively, reported in Balestra et al. (2016). The total mass proﬁles associated to the sub-halo population of cluster galaxies from
+the lensing model is also shown. The vertical lines show the projected radial distances of the multiple images used in this work. In
+the right panel, we show the projected total mass iso-contours ([0.6, 1, 2] × 1015 M(cid:12)Mpc−2 in white), and Chandra X-ray contours
+(0.5-2 KeV) overlaid on the HFF-ACS color image.
+
+ity) of all models are the same or at least very similar. Notice
+that some modelers consider several knots of the same back-
+ground source as diﬀerent multiple image systems, increasing
+the number of Nspec. Moreover, as underscored in this and pre-
+vious works (Gr15, Ca16, Treu et al. 2016; Rodney et al. 2016;
+Johnson & Sharon 2016) a large number of spectroscopic fam-
+ilies is critical for the robustness of the lens model, removing
+misidentiﬁcation of multiple images and alleviating model de-
+generacies. Also note that the use of diﬀerent selection of mem-
+ber galaxies leads to signiﬁcant deviations of the magniﬁcation
+on small scales. In our case, a highly pure and complete sample
+of members is provided by MUSE spectroscopy. For a complete
+comparison of the HFF lensing models see Priewe et al. (2016)
+and Meneghetti et al. (2016) in the context of strong lensing sim-
+ulations of galaxy clusters.
+
+4. Conclusions
+
+In this article, we have signiﬁcantly extended the panoramic VI-
+MOS spectroscopic campaign of MACS 0416, presented in Gr15
+and Balestra et al. (2016), with data from the MUSE integral-
+ﬁeld spectrograph on the VLT, which has yielded 208 new se-
+cure redshift measurements in the central 2 arcmin2 region of
+the cluster. Notably, a new large set of multiply lensed sources
+was identiﬁed using two MUSE archival pointings, extending
+the work of Gr15 and Hoag et al. (2016) and bringing the num-
+ber of spectroscopically identiﬁed multiple-image systems from
+15 to 37. This was possible by measuring 59 new redshifts to
+very faint magnitude, thanks to the sensitivity of MUSE to line
+ﬂuxes as faint as 10−19 erg s−1 cm−2 Å−1 (see Karman et al. 2016,
+
+for the study of a similar set of low-luminosity Lyman-α emit-
+ters with MUSE observations of the HFF cluster AS1063). This
+new sample also extends the redshift range of known multiple
+images, with ﬁve additional systems at z > 5, one of which
+is at z = 6.145 (13 images with measured redshift at z > 5).
+The MUSE observations also allowed us to secure redshifts of
+144 member galaxies over an area of ∼ 0.2 Mpc2. Three-quarters
+of the cluster galaxies selected down to magF160W = 24 (corre-
+sponding to M∗ ≈ 3 × 108 M(cid:12)) are now spectroscopically con-
+ﬁrmed.
+
+With such a large set of 102 spectroscopic multiple images
+and a much improved sample of galaxy members in the cluster
+core, we have built a new strong lensing model and obtained an
+accurate determination of the projected total mass distribution of
+MACS 0416. The main results of this study can be summarized
+as follows:
+
+1. We can reproduce the observed multiple-image positions
+with an accuracy of ∆rms = 0(cid:48)(cid:48).59, which is somewhat larger
+than the one obtained by Gr15 (0(cid:48)(cid:48).36), who however used
+less than one-third of the multiple images.
+
+2. The large-scale component of the total mass distribution was
+initially modeled with two cored elliptical pseudo-isothermal
+proﬁles around the two BCGs, as in Gr15, however larger
+positional oﬀsets ∆ in the NE portion of the cluster led us to
+introduce a third ﬂoating cored halo in the model. We ﬁnd
+interesting that, besides signiﬁcantly reducing the ∆rms, the
+best-ﬁt position of this third halo is very close to a peak of
+the convergence map obtained by Hoag et al. (2016) with
+an independent free-form lensing model, which also exploits
+the weak-lensing shear. Although this third halo is centered
+
+Article number, page 9 of 20
+
+101102R[kpc]10111012101310141015M(<R)[M⊙]sub-halosThiswork(SL)Grillo2015(SL)GalaxydynamicsX-rays101102R[arcsec]SL massX-raysNE160.2 kpc30 "A&A proofs: manuscript no. main
+
+3. The new best-ﬁtting centers of the two main halos are now
+found within ∼ 2(cid:48)(cid:48) from the respective BCGs, further re-
+ducing the halo-BCG oﬀset when compared with the Gr15
+model. As described in Balestra et al. (2016), such a concen-
+tric distribution of light and dark-matter mass, when com-
+pared with the distribution of the X-ray emitting gas whose
+main peak is at the position of the northern BCG, is consis-
+tent with a pre-merging scenario.
+
+4. The cumulative projected total mass proﬁle is found in excel-
+lent agreement with the one of Gr15, and in good agreement
+with the dynamical and X-ray mass which was however ob-
+tained with the simple approximation of a single spherical
+halo (see Balestra et al. 2016). Together with the point 2.
+above, this suggests that owing to a signiﬁcant enhancement
+of constraints in the strong lensing model we are now able
+to better resolve the mass distribution of the smooth cluster
+halo.
+
+5. The overall scaling of the total mass-to-light ratio for the sub-
+halo population, traced by the new highly complete and pure
+sample of cluster galaxies, is found consistent with the one
+of Gr15. Our new model therefore corroborates the evidence
+found in Gr15 that a sub-halo mass function is signiﬁcantly
+suppressed when compared to simulations, particularly at the
+high-mass end. A similar result has recently been obtained in
+an independent study (Munari et al. 2016) of the Abell 2142
+galaxy cluster with SDSS data. A detailed analysis of the
+sub-halo population and diﬀerent mass components in the
+core of MACS 0416, which takes advantage of the internal
+velocity dispersions of cluster galaxies (see e.g., Monna et al.
+2015, 2016) is deferred to a future paper, where we also plan
+a detailed comparison with the study of Hoag et al. (2016).
+
+Remarkably,
+
+the new spectroscopic identiﬁcations with
+MUSE observations of MACS 0416 match in some cases the
+continuum magnitude limit of the HFF data for Lyman-α emit-
+ters (see also Karman et al. 2016), and complement the HST
+NIR GRISM spectroscopy of the GLASS survey. Not surpris-
+ingly, this cluster now becomes one of the best test bench for
+strong lensing modeling (see Figure 3), which we argue need to
+rely largely, or entirely, on spectroscopically conﬁrmed multiple-
+image systems for high-precision modeling.
+
+The accuracy we have reached in reproducing the observed
+multiple-image positions with this new model, on the other hand
+suggests that it will be challenging to further improve on these
+results by simply introducing more mass components in para-
+metric models. Interestingly, the large number of constraints for
+this cluster should allow free-form models to become more ef-
+fective, for example in discovering extra mass clumps with un-
+usual total mass-to-light ratios. As already noted in Ca16 (see
+also Treu et al. 2016), with the current high-quality set of strong
+lensing constraints we seem to have hit the limit of the single-
+plane lensing approximation, so that the next step in precision
+strong-lensing modeling inevitably will have to properly take
+into account the eﬀects of the structure along the line of sight,
+adequately sampled by spectroscopic data.
+
+As previously done with CLASH-VLT VIMOS observations
+of HFF clusters, we make public the new extended redshift cat-
+alog 2, which includes secure redshift determinations from the
+MUSE data, in the eﬀort to add further value to the entire HFF
+dataset.
+
+2 the full redshift catalog including VIMOS and MUSE measurments
+can be found in the electronic journal and at the link: https://sites.
+google.com/site/vltclashpublic/data-release
+
+Fig. 7: Magniﬁcation maps of MACS 0416 for a source at red-
+shift 4. We show the HFF strong lensing models to compare with
+the work presented here (ﬁrst panel). For each model, we indi-
+cate the number of multiple image families based on spectro-
+scopic (Nspec) and photometric (Nphot) information. All panels
+are centered at the same position and are 2(cid:48).1 across.
+
+on a relatively small overdensity of cluster galaxies, it could
+not be identiﬁed in the phase-space analysis of Balestra et al.
+(2016), most probably because of the combination of projec-
+tion eﬀects and the absence of clear separation in the pro-
+jected velocity space.
+
+Article number, page 10 of 20
+
+Caminha v1Parametric37 Nspec  0 NphotBradac v3Free-form15 Nspec  9 NphotWilliams v3Free-form15 Nspec19 NphotDiego v3Free-form15 Nspec19 NphotZitrin-LTM-Gauss v3Hybrid15 Nspec15 NphotCATS v3Parametric15 Nspec16 NphotGLAFIC v3Parametric14 Nspec52 NphotSharon v3Parametric16 Nspec  0 Nphot100101102|µ|G. B. Caminha et al.: A reﬁned mass distribution of the cluster MACS J0416.1-2403
+
+Acknowledgements. The authors thank the anonymous referee for the useful
+comments on the manuscript. We acknowledge ﬁnancial support from PRIN-
+INAF 2014 1.05.01.94.02. C.G. acknowledges support by VILLUM FONDEN
+Young Investigator Program grant 10123. This work made use of the CHE clus-
+ter, managed and funded by ICRA/CBPF/MCTI, with ﬁnancial support from
+FINEP (grant 01.07.0515.00 from CT-INFRA - 01/2006) and FAPERJ (grants
+E-26/171.206/2006 and E-26/110.516/2012). P.R. acknowledges the hospitality
+and support of the visitor program of the DFG cluster of excellence “Origin and
+Structure of the Universe”. This work made use of data taken under the ESO
+programs ID 094.A-0115(B) and ID 094.A-0525(A), and also 186.A-0798.
+
+References
+
+Bacon, R., Accardo, M., Adjali, L., et al. 2012, The Messenger, 147, 4
+Balestra, I., Mercurio, A., Sartoris, B., et al. 2016, ApJS, 224, 33
+Bender, R., Burstein, D., & Faber, S. M. 1992, ApJ, 399, 462
+Bertin, E. & Arnouts, S. 1996, A&AS, 117, 393
+Biviano, A., Rosati, P., Balestra, I., et al. 2013, A&A, 558, A1
+Bouwens, R. J., Bradley, L., Zitrin, A., et al. 2014, ApJ, 795, 126
+Broadhurst, T., Benítez, N., Coe, D., et al. 2005, ApJ, 621, 53
+Caminha, G. B., Grillo, C., Rosati, P., et al. 2016, A&A, 587, A80
+Castellano, M., Amorín, R., Merlin, E., et al. 2016, A&A, 590, A31
+Coe, D., Zitrin, A., Carrasco, M., et al. 2013, ApJ, 762, 32
+Diego, J. M., Broadhurst, T., Benitez, N., et al. 2015a, MNRAS, 446, 683
+Diego, J. M., Broadhurst, T., Molnar, S. M., Lam, D., & Lim, J. 2015b, MNRAS,
+
+447, 3130
+
+Diego, J. M., Broadhurst, T., Wong, J., et al. 2016, MNRAS, 459, 3447
+Ebeling, H., Ma, C.-J., & Barrett, E. 2014, ApJS, 211, 21
+Elíasdóttir, Á., Limousin, M., Richard, J., et al. 2007, ArXiv e-prints
+
+[arXiv:0710.5636]
+
+Faber, S. M., Dressler, A., Davies, R. L., Burstein, D., & Lynden-Bell, D. 1987,
+in Nearly Normal Galaxies. From the Planck Time to the Present, ed. S. M.
+Faber, 175–183
+
+Falco, E. E., Gorenstein, M. V., & Shapiro, I. I. 1985, ApJ, 289, L1
+Garilli, B., Fumana, M., Franzetti, P., et al. 2010, PASP, 122, 827
+Grillo, C., Karman, W., Suyu, S. H., et al. 2016, ApJ, 822, 78
+Grillo, C., Suyu, S. H., Rosati, P., et al. 2015, ApJ, 800, 38
+Hoag, A., Huang, K.-H., Treu, T.,
+
+al.
+
+et
+
+2016, ArXiv
+
+e-prints
+
+[arXiv:1603.00505]
+
+Host, O. 2012, MNRAS, 420, L18
+Jauzac, M., Clément, B., Limousin, M., et al. 2014, MNRAS, 443, 1549
+Jauzac, M., Jullo, E., Eckert, D., et al. 2015a, MNRAS, 446, 4132
+Jauzac, M., Richard, J., Jullo, E., et al. 2015b, MNRAS, 452, 1437
+Johnson, T. L. & Sharon, K. 2016, ArXiv e-prints [arXiv:1608.08713]
+Johnson, T. L., Sharon, K., Bayliss, M. B., et al. 2014, ApJ, 797, 48
+Jullo, E., Kneib, J.-P., Limousin, M., et al. 2007, New Journal of Physics, 9, 447
+Jullo, E., Natarajan, P., Kneib, J.-P., et al. 2010, Science, 329, 924
+Kahlhoefer, F., Schmidt-Hoberg, K., Kummer, J., & Sarkar, S. 2015, MNRAS,
+
+452, L54
+
+Karman, W., Caputi, K. I., Caminha, G. B., et al. 2016, ArXiv e-prints
+
+[arXiv:1606.01471]
+
+Kassiola, A. & Kovner, I. 1993, ApJ, 417, 450
+Kawamata, R., Oguri, M., Ishigaki, M., Shimasaku, K., & Ouchi, M. 2016, ApJ,
+
+819, 114
+
+Kelly, P. L., Rodney, S. A., Treu, T., et al. 2016, ApJ, 819, L8
+Kimm, T. & Cen, R. 2014, ApJ, 788, 121
+Kneib, J.-P., Ellis, R. S., Smail, I., Couch, W. J., & Sharples, R. M. 1996, ApJ,
+
+471, 643
+
+Lam, D., Broadhurst, T., Diego, J. M., et al. 2014, ApJ, 797, 98
+Liesenborgs, J., De Rijcke, S., & Dejonghe, H. 2006, MNRAS, 367, 1209
+Liesenborgs, J., de Rijcke, S., & Dejonghe, H. 2010, GRALE: A genetic al-
+gorithm for the non-parametric inversion of strong lensing systems, Astro-
+physics Source Code Library
+
+Limousin, M., Richard, J., Jullo, E., et al. 2016, A&A, 588, A99
+Limousin, M., Richard, J., Jullo, E., et al. 2007, ApJ, 668, 643
+Lotz,
+
+J. M., Koekemoer, A., Coe, D., et al. 2016, ArXiv e-prints
+
+[arXiv:1605.06567]
+
+Mann, A. W. & Ebeling, H. 2012, MNRAS, 420, 2120
+Masters, D. & Capak, P. 2011, PASP, 123, 638
+Meneghetti, M., Natarajan, P., Coe, D., et al. 2016, ArXiv e-prints
+
+[arXiv:1606.04548]
+
+Monna, A., Seitz, S., Geller, M.
+
+J.,
+
+et
+
+al. 2016, ArXiv e-prints
+
+[arXiv:1602.08491]
+
+Monna, A., Seitz, S., Zitrin, A., et al. 2015, MNRAS, 447, 1224
+Munari, E., Grillo, C., De Lucia, G., et al. 2016, ArXiv e-prints
+
+[arXiv:1607.01023]
+
+Pizzuti, L., Sartoris, B., Borgani, S., et al. 2016, J. Cosmology Astropart. Phys.,
+
+4, 023
+
+Postman, M., Coe, D., Benítez, N., et al. 2012, ApJS, 199, 25
+Priewe, J., Williams, L. L. R., Liesenborgs, J., Coe, D., & Rodney, S. A. 2016,
+
+ArXiv e-prints [arXiv:1605.07621]
+
+Richard, J., Jauzac, M., Limousin, M., et al. 2014, MNRAS, 444, 268
+Richard, J., Kneib, J.-P., Limousin, M., Edge, A., & Jullo, E. 2010, MNRAS,
+
+402, L44
+
+Rodney, S. A., Strolger, L.-G., Kelly, P. L., et al. 2016, ApJ, 820, 50
+Sartoris, B., Biviano, A., Rosati, P., et al. 2014, ApJ, 783, L11
+Seitz, C. & Schneider, P. 1997, A&A, 318, 687
+Soto, K. T., Lilly, S. J., Bacon, R., Richard, J., & Conseil, S. 2016, MNRAS,
+
+458, 3210
+
+Suyu, S. H. & Halkola, A. 2010, A&A, 524, A94
+Suyu, S. H., Hensel, S. W., McKean, J. P., et al. 2012, ApJ, 750, 10
+Treu, T., Brammer, G., Diego, J. M., et al. 2016, ApJ, 817, 60
+Treu, T., Schmidt, K. B., Brammer, G. B., et al. 2015, ApJ, 812, 114
+Umetsu, K., Medezinski, E., Nonino, M., et al. 2014, ApJ, 795, 163
+Umetsu, K., Zitrin, A., Gruen, D., et al. 2016, ApJ, 821, 116
+Vanzella, E., Balestra,
+[arXiv:1607.03112]
+
+I., Gronke, M., et al. 2016, ArXiv e-prints
+
+Wang, X., Hoag, A., Huang, K.-H., et al. 2015, ApJ, 811, 29
+Williams, L. L. R. & Saha, P. 2011, MNRAS, 415, 448
+Wise, J. H., Demchenko, V. G., Halicek, M. T., et al. 2014, MNRAS, 442, 2560
+Zitrin, A., Broadhurst, T., Umetsu, K., et al. 2009, MNRAS, 396, 1985
+Zitrin, A., Fabris, A., Merten, J., et al. 2015, ApJ, 801, 44
+Zitrin, A., Meneghetti, M., Umetsu, K., et al. 2013, ApJ, 762, L30
+
+Appendix A: Multiple image properties and spectra
+
+In this appendix, we present in table A.1 the information
+about the multiple images used in the strong lensing model-
+ing. The full redshift catalog, combining the MUSE and VI-
+MOS measurements, is available in the eletronic version of
+the paper, as well as at the link https://sites.google.
+com/site/vltclashpublic/data-release. In Figure A.1,
+we show the MUSE spectra around relevant spectral features and
+image cutouts for multiple images.
+
+Article number, page 11 of 20
+
+A&A proofs: manuscript no. main
+
+Fig. A.1: MUSE spectra of multiple images of lensed sources in MACS 0416. Panels on the same line show the spectra of multiple
+images belonging to the same family, i.e., associated to the same source. The vertical black lines indicate the position of the
+emission line based on the best estimate of the systemic redshift (see Table A.1 notes). Spectral regions with high sky contamination
+are marked in grey; the ﬂux is given in units of 10−20erg s−1cm−2Å−1. The image cutouts in each panel (2(cid:48)(cid:48) across) are extracted
+from the HFF color image and show the HST counterparts, or are centered at the position of the MUSE emission in the cases of no
+apparent counterparts (see families 21 and 35).
+
+Article number, page 12 of 20
+
+51205130514051505160517051805190Observedwavelength[˚A]−50050100150200250300RelativeﬂuxLyαz=3.235551205130514051505160517051805190Observedwavelength[˚A]−50050100150200250300RelativeﬂuxLyαz=3.235551205130514051505160517051805190Observedwavelength[˚A]−50050100150200250300RelativeﬂuxLyαz=3.235586508660867086808690870087108720Observedwavelength[˚A]−50050100150RelativeﬂuxLyαz=6.145286508660867086808690870087108720Observedwavelength[˚A]−50050100150RelativeﬂuxLyαz=6.145286508660867086808690870087108720Observedwavelength[˚A]−50050100150RelativeﬂuxLyαz=6.145251805190520052105220523052405250Observedwavelength[˚A]−50050100150200RelativeﬂuxLyαz=3.288551805190520052105220523052405250Observedwavelength[˚A]−50050100150200RelativeﬂuxLyαz=3.288551805190520052105220523052405250Observedwavelength[˚A]−50050100150200250RelativeﬂuxLyαz=3.288554905500551055205530554055505560Observedwavelength[˚A]203040506070Relativeﬂux[CIII]z=1.895054905500551055205530554055505560Observedwavelength[˚A]406080100120140160180200Relativeﬂux[CIII]z=1.895054905500551055205530554055505560Observedwavelength[˚A]6080100120140160180Relativeﬂux[CIII]z=1.895055705580559056005610562056305640Observedwavelength[˚A]−20020406080100RelativeﬂuxLyαz=3.606555705580559056005610562056305640Observedwavelength[˚A]050100150RelativeﬂuxLyαz=3.606555705580559056005610562056305640Observedwavelength[˚A]−20020406080100RelativeﬂuxLyαz=3.606558605870588058905900591059205930Observedwavelength[˚A]20406080100120Relativeﬂux[CIII]z=2.088158605870588058905900591059205930Observedwavelength[˚A]20406080100120Relativeﬂux[CIII]z=2.088151805190520052105220523052405250Observedwavelength[˚A]0100200300400500600RelativeﬂuxLyαz=3.288251805190520052105220523052405250Observedwavelength[˚A]0100200300400500600RelativeﬂuxLyαz=3.2882G. B. Caminha et al.: A reﬁned mass distribution of the cluster MACS J0416.1-2403
+
+Fig. A.1: (Continued)
+
+Article number, page 13 of 20
+
+5190520052105220523052405250Observedwavelength[˚A]20406080100120RelativeﬂuxLyαz=3.29225190520052105220523052405250Observedwavelength[˚A]0204060RelativeﬂuxLyαz=3.292271907200721072207230724072507260Observedwavelength[˚A]0200400600800Relativeﬂux[OII]z=0.939771907200721072207230724072507260Observedwavelength[˚A]0200400600800Relativeﬂux[OII]z=0.939774407450746074707480749075007510Observedwavelength[˚A]0100200300400500600700Relativeﬂux[OII]z=1.005474407450746074707480749075007510Observedwavelength[˚A]−100102030405060Relativeﬂux[OII]z=1.00546510652065306540655065606570Observedwavelength[˚A]050100150200250RelativeﬂuxCIV]z=3.22156510652065306540655065606570Observedwavelength[˚A]200250300350400450500550RelativeﬂuxCIV]z=3.22156510652065306540655065606570Observedwavelength[˚A]50100150200250RelativeﬂuxCIV]z=3.221556705680569057005710572057305740Observedwavelength[˚A]0100200300400Relativeﬂux[CIII]z=1.989456705680569057005710572057305740Observedwavelength[˚A]0100200300400Relativeﬂux[CIII]z=1.989456705680569057005710572057305740Observedwavelength[˚A]0100200300400Relativeﬂux[CIII]z=1.989458705880589059005910592059305940Observedwavelength[˚A]01020304050Relativeﬂux[CIII]z=2.094858705880589059005910592059305940Observedwavelength[˚A]150200250300Relativeﬂux[CIII]z=2.094860006010602060306040605060606070Observedwavelength[˚A]−20020406080100120RelativeﬂuxLyαz=3.966358905900591059205930594059505960Observedwavelength[˚A]−20020406080RelativeﬂuxLyαz=3.871058905900591059205930594059505960Observedwavelength[˚A]−20020406080RelativeﬂuxLyαz=3.8710A&A proofs: manuscript no. main
+
+Fig. A.1: (Continued)
+
+Article number, page 14 of 20
+
+61706180619062006210622062306240Observedwavelength[˚A]0100200300400500RelativeﬂuxLyαz=4.103261706180619062006210622062306240Observedwavelength[˚A]0100200300400500RelativeﬂuxLyαz=4.103261706180619062006210622062306240Observedwavelength[˚A]0100200300400500RelativeﬂuxLyαz=4.103251005110512051305140515051605170Observedwavelength[˚A]0200400600800RelativeﬂuxLyαz=3.217551005110512051305140515051605170Observedwavelength[˚A]0200400600800RelativeﬂuxLyαz=3.217573907400741074207430744074507460Observedwavelength[˚A]−1001020304050607080RelativeﬂuxLyαz=5.106073907400741074207430744074507460Observedwavelength[˚A]−20−10010203040506070RelativeﬂuxLyαz=5.106059505960597059805990600060106020Observedwavelength[˚A]50100150200250RelativeﬂuxLyαz=3.923059505960597059805990600060106020Observedwavelength[˚A]−20020406080RelativeﬂuxLyαz=3.923067206730674067506760677067806790Observedwavelength[˚A]−1001020304050Relativeﬂux[CIII]z=2.542567206730674067506760677067806790Observedwavelength[˚A]150200250300350400450500550Relativeﬂux[CIII]z=2.542549905000501050205030504050505060Observedwavelength[˚A]140160180200220Relativeﬂux[CIII]z=1.633349905000501050205030504050505060Observedwavelength[˚A]120140160180Relativeﬂux[CIII]z=1.633349905000501050205030504050505060Observedwavelength[˚A]80100120140160180Relativeﬂux[CIII]z=1.633349604970498049905000501050205030Observedwavelength[˚A]−20020406080100120140RelativeﬂuxLyαz=3.110349604970498049905000501050205030Observedwavelength[˚A]−20020406080100120140RelativeﬂuxLyαz=3.110349604970498049905000501050205030Observedwavelength[˚A]−20020406080100120140RelativeﬂuxLyαz=3.110349304940495049604970498049905000Observedwavelength[˚A]020406080100120140160RelativeﬂuxLyαz=3.077349304940495049604970498049905000Observedwavelength[˚A]020406080100120140160RelativeﬂuxLyαz=3.077349304940495049604970498049905000Observedwavelength[˚A]020406080100120140160RelativeﬂuxLyαz=3.0773G. B. Caminha et al.: A reﬁned mass distribution of the cluster MACS J0416.1-2403
+
+Fig. A.1: (Continued)
+
+Article number, page 15 of 20
+
+54305440545054605470548054905500Observedwavelength[˚A]0200400600800RelativeﬂuxLyαz=3.490954305440545054605470548054905500Observedwavelength[˚A]0200400600800RelativeﬂuxLyαz=3.490954305440545054605470548054905500Observedwavelength[˚A]0200400600800RelativeﬂuxLyαz=3.490951305140515051605170518051905200Observedwavelength[˚A]050100150200RelativeﬂuxLyαz=3.252651305140515051605170518051905200Observedwavelength[˚A]050100150200RelativeﬂuxLyαz=3.252653605370538053905400541054205430Observedwavelength[˚A]−20020406080100120RelativeﬂuxLyαz=3.440653605370538053905400541054205430Observedwavelength[˚A]−20020406080100120RelativeﬂuxLyαz=3.440653605370538053905400541054205430Observedwavelength[˚A]−20020406080100120RelativeﬂuxLyαz=3.440661906200621062206230624062506260Observedwavelength[˚A]−40−20020406080100RelativeﬂuxLyαz=4.121861906200621062206230624062506260Observedwavelength[˚A]20406080100120140160RelativeﬂuxLyαz=4.121861906200621062206230624062506260Observedwavelength[˚A]20406080100120140160RelativeﬂuxLyαz=4.121877007710772077307740775077607770Observedwavelength[˚A]−30−20−10010203040RelativeﬂuxLyαz=5.365077007710772077307740775077607770Observedwavelength[˚A]020406080100120140RelativeﬂuxLyαz=5.365077007710772077307740775077607770Observedwavelength[˚A]−20020406080RelativeﬂuxLyαz=5.365084408450846084708480849085008510Observedwavelength[˚A]−20−100102030405060RelativeﬂuxLyαz=5.972984408450846084708480849085008510Observedwavelength[˚A]020406080100RelativeﬂuxLyαz=5.972959505960597059805990600060106020Observedwavelength[˚A]020406080RelativeﬂuxLyαz=3.922859505960597059805990600060106020Observedwavelength[˚A]−200204060RelativeﬂuxLyαz=3.922880408050806080708080809081008110Observedwavelength[˚A]−20020406080100120RelativeﬂuxLyαz=5.639080408050806080708080809081008110Observedwavelength[˚A]100120140160180200220RelativeﬂuxLyαz=5.639080408050806080708080809081008110Observedwavelength[˚A]020406080100120140RelativeﬂuxLyαz=5.6390A&A proofs: manuscript no. main
+
+Fig. A.1: (Continued)
+
+Article number, page 16 of 20
+
+56205630564056505660567056805690Observedwavelength[˚A]2030405060Relativeﬂux[CIII]z=1.961461006110612061306140615061606170Observedwavelength[˚A]20406080100Relativeﬂux[CIII]z=2.2182G. B. Caminha et al.: A reﬁned mass distribution of the cluster MACS J0416.1-2403
+
+Table A.1: Information on spectroscopically identiﬁed multiple images in MACS 0416.
+
+ID
+1a
+1b
+1c
+2a
+2b
+2c
+3a
+3b
+3c
+4a
+4b
+4c
+5a
+5b
+5c
+6a
+6b
+6c
+7a
+7b
+7c
+8a
+8b
+8c
+9a
+9b
+(9c)
+10a
+10b
+10c
+(11a)
+11b
+11c
+(12a)
+12b
+12c
+13a
+13b
+13c
+14a
+14b
+14c
+(14d)
+(14e)
+15a
+15b
+15c
+16a
+16b
+16c
+(16e)
+17a
+17b
+17c
+18a
+18b
+(18c)
+19a
+19b
+
+RA
+64.049084
+64.046959
+64.046449
+64.050865
+64.048179
+64.043572
+64.049232
+64.045269
+64.041556
+64.048126
+64.047468
+64.042209
+64.047463
+64.043071
+64.041089
+64.047808
+64.043657
+64.037676
+64.047098
+64.040664
+64.039795
+64.044624
+64.040485
+64.034256
+64.045112
+64.040079
+(64.033157)
+64.044564
+64.039576
+64.034336
+(64.046676)
+64.038515
+64.035223
+(64.041365)
+64.036843
+64.036507
+64.039245
+64.038301
+64.034234
+64.034483
+64.034190
+64.034001
+(64.045886)
+(64.035165)
+64.041802
+64.035249
+64.030769
+64.033523
+64.032656
+64.032410
+(64.043470)
+64.040489
+64.035107
+64.027171
+64.040177
+64.033937
+(64.026991)
+64.040140
+64.033667
+
+DEC
+−24.062862
+−24.060797
+−24.060397
+−24.066538
+−24.062406
+−24.059004
+−24.068174
+−24.062763
+−24.059997
+−24.066957
+−24.066039
+−24.060541
+−24.068822
+−24.063080
+−24.061806
+−24.070164
+−24.064401
+−24.060756
+−24.071105
+−24.063586
+−24.063081
+−24.071488
+−24.066330
+−24.062997
+−24.072341
+−24.066738
+(−24.062893)
+−24.072092
+−24.066623
+−24.063734
+(−24.075312)
+−24.065965
+−24.064731
+(−24.070852)
+−24.067457
+−24.067028
+−24.070383
+−24.069728
+−24.066016
+−24.066956
+−24.066488
+−24.066445
+(−24.076722)
+(−24.067968)
+−24.075731
+−24.070989
+−24.067129
+−24.069448
+−24.068663
+−24.068414
+(−24.076860)
+−24.078380
+−24.073864
+−24.068224
+−24.079872
+−24.074565
+(−24.069620)
+−24.080305
+−24.074762
+
+zMUSE
+3.2355
+3.2355
+3.2355
+6.1452
+6.1452
+6.1452
+3.2885
+3.2885
+3.2885
+—
+—
+—
+1.8950
+1.8950
+1.8950
+3.6065
+3.6065
+3.6065
+—
+2.0881
+2.0881
+—
+—
+—
+3.2882
+3.2882
+—
+—
+—
+—
+—
+3.2922
+3.2922
+0.9397
+0.9397
+0.9397
+1.0054
+1.0054
+1.0054
+3.2215
+3.2215
+3.2215
+—
+—
+1.9894
+1.9894
+1.9894
+2.0948
+2.0948
+2.0948
+—
+3.9663
+—
+—
+3.8710
+3.8710
+—
+4.1032
+4.1032
+
+zprevious
+—
+—
+2.185a
+—
+—
+—
+—
+—
+—
+—
+2.107a
+—
+1.893d,e, f
+1.893d,e, f
+1.893d,e, f
+—
+—
+—
+2.085d,e, f
+2.085d,e, f
+2.085d,e, f
+2.282a
+2.267b
+—
+—
+—
+—
+2.094a
+—
+2.091a
+—
+—
+—
+—
+0.937a
+0.937a
+1.005c
+1.005c
+—
+—
+—
+—
+—
+—
+1.989d,e, f
+1.989d,e, f
+1.989d,e, f
+—
+2.092b
+—
+—
+—
+—
+—
+—
+—
+—
+—
+—
+
+IDref
+26.3
+26.2
+26.1
+207.2
+
+magF814W
+27.87 ± 0.13
+27.43 ± 0.09
+26.53 ± 0.06
+28.20 ± 1.09∗
+— 29.06 ± 1.09∗
+28.66 ± 1.09∗
+206.1
+27.50 ± 0.11
+44.3
+25.69 ± 0.05
+44.1
+26.13 ± 0.06
+44.2
+25.73 ± 0.03
+27.1
+24.13 ± 0.03
+27.2
+25.81 ± 0.04
+27.3
+—
+2.3
+23.88 ± 0.01∗
+2.2
+23.67 ± 0.01∗
+2.1
+28.53 ± 0.23
+—
+26.73 ± 0.20
+—
+28.00 ± 0.17
+—
+28.05 ± 0.14
+7.3
+25.29 ± 0.03
+7.2
+25.43 ± 0.04
+7.1
+25.81 ± 0.06
+29.3
+—
+29.2a
+25.76 ± 0.05
+29.1
+26.11 ± 0.05∗
+32.1
+25.33 ± 0.04∗
+32.2
+—
+—
+24.92 ± 0.02
+23.1
+25.20 ± 0.03
+23.2
+25.23 ± 0.03
+23.3
+—
+—
+—
+55.3
+27.93 ± 0.11
+55.1
+—
+28.3
+—
+28.2
+—
+28.1
+—
+11.1
+—
+11.2
+26.79 ± 0.12
+11.3
+—
+D22.1
+—
+D22.2
+—
+D22.3
+—
+—
+—
+—
+23.99 ± 0.01
+3.3
+23.94 ± 0.02
+3.2
+24.17 ± 0.01
+3.1
+24.11 ± 0.02
+5.3
+24.75 ± 0.02
+5.2
+—
+5.1
+—
+—
+27.97 ± 0.27
+—
+— 25.29 ± 0.17∗
+— 27.47 ± 0.17∗
+27.12 ± 0.09
+49.2
+27.08 ± 0.15
+49.1
+—
+—
+26.70 ± 0.08∗
+51.1
+25.38 ± 0.11∗
+51.2
+
+Article number, page 17 of 20
+
+A&A proofs: manuscript no. main
+
+Table A.1: continued.
+
+RA
+64.026633
+64.040351
+64.032157
+64.027572
+(64.042028)
+64.030906
+64.029176
+(64.040114)
+64.030997
+64.027127
+64.035668
+64.032638
+(64.024668)
+64.035833
+64.031039
+64.026239
+64.038073
+64.030366
+64.025446
+64.037722
+64.030484
+64.025186
+64.037469
+64.029409
+64.024946
+64.038350
+64.028322
+64.026330
+64.036702
+64.028504
+64.025993
+64.033628
+64.031251
+64.022699
+64.035486
+64.029234
+64.023412
+64.035054
+64.028403
+64.022988
+64.032017
+64.030821
+(64.021697)
+(64.034067)
+64.027632
+64.023731
+64.033681
+64.028654
+64.022187
+64.031614
+64.028339
+64.024074
+64.029809
+64.028610
+64.023345
+
+DEC
+−24.070476
+−24.081482
+−24.075108
+−24.072673
+(−24.081835)
+−24.074341
+−24.073382
+(−24.082217)
+−24.077173
+−24.073572
+−24.079920
+−24.078508
+(−24.071076)
+−24.081321
+−24.078953
+−24.074337
+−24.082404
+−24.079015
+−24.073648
+−24.082388
+−24.079222
+−24.073575
+−24.083657
+−24.079889
+−24.075021
+−24.084126
+−24.079004
+−24.076705
+−24.083855
+−24.079755
+−24.077080
+−24.083185
+−24.081904
+−24.074595
+−24.084679
+−24.081813
+−24.076125
+−24.085504
+−24.082993
+−24.077265
+−24.084230
+−24.083697
+(−24.075230)
+(−24.085284)
+−24.082609
+−24.078477
+−24.085855
+−24.084240
+−24.077559
+−24.085762
+−24.084553
+−24.080895
+−24.086363
+−24.085973
+−24.081580
+
+zMUSE
+4.1032
+—
+3.2175
+3.2175
+—
+5.1060
+5.1060
+—
+3.9230
+3.9230
+2.5425
+2.5425
+—
+1.6333
+1.6333
+1.6333
+3.1103
+3.1103
+3.1103
+3.0773
+3.0773
+3.0773
+3.4909
+3.4909
+3.4909
+—
+3.2526
+3.2526
+—
+—
+—
+3.4406
+3.4406
+3.4406
+4.1218
+4.1218
+4.1218
+5.3650
+5.3650
+5.3650
+5.9729
+5.9729
+—
+—
+3.9228
+3.9228
+5.6390
+5.6390
+5.6390
+—
+—
+1.9614
+—
+—
+2.2182
+
+zprevious
+—
+3.223d,e, f
+3.223d,e, f
+3.223d,e, f
+—
+—
+—
+—
+—
+—
+2.545b
+—
+—
+1.637d
+1.637d
+1.637d
+—
+—
+—
+—
+—
+—
+—
+—
+—
+—
+—
+—
+2.298d,e, f
+2.298d,e, f
+2.298d,e, f
+—
+—
+—
+—
+—
+—
+—
+—
+—
+—
+—
+—
+—
+—
+—
+—
+—
+—
+1.964d,e
+1.964d,e
+1.964d,e
+2.218d,e, f
+2.218d,e, f
+2.218d,e, f
+
+ID
+19c
+20a
+20b
+20c
+(21a)
+21b†
+21c†
+(22a)
+22b
+22c
+23a
+23b
+(23c)
+24a
+24b
+24c
+25a
+25b
+25c
+26a
+26b
+26c
+27a
+27b
+27c
+28a
+28b
+28c
+29a
+29b
+29c
+30a
+30b
+30c
+31a
+31b
+31c
+32a
+32b
+32c
+33a
+33b
+(33c)
+(34a)
+34b
+34c
+35a†
+35b†
+35c†
+36a
+36b
+36c
+37a
+37b
+37c
+
+magF814W
+IDref
+51.3
+—
+25.75 ± 0.03
+13.3
+13.2
+—
+24.64 ± 0.02
+13.1
+—
+—
+34.2
+—
+34.1
+—
+—
+—
+60.3
+—
+29.54 ± 0.43
+—
+26.27 ± 0.05
+45.1
+—
+—
+—
+—
+23.19 ± 0.01
+14.3
+23.34 ± 0.01
+14.2
+23.41 ± 0.01
+14.1
+27.84 ± 0.13∗
+67.1
+67.3
+—
+28.06 ± 0.13
+67.2
+27.58 ± 0.09
+58.2
+26.49 ± 0.08
+58.3
+27.46 ± 0.08
+58.1
+35.1
+—
+26.37 ± 0.05
+35.2
+26.43 ± 0.04
+35.3
+28.76 ± 0.26
+—
+47.2
+—
+25.93 ± 0.05
+47.1
+25.60 ± 0.03
+10.3
+24.99 ± 0.02
+10.2
+24.57 ± 0.02
+10.1
+27.20 ± 0.08
+38.1
+26.98 ± 0.10∗
+38.2
+27.94 ± 0.14∗
+38.3
+26.21 ± 0.08
+48.1
+24.76 ± 0.06∗
+48.2
+25.39 ± 0.06
+48.3
+27.95 ± 1.09
+33.2
+26.60 ± 0.70∗
+33.1
+26.03 ± 0.20∗
+33.2
+— 27.03 ± 0.82∗
+—
+—
+—
+—
+—
+—
+—
+—
+16.3
+16.2
+16.1
+17.1
+17.2
+17.3
+
+—
+—
+—
+27.57 ± 0.28
+28.19 ± 0.45
+—
+—
+—
+24.35 ± 0.02
+23.48 ± 0.02
+—
+24.32 ± 0.01
+—
+—
+
+Article number, page 18 of 20
+
+G. B. Caminha et al.: A reﬁned mass distribution of the cluster MACS J0416.1-2403
+
+Notes. IDsref corresponds to the ID column in Table 2 of Hoag et al. (2016). The F814W magnitudes are based on the ASTRODEEP catalog
+(Castellano et al. 2016). Model-predicted positions are indicated in brackets. MUSE redshifts are generally based on the Ly-α line when present,
+with exception of IDs 1, 3, 9, 20, 26, and 27 for which CIV and CIII] lines were used to better estimate the systemic redshift. This table includes
+56 new redshifts belonging to 22 multiply lensed sources.
+(†) Positions measured in MUSE narrow band images (a) GLASS redshifts Hoag et al. (2016) (b) Balestra et al. (2016) (c) Rodney et al., in prep.
+(d) Grillo et al. (2015) (e) Jauzac et al. (2014) (f) Richard et al. (2014) (g) Zitrin et al. (2013) (*) Objects whose magnitude might be aﬀected by
+source confusion.
+
+Article number, page 19 of 20
+
+A&A proofs: manuscript no. main
+
+Table A.2: Information on spectroscopically identiﬁed multiple images in MACS 0416.
+
+ID
+(1)
+CLASHVLTJ041512.49−240506.6
+CLASHVLTJ041512.65−240924.4
+CLASHVLTJ041512.65−240653.9
+CLASHVLTJ041512.67−240500.3
+CLASHVLTJ041512.69−241059.8
+CLASHVLTJ041512.75−240625.2
+CLASHVLTJ041512.77−240106.8
+CLASHVLTJ041512.81−241112.8
+CLASHVLTJ041512.82−241351.8
+CLASHVLTJ041512.82−241417.2
+CLASHVLTJ041512.85−241308.4
+CLASHVLTJ041512.86−235617.4
+CLASHVLTJ041513.01−241423.8
+CLASHVLTJ041513.02−240640.1
+CLASHVLTJ041513.11−241022.7
+...
+
+RA
+(2)
+
+DEC
+(3)
+
+63.802059 −24.085165
+63.802703 −24.156778
+63.802720 −24.114978
+63.802779 −24.083429
+63.802859 −24.183278
+63.803134 −24.107008
+63.803218 −24.018566
+63.803373 −24.186895
+63.803418 −24.231058
+63.803430 −24.238104
+63.803547 −24.219004
+63.803602 −23.938160
+63.804188 −24.239932
+63.804258 −24.111131
+63.804605 −24.172971
+
+...
+
+...
+
+z
+(4)
+0.5772
+0.4043
+0.3032
+0.5767
+2.9782
+0.6372
+0.3102
+0.4004
+0.5361
+0.5788
+0.3007
+0.3436
+0.3398
+0.3046
+0.4204
+...
+
+QF Ref. Mag
+(7)
+(6)
+(5)
+22.17
+1
+3
+22.71
+1
+3
+18.48
+1
+3
+21.97
+1
+3
+23.24
+1
+9
+23.56
+1
+3
+20.85
+1
+3
+21.43
+1
+3
+20.65
+1
+3
+23.34
+1
+3
+24.51
+1
+9
+21.45
+1
+3
+22.09
+1
+3
+20.48
+1
+3
+22.06
+1
+2
+...
+...
+...
+
+Notes. The ﬁrst 15 entries of the redshift table. The full catalog is available in the eletronic version of the paper and in the link https:
+//sites.google.com/site/vltclashpublic/data-release, and contains 7 columns and 4594 rows. The columns correspond to: (1) A
+unique identiﬁcation reference; (2-3) the coordinates in degree; (4) the spectroscopic redshift; (5) the redshift quality ﬂag; (6) the redshift refer-
+ence (1−CLASH-VLT VIMOS based on LR-Blue spectra, 2−CLASH-VLT VIMOS based on MR spectra, 4−from Ebeling et al. 2014, 5−from
+Magellan, D. Kelson 2016 private communication, 6−from VLT/MUSE, this work) and (7) is the Subaru R-band magnitude.
+
+Article number, page 20 of 20
+
+

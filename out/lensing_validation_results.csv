@@ -1,0 +1,64 @@
+cluster,team,version,test,pass,value,expected,reason
+macs0416,cats,v4.1,Convergence bounds,True,"κ percentiles: 0.1%=0.018, 99.9%=1.837","0.1% ≥ −0.2, 99.9% ≤ 20",
+macs0416,cats,v4.1,Shear magnitude bounds,True,|γ|_99.5% = 0.852,|γ|_99.5% ≤ 3 (HLSP core),
+macs0416,cats,v4.1,Reduced shear consistency,False,|g|_99.5% = 12.156,|g|_99.5% ≤ 2 away from critical,Reduced shear unusually large away from T≈0
+macs0416,cats,v4.1,Magnification consistency,True,|μ|_comp/|μ|_map = 1.105 (MAD 0.091),Ratio ~ 1.0 ± 0.15 (robust),
+macs0416,cats,v4.1,Critical curve topology,True,68 components (top 1 cover 96%),≤3 components cover ≥80% area,
+macs0416,cats,v4.1,Einstein radius methods,True,"θ_E = 39.0"" (κ/γ only)",,Only κ/γ method available (skipped comparison)
+macs0416,cats,v4.1,Mass sheet degeneracy,True,|∇κ| = 0.0044,|∇κ| > 0.001,
+macs0416,cats,v4.1,Shear symmetry,True,Symmetry error = 0.495,Error < 1.0 (merging cores are asymmetric),
+macs0416,cats,v4.1,Deflection curl-free,False,|∇×α| = 0.0003 (max 0.5419),|∇×α| < 0.01,Deflection field has significant curl
+macs0416,williams,v4,Convergence bounds,True,"κ percentiles: 0.1%=0.002, 99.9%=2.309","0.1% ≥ −0.2, 99.9% ≤ 20",
+macs0416,williams,v4,Shear magnitude bounds,True,|γ|_99.5% = 0.950,|γ|_99.5% ≤ 3 (HLSP core),
+macs0416,williams,v4,Reduced shear consistency,False,|g|_99.5% = 67.877,|g|_99.5% ≤ 2 away from critical,Reduced shear unusually large away from T≈0
+macs0416,williams,v4,Magnification consistency,True,|μ|_comp/|μ|_map = 1.137 (MAD 0.293),Ratio ~ 1.0 ± 0.15 (robust),
+macs0416,williams,v4,Critical curve topology,True,1 components (top 1 cover 100%),≤3 components cover ≥80% area,
+macs0416,williams,v4,Einstein radius methods,False,"θ_E: κ/γ=39.3""; μ=24.7""",Methods agree within 20%,Methods disagree (ratio=1.59)
+macs0416,williams,v4,Mass sheet degeneracy,True,|∇κ| = 0.0054,|∇κ| > 0.001,
+macs0416,williams,v4,Shear symmetry,True,Symmetry error = 0.725,Error < 1.0 (merging cores are asymmetric),
+macs0416,williams,v4,Deflection curl-free,True,|∇×α| = 0.0000 (max 0.0005),|∇×α| < 0.01,
+macs0416,caminha,v4,Convergence bounds,True,"κ percentiles: 0.1%=0.062, 99.9%=1.780","0.1% ≥ −0.2, 99.9% ≤ 20",
+macs0416,caminha,v4,Shear magnitude bounds,True,|γ|_99.5% = 0.825,|γ|_99.5% ≤ 3 (HLSP core),
+macs0416,caminha,v4,Reduced shear consistency,False,|g|_99.5% = 11.433,|g|_99.5% ≤ 2 away from critical,Reduced shear unusually large away from T≈0
+macs0416,caminha,v4,Magnification consistency,False,|μ|_comp/|μ|_map = 1.161 (MAD 0.118),Ratio ~ 1.0 ± 0.15 (robust),Magnification maps inconsistent with κ/γ
+macs0416,caminha,v4,Critical curve topology,True,85 components (top 1 cover 98%),≤3 components cover ≥80% area,
+macs0416,caminha,v4,Einstein radius methods,True,"θ_E = 38.9"" (κ/γ only)",,Only κ/γ method available (skipped comparison)
+macs0416,caminha,v4,Mass sheet degeneracy,False,|∇κ| = 0.0006,|∇κ| > 0.001,Suspiciously flat convergence
+macs0416,caminha,v4,Shear symmetry,True,Symmetry error = 0.421,Error < 1.0 (merging cores are asymmetric),
+macs0416,caminha,v4,Deflection curl-free,True,|∇×α| = 0.0000 (max 0.0403),|∇×α| < 0.01,
+macs0717,cats,v4.1,Convergence bounds,True,"κ percentiles: 0.1%=0.032, 99.9%=2.298","0.1% ≥ −0.2, 99.9% ≤ 20",
+macs0717,cats,v4.1,Shear magnitude bounds,True,|γ|_99.5% = 0.840,|γ|_99.5% ≤ 3 (HLSP core),
+macs0717,cats,v4.1,Reduced shear consistency,False,|g|_99.5% = 6.791,|g|_99.5% ≤ 2 away from critical,Reduced shear unusually large away from T≈0
+macs0717,cats,v4.1,Magnification consistency,True,|μ|_comp/|μ|_map = 1.105 (MAD 0.068),Ratio ~ 1.0 ± 0.15 (robust),
+macs0717,cats,v4.1,Critical curve topology,True,2 components (top 1 cover 100%),≤3 components cover ≥80% area,
+macs0717,cats,v4.1,Einstein radius methods,True,"θ_E = 81.1"" (κ/γ only)",,Only κ/γ method available (skipped comparison)
+macs0717,cats,v4.1,Mass sheet degeneracy,True,|∇κ| = 0.0023,|∇κ| > 0.001,
+macs0717,cats,v4.1,Shear symmetry,True,Symmetry error = 0.448,Error < 1.0 (merging cores are asymmetric),
+macs0717,cats,v4.1,Deflection curl-free,False,|∇×α| = 0.0001 (max 0.4162),|∇×α| < 0.01,Deflection field has significant curl
+macs0717,williams,v4.1,Convergence bounds,True,"κ percentiles: 0.1%=0.029, 99.9%=2.234","0.1% ≥ −0.2, 99.9% ≤ 20",
+macs0717,williams,v4.1,Shear magnitude bounds,True,|γ|_99.5% = 0.918,|γ|_99.5% ≤ 3 (HLSP core),
+macs0717,williams,v4.1,Reduced shear consistency,False,|g|_99.5% = 89.494,|g|_99.5% ≤ 2 away from critical,Reduced shear unusually large away from T≈0
+macs0717,williams,v4.1,Magnification consistency,False,|μ|_comp/|μ|_map = 1.542 (MAD 1.547),Ratio ~ 1.0 ± 0.15 (robust),Magnification maps inconsistent with κ/γ
+macs0717,williams,v4.1,Critical curve topology,True,2 components (top 1 cover 98%),≤3 components cover ≥80% area,
+macs0717,williams,v4.1,Einstein radius methods,True,"θ_E = 83.5"" (κ/γ only)",,Only κ/γ method available (skipped comparison)
+macs0717,williams,v4.1,Mass sheet degeneracy,True,|∇κ| = 0.0058,|∇κ| > 0.001,
+macs0717,williams,v4.1,Shear symmetry,True,Symmetry error = 0.692,Error < 1.0 (merging cores are asymmetric),
+macs0717,williams,v4.1,Deflection curl-free,True,|∇×α| = 0.0000 (max 0.0006),|∇×α| < 0.01,
+macs1149,cats,v4.1,Convergence bounds,True,"κ percentiles: 0.1%=0.023, 99.9%=2.214","0.1% ≥ −0.2, 99.9% ≤ 20",
+macs1149,cats,v4.1,Shear magnitude bounds,True,|γ|_99.5% = 0.767,|γ|_99.5% ≤ 3 (HLSP core),
+macs1149,cats,v4.1,Reduced shear consistency,False,|g|_99.5% = 16.599,|g|_99.5% ≤ 2 away from critical,Reduced shear unusually large away from T≈0
+macs1149,cats,v4.1,Magnification consistency,False,|μ|_comp/|μ|_map = 1.187 (MAD 0.163),Ratio ~ 1.0 ± 0.15 (robust),Magnification maps inconsistent with κ/γ
+macs1149,cats,v4.1,Critical curve topology,True,104 components (top 1 cover 91%),≤3 components cover ≥80% area,
+macs1149,cats,v4.1,Einstein radius methods,True,"θ_E = 1.0"" (κ/γ only)",,Only κ/γ method available (skipped comparison)
+macs1149,cats,v4.1,Mass sheet degeneracy,True,|∇κ| = 0.0057,|∇κ| > 0.001,
+macs1149,cats,v4.1,Shear symmetry,True,Symmetry error = 0.392,Error < 1.0 (merging cores are asymmetric),
+macs1149,cats,v4.1,Deflection curl-free,False,|∇×α| = 0.0002 (max 0.3575),|∇×α| < 0.01,Deflection field has significant curl
+macs1149,williams,v4,Convergence bounds,True,"κ percentiles: 0.1%=0.002, 99.9%=2.630","0.1% ≥ −0.2, 99.9% ≤ 20",
+macs1149,williams,v4,Shear magnitude bounds,True,|γ|_99.5% = 0.952,|γ|_99.5% ≤ 3 (HLSP core),
+macs1149,williams,v4,Reduced shear consistency,False,|g|_99.5% = 51.315,|g|_99.5% ≤ 2 away from critical,Reduced shear unusually large away from T≈0
+macs1149,williams,v4,Magnification consistency,False,|μ|_comp/|μ|_map = 1.255 (MAD 0.321),Ratio ~ 1.0 ± 0.15 (robust),Magnification maps inconsistent with κ/γ
+macs1149,williams,v4,Critical curve topology,True,2 components (top 1 cover 100%),≤3 components cover ≥80% area,
+macs1149,williams,v4,Einstein radius methods,False,"θ_E: κ/γ=41.9""; μ=21.6""",Methods agree within 20%,Methods disagree (ratio=1.94)
+macs1149,williams,v4,Mass sheet degeneracy,True,|∇κ| = 0.0061,|∇κ| > 0.001,
+macs1149,williams,v4,Shear symmetry,True,Symmetry error = 0.872,Error < 1.0 (merging cores are asymmetric),
+macs1149,williams,v4,Deflection curl-free,True,|∇×α| = 0.0000 (max 0.0004),|∇×α| < 0.01,

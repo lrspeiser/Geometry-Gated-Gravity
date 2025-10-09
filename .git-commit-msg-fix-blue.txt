@@ -1,0 +1,1 @@
+viz: fix HLSP NaNs and clamped interpolation indices to restore Actual (HLSP) deflection in 2D viz

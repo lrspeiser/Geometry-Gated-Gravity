@@ -1,0 +1,196 @@
+
+===================================================
+MACS J0717 HFFv4.1 reconstruction by the GRALE team
+===================================================
+
+Authors: Liliya Williams, Kevin Sebesta, Jori Liesenborgs
+
+BRIEF DESCRIPTION OF THE METHOD: GRALE
+
+The method used to do the lensing reconstruction is GRALE, a free-form, adaptive grid method  that uses a genetic algorithm to iteratively refine the mass map solution. 
+
+An initial course grid is populated with a basis set, such as a projected Plummer density profiles. A uniform mass sheet covering the whole modeling region can also be added to supplement the basis set.  As the code runs the more dense regions are resolved with a finer grid, with each cell given a Plummer with a proportionate width. The code is started with an initial set of trial solutions. These solutions, as well as all the later evolved ones are evaluated for genetic fitness, and the fit ones are cloned, combined and mutated. The procedure is run until a satisfactory degree of mass resolution is achieved.  The final map consists of a superposition of a mass sheet and many Plummers, typically several 100 to 1-2 thousand, each with its own size and weight, determined by the genetic algorithm. In this release we present 40 independent realizations of the reconstruction for each cluster.
+
+Note that GRALE does not use any cluster galaxies to do the mass reconstruction; the only observational input are the lensed image positions, their redshifts (listed above), the redshift of the lensing cluster, and the parameters of the standard Lambda CDM.
+
+For more detailed description of the method see
+
+Priewe, J., Williams, L.L.R., Liesenborgs, J., Coe, D. & Rodney, S. A.	2017, MNRAS, 465, 1030
+"Lens Models Under the Microscope: Comparison of Hubble Frontier Field Cluster Magnification Maps"
+
+M. Meneghetti et al. 
+"The Frontier Fields Lens Modeling Comparison Project"
+	
+Sebesta, K., Williams, L.L.R., Mohammed, I., Saha, P. & Liesenborgs, J.
+"Testing light-traces-mass in Hubble Frontier Fields Cluster MACS-J0416.1-2403"
+
+Liesenborgs, J., de Rijcke, S., Dejonghe, H., Bekaert, P. 2009, MNRAS, 397, 341
+"Non-parametric strong lens inversion of SDSS J1004+4112"
+
+Liesenborgs, J., de Rijcke, S., Dejonghe, H. & Bekaert, P. 2007, MNRAS, 380, 1729
+"Non-parametric inversion of gravitational lensing systems with few images using a 
+multi-objective genetic algorithm"
+
+Liesenborgs, J., de Rijcke, S. & Dejonghe, H. 2006, MNRAS, 367, 1209
+"A genetic algorithm for the non-parametric inversion of strong lensing systems"
+
+
+COSMOLOGY
+
+Omega_matter=0.3
+Omega_Lambda=0.7
+H_0=70 km/s/Mpc
+
+DELIVERABLES
+
+FITS maps with Dls/Ds=1: kappa, gamma, gamma1, gamma2, deflect_x (per pixel), deflect_y (per pixel) 
+FITS maps of magnifications for sources at z = 1, 2, 4, 9
+
+RA box limits (arcsec): -109.75 --> 109.75   
+Dec box limits (arcsec): -109.75 --> 109.75 
+The maps are 219.5 x 219.5 arcsec^2 and 878 x 878 pixels^2, with each pixel = 0.25 arcsec
+The center of the reconstructed map is 
+      RA = 109.3859632698
+      Dec = 37.7512958667
+
+The image set used (126 images from 44 sources) is given below.
+All image IDs are from Kawamata et al. (2016) unless otherwise noted. Source redshifts were determined spectroscopically for at least one of the images in the system, except for those marked PMave, which means that the redshift we used is an average of the following estimates (whichever are available): photo-z from Kawamata+16, photo-z from Limousin+16, Kawamata+16 model, Limousin+16 three models.
+SOURCE.IMAGE    RA               Dec             z     NOTES
+ 1.1           109.395338	     37.741175      2.96
+ 1.2		   109.393826   	 37.740092   	2.96
+ 1.3	   	   109.390988   	 37.738286   	2.96
+ 1.4		   109.384352   	 37.736947   	2.96
+ 1.5		   109.405784   	 37.761374   	2.96
+ 2.1		   109.392813   	 37.741003   	2.67   PMave
+ 2.2		   109.390434   	 37.739247   	2.67    "
+ 3.1           109.398546        37.741503      1.85
+ 3.2           109.394459        37.739172      1.85
+ 3.3           109.407155        37.753830      1.85
+ 4.1           109.380870        37.750119      1.85
+ 4.2           109.376438        37.744689      1.85
+ 4.3           109.391094        37.763300      1.85
+ 5.1		   109.379908   	 37.746861   	4.23   PMave
+ 5.2		   109.377917   	 37.742803   	4.23	"
+ 5.3		   109.400034   	 37.767403   	4.23	"
+ 6.1           109.364357        37.757097      2.39
+ 6.2           109.362705        37.752681      2.39
+ 6.3           109.373863        37.769703      2.39
+ 7.1           109.366570        37.766339      1.99   PMave
+ 7.2           109.365037        37.764119      1.99    "
+ 7.3           109.359047        37.751781      1.99    "
+ 8.1		   109.366652   	 37.769674   	2.70   PMave
+ 8.2		   109.362062   	 37.763125   	2.70	"
+ 8.3		   109.356509   	 37.751928   	2.70	"
+12.1           109.385165        37.751836      1.71
+12.2           109.377617        37.742914      1.71
+12.3           109.391219        37.760630      1.71
+13.1           109.385674        37.750722      2.55
+13.2           109.377564        37.739614      2.55
+13.3           109.396212        37.763333      2.55
+14.1           109.388791        37.752164      1.85
+14.2           109.379664        37.739703      1.85
+14.3           109.396192        37.760419      1.85
+15.1           109.367663        37.772058      2.40
+15.2           109.358624        37.760133      2.40
+15.3           109.356540        37.754641      2.40
+16.1           109.369170        37.773291      3.23   PMave
+16.2           109.358561        37.759558      3.23    "
+16.3           109.356930        37.753699      3.23    "
+17.1		   109.369371   	 37.771866   	2.67   PMave
+17.2		   109.359393   	 37.758839   	2.67	"
+17.3		   109.358227   	 37.753608   	2.67	"
+17.4		   109.360754   	 37.758241   	2.67	"
+18.1           109.364249        37.768633      2.21   PMave
+18.2           109.361215        37.764333      2.21    "
+19.1		   109.409067   	 37.754682   	6.39 
+19.2		   109.407728   	 37.742741   	6.39
+19.3		   109.381057   	 37.731611   	6.39
+25.1		   109.380288   	 37.744750   	4.23   PMave
+25.2		   109.379513   	 37.742756   	4.23	"
+25.3		   109.402914   	 37.766408   	4.23	"
+25.4		   109.386063   	 37.742033   	4.23	"
+29.1           109.400879        37.743175      1.63   PMave
+29.2           109.392875        37.738603      1.63    "
+29.3           109.406088        37.749953      1.63    "
+31.1           109.374705        37.756359      1.58   PMave
+31.2           109.371020        37.750555      1.58    "
+31.3           109.381612        37.764983      1.58    "
+32.1		   109.369513   	 37.757724   	2.61   PMave
+32.2		   109.380947   	 37.769383   	2.61	"
+32.3		   109.366249   	 37.749216   	2.61	"
+33.1           109.383753        37.758266      3.69   PMave
+33.2           109.386605        37.764129      3.69    "
+33.3           109.370353        37.738692      3.69    "
+36.1		   109.364321   	 37.771974   	2.62   PMave
+36.2		   109.358243   	 37.763341   	2.62	"
+36.3		   109.353315   	 37.755850   	2.62	"
+45.1		   109.389817   	 37.739200   	2.77   PMave
+45.2		   109.383456   	 37.737881   	2.77	"
+49.1		   109.402967   	 37.733258   	4.02   PMave	
+49.2		   109.392978   	 37.730708   	4.02	"
+50.1		   109.374442   	 37.743736   	3.41   PMave
+50.2		   109.379582   	 37.750708   	3.41	"
+50.3		   109.392803   	 37.767181   	3.41	"
+56.1		   109.393140   	 37.762794   	3.68   PMave
+56.2		   109.387349   	 37.755964   	3.68	"
+56.3		   109.375753   	 37.735622   	3.68	"
+60.1		   109.402547   	 37.763613   	2.78   PMave
+60.2		   109.381086   	 37.740666   	2.78	"
+60.3		   109.380654   	 37.741346   	2.78	"
+60.4		   109.387206   	 37.741291   	2.78 	"
+60.5		   109.382704   	 37.744707   	2.83	"
+61.1           109.392209        37.760494      3.21   PMave
+61.2           109.389374        37.757278      3.21    "
+65.1		   109.388637   	 37.739259   	4.22   PMave
+65.2		   109.382017   	 37.738436   	4.22	"
+65.3		   109.383471   	 37.744588   	4.22	"
+65.4		   109.404961   	 37.764683   	4.22	"
+68.1		   109.383107   	 37.762585   	4.61   PMave
+68.2		   109.382235   	 37.760399   	4.61	"
+74.1		   109.373152   	 37.744011      3.54   PMave
+74.2		   109.378399   	 37.751095      3.54	"
+74.3		   109.392850   	 37.768771      3.54	"
+78.1		   109.367431   	 37.756481   	3.80   PMave
+78.2		   109.365128   	 37.749532   	3.80	"
+78.3		   109.382085   	 37.771633   	3.80	"
+24.1           109.392290        37.732950      2.57   PMave Limousin ID
+24.2           109.410560        37.748430      2.57    "      "  
+34.1		   109.391580   	 37.766310   	2.63   PMave Limousin ID
+34.2		   109.379110   	 37.751230   	2.63	"	   "
+37.1		   109.397090   	 37.754740   	3.47   PMave Limousin ID
+37.2		   109.396720   	 37.754790   	3.47	"	   "
+55.1           109.373760        37.755780      2.33   PMave Limousin ID
+55.2           109.370240        37.748740      2.33    "      "  
+55.3           109.385020        37.768410      2.33    "      "  
+58.1           109.379420        37.762380      3.81   PMave Limousin ID
+58.2           109.379260        37.762129      3.81    "      "  
+59.1		   109.376840   	 37.743250   	3.58   PMave Limousin ID
+59.2		   109.379960   	 37.748150   	3.58	"	   "
+59.3		   109.400700   	 37.768630   	3.58	"	   "
+62.1		   109.372220   	 37.747460      2.63   PMave Limousin ID
+62.2		   109.375510   	 37.752280      2.63	"	   "
+66.1		   109.383310   	 37.765080   	6.47   PMave Limousin ID
+66.2		   109.380290   	 37.759230   	6.47	"	   "
+68.1		   109.392330   	 37.738080   	5.51		 Limousin ID
+68.2		   109.382350   	 37.736510   	5.51		   "
+68.3		   109.406780   	 37.763800   	5.51		   "
+69.1		   109.380400   	 37.749470   	3.27   PMave Limousin ID
+69.2		   109.375320   	 37.743380   	3.27	"	   "
+69.3		   109.396440   	 37.768590   	3.27	"	   "
+72.1           109.380120        37.765500      3.83   PMave Limousin ID
+72.2           109.374810        37.762350      3.83    "      "  
+76.1		   109.411230   	 37.731990   	4.53   PMave Limousin ID
+76.2		   109.412840   	 37.733790   	4.53	"	   "
+76.3		   109.413660   	 37.734650   	4.53	"	   "
+
+
+The spectroscopic redshifts and image identifications quoted above were obtained by these groups:
+Kawamata et al. 2016, ApJ, 819, 114  (arXiv:1510.06400) 
+Limousin et al. 2016, A&A, 588, A99  (arXiv:1510.08077) 
+Diego et al. 2015, MNRAS, 451, 3920  (arXiv:1410.7019) 
+Zitrin et al. 2009, ApJL, 707, L102  (arXiv:0907.4232) 
+
+ACKNOWLEDGMENTS
+
+We gratefully acknowledge all the members of the Frontier Fields lens reconstruction teams for data they have contributed to this effort, and without which our mass reconstructions would not have been possible. We are also grateful to Dan Coe for coordinating this project and making it run smoothly. 
+ 

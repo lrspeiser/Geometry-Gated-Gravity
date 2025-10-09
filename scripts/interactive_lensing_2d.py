@@ -114,11 +114,37 @@ def fig_2d(cid: str, zs: float, y_src_frac: float, edge_factor: float, mag: floa
     fig.add_trace(go.Scatter(x=np.concatenate([x_pre, x_post]), y=np.concatenate([y_pre, y_post_gr]), mode='lines',
                              line=dict(color='#dd2222', width=4, dash='dash'), name='GR (baryons)'))
 
-    # Accepted reference: purple (α_ref = θE_accepted)
-    alpha_acc_rad = (theta_obs / 206265.0)
-    y_post_acc = y0 - (alpha_acc_rad * mag) * x_post
+    # Accepted from HFF deflection if available; else reference using θE_obs
+    from scripts.lensing_utils import list_frontier_models, alpha_fun_ACCEPTED, compute_thetaEcrit_from_maps
+    accepted_line_note = ''
+    acc_fun = None
+    models = list_frontier_models(cid)
+    # Choose preferred model order
+    prefs = [('cats','v4.1'), ('williams','v4'), ('caminha','v4')]
+    acc_team, acc_ver = None, None
+    for team, ver in prefs:
+        if team in models:
+            versions = [v.lower() for v in models[team]]
+            if ver in versions:
+                acc_team, acc_ver = team, ver
+                break
+            else:
+                # pick first available if preferred not present
+                if versions:
+                    acc_team, acc_ver = team, models[team][0]
+                    break
+    if acc_team is not None:
+        acc_fun = alpha_fun_ACCEPTED(cid, acc_team, acc_ver)
+    if acc_fun is not None:
+        a_acc_y = acc_fun(y0)
+        y_post_acc = y0 - (a_acc_y * mag) * x_post
+        accepted_line_note = f"{acc_team} {acc_ver}"
+    else:
+        alpha_acc_rad = (theta_obs / 206265.0)
+        y_post_acc = y0 - (alpha_acc_rad * mag) * x_post
+        accepted_line_note = 'θE reference'
     fig.add_trace(go.Scatter(x=np.concatenate([x_pre, x_post]), y=np.concatenate([y_pre, y_post_acc]), mode='lines',
-                             line=dict(color='#6f42c1', width=3, dash='dashdot'), name='Accepted (θE ref)'))
+                             line=dict(color='#6f42c1', width=3, dash='dashdot'), name='Accepted (HFF)'))
 
     # GE (our formula): green
     if y_post_ge is not None:
@@ -136,8 +162,17 @@ def fig_2d(cid: str, zs: float, y_src_frac: float, edge_factor: float, mag: floa
                                          theta_obs, 0.2*theta_obs, 2.0*theta_obs) if alpha_gr else None
     thetaE_ge = solve_theta_E_from_alpha(lambda th: np.sign(y0)*alpha_ge_fun(abs(th)) if alpha_ge_fun else 0.0,
                                          theta_obs, 0.2*theta_obs, 2.0*theta_obs) if alpha_ge_fun else None
+    # Try computing θEcrit from accepted κ/γ maps if team chosen
+    thetaEcrit = None
+    try:
+        if acc_team is not None:
+            thetaEcrit = compute_thetaEcrit_from_maps(cid, acc_team, acc_ver)
+    except Exception:
+        thetaEcrit = None
+    te_label = f"Accepted θE(crit) ≈ {thetaEcrit:.2f} arcsec" if (thetaEcrit is not None) else f"Accepted θE(crit): n/a"
+
     annos = [
-        dict(x=0.02*x_extent, y=y0 + 0.09*theta_obs, xref='x', yref='y', text=f"Accepted θE ≈ {theta_obs:.2f} arcsec",
+        dict(x=0.02*x_extent, y=y0 + 0.09*theta_obs, xref='x', yref='y', text=te_label,
              showarrow=False, font=dict(color='#6f42c1')),
         dict(x=0.02*x_extent, y=y0 + 0.05*theta_obs, xref='x', yref='y', text=f"α_actual ≈ {a_hl_arcsec:.2f} arcsec",
              showarrow=False, font=dict(color='#0077ff')),
@@ -365,11 +400,11 @@ def main():
             metas.append(meta)
         except Exception as e:
             # Add empty placeholders to keep indexing simple
-            empty = [go.Scatter(x=[], y=[], mode='lines') for _ in range(6)]
+            empty = [go.Scatter(x=[], y=[], mode='lines') for _ in range(7)]
             all_traces.extend(empty)
             metas.append({'cid': cid, 'z_lens': np.nan, 'theta_obs': np.nan,
                           'xlim': (-1,1), 'ylim': (-1,1), 'annos': [dict(text=f"{cid}: {e}", x=0, y=0, showarrow=False)],
-                          'vis': {'all':[False]*6, 'actual':[False]*6, 'gr':[False]*6, 'ge':[False]*6}})
+                          'vis': {'all':[False]*7, 'actual':[False]*7, 'gr':[False]*7, 'accepted':[False]*7, 'ge':[False]*7}})
 
     # Compute global axes
     xmin = min(m['xlim'][0] for m in metas)
@@ -382,7 +417,7 @@ def main():
     # Initial: first cluster, all models
     init_vis = []
     for i, m in enumerate(metas):
-        vis = m['vis']['all'] if i == 0 else [False]*6
+        vis = m['vis']['all'] if i == 0 else [False]*7
         init_vis.extend(vis)
     for i in range(len(all_traces)):
         fig.data[i].visible = init_vis[i]

@@ -1,0 +1,1 @@
+viz: accepted path + θE solver in 2D; gold dropdown now compares Accepted/GR/GE; add table-ready utils

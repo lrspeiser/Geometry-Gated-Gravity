@@ -1,0 +1,2888 @@
+Mon. Not. R. Astron. Soc. 000, 1–14 (2015)
+
+Printed 18 November 2021
+
+(MN LATEX style ﬁle v2.2)
+
+Hubble Frontier Fields: Predictions for the Return of SN Refsdal
+with the MUSE and GMOS Spectrographs
+
+M. Jauzac,1,2,3(cid:63) J. Richard,4 M. Limousin,5 K. Knowles,3 G. Mahler,4 G. P. Smith,6
+J.-P. Kneib,7,5 E. Jullo,5 P. Natarajan,8 H. Ebeling,9 H. Atek,8 B. Cl´ement,4 D. Eckert,10
+E. Egami,11 R. Massey,1,2 M. Rexroth,7
+
+1Centre for Extragalactic Astronomy, Department of Physics, Durham University, Durham DH1 3LE, U.K.
+2Institute for Computational Cosmology, Durham University, South Road, Durham DH1 3LE, U.K.
+3Astrophysics and Cosmology Research Unit, School of Mathematical Sciences, University of KwaZulu-Natal, Durban 4041, South Africa
+4CRAL, Observatoire de Lyon, Universit´e Lyon 1, 9 Avenue Ch. Andr´e, 69561 Saint Genis Laval Cedex, France
+5Laboratoire d’Astrophysique de Marseille - LAM, Universit´e d’Aix-Marseille & CNRS, UMR7326, 38 rue F. Joliot-Curie, 13388 Marseille Cedex 13, France
+6School of Physics and Astronomy, University of Birmingham, Birmingham, B15 2TT, England
+7Laboratoire d’Astrophysique, Ecole Polytechnique F´ed´orale de Lausanne (EPFL), Observatoire de Sauverny, CH-1290 Versoix, Switzerland
+8Department of Astronomy, Yale University, 260 Whitney Avenue, New Haven, CT 06511, USA
+9Institute for Astronomy, University of Hawaii, 2680 Woodlawn Drive, Honolulu, Hawaii 96822, USA
+10Astronomy Department, University of Geneva, 16 ch. d’Ecogia, CH-1290 Versoix, Switzerland
+11Steward Observatory, University of Arizona, 933 North Cherry Avenue, Tucson, AZ, 85721, USA
+
+Accepted XXXX. Received 2015 September XX; in original form 2015 December 20
+
+ABSTRACT
+We present a high-precision mass model of the galaxy cluster MACSJ1149.6+2223, based
+on a strong-gravitational-lensing analysis of Hubble Space Telescope Frontier Fields (HFF)
+imaging data and spectroscopic follow-up with Gemini/GMOS and VLT/MUSE. Our model
+includes 12 new multiply imaged galaxies, bringing the total to 22, comprised of 65 individ-
+ual lensed images. Unlike the ﬁrst two HFF clusters, Abell 2744 and MACSJ0416.1−2403,
+MACSJ1149 does not reveal as many multiple images in the HFF data. Using the Lenstool
+software package and the new sets of multiple images, we model the cluster with several
+cluster-scale dark-matter halos and additional galaxy-scale halos for the cluster members.
+Consistent with previous analyses, we ﬁnd the system to be complex, composed of ﬁve cluster-
+scale halos. Their spatial distribution and lower mass, however, makes MACSJ1149 a less
+powerful lens. Our best-ﬁt model predicts image positions with an RMS of 0.91(cid:48)(cid:48). We measure
+the total projected mass inside a 200 kpc aperture as (1.840 ± 0.006)×1014M(cid:12), thus reaching
+again 1% precision, following our previous HFF analyses of MACSJ0416.1−2403 and Abell
+2744. In light of the discovery of the ﬁrst resolved quadruply lensed supernova, SN Refsdal,
+in one of the multiply imaged galaxies identiﬁed in MACSJ1149, we use our revised mass
+model to investigate the time delays and predict the rise of the next image between November
+2015 and January 2016.
+
+Key words: Gravitational Lensing; Galaxy Clusters; Individual (MACSJ1149)
+
+5
+1
+0
+2
+c
+e
+D
+2
+2
+
+]
+
+A
+G
+.
+h
+p
+-
+o
+r
+t
+s
+a
+[
+
+4
+v
+4
+1
+9
+8
+0
+.
+9
+0
+5
+1
+:
+v
+i
+X
+r
+a
+
+1
+
+INTRODUCTION
+
+Since the discovery of the ﬁrst giant arcs (Soucail et al. 1988, in
+Abell 370), gravitational lensing has been recognized as one of the
+most powerful tools to understand the evolution and assembly of
+structures in the Universe. Gravitational lensing allows us to mea-
+sure the dark-matter content of the lenses, free from assumptions
+regarding their dynamical state (for reviews, see e.g. Schneider
+
+(cid:63) E-mail: mathilde.jauzac@durham.ac.uk
+
+c(cid:13) 2015 RAS
+
+et al. 1992; Massey et al. 2010; Kneib & Natarajan 2011; Hoekstra
+et al. 2013), as well as to spatially resolve the lensed objects them-
+selves (Richard et al. 2011; Smith et al. 2009; Rau et al. 2014).
+Massive galaxy clusters are ideal “cosmic telescopes” and gen-
+erate high magniﬁcation factors over a large ﬁeld of view (Ellis
+et al. 2001; Kneib et al. 2004). Their importance for the study of
+both clusters and the distant Universe lensed by them is appar-
+ent from ambitious programs implemented with the Hubble Space
+Telescope (HST), like the Cluster Lenses And Supernovae with
+Hubble (CLASH, PI :Postman; Postman et al. 2012) multi-cycle
+Treasury project, the Grism Lens-Ampliﬁed Survey from Space pro-
+
+ 
+ 
+ 
+ 
+ 
+ 
+2
+
+Jauzac et al. 2015
+
+gram (GLASS, PI: Treu; Schmidt et al. 2014), and the recent Hub-
+ble Frontier Fields (HFF) Director’s initiative1.
+
+The galaxy cluster studied in this paper, MACSJ1149.6+2223
+(MACSJ1149 hereafter), at redshift z = 0.544 (R.A: +11:49:34.3,
+Decl.: +22:23:42.5), was discovered by the MAssive Cluster Sur-
+vey (MACS, Ebeling et al. 2001, 2007). The ﬁrst strong-lensing
+analyses of MACSJ1149 were published by Smith et al. (2009),
+Zitrin & Broadhurst (2009), and Zitrin et al. (2011), based on shal-
+low HST data (GO-9722, PI: Ebeling) taken with the Advanced
+Camera for Surveys (ACS), and revealed one of the most complex
+cluster cores known at the time. MACSJ1149 stands out among
+other massive, complex clusters not only by virtue of its relatively
+high redshift, but also for it hosting a spectacular lensed object, a
+triply-lensed face-on spiral at z = 1.491 (Smith et al. 2009). The
+system was selected as a target for the CLASH program and thus
+observed with both ACS and the Wide Field Camera 3 (WFC3)
+across 16 passbands, from the UV to the near-infrared, for a to-
+tal integration time of 20 HST orbits, leading to the discovery of
+a lensed galaxy at z = 9.6, observed near the cluster core (Zheng
+et al. 2012), and the publication of a revised strong-lensing analysis
+by Rau et al. (2014).
+
+More recently, MACSJ1149 was selected as one of the six
+targets for the HFF observing campaign. Combining the lensing
+power of galaxy clusters with the high-resolution of HST and al-
+locating a total of 140 HST orbits for the study of each cluster,
+the HFF initiative aims to probe the distant and early Universe to
+an unprecedented depth of magAB ∼ 29 in seven passbands (3 with
+ACS, 4 with WFC3). In a coordinated multi-team eﬀort, mass mod-
+els2 of all six HFF cluster lenses were derived from pre-HFF data
+(CLASH data in the case of MACSJ1149) to provide the commu-
+nity with a ﬁrst set of magniﬁcation maps (see in particular Johnson
+et al. 2014; Coe et al. 2015; Richard et al. 2014). Deep HFF imag-
+ing of MACSJ1149 was obtained during Cycle 22.
+
+In 2014, MACSJ1149 was observed with WFC3 between
+November 3rd and 20th as part of the GLASS programme. In the
+resulting data, Kelly et al. (2015) discovered a new supernova (SN)
+within the multiply-imaged spiral galaxy discussed above, lensed
+into an Einstein Cross by a foreground cluster galaxy. Multiply-
+lensed SN have been predicted for years, but with a relatively low
+probability of detection (e.g. Refsdal 1964; Kovner & Paczynski
+1988). Up to then, only candidates of such events had been reported
+(Goobar et al. 2009; Quimby et al. 2014; Patel et al. 2014), making
+this new SN, named SN Refsdal by their discoverers, the ﬁrst secure
+case of a resolved multiply-lensed SN. We refer the reader to Kelly
+et al. (2015) for more details. The discovery of SN Refsdal led to
+revisions of the pre-HFF strong-lensing analysis of MACSJ1149
+and allowed measurements of time delays as well as predictions
+for the time of appearance of the same SN event in another im-
+age of the multiply imaged spiral (Sharon & Johnson 2015; Oguri
+2015; Diego et al. 2015). More recently, other HFF analyses were
+presented in Treu et al. (2015), Grillo et al. (2015) and Kawamata
+et al. (2015), in good agreement with the analysis presented here.
+
+In this paper, we present a revised and improved version of
+the mass model of MACSJ1149 by Richard et al. (2014), taking
+advantage of the recent deep HFF images of the system, as well
+as spectroscopic surveys of the cluster core with Gemini/GMOS
+and VLT/MUSE. We study the case of SN Refsdal and compare
+our results with those obtained by Sharon & Johnson (2015), Oguri
+
+(2015), Diego et al. (2015), Treu et al. (2015), Grillo et al. (2015),
+and Kawamata et al. (2015).
+
+When quoting cosmology-dependent quantities, we adopt the
+ΛCDM concordance cosmology with Ωm = 0.3, ΩΛ = 0.7, and a
+Hubble constant H0 = 70 km s−1 Mpc−1. Magnitudes are quoted in
+the AB system.
+
+2 OBSERVATIONS
+
+2.1 Hubble Frontier Fields Data
+
+MACSJ1149 was observed for the HFF campaign (ID: 13504, P.I:
+J. Lotz) with WFC3 between November 2014 and January 2015 in
+four ﬁlters, and with ACS between April and May 2015 in three
+ﬁlters. The discovery of SN Refsdal in the GLASS data led to addi-
+tional observations with WFC3, performed (and to be performed) at
+preset intervals between January and November 2015 (ID: 13790,
+PI: Rodney). We used the self-calibrated data (version v1.0) with a
+pixel size of 0.03(cid:48)(cid:48)provided by STScI3. These data combine all HST
+observations of the cluster for total integration times corresponding
+to 25, 20.5, 20, and 34.5 orbits with WFC3 in the F105W, F125W,
+F140W, and F160W passbands, respectively, and to 18, 10, and 42
+orbits with ACS in the F435W, F606W, and F814W ﬁlters, respec-
+tively, leading to a limiting magnitude of magAB = 29, and thus a
+depth typical of ultra-deep ﬁeld observations, for all seven ﬁlters.
+A composite HST/ACS colour image is shown in Fig. 1.
+
+2.2 Spectroscopy with GMOS
+
+MACSJ1149 was observed with the GMOS spectrograph on Gem-
+ini North (ID program: GN-2010A-Q-8) during four nights be-
+tween March 19th and April 20th of 2010. The seeing varied be-
+tween 0.7(cid:48)(cid:48)and 0.9(cid:48)(cid:48). A single multi-object mask was used with a to-
+tal of 20 slits covering multiple images, cluster members and other
+background galaxies identiﬁed from the HST images; the slit width
+was 1(cid:48)(cid:48). Observations with the B600 and R831 gratings provided a
+spectral resolution between 1500 at 650 nm and 3000 at 840 nm. A
+total of 40×1050 second exposures were taken, equally split across
+four wavelength settings centred at 540, 550, 800, and 810 nm.
+
+The GMOS spectroscopic data were reduced using the Gem-
+ini IRAF reduction package (v. 1.1) to create individual calibrated
+2D spectra of each slit and exposure. These were then aligned and
+combined using standard IRAF recipes, and 1D spectra were ex-
+tracted at the location of the sources of interest.
+
+2.3 Spectroscopy with MUSE
+
+The integral ﬁeld spectrograph MUSE (Bacon et al. 2010) on the
+Very Large Telescope (VLT) observed the very central region of
+MACSJ1149 (green square in Fig. 1) on February 14th and March
+21st 2015 as part of the DDT program 294.A-5032(A) (PI: Grillo).
+The spectrograph’s 1×1 arcmin2 ﬁeld of view was rotated slightly
+to a position angle of 4 degrees in order to include the majority of
+the central multiple-image systems. The seeing varied between 0.9
+and 1.2(cid:48)(cid:48).
+
+For the analysis presented here, we combine ten exposures of
+1440 seconds each that are publicly available from the ESO archive
+(the complete observations were published while this manuscript
+
+1 http://www.stsci.edu/hst/campaigns/frontier-ﬁelds/
+2 http://archive.stsci.edu/prepds/frontier/lensmodels/
+
+3 http://archive.stsci.edu/pub/hlsp/frontier/m1149/images/hst/
+
+c(cid:13) 2015 RAS, MNRAS 000, 1–14
+
+SN Refsdal in MACSJ1149.6+2223
+
+3
+
+Figure 1. Overview of all multiple-image systems used in this study. The most secure identiﬁcations, used to optimise the lens model in the image plane (65
+images) are shown in red; in orange we highlight the systems with a spectroscopic redshift from either GMOS or MUSE, with larger green circles highlighting
+the background sources with a MUSE redshift. System #1 is split into 24 individual sources at the same redshift, not labelled on the ﬁgure for clarity (see
+Table. 1 for their coordinates). The underlying colour image is a composite created from HST/ACS images in the F814W, F606W, and F435W passbands.
+Critical lines at z = 1.49, and z = 7.0 are shown in white. The green rectangle highlights the VLT/MUSE ﬁeld of view. The top left inset shows a close-up
+view of the Northern component of the cluster (Clump #4 in Table 4). North is up and East is left.
+
+was under review, Grillo et al. 2015). We reduced these data using
+version 1.1 of the MUSE data reduction pipeline (Weilbacher et al.
+in prep.); selected results from the full data set (including propri-
+etary exposures) are presented by Karman et al. (2015). We per-
+formed the basic calibrations (bias and ﬂat-ﬁeld corrections, wave-
+length and geometrical calibration) and applied a twilight and illu-
+mination correction to the data taken on each night. Flux calibration
+was performed using a standard star taken at the beginning of the
+
+night, and a global sky subtraction was applied to the pixel tables
+before a ﬁnal resampling. The ten exposures were then aligned after
+adjustments for oﬀsets measured from the centroid of the brightest
+star in the South of the ﬁeld (Fig. 2).
+
+The ﬁnal MUSE data cube has a spatial pixel scale of 0.2(cid:48)(cid:48) and
+covers the wavelength range 4750–9350 Å at 1.25 Å/pixel and a
+resolution of 1500–3000. Following Richard et al. (2015), we anal-
+ysed this large dataset using two complementary approaches: we
+
+c(cid:13) 2015 RAS, MNRAS 000, 1–14
+
+34.334.234.131.331.231.129.329.229.122.322.222.121.321.221.118.318.218.117.317.217.116.216.115.315.215.114.214.113.313.213.18.38.28.17.37.27.16.36.26.15.35.25.14.34.24.13.33.23.12.32.22.11.31.21.122.322.222.15.35.25.14.34.24.13.33.23.12.32.22.11.31.21.14
+
+Jauzac et al. 2015
+
+Table 1. Catalogue of cluster members detected with VLT/MUSE observa-
+tions.
+
+ID
+
+R.A.
+
+Decl.
+
+zspec
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+
+177.39548
+177.39328
+177.39859
+177.39096
+177.40628
+177.40358
+177.40745
+177.39121
+177.40261
+177.39287
+177.40546
+177.40121
+177.39181
+177.3911
+177.40306
+177.39846
+177.39854
+177.39965
+177.39139
+177.39502
+177.3938
+177.40752
+177.39686
+177.40077
+177.40104
+177.40515
+177.39581
+177.39215
+177.39869
+177.3987
+177.39452
+177.39886
+177.40014
+177.39527
+177.40171
+177.40367
+177.39483
+177.39169
+177.40225
+177.38969
+177.4069
+177.39778
+177.39269
+177.39752
+177.40663
+177.4037
+177.40737
+177.39797
+177.40369
+177.40645
+177.39265
+177.39693
+177.39761
+177.39275
+177.38943
+177.39983
+177.40397
+
+22.404037
+22.400253
+22.398064
+22.401691
+22.405381
+22.396369
+22.399136
+22.392715
+22.396186
+22.397096
+22.397881
+22.400339
+22.405281
+22.404904
+22.404389
+22.405383
+22.389783
+22.399616
+22.401063
+22.39602
+22.402294
+22.403047
+22.392292
+22.396256
+22.397885
+22.399789
+22.393496
+22.401282
+22.392303
+22.398519
+22.400647
+22.401818
+22.394428
+22.401054
+22.398803
+22.391933
+22.392927
+22.390611
+22.399759
+22.392704
+22.39583
+22.395445
+22.394364
+22.39955
+22.395536
+22.404578
+22.394819
+22.401045
+22.389101
+22.389565
+22.392733
+22.39297
+22.402875
+22.398072
+22.393942
+22.397255
+22.403094
+
+0.5133
+0.5134
+0.5264
+0.5272
+0.5277
+0.5307
+0.5307
+0.531
+0.5315
+0.5322
+0.5327
+0.5327
+0.5335
+0.5335
+0.5335
+0.536
+0.536
+0.536
+0.5365
+0.5365
+0.5385
+0.5392
+0.5398
+0.5403
+0.5403
+0.5408
+0.5408
+0.5408
+0.5411
+0.5411
+0.5416
+0.5418
+0.5425
+0.5426
+0.5428
+0.5433
+0.5436
+0.5436
+0.5436
+0.5441
+0.5441
+0.5443
+0.5453
+0.5458
+0.5466
+0.5468
+0.547
+0.5471
+0.5491
+0.5496
+0.5504
+0.5511
+0.5511
+0.5519
+0.5554
+0.5609
+0.567
+
+c(cid:13) 2015 RAS, MNRAS 000, 1–14
+
+Figure 2. HST/ACS F814W image of MACSJ1149 centred on the MUSE
+ﬁeld of view. Cyan slits mark GMOS spectroscopic measurements; yel-
+low circles show the sources with MUSE spectroscopic redshifts; and green
+squares highlight cluster members with a MUSE spectroscopic redshift as
+listed in Table 1. We note the presence of a small group of galaxies at
+z = 0.96 in the south-west corner.
+
+ﬁrst extracted the 1D spectrum at the location of each of the sources
+detected in the HFF images and falling within the MUSE ﬁeld of
+view, and then estimated all possible redshifts based on emission-
+and absorption-line features. In addition, we used narrow-band
+images created with customized software based on Sextractor
+(Bertin & Arnouts 1996) to perform a blind search of the data cube
+for isolated emission lines not associated with continuum sources.
+We then merged the results from both approaches to generate a ﬁnal
+MUSE redshift catalog.
+
+In total, we measured the redshift of 88 sources, including
+57 cluster members between z = 0.513 and z = 0.570, and 27
+background sources (some of them being multiply imaged, see
+Sect. 3.2). Tables 1, 2, and 3 list coordinates and redshifts for clus-
+ter members, singly imaged background sources, and foreground
+galaxies, respectively. The redshifts for multiple images are pro-
+vided in Table 6.
+
+3 MULTIPLY IMAGED SYSTEMS
+
+3.1 HST identiﬁcations
+
+MACSJ1149 has been the subject of a number of strong-lensing
+analyses (Smith et al. 2009; Zitrin & Broadhurst 2009; Zitrin et al.
+2011; Rau et al. 2014; Richard et al. 2014; Johnson et al. 2014;
+Coe et al. 2015; Sharon & Johnson 2015; Oguri 2015; Diego
+et al. 2015), all of which were based on pre-HFF data except for
+Diego et al. (2015), their work uses one third of the HFF data. We
+started our search for multiple images guided by the mass model
+
+SN Refsdal in MACSJ1149.6+2223
+
+5
+
+SEDs. As shown by Mahler et al. (in prep.) this statistic quantiﬁes
+the probability of two images originating from the same source.
+
+Flux measurements were derived from isophotal magnitudes
+measured with SExtractor (Bertin & Arnouts 1996), and the
+ﬂuxes of oversegmented multiple images were combined into a to-
+tal ﬂux per multiple image. The corresponding magnitudes are pre-
+sented in Table 6. Combining all HFF ﬁlters, we ﬁnd acceptable
+values for χ2 (∼ 1 − 3) for almost all images, with slightly high
+values typically being observed for sources whose photometry is
+compromised by bright nearby sources.
+
+A notable exception is image 3.3, already found in the pre-
+HFF images, which features a very high χ2 value (56), although it
+seems to be the most plausible counter-image of system 3 based
+on predictions of both its position and morphology derived from a
+lensing model constrained with 3.1 and 3.2 only. Fig. 4 shows the
+three images of system #3 in composite HST ACS/WFC3 colour
+images (top panel), as well as the predicted images (monochrome),
+simulated based on the morphology of image 3.1. The predicted lo-
+cation and morphology of images 3.2 and 3.3 closely match those
+of the real data; however, the colour of image 3.3 is signiﬁcantly
+reddened compared to images 3.1 and 3.2, thus producing the afore-
+mentioned large χ2 value. Removing the diﬀerential ampliﬁcation
+between images 3.1 and 3.3, we ﬁnd the magnitude diﬀerences in
+all ﬁlters to follow a typical reddening curve (Figure 5), which can
+be easily modelled by a Milky-Way (MW, Allen 1976) or SMC
+(Bouchet et al. 1985; Prevot et al. 1984) extinction curve, with typ-
+ical values of AV = 0.51 (MW) or AV = 0.47 (SMC), if we assume
+that the extinction occurs in the cluster at z = 0.54. Dust extinc-
+tion has been previously reported in the outskirts of clusters (e.g.,
+Chelouche et al. 2007). Alternatively, we cannot rule out dust ex-
+tinction by an intervening galaxy in the foreground or background
+of the cluster. For instance, the background spiral to the lower right
+of image 3.3 (Fig. 4) is a good candidate. We derive a photomet-
+ric redshift z = 1.4 and a best-ﬁt extinction AV = 1.0 from the
+public CLASH photometric catalogs (Postman et al. 2012)4 using
+the Hyperz photometric redshift software (Bolzonella et al. 2000).
+Image 3.3 is located 12 kpc from the center of this galaxy in the
+source plane at z = 1.4; at such a high impact parameter the lower
+extinction in image 3.3 can thus be expected.
+
+3.2 Redshift Constraints
+
+The spectroscopic observations described in Sect. 2 allowed us
+to conﬁrm newly identiﬁed multiple-image systems, as well as to
+correct earlier spectroscopic redshifts measurements. Compared to
+Smith et al. (2009), we revise the spectroscopic redshift of system
+#3 to z = 3.128, based on the deeper GMOS data that clearly show
+Lyman-α in emission as well as an associated spectral Ly-α break
+in the continuum (Fig. 3). The revised redshift of system #3 is also
+conﬁrmed with MUSE for images 3.1 and 3.2. We also measure
+secure GMOS spectroscopic redshifts for system #4, z = 2.95, for
+system #5, z = 2.79, and system #9, z = 0.981, from strong Lyman-
+α and [OII] emission lines, respectively. MUSE observations add
+to these ﬁndings by revealing extended emission around image 4.1,
+producing a Lyman-α Einstein ring around the very close clus-
+ter member (Fig. 6). MUSE observations also conﬁrm the redshift
+of the HFF multiple-image system #22 as z = 3.216, again from
+
+4 https://archive.stsci.edu/missions/hlsp/clash/macs1149/catalogs/hst/
+
+Figure 3. Example of extracted GMOS and MUSE spectra for system 3,
+conﬁrming a redshift z = 3.128 from Lyman-α in emission, spectral break,
+and UV absorption lines. Individual spectra are oﬀset vertically for clarity.
+
+of Richard et al. (2014). This model incorporates 35 multiple im-
+ages of 10 diﬀerent lensed galaxies, three of which have spectro-
+scopic redshifts from Smith et al. (2009): systems #1, #2, and #3,
+at z = 1.491, z = 1.894, and z = 2.497, respectively.
+
+The new, deep HFF ACS and WFC3 images allow us to ex-
+tend this set of multiple images. To this end, we followed Jauzac
+et al. (2014) and Jauzac et al. (2015) and ﬁrst computed the clus-
+ter’s gravitational-lensing deﬂection ﬁeld that describes the map-
+ping of images from the image plane to the source plane, on a grid
+with a spacing of 0.2 arcsec/pixel. Since the transformation scales
+with redshift as described by the distance ratio DLS /DOS , where
+DLS and DOS are the distances between the lens and the source, and
+the observer and the source, respectively, it is only computed once,
+thereby enabling an eﬃcient lens inversion. We then compute the
+critical region at redshift z = 7 and limit our search for multiple im-
+ages in the ACS data to this area (white contours in Fig. 1). Careful
+searches, combined with visual scrutiny and conﬁrmation, revealed
+12 new multiply imaged systems, bringing the total number of mul-
+tiple images identiﬁed in MACSJ1149 to 65, involving 22 diﬀerent
+multiply imaged galaxies (Fig. 1 and Table 6), which leads to con-
+siderable tighter constraints on the mass model of the cluster. Al-
+though a signiﬁcant improvement over the pre-HFF statistics, this
+number of new systems is disappointing compared to how many
+were discovered in the ﬁrst two HFF clusters, MACSJ0416.1–2403
+and Abell 2744; we discuss this issue in Sect. 5.1.
+
+As one of the main goals of our analysis is to measure precise
+time delays prompted by the discovery of SN Refsdal, we followed
+Rau et al. (2014) and decomposed System #1, the SN host galaxy,
+into 24 features, selected as the brightest components of the spiral
+(see the bottom part of Table 6 for their coordinates). We also added
+the four images of SN Refsdal located in image 1.2 and labelled S1,
+S2, S3, and S4, following the same notation as Kelly et al. (2015),
+Sharon & Johnson (2015) and Oguri (2015).
+
+In order to test the reliability of our multiple-image identiﬁca-
+tions, we computed a ﬂux-χ2 statistic to quantify the similarity of
+the photometry in each pair of images within a given system:
+−α f B
+i )2
+2
+2+α2σB
+i
+
+N−1 minα
+
+( f A
+i
+σA
+i
+
+(cid:32) N(cid:80)
+
+= 1
+
+χ2
+ν
+
+i=1
+
+(cid:33)
+
+where fi and σi are the ﬂuxes and errors in ﬁlter i, N is the total
+number of ﬁlters, and α is the minimisation factor rescaling both
+
+c(cid:13) 2015 RAS, MNRAS 000, 1–14
+
+48005000520054005600580060006200λ (Å)05.0•10−181.0•10−171.5•10−17fλ [erg/s/cm2/Å]3.1 MUSE3.2 MUSE3.1 GMOSLyαSi IISi IIC IISi IV6
+
+Jauzac et al. 2015
+
+Figure 4. Top panels: HST ACS/WFC3 colour images of system 3 (F814W,
+F105W and F160W ﬁlters as RGB). Bottom panels: Predicted images from
+a source matching the morphology of image 3.1.
+
+Figure 6. Close-up view of System #4. The left panel highlights images
+4.1 and 4.2 in the HST/ACS image. The right panel shows the Lyman-α
+emission in the same area as observed with MUSE.
+
+Table 2. Catalogue of singly-imaged background galaxies detected with
+VLT/MUSE observations.
+
+Figure 5. Extinction estimated from a comparison of image 3.3 and im-
+age 3.1, and models assuming a Milky-Way or SMC extinction law, with
+attenuations AV = 0.51 and AV = 0.47 respectively.
+
+strong Lyman-α emission. Finally, we slightly revise the redshift of
+the system #1, the face-on spiral, to z = 1.4888, based on the total
+IFU spectrum of this object (see also Yuan et al. 2011).
+
+In addition to measuring the redshifts of known multiple-
+image systems, we used the spectroscopic redshifts measured from
+GMOS and MUSE data also to investigate the possible multiplicity
+of other background sources (see second part of Table 2). All of
+these are predicted by our best mass model (Sect. 4) to be single
+images, including a small group of 11 galaxies at 0.95 < z < 1.3
+within the MUSE ﬁeld of view (Fig. 2 and Table 2). This test al-
+lowed us to reject potential new multiple images and to conﬁrm the
+validity of our strong-lensing analysis.
+
+Table 6 lists the coordinates, redshifts (spectroscopic or pre-
+dicted by our model), F814W-band magnitudes, and magniﬁcations
+predicted by our best-ﬁt model, for all multiple images used in
+this work. Magnitudes were measured using Sextractor (Bertin
+& Arnouts 1996).
+
+ID
+
+R.A.
+
+Decl.
+
+zspec
+
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+
+177.39503
+177.39691
+177.39346
+177.40183
+177.40377
+177.39456
+177.39000
+177.39525
+177.39141
+177.39465
+177.39854
+177.40885
+177.40100
+177.40495
+177.40825
+177.39185
+177.39065
+
+22.397460
+22.398059
+22.401332
+22.393461
+22.392353
+22.391586
+22.389538
+22.390021
+22.390644
+22.390637
+22.389384
+22.403175
+22.404706
+22.401208
+22.398792
+22.400103
+22.393606
+
+0.7016
+0.7023
+0.7217
+0.723
+0.9291
+0.959
+0.9597
+0.961
+0.9611
+0.9611
+1.021
+1.034
+1.087
+1.0977
+1.117
+1.248
+1.2499
+
+4 STRONG-LENSING MASS MODEL
+
+4.1 Methodology
+
+Since our method to create the MACSJ1149 mass model closely
+follows the one used by Jauzac et al. (2014, 2015), we here only
+give a brief summary and refer the reader to Kneib et al. (1996);
+Smith et al. (2005); Verdugo et al. (2011); Richard et al. (2011)
+for more details. Our mass model combines large-scale dark-matter
+haloes to model the cluster-scale mass components and galaxy-
+scale haloes to model individual cluster members, typically large
+elliptical galaxies or galaxies that aﬀect strong-lensing features due
+to their proximity to multiple images. As in our previous work,
+all mass components are modeled as Pseudo Isothermal Elliptical
+Mass Distribution (Limousin et al. 2005; Jauzac et al. 2014, 2015,
+PIEMD,), characterized by a velocity dispersion σ, a core radius
+rcore, and a cut radius rcut. In this parametric approach, haloes are
+not allowed to contain zero mass, and hence the relative probability
+
+c(cid:13) 2015 RAS, MNRAS 000, 1–14
+
+40006000800010000120001400016000λ ()0.00.20.40.60.81.0Aλ (mags)MWSMCClump
+
+∆ x
+
+∆ y
+
+e
+
+θ
+
+rcore (kpc)
+
+rcut (kpc)
+
+σ (km s−1)
+
+SN Refsdal in MACSJ1149.6+2223
+
+7
+
+#1
+
+#2
+
+#3
+
+#4
+
+#5
+
+#6
+
+#7
+
+−1.95+0.10
+−0.19
+
+0.17 +0.15
+−0.22
+
+0.58 ±0.01
+
+30.58+0.35
+−0.51
+
+112.9+3.6
+−2.1
+
+-28.02+0.26
+−0.17
+
+-36.02+0.27
+−0.21
+
+0.70±0.02
+
+39.02+2.23
+−1.69
+
+16.5+2.7
+−3.9
+
+−48.65+0.13
+−0.49
+
+−51.35+0.30
+−0.22
+
+0.35 ±0.02
+
+126.48+7.11
+−4.42
+
+64.2+6.8
+−9.6
+
+17.62+0.28
+−0.18
+
+46.90 +0.36
+−0.28
+
+0.15 ±0.02
+
+54.66+3.51
+−4.83
+
+110.5+1.2
+−2.1
+
+−17.22+0.17
+−0.18
+
+101.85 +0.08
+−0.07
+
+0.44 ±0.05
+
+62.29+5.14
+−4.61
+
+2.1+0.5
+−0.1
+
+[1000]
+
+[1000]
+
+[1000]
+
+[1000]
+
+[1000]
+
+[0.0]
+
+[0.0]
+
+[0.2]
+
+[34.0]
+
+[3.16]
+
+[-11.10]
+
+0.22 ±0.02
+
+103.56+7.09
+−7.95
+
+3.95+0.57
+−0.89
+
+92.08+6.50
+−7.91
+
+[0.15]
+
+[0.15]
+
+43.17+1.34
+−1.02
+
+52.48+2.17
+−0.89
+
+L∗ elliptical galaxy
+
+–
+
+–
+
+–
+
+–
+
+1015+7
+−6
+
+331+13
+−9
+
+286+24
+−16
+
+688+9
+−17
+
+263+8
+−7
+
+284±8
+
+152+2
+−1
+
+148+2
+−3
+
+Table 4. PIEMD parameters inferred for the ﬁve dark matter clumps considered in the optimization procedure. Clumps #6 and #7 are galaxy-scale halos
+that were modeled separately from scaling relations, to respectively model the BCG of the cluster as well as the cluster member responsible for the four
+multiple-images of SN Refsdal. Coordinates are given in arcseconds with respect to α = 177.3987300, δ = 22.3985290. The ellipticity e is the one of the mass
+distribution, in units of (a2 + b2)/(a2 − b2). The position angle θ is given in degrees and is deﬁned as the direction of the semi-major axis of the iso-potential,
+counted counterclockwise from the horizontal axis (being the R.A. axis). Error bars correspond to the 1σ conﬁdence level. Parameters in brackets are not
+optimized. Concerning the scaling relations, the reference magnitude is magF814W = 20.65.
+
+Table 3. Catalogue of foreground galaxies detected with VLT/MUSE ob-
+servations.
+
+this precision, yielding instead typical image-plane RMS values be-
+tween 0.2(cid:48)(cid:48) and a few arc seconds. In this work, we use a positional
+uncertainty of 0.5(cid:48)(cid:48).
+
+ID
+
+75
+76
+77
+78
+
+R.A.
+
+Decl.
+
+zspec
+
+177.40410
+177.39331
+177.39704
+177.39088
+
+22.392153
+22.399581
+22.404475
+22.398611
+
+0.3123
+0.4199
+0.424
+0.477
+
+of diﬀerent models meeting the observational constraints is quanti-
+ﬁed by the χ2 and RMS statistics.
+
+For the PIEMD models added to parameterize cluster mem-
+bers (mass perturbers) we ﬁx the PIEMD parameters (center, ellip-
+ticity and position angle) at the values measured from the cluster
+light distribution (see, e.g. Kneib et al. 1996; Limousin et al. 2007;
+Richard et al. 2011) and assume empirical scaling relations to re-
+late the dynamical PIEMD parameters (velocity dispersion and cut
+radius) to the galaxies’ observed luminosity (Richard et al. 2014).
+For an L∗ galaxy, we optimize the velocity dispersion between 100
+and 250 km s−1 and force the cut radius to less than 70 kpc to ac-
+count for tidal stripping of galactic dark-matter haloes (Limousin
+et al. 2007, 2009; Natarajan et al. 2009; Wetzel & White 2010).
+
+Finally, one more parameter that is ﬁxed, but plays an impor-
+tant role in the χ2 computation, is the positional uncertainty of the
+multiple images. Indeed, it will aﬀect the derivation of errors, i.e. a
+smaller positional uncertainty will generally result in a smaller sta-
+tistical uncertainty, thus leading to an underestimation of the statis-
+tical error budget.
+
+With HFF-like data, the average astrometric precision of the
+image position is of the order of 0.05(cid:48)(cid:48). However, parametric clus-
+ter lens models often fail to reproduce or predict image positions to
+
+c(cid:13) 2015 RAS, MNRAS 000, 1–14
+
+4.2 Results
+
+Our mass model includes ﬁve cluster-scale haloes, referred to as
+#1, #2, #3, #4 and #5 in Table 4. An additional cluster-scale halo,
+South East of the BCG, was requested by the model compare to the
+pre-HFF mass model presented in Richard et al. (2014). Indeed, its
+necessity was conﬁrmed by both a smaller RMS value and a better
+reduced χ2 compare to a four cluster-scale halos mass model. Dur-
+ing the optimisation process, the position of these large-scale halos
+is allowed to vary within 20(cid:48)(cid:48) of the associated light peak. In addi-
+tion, we limit the ellipticity, deﬁned as e = (a2 + b2)/(a2 − b2), to
+values below 0.7, while the core radius and the velocity dispersion
+are allowed to vary between 1(cid:48)(cid:48) and 35(cid:48)(cid:48), and 100 and 2 000 km s−1,
+respectively. The cut radius, by contrast, is ﬁxed at 1 000 kpc, since
+strong-lensing data alone do not probe the mass distribution on such
+large scales. In addition to these ﬁve cluster-scale dark-matter ha-
+los, we include galaxy-scale perturbations induced by 216 probable
+cluster members (Richard et al. 2014) by assigning a galaxy-scale
+halo to each of them. Finally, we add two galaxy-scale halos to
+model the BCG of the cluster (Clump #6 in Table 4), as well as
+the cluster member lensing SN Refsdal (Clump #7 in Table 4). Us-
+ing the set of the most securely identiﬁed multiply imaged galaxies
+described in Sect. 3 and shown in Fig. 1, we optimise the free pa-
+rameters of this mass model using the publicly available Lenstool
+software5.
+
+The best-ﬁt model optimised in the image plane predicts im-
+age positions that agree with the observed positions to within an
+
+5 http://projects.lam.fr/repos/lenstool/wiki
+
+8
+
+Jauzac et al. 2015
+
+Figure 7. Evolution of the surface area in the image plane within which
+multiple images are observed, as a function of the source redshift. Com-
+pared to the ﬁve other Frontier Fields clusters, MACSJ1149 features a much
+smaller multiple-image region at low redshifts.
+
+RMS of 0.91(cid:48)(cid:48), a value that is slightly higher than the one published
+in Richard et al. (2014). This increase is in part caused by the high
+individual χ2 value of image 3.3 (χ2 = 13), which we nonetheless
+consider a robust identiﬁcation (see discussion in Sect.3).
+
+The parameters describing our best-ﬁt mass model are listed
+in Table 4. Although allowed to vary within 20(cid:48)(cid:48) of their asso-
+ciated light peak, the ﬁnal positions of the ﬁve cluster-scale ha-
+los predicted by the model coincide much more closely with the
+light peaks. In order to integrate the mass map within annuli, we
+choose the location of the overall BCG, i.e., α = 177.3987300, δ =
+22.3985290 degrees, as the cluster centre. The two-dimensional
+(cylindrical) mass within 80(cid:48)(cid:48) is then M(R<500 kpc) = (6.29 ±
+0.03) × 1014 M(cid:12), slightly lower than the previous result by Smith
+et al. (2009) of M(R<500 kpc) = (6.7 ± 0.4) × 1014 M(cid:12), but within
+their error bars. The mass of (1.71 ± 0.20) × 1014 M(cid:12) within a
+30(cid:48)(cid:48) (∼200 kpc) aperture reported by Zitrin et al. (2011) agrees
+with the value from our new mass model of M(R<200 kpc) =
+(1.840 ± 0.006) × 1014 M(cid:12).
+
+5 DISCUSSION
+
+5.1 The lensing power of MACSJ1149
+
+The small number of 22 multiple-imaged systems identiﬁed in
+MACSJ1149 from HFF data is surprising, compared to the 34 and
+51 systems found in equally deep HST images of the ﬁrst two HFF
+clusters, Abell 2744 and MACSJ0416. Because of this discrepancy,
+we carefully examined the MUSE data for several sources at z ∼ 1
+within the central arcmin2 of the cluster core, but conﬁrmed all of
+them to be single images, as predicted.
+
+In an attempt to ﬁnd the root cause of the relatively modest
+lensing power of MACSJ1149, we compute the surface area in the
+image plane within which we expect multiple images (Fig. 7). For
+all six Frontier Field clusters we ﬁnd this area to increase with
+source redshift, starting at an average value of ∼1 arcmin2 at z = 1
+and reaching values around 2.5 arcmin2 at z = 7, although with
+large cluster-to-cluster diﬀerences.
+
+Whereas the overall shape of these curves is very similar for
+
+four of the six HFF clusters, to the extent that they are essentially
+scaled versions of each other, two systems exhibit a diﬀerent trend
+with redshift. For both MACSJ1149 and MACSJ0717, the curves
+in Fig. 7 start at a very small surface area at z = 1 (∼ 0.1 arcmin2)
+but then rise much more steeply than those of the remaining HFF
+targets. Part of this eﬀect is due to their being at higher redshift
+(z = 0.55), causing their corresponding critical surface mass den-
+sity to decrease more rapidly with increasing source redshift. We
+argue that the trend is also rooted in both of these clusters sharing
+a similar morphology or, more generally, in the fact that extremely
+disturbed clusters (both MACSJ0717 and MACSJ1149 consist of
+more than three subclusters) are at a disadvantage for lensing back-
+ground sources at low redshift, owing to disjoint critical lines, but
+gain on less complex systems at higher source redshifts at which the
+critical lines for strong lensing join. Being the much more massive
+system, MACSJ0717 features a larger image-plane area throughout
+though, thereby “catching up” much faster than the less massive
+MACSJ1149.
+
+In conclusion, we trace the small number of multiple images
+in MACSJ1149 to the system’s complex and extended morphology
+which leads to the smallest area for multiple imaging of sources at
+redshifts z < 3 among all Hubble Frontier Fields target clusters.
+Following the same argument, we expect the two ﬁnal HFF targets,
+Abell 370 and AS1063, to produce much larger number of multiple
+images when they are observed with HST in the coming months.
+
+5.2 SN Refsdal
+
+5.2.1 Diﬀerent studies of SN Refsdal
+
+Since the discovery of SN Refsdal, three new pre-HFF strong-
+lensing analyses have attempted to precisely compute the time de-
+lays between the multiple images of the SN (Sharon & Johnson
+2015; Oguri 2015; Diego et al. 2015), using both parametric and
+free-form approaches. While this paper was under review, three
+additional strong-lensing groups have presented predictions using
+both HFF, VLT, and Keck data (Treu et al. 2015; Grillo et al. 2015;
+Kawamata et al. 2015)6. All the models predict six multiple im-
+ages of SN Refsdal in total: one in each of the three multiple im-
+ages of the face-on spiral (1.1, 1.2. 1.3), with the one in image 1.1
+quadruply imaged by a cluster member, resulting in four separate
+components named S1, S2, S3 and S4, as shown in Fig. 8.
+
+Sharon & Jonhson (2015), Diego et al. (2015) & Oguri (2015):
+Using Lenstool, Sharon & Johnson (2015) investigated diﬀerent
+models and found the order of appearance for the four images
+within image 1.1 to be S3-S1-S2-S4. As for the remaining two im-
+ages of SN Refsdal, Sharon & Johnson (2015) claim that the ﬁrst
+one, SY, appeared in image 1.3 ∼12 years ago, while the sixth im-
+age, SX, is predicted to appear in image 1.2 in September 2015. By
+contrast, Oguri (2015), using the public code glaﬁc (Oguri 2010),
+arrives at a diﬀerent order of appearance of the SN within image
+1.1, namely S1-S3-S2-S4 (see Table 5), claims that SY appeared
+∼17 years ago, and predicts that SX is to appear in November 2015.
+Finally, Diego et al. (2015), using a free-form mass modeling tech-
+nique, WSLAP+ (Diego et al. 2005, 2007; Sendra et al. 2014), do
+not address the order of appearance of images S1, S2, S3 and S4,
+
+6 Another recent analysis focuses on the environment provided the host of
+SN Refsdal (Karman et al. 2015), a subject that is outside the scope of our
+paper.
+
+c(cid:13) 2015 RAS, MNRAS 000, 1–14
+
+1234567Redshift012345Image plane area (arcmin2)MACS1149A2744MACS0416MACS0717AS1063A370SN Refsdal in MACSJ1149.6+2223
+
+9
+
+Component
+
+S1
+
+S2
+
+S3
+
+S4
+
+SX
+
+SY
+
+R.A.
+Dec.
+µ
+
+177.39823
+22.395628
+22.4±2.0
+
+177.39771
+22.395789
+18.9±2.3
+
+177.39737
+22.395542
+19.7±1.7
+
+177.39780
+22.395172
+9.2±0.8
+
+177.40024
+22.396811
+4.3±0.1
+
+∆tCAT S
+∆tCAT S −src
+
+∆tS haron+15
+∆tOguri+15
+∆tDiego+15
+
+∆tDie−a
+∆tGri−g
+∆tOgu−g
+∆tOgu−a
+∆tS ha−g
+∆tS ha−a
+∆tZit−g
+
+0.0
+0.0
+
+0.0
+0.0
+–
+
+0.0
+0.0
+0.0
+0.0
+0.0
+0.0
+0.0
+
+90±17
+-0.8±1.6
+
+30±35
+8.1±1.6
+
+-60±41
+0.2±0.4
+
+2.0
+9.2
+–
+
+-17±19
+10.6+6.2
+−3.0
+8.7± 0.7
+9.4±1.1
+6+6
+−5
+8+7
+−5
+-161±97
+
+-5.0
+5.2
+–
+
+-4.0±27
+4.8+3.2
+−1.8
+5.1±0.5
+5.6±0.5
+-1+7
+−5
+5+10
+−7
+-149±113
+
+7.0
+22.5
+–
+
+74±43
+25.9+8.1
+−4.3
+18.8±1.7
+20.9±2.0
+12+3
+−3
+17+6
+−5
+82±51
+
+449±45
+361±42
+
+237+37
+−50
+357.1
+376±25
+
+262±55
+361+19
+−27
+311±24
+336±21
+277+11
+−21
+233+46
+−13
+224±262
+
+177.4038
+22.402149
+3.6±0.1
+
+-4654±358
+-5332±357
+
+-4251+369
+−373
+-6193.5
+-3325±763
+
+-4521±524
+-6183+160
+−145
+-5982±287
+-6239±224
+-5016+281
+−15
+-4860+126
+−305
+-7665±730
+
+Table 5. Time delays obtained for each image of SN Refsdal, given in days. The ﬁrst part of the Table gives the coordinates of the SN images used in this
+analysis, with the ones for SX and SY predicted by our best-ﬁt mass model. We also quote the magniﬁcation predicted by our best-ﬁt mass model, µ. The
+second part of the Table presents the time delays we measured with our analysis, following the two diﬀerent methods presented in Sect. 5, ∆tCAT S and
+∆tCAT S −src. We then give the results obtained by pre-HFF analysis in the third portion of the Table: Sharon & Johnson (2015), ∆tS haron+15, Oguri (2015),
+∆tOguri+15, and Diego et al. (2015), ∆tDiego+15. And ﬁnally the fourth and ﬁnal section of the table lists the results obtained with the most recent HFF analysis
+presented by Treu et al. (2015): Diego’s model, ∆tDie−a, Grillo et al. (2015) model, ∆tGri−g, Kawamata et al. (2015) models, ∆tOgu−g and ∆tOgu−a, Sharon’s
+models, ∆tS ha−g and ∆tS ha−a, and Zitrin’s model, ∆tZit−g. for comparison with our analysis, ∆tCAT S and ∆tCAT S −src.
+
+Figure 8. Zoom on System #1, with orange circles highlighting the 24 components of the spiral used for our mass model. Left panel: Image 1.1 with the
+Einstein Cross formed by images S1, S2, S3, and S4 of SN Refsdal. Middle panel: Image 1.2 with the predicted location of SN Refsdal in red, SX, predicted
+to appear ∼1.8 years after S1, i.e. in January 2016. Right panel: Image 1.3 with the predicted position of SN Refsdal, SY, where it would have been visible ∼
+11.5 years ago following the predictions from our model.
+
+but conclude that SY appeared ∼9 years ago and predict SX to ap-
+pear between November 2015 and January 2016.
+
+Treu et al. (2015), Kawamata et al. (2015) & Grillo et al. (2015):
+More recently, Treu et al. (2015) presented predictions based on
+seven diﬀerent mass models. These new measurements were made
+using HFF mass models, and taking advantage of new spectroscopy
+coming from HST with GLASS data (PI: Treu), as well as the
+complete MUSE DDT program 294.A-5032(A) (PI: Grillo; for our
+model we only had access to 4 hours of the data as detailed in
+Sect. 2). The teams involved in this analysis (Sharon, Zitrin, Diego,
+Grillo and Oguri) identiﬁed independently new multiple image sys-
+
+c(cid:13) 2015 RAS, MNRAS 000, 1–14
+
+tems and then voted to select the most secured identiﬁcations fol-
+lowing the same criteria as presented in Wang et al. (2015). While
+our two analyses were done separately, we ﬁnd a good agreement in
+terms of new multiple-image systems: system #22, system #29, sys-
+tem #21, system #15, system #16, system #31, system #17, system
+#18 and system #34 correspond respectively to system #110, sys-
+tem #21, system #24, system #26, system #27, system #28, system
+#203, system #204, and system #205 in Treu et al. (2015). There
+is no clear discrepancy between our spectroscopic measurements
+and the ones presented in Treu et al. (2015) and Grillo et al. (2015).
+However, looking at the cluster members, Treu et al. (2015) present
+170 spectroscopic identiﬁcations while we only identify 57 (see
+
+S4S3S2S1SXSY10
+
+Jauzac et al. 2015
+
+Sect. 2). Grillo et al. (2015) independently presented their strong-
+lensing mass model, as well as the complete dataset they obtained
+with the MUSE program 294.A-5032(A). Kawamata et al. (2015)
+also presented the Oguri’s models in their paper. The results did not
+change from the ones presented in Treu et al. (2015).
+
+The ﬁve teams involved in the Treu et al. (2015) SN Refsdal
+analysis predicted time delays for images S1, S2, S3 and S4, with
+diﬀerent order of appearance and occurring within 12 and up to
+240 days, depending on the model. The appearance of SX at peak
+brightness is predicted during the ﬁrst half of 2016, while SY would
+have appeared between 1994 and 2004. However, magniﬁcation es-
+timates from the diﬀerent models suggest that it would have been
+too faint to be observable from archival data.
+
+We refer the reader to Table 5 for the exact values of the time
+delays predicted by these eight diﬀerent measurements, as well as
+the ones found by our analysis. For consistency, we use in all cases
+S1 as our reference and adopt the established naming convention
+(SX and SY) for the two other images of SN Refsdal in image 1.2
+and 1.3, respectively. We note that some of the teams in Treu et al.
+(2015) had two sets of predictions, as they run diﬀerent mass mod-
+els using two diﬀerent sets of multiple images (‘gold’, the most
+secured ones, and ‘all’, for the gold images plus a subset of less
+secured identiﬁcations). In Table 5 we keep the same notation as in
+Treu et al. (2015) to limit confusion.
+
+5.2.2 Predictions for S1, S2, S3, and S4
+
+Our modelling eﬀorts do not use time delays as constraints but,
+as explained in Sect. 3, we include the position of the observed
+four images of SN Refsdal, as well as an independent PIEMD to
+model the cluster member responsible for the lensing of the spiral
+arm of image 1.1, and hence for the formation of the Einstein cross
+images. The delays between the appearance of the four images S1
+to S4 depend on the slope of the mass proﬁle at the location of the
+lensing galaxy. The current uncertainties in the delays computed by
+various teams are caused by the fact that this slope can ultimately
+only be constrained by the highly unlikely detection of the central,
+ﬁfth image of the SN, which is demagniﬁed by the galaxy lens.
+
+The arrival-time surface for a light ray emitted by a source, at
+the location (cid:126)β, traversing the cluster at the location (cid:126)θ, is written as
+(e.g., Schneider 1985) :
+τ((cid:126)θ, (cid:126)β) = 1 + zcl
+
+((cid:126)θ − (cid:126)β)2 − φ((cid:126)θ)
+
+(1)
+
+(cid:35)
+
+(cid:34)
+
+DOLDOS
+DLS
+
+1
+2
+
+c
+
+where (cid:126)θ and (cid:126)β are the image and the source plane positions re-
+spectively, zcl is the redshift of the cluster, DOL, DOS and DLS are
+the cosmological distances between the observer and the lens, the
+observer and the source, and the lens and the source respectively.
+Finally, φ((cid:126)θ) represents the gravitational potential of the cluster.
+The measurement of the time delays is thus highly sensitive to the
+source plane position.
+
+Lenstool measures time delays following this equation. How-
+ever, for the diﬀerent multiple images of a system, the model will
+predict a slightly diﬀerent position of the source.Lenstool time
+delay-measurement for one system will thus be based on a slightly
+diﬀerent source position for each image, thus giving diﬀerent de-
+parture times. The entries ∆tCAT S in Table 5 correspond to these
+measurements.
+
+To overcome this issue we repeated the measurements follow-
+ing Eq. 1 but using an analytical method. Indeed, while the image
+positions are taken as the observed ones (or model predicted ones
+
+for SX and SY), we set (cid:126)β to the barycenter of the predicted source
+positions for the four SN images, in order to establish the same
+departure location and time in all measurements. Finally, the grav-
+itational potential is derived using Lenstool, and then inserted in
+the equation. This ‘analytical’ way of measuring arrival-time sur-
+faces (as opposed to the numerical approach taken in our previsou
+use of Lenstool) has proven to be much more accurate. The entries
+∆tCAT S −src in Table 5 correspond to these measurements.
+
+Depending on the method used to measure the time delays, our
+best-ﬁt mass model leads to an order of appearance in image 1.1 of
+S4-S1-S3-S2, and S2-S1-S4-S3 following either the Lenstool im-
+plementation or the analytical method respectively. The Lenstool
+method predicts considerably longer delays of ∆tS 2−S 1 = 90 ±
+17 days, ∆tS 3−S 1 = 30 ± 35 days, and ∆tS 4−S 1 = −60 ± 41 days,
+compared to ∆tS 2−S 1 = −0.6±1.6 days, ∆tS 3−S 1 = 8.1 ± 1.6 days,
+and ∆tS 4−S 1 = 0.2 ± 0.4 days obtained with the ‘analytical’ ver-
+sion. These last measurements are much more realistic, consider-
+ing the measurements obtained through the detailed study of the
+SN itself by Kelly et al. (2015) (also presented in Treu et al. 2015).
+Our best-ﬁt analysis concludes that the four images appeared within
+∼5 months following our ﬁrst measurements, and within ∼10 days
+following the analytical measurements (see Table 5, ∆tCAT S and
+∆tCAT S −src respectively). The error bars are derived while measur-
+ing the time surfaces for each MCMC realizations.
+
+Most of the models (Oguri 2015; Sharon & Johnson 2015;
+Treu et al. 2015; Grillo et al. 2015; Kawamata et al. 2015) claim
+diﬀerent orders of appearance for images S1–S4, which is puz-
+zling in particular with regard to Sharon & Johnson (2015) and
+HFF Sharon’s model presented in Treu et al. (2015) who use the
+same software as us, Lenstool.
+
+There are important diﬀerences between their analysis and
+ours. The ﬁrst one lies in the number of multiple images used, as
+Sharon & Johnson (2015) work with a pre-HFF mass model and the
+list of multiple images published in Johnson et al. (2014), and Treu
+et al. (2015) use a diﬀerent set of HFF multiple images. We initially
+thought that an important diﬀerence between our analysis and the
+one by Sharon & Johnson (2015) resided in a mis-identiﬁed spec-
+troscopic redshift of z=2.497 for system #3, as published in Smith
+et al. (2009), whereas we revised this value to z=3.128 using the
+recent MUSE observation of this system (also conﬁrmed by Treu
+et al. 2015; Grillo et al. 2015). Running the pre-HFF strong-lensing
+model of Richard et al. (2014) with either redshift of system #3, we
+ﬁnd the erroneous earlier redshift to result in time delays for images
+S1-S4 that are much smaller than those obtained with the new red-
+shifts and either the pre-HFF or our latest lens model. This trend
+is observed using both time surface’s measurement methods. We
+thus concluded that this mis-identiﬁed redshift had a major impact
+on the time delay values and could be responsible for the bulk of
+the discrepancy between our ﬁndings and those of Sharon & John-
+son (2015). However, while this paper was under review, Treu et al.
+(2015) presented a revised version of Sharon’s model using the cor-
+rect redshift for system #3, and their results did not change.
+
+The large diﬀerences between all the recent models’ estima-
+tions still remain puzzling. We thus investigated other sources of
+error, and identiﬁed another systematic eﬀect that has a signiﬁcant
+impact on the values of the time delays for S1–S4: the value of rcore
+that characterises the shape of gravitational potential of the ellipti-
+cal galaxy lensing SN Refsdal in image 1.1 (Clump #7 in Table 4).
+The choice of rcore aﬀects both the order of appearance of the four
+images and the associated time delays while using the Lenstool
+implementation. Indeed, we estimate this eﬀect to produce changes
+in ∆tS i−S 1 (i=2, 3, 4) of up to 30 days. Moreover, while the ‘analyt-
+
+c(cid:13) 2015 RAS, MNRAS 000, 1–14
+
+ical’ method does not show any diﬀerences in time delay values,
+it however changes the order of appearance of the diﬀerent images
+S1-S4. The best-ﬁt parameters obtained for this galaxy are listed in
+Table 4 (Clump #7). However, they should be taken with caution as
+explained above.
+
+Although the same sources of systematic errors were iden-
+tiﬁed using both methods, we revise our conclusions, and link
+the discrepancy between our ﬁrst measurements and other inde-
+pendent analysis to the incorrect method that is implemented in
+Lenstool at the moment. We thus consider our second measure-
+ments, ∆tCAT S −src, more accurate. A modiﬁcation of the algorithm
+will be implemented according to the conclusions of this paper, and
+will be made public early 2016.
+
+5.2.3 Predictions for SX and SY
+
+All strong-lensing analyses conducted so far (including ours) agree
+that the SN image SY was the ﬁrst one to appear in image 1.3, from
+our analysis ∼15 years before S1, i.e., ∆tSY−S1 = (−5332±357) days
+(and ∼13 years ago, ∆tSY−S1 = (−4654 ± 358) days, following the
+Lenstool prediction). With our ﬁrst measurement, the appearance
+of image SX in image 1.2 is expected ∼1 years after S1 (∆tSX−S1 =
+449 ± 45 days) and ∼12 months after S2, i.e., in November 2015,
+assuming that S2 appeared in November 2014 (Kelly et al. 2015).
+Our analytical measurement predicts an appearance of SX ∼1 year
+after S1 (with an appearance of S1, S2, S3 and S4 with 8 days), in
+November 2015 plus/minus 1 month, and thus also agreeing with
+the Lenstool prediction.
+
+We can also compare our results regarding the time delays
+between SX and SY with those of Sharon & Johnson (2015),
+Oguri (2015) and Diego et al. (2015). Our initial measurement pre-
+dicts ∆tSX−SY = (5103 ± 361) days, ∼14 years, which is in good
+agreement (within the uncertainty of ∼1 year) with the value of
+∆tSX−SY = 4488 days, ∼12.5 years, reported by Sharon & John-
+son (2015), and close to the value found by Diego et al. (2015) of
+∆tSX−SY = 3701 days, ∼10 years (with an uncertainty of ∼2 years).
+Our analytical value of ∆tSX−SY = (5693 ± 361) days, ∼16 years,
+remains in really good agreement with the Lensool measurement.
+All of these values are smaller than that of ∆tSX−SY = 6650.6 days,
+∼18 years, published in Oguri (2015).
+
+To summarise, considering the statistical and systematic er-
+rors, we conclude that image SX of SN Refsdal should appear be-
+tween November 2015 and January 2016, in good agreement with
+predictions from Diego et al. (2015) and Grillo et al. (2015).
+
+Although all the models discussed here make diﬀerent predic-
+tions for the appearance of image SX, they agree that it will occur
+in the suﬃciently near future to render the event observable with a
+reasonable investment of time and resources. However, ultimately
+only photometric follow-up observations of this source will reveal
+the true time delays. Once obtained, such measurements can be in-
+cluded as constraints in the mass models, enabling us to determine
+to unprecedented precision the parameters of the lensing galaxy
+(Clump #7), and to study the stellar and dark matter distribution
+within it, thereby also adding greatly to our eﬀorts to reveal the
+nature of dark matter (Massey et al. 2015).
+
+While this manuscript of this paper was under review, image
+SX of SN Refsdal was detected in HST/WFC3 images inobser-
+vations taken in December 2015, making our predictions correct
+(Kelly et al. 2015), in excellent agreement with our predictions.
+
+c(cid:13) 2015 RAS, MNRAS 000, 1–14
+
+SN Refsdal in MACSJ1149.6+2223
+
+11
+
+ACKNOWLEDGMENTS
+
+The authors thank Prof. Keren Sharon for fruitful discussions, and
+important suggestions. MJ thank Prof. Tommaso Treu for his com-
+ments and suggestions. This work was supported by the Science
+and Technology Facilities Council [grant number ST/L00075X/1
+& ST/F001166/1] and used the DiRAC Data Centric system
+at Durham University, operated by the Institute for Computa-
+tional Cosmology on behalf of the STFC DiRAC HPC Facility
+(www.dirac.ac.uk [www.dirac.ac.uk]). This equipment was funded
+by BIS National E-infrastructure capital grant ST/K00042X/1,
+STFC capital grant ST/H008519/1, and STFC DiRAC Operations
+grant ST/K003267/1 and Durham University. DiRAC is part of
+the National E-Infrastructure. JR acknowledges support from the
+ERC starting grant CALENDS and the CIG grant 294074. MJ, EJ,
+and ML acknowledge the M´esocentre d’Aix-Marseille Universit´e
+(project number: 15b030). This study also beneﬁted from the fa-
+cilities oﬀered by CeSAM (CEntre de donn´eeS Astrophysique de
+Marseille (http://lam.oamp.fr/cesam/). MJ thanks K. Sharon
+for fruitful discussions. ML acknowledges the Centre National de
+la Recherche Scientiﬁque (CNRS) for its support. EJ and ML ac-
+knowledge the Centre National d’Etude Spatial (CNES) for its sup-
+port. KK acknowledges postgraduate funding from the NRF/SKA
+SA Project. JPK acknowledges support from the ERC advanced
+grant LIDA. PN acknowledges support from the National Science
+Foundation via the grant AST-1044455, AST-1044455, and a the-
+ory grant from the Space Telescope Science Institute HST-AR-
+12144.01-A. RM is supported by the Royal Society. Based on ob-
+servations made with the NASA/ESA Hubble Space Telescope, ob-
+tained from the data archive at the Space Telescope Science In-
+stitute. STScI is operated by the Association of Universities for
+Research in Astronomy, Inc. under NASA contract NAS 5-26555.
+Based on observations made with the European Southern Obser-
+vatory Very Large Telescope (ESO/VLT) at Cerro Paranal, under
+programme ID 294.A-5032 (PI: Grillo). Based on observations ob-
+tained at the Gemini Observatory, which is operated by the Asso-
+ciation of Universities for Research in Astronomy, Inc., under a
+cooperative agreement with the NSF on behalf of the Gemini part-
+nership (as at the date that the data described in this article were
+obtained): the National Science Foundation (United States), the
+Science and Technology Facilities Council (United Kingdom), the
+National Research Council (Canada), CONICYT (Chile), the Aus-
+tralian Research Council (Australia), Minist´erio da Ciˆencia, Tec-
+nologia e Inovac¸ ˜ao (Brazil) and Ministerio de Ciencia, Tecnolog´ıa
+e Innovaci´on Productiva (Argentina). MJ thanks the Department of
+Astronomy at Yale University for their hospitality.
+
+REFERENCES
+
+Allen C. W., 1976, Astrophysical Quantities
+Bacon R., Accardo M., Adjali L., Anwand H., Bauer S., Biswas
+I., Blaizot J., Boudon D., Brau-Nogue S., Brinchmann J., Caillier
+P., Capoani L., Carollo C. M., Contini T., Couderc P., [...] 2010,
+in Society of Photo-Optical Instrumentation Engineers (SPIE)
+Conference Series Vol. 7735 of Society of Photo-Optical In-
+strumentation Engineers (SPIE) Conference Series, The MUSE
+second-generation VLT instrument. p. 8
+Bertin E., Arnouts S., 1996, A&A, 117, 393
+Bolzonella M., Miralles J.-M., Pell´o R., 2000, A&A, 363, 476
+Bouchet P., Lequeux J., Maurice E., Prevot L., Prevot-Burnichon
+M. L., 1985, A&A, 149, 330
+
+12
+
+Jauzac et al. 2015
+
+Chelouche D., Koester B. P., Bowen D. V., 2007, ApJ, 671, L97
+Coe D., Bradley L., Zitrin A., 2015, ApJ, 800, 84
+Diego J. M., Broadhurst T., Chen C., Lim J., Zitrin A., Chan B.,
+Coe D., Ford H. C., Lam D., Zheng W., 2015, ArXiv e-prints
+Diego J. M., Sandvik H. B., Protopapas P., Tegmark M., Ben´ıtez
+
+N., Broadhurst T., 2005, MNRAS, 362, 1247
+
+Diego J. M., Tegmark M., Protopapas P., Sandvik H. B., 2007,
+
+MNRAS, 375, 958
+
+Ebeling H., Barrett E., Donovan D., Ma C.-J., Edge A. C., van
+
+Speybroeck L., 2007, ApJ, 661, L33
+
+Ebeling H., Edge A. C., Henry J. P., 2001, ApJ, 553, 668
+Ellis R., Santos M. R., Kneib J., Kuijken K., 2001, ApJ, 560, L119
+Goobar A., Paech K., Stanishev V., Amanullah R., Dahl´en T.,
+J¨onsson J., Kneib J. P., Lidman C., Limousin M., M¨ortsell E.,
+Nobili S., Richard J., Riehm T., von Strauss M., 2009, A&A, 507,
+71
+
+Grillo C., Karman W., Suyu S. H., Rosati P., Balestra I., Mercurio
+A., Lombardi M., Treu T., Caminha G. B., Halkola A., Rodney
+S. A., Gavazzi R., Caputi K. I., 2015, ArXiv e-prints
+
+Hoekstra H., Bartelmann M., Dahle H., Israel H., Limousin M.,
+
+Meneghetti M., 2013, Springer Science Review, 177, 75
+
+Jauzac M., Cl´ement B., Limousin M., Richard J., Jullo E., Ebeling
+H., Atek H., Kneib J.-P., Knowles K., Natarajan P., Eckert D.,
+Egami E., Massey R., Rexroth M., 2014, MNRAS, 443, 1549
+Jauzac M., Richard J., Jullo E., Cl´ement B., Limousin M., Kneib
+J.-P., Ebeling H., Natarajan P., Rodney S., Atek H., Massey R.,
+Eckert D., Egami E., Rexroth M., 2015, MNRAS, 452, 1437
+
+Johnson T. L., Sharon K., Bayliss M. B., Gladders M. D., Coe D.,
+
+Ebeling H., 2014, ApJ, 797, 48
+
+Karman W., Grillo C., Balestra I., Rosati P., Caputi K. I., Di
+Teodoro E., Fraternali F., Gavazzi R., Mercurio A., Prochaska
+J. X., Rodney S., Treu T., 2015, ArXiv e-prints
+
+Kawamata R., Oguri M., Ishigaki M., Shimasaku K., Ouchi M.,
+
+2015, ArXiv e-prints
+
+Kelly P. L., Rodney S. A., Treu T., Foley R. J., Brammer G.,
+Schmidt K. B., Zitrin A., Sonnenfeld A., Strolger L.-G., Graur
+O., Filippenko A. V., [...] 2015, Science, 347, 1123
+
+Kelly P. L., Rodney S. A., Treu T., Strolger L. G., Foley R. J., Jha
+S. W., Selsing J., Brammer G., Bradac M., Cenko S. B., Graham
+M. L., Graur O., [...] 2015, ArXiv e-prints
+
+Kneib J., Ellis R. S., Santos M. R., Richard J., 2004, ApJ, 607,
+
+697
+
+Kneib J.-P., Ellis R. S., Smail I., Couch W. J., Sharples R. M.,
+
+1996, ApJ, 471, 643
+Kneib J.-P., Natarajan P., 2011, A&A Rev., 19, 47
+Kovner I., Paczynski B., 1988, ApJ, 335, L9
+Limousin M., Kneib J.-P., Natarajan P., 2005, MNRAS, 356, 309
+Limousin M., Richard J., Jullo E., Kneib J. P., Fort B., Soucail
+G., El´ıasd´ottir A., Natarajan P., Ellis R. S., Smail I., Czoske O.,
+Smith G. P., Hudelot P., Bardeau S., Ebeling H., Egami E., Knud-
+sen K. K., 2007, ApJ, 668, 643
+
+Limousin M., Sommer-Larsen J., Natarajan P., Milvang-Jensen
+
+B., 2009, ApJ, 696, 1771
+
+Massey R., Kitching T., Richard J., 2010, Reports on Progress in
+
+Physics, 73, 086901
+
+Massey R., Williams L., Smit R., Swinbank M., Kitching T. D.,
+Harvey D., Jauzac M., Israel H., Clowe D., Edge A., Hilton M.,
+Jullo E., [...] 2015, MNRAS, 449, 3393
+
+Natarajan P., Kneib J.-P., Smail I., Treu T., Ellis R., Moran S.,
+
+Limousin M., Czoske O., 2009, ApJ, 693, 970
+
+Oguri M., 2010, PASJ, 62, 1017
+Oguri M., 2015, MNRAS, 449, L86
+
+Patel B., McCully C., Jha S. W., Rodney S. A., Jones D. O., Graur
+O., Merten J., Zitrin A., Riess A. G., Matheson T., Sako M.,
+Holoien T. W.-S., Postman M., Coe D., Bartelmann M., Balestra
+I., [...] 2014, ApJ, 786, 9
+
+Postman M., Coe D., Ben´ıtez N., Bradley L., Broadhurst T., Don-
+ahue M., Ford H., Graur O., Graves G., Jouvel S., Koekemoer
+A., Lemze D., Medezinski E., Molino A., Moustakas L., Ogaz
+S., [...] 2012, ApJS, 199, 25
+
+Prevot M. L., Lequeux J., Prevot L., Maurice E., Rocca-
+Volmerange B., 1984, A&A, 132, 389
+Quimby R. M., Oguri M., More A., More S., Moriya T. J.,
+Werner M. C., Tanaka M., Folatelli G., Bersten M. C., Maeda
+K., Nomoto K., 2014, Science, 344, 396
+
+Rau S., Vegetti S., White S. D. M., 2014, MNRAS, 443, 957
+Refsdal S., 1964, MNRAS, 128, 307
+Richard J., Jauzac M., Limousin M., Jullo E., Cl´ement B., Ebeling
+H., Kneib J.-P., Atek H., Natarajan P., Egami E., Livermore R.,
+Bower R., 2014, MNRAS, 444, 268
+
+Richard J., Jones T., Ellis R., Stark D. P., Livermore R., Swinbank
+
+M., 2011, MNRAS, 413, 643
+
+Richard J., Kneib J.-P., Ebeling H., Stark D. P., Egami E., Fiedler
+
+A. K., 2011, MNRAS, 414, L31
+
+Richard J., Patricio V., Martinez J., Bacon R., Cl´ement B., Weil-
+bacher P., Soto K., Wisotzki L., Vernet J., Pello R., Schaye J.,
+Turner M., Martinsson T., 2015, MNRAS, 446, L16
+
+Schmidt K. B., Treu T., Brammer G. B., Bradaˇc M., Wang X.,
+Dijkstra M., Dressler A., Fontana A., Gavazzi R., Henry A. L.,
+Hoag A., Jones T. A., Kelly P. L., Malkan M. A., Mason C.,
+Pentericci L., [...] 2014, ApJ, 782, L36
+Schneider P., 1985, A&A, 143, 413
+Schneider P., Ehlers J., Falco E. E., 1992, Gravitational Lenses.
+
+Berlin: Springer-Verlag
+
+Sendra I., Diego J. M., Broadhurst T., Lazkoz R., 2014, MNRAS,
+
+437, 2642
+
+Sharon K., Johnson T. L., 2015, ApJ, 800, L26
+Smith G. P., Ebeling H., Limousin M., Kneib J., Swinbank A. M.,
+Ma C., Jauzac M., Richard J., Jullo E., Sand D. J., Edge A. C.,
+Smail I., 2009, ArXiv e-prints
+
+Smith G. P., Kneib J.-P., Smail I., Mazzotta P., Ebeling H., Czoske
+
+O., 2005, MNRAS, 359, 417
+
+Soucail G., Mellier Y., Fort B., Mathez G., Cailloux M., 1988,
+A&A, 191, L19
+Treu T., Brammer G., Diego J. M., Grillo C., Kelly P. L., Oguri M.,
+Rodney S. A., Rosati P., Sharon K., Zitrin A., Balestra I., Bradac
+M., Broadhurst T., Caminha G. B., Halkola A., [...] 2015, ArXiv
+e-prints
+
+Verdugo T., Motta V., Mu˜noz R. P., Limousin M., Cabanac R.,
+Richard J., 2011, A&A, 527, A124
+Wang X., Hoag A., Huang K., Treu T., Bradac M., Schmidt K. B.,
+Brammer G. B., Vulcani B., Jones T. A., Ryan R., Amorin R.,
+Castellano M., Fontana A., Merlin E., Trenti M., 2015, ArXiv
+e-prints
+
+Wetzel A. R., White M., 2010, MNRAS, 403, 1072
+Yuan T.-T., Kewley L. J., Swinbank A. M., Richard J., Livermore
+
+R. C., 2011, ApJ, 732, L14
+
+Zheng W., Postman M., Zitrin A., Moustakas J., Shu X., Jouvel
+S., Høst O., Molino A., Bradley L., Coe D., Moustakas L. A.,
+Carrasco M., [...] 2012, Nature , 489, 406
+
+Zitrin A., Broadhurst T., 2009, ApJ, 703, L132
+Zitrin A., Broadhurst T., Barkana R., Rephaeli Y., Ben´ıtez N.,
+
+2011, MNRAS, 410, 1939
+
+c(cid:13) 2015 RAS, MNRAS 000, 1–14
+
+SN Refsdal in MACSJ1149.6+2223
+
+13
+
+continued from previous page
+
+ID
+
+R.A.
+
+Decl.
+
+zmodel
+
+mF814W
+
+µ
+
+29.2
+29.3
+31.1
+31.2
+31.3
+34.1
+34.2
+34.3
+
+∗1002.2
+∗1002.3
+∗1002.1
+∗1003.2
+∗1003.3
+∗1003.1
+∗1004.2
+∗1004.3
+∗1004.1
+∗1006.2
+∗1006.3
+∗1006.4
+∗1006.1
+∗1007.2
+∗1007.3
+∗1007.4
+∗1007.1
+∗1008.2
+∗1008.3
+∗1008.4
+∗1008.1
+∗1009.2
+∗1009.1
+∗1010.2
+∗1010.1
+∗1011.2
+∗1011.3
+∗1011.1
+∗1015.2
+∗1015.3
+∗1015.4
+∗1015.1
+∗1016.2
+∗1016.3
+∗1016.1
+∗1018.2
+∗1018.3
+∗1018.1
+∗1019.2
+∗1019.3
+∗1019.4
+∗1019.5
+∗1019.1
+∗1020.2
+∗1020.1
+∗1021.2
+∗1021.3
+∗1021.4
+∗1021.1
+∗1022.2
+∗1022.3
+∗1022.1
+∗1024.2
+∗1024.3
+∗1024.1
+∗1026.2
+∗1026.3
+∗1026.1
+∗1050.2
+∗1050.3
+∗1050.4
+∗1050.5
+∗1050.6
+∗1050.1
+
+177.40907
+177.40451
+177.40215
+177.39529
+177.40562
+177.4082
+177.41037
+177.40518
+
+177.39701
+177.39943
+177.40343
+177.39815
+177.39927
+177.40384
+177.39745
+177.39916
+177.40359
+177.39712
+177.39812
+177.39878
+177.40338
+177.39697
+177.39782
+177.39882
+177.40329
+177.39698
+177.39793
+177.39889
+177.40331
+177.397
+177.399
+177.39694
+177.39904
+177.39701
+177.39922
+177.40337
+177.39672
+177.39975
+177.40012
+177.40325
+177.39688
+177.39918
+177.40327
+177.39723
+177.39933
+177.40354
+177.39661
+177.39777
+177.39867
+177.39899
+177.40303
+177.39708
+177.40353
+177.39689
+177.39954
+177.39996
+177.40336
+177.39717
+177.39895
+177.40342
+177.39809
+177.39993
+177.40379
+177.39798
+177.39981
+177.40379
+177.39746
+177.39761
+177.39775
+177.39818
+177.40006
+177.40376
+
+22.390406
+22.386702
+22.396747
+22.391833
+22.402439
+22.388116
+22.390621
+22.386031
+
+22.396
+22.397424
+22.402419
+22.396344
+22.39683
+22.402564
+22.396397
+22.397214
+22.402653
+22.396717
+22.398247
+22.397625
+22.402867
+22.396636
+22.398464
+22.397711
+22.402831
+22.396553
+22.398418
+22.397639
+22.402786
+22.396444
+22.397625
+22.396394
+22.397611
+22.396197
+22.397472
+22.402556
+22.395372
+22.397489
+22.397203
+22.402008
+22.396211
+22.397589
+22.402581
+22.396208
+22.397303
+22.402533
+22.396308
+22.398783
+22.398219
+22.397869
+22.402681
+22.395722
+22.402236
+22.395761
+22.397483
+22.397094
+22.402289
+22.396508
+22.397503
+22.402764
+22.395853
+22.396714
+22.402193
+22.396011
+22.39676
+22.402317
+22.395653
+22.395778
+22.395217
+22.395681
+22.396691
+22.402033
+
+–
+–
+2.78 ± 0.03
+–
+–
+3.42 ± 0.08
+–
+–
+
+27.55 ± 0.04
+28.56 ± 0.08
+26.86 ± 0.03
+26.2 ± 0.02
+26.1 ± 0.02
+27.28 ± 0.04
+27.35 ± 0.05
+27.66 ± 0.06
+
+9.2±0.4
+4.0±0.1
+2.3±0.1
+3.2±0.1
+4.2±0.1
+4.3±0.5
+6.7±0.2
+4.0±0.1
+
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+
+continued on next page
+
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+
+Table 6. Multiply imaged systems considered in this work. + Thanks to the
+VLT/MUSE data, we were able to revise spectroscopic redshift of system
+#1, from z = 1.491 as in Smith et al. (2009) to z = 1.4888. ∗ indicate the
+diﬀerent components of system #1 we have used for our model, following
+the decomposition presented in Rau et al. (2014). We include the predicted
+magniﬁcation given by our model. Some of the magnitudes are not quoted
+because we were facing deblending issues that did not allow us to get reli-
+able measurements. The ﬂux magniﬁcation factors come from our best-ﬁt
+mass model, with errors derived from MCMC sampling.
+
+ID
+
+R.A.
+
+Decl.
+
+z
+
+mF814W
+
+µ
+
++1.1
++1.2
++1.3
+2.1
+2.2
+2.3
+3.1
+3.2
+3.3
+4.1
+4.2
+4.3
+5.1
+5.2
+5.3
+6.1
+6.2
+6.3
+7.1
+7.2
+7.3
+8.1
+8.2
+8.3
+9.1
+9.2
+9.3
+9.4
+10.1
+10.2
+10.3
+13.1
+13.2
+13.3
+14.1
+14.2
+15.1
+15.2
+15.3
+16.1
+16.2
+17.1
+17.2
+17.3
+18.1
+18.2
+18.3
+21.1
+21.2
+21.3
+22.1
+22.2
+22.3
+26.1
+26.2
+26.3
+29.1
+
+177.397
+177.39941
+177.40341
+177.40243
+177.40607
+177.40657
+177.39076
+177.39272
+177.40129
+177.39301
+177.3944
+177.40419
+177.39976
+177.40111
+177.40794
+177.39972
+177.40181
+177.40804
+177.39895
+177.40339
+177.40759
+177.39849
+177.39978
+177.40709
+177.40515
+177.40387
+177.40323
+177.40365
+177.40447
+177.40362
+177.4022
+177.4037
+177.40282
+177.40003
+177.39166
+177.39084
+177.40922
+177.41034
+177.40624
+177.40971
+177.40989
+177.40994
+177.41124
+177.40658
+177.40959
+177.41208
+177.40669
+177.39284
+177.39353
+177.39504
+177.40402
+177.40906
+177.40016
+177.40475
+177.40361
+177.40274
+177.40799
+
+22.396007
+22.397438
+22.402426
+22.389739
+22.392484
+22.392881
+22.39984
+22.403074
+22.407182
+22.396826
+22.400729
+22.40612
+22.393062
+22.393824
+22.403538
+22.392545
+22.393858
+22.402505
+22.391332
+22.394269
+22.401243
+22.394351
+22.395055
+22.40472
+22.426221
+22.427217
+22.427221
+22.426408
+22.425508
+22.425629
+22.426611
+22.397787
+22.396656
+22.393857
+22.403504
+22.402624
+22.387695
+22.388745
+22.385349
+22.387662
+22.387828
+22.387232
+22.388457
+22.384483
+22.38666
+22.389057
+22.384319
+22.41287
+22.413083
+22.412686
+22.3929
+22.400233
+22.39015
+22.425978
+22.426078
+22.426936
+22.389056
+
+1.4888
+1.4888
+1.4888
+1.894
+1.894
+1.894
+3.128
+3.128
+3.128
+2.95
+2.95
+2.95
+2.79
+2.79
+2.79
+2.66 ± 0.02
+–
+–
+2.79 ± 0.02
+–
+–
+2.81 ±0.02
+–
+–
+0.981
+0.981
+0.981
+0.981
+1.34 ± 0.01
+–
+–
+1.28 ± 0.01
+–
+–
+3.50 ± 0.06
+–
+3.58 ± 0.08
+–
+–
+2.65 ± 1.45
+–
+6.28 ± 0.17
+–
+–
+7.76 ± 0.16
+–
+–
+2.48 ± 0.04
+–
+–
+3.216
+3.216
+3.216
+1.49 ± 0.03
+–
+–
+2.76 ± 0.05
+
+22.46 ± 0.01
+23.39 ± 0.01
+22.73 ± 0.01
+26.46 ± 0.02
+24.4 ± 0.01
+24.49 ± 0.01
+23.36 ± 0.0
+22.77 ± 0.0
+24.01 ± 0.01
+25.41 ± 0.01
+–
+25.96 ± 0.03
+25.15 ± 0.01
+25.01 ± 0.01
+26.12 ± 0.02
+26.37 ± 0.03
+26.4 ± 0.02
+27.41 ± 0.06
+25.87 ± 0.02
+26.16 ± 0.02
+26.3 ± 0.03
+26.12 ± 0.02
+24.7 ± 0.04
+26.03 ± 0.02
+24.81 ± 0.01
+24.57 ± 0.01
+24.14 ± 0.0
+25.11 ± 0.01
+25.99 ± 0.01
+26.09 ± 0.01
+26.5 ± 0.02
+25.87 ± 0.03
+26.14 ± 0.02
+25.78 ± 0.02
+27.06 ± 0.03
+27.13 ± 0.03
+26.57 ± 0.03
+25.86 ± 0.02
+27.19 ± 0.04
+27.19 ± 0.04
+27.34 ± 0.04
+28.02 ± 0.06
+28.14 ± 0.07
+28.46 ± 0.08
+28.51 ± 0.23
+–
+–
+26.38 ± 0.02
+22.52 ± 0.06
+27.5 ± 0.04
+27.86 ± 0.05
+27.85 ± 0.05
+27.57 ± 0.05
+26.87 ± 0.03
+26.44 ± 0.03
+26.7 ± 0.02
+27.99 ± 0.07
+
+3.7±0.1
+4.1±0.1
+9.7±0.3
+4.6±0.1
+>20
+18.5±1.6
+10.5±0.4
+10.3±0.4
+4.3±0.1
+–
+7.4±0.2
+3.4±0.1
+15.5±0.7
+12.0±0.5
+4.3±0.1
+9.0±0.3
+8.1±0.3
+4.7±0.1
+4.5±0.1
+4.6±0.1
+4.2±0.1
+>20
+15.1±0.6
+3.2±0.1
+1.7±0.1
+4.9±1.3
+2.9±0.3
+3.4±0.3
+3.0±0.2
+2.2±0.1
+1.8±0.1
+>20
+11.9±0.6
+5.3±0.1
+13.4±0.7
+>20
+7.5±0.9
+>20
+3.8±0.1
+>20
+>20
+5.5±0.4
+15.2±1.1
+3.6±0.1
+3.4±0.2
+8.3±0.3
+3.6±0.1
+>20
+>20
+14.6±1.1
+5.0±0.2
+3.9±0.1
+4.1±0.1
+3.5±0.4
+4.0±0.5
+2.5±0.1
+10.7±2.0
+
+continued on next page
+
+c(cid:13) 2015 RAS, MNRAS 000, 1–14
+
+14
+
+Jauzac et al. 2015
+
+continued from previous page
+
+ID
+
+R.A.
+
+Decl.
+
+zmodel
+
+mF814W
+
+∗1052.2
+∗1052.3
+∗1052.4
+∗1052.5
+∗1052.6
+∗1052.1
+∗1192.2
+∗1192.3
+∗1192.4
+∗1192.1
+∗1211.2
+∗1211.1
+∗1222.2
+∗1222.3
+∗1222.1
+
+177.3973
+177.39792
+177.39803
+177.39817
+177.40016
+177.4037
+177.39664
+177.39796
+177.39904
+177.40305
+177.39699
+177.40346
+177.39698
+177.39938
+177.4034
+
+22.395383
+22.395725
+22.395239
+22.395478
+22.396758
+22.401947
+22.396236
+22.398689
+22.397833
+22.402631
+22.395628
+22.402172
+22.396081
+22.397461
+22.402461
+
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+1.4888
+
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+
+µ
+
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+–
+
+c(cid:13) 2015 RAS, MNRAS 000, 1–14
+
+

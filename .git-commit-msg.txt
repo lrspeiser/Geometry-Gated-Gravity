@@ -1,0 +1,1 @@
+viz: interactive_3d sphere modes and visibility toggles; fixed axes

@@ -1,0 +1,6 @@
+chore(fetch): add HFF downloader script; supports CATS/Williams/Caminha etc; auto-discovers versions; saves to data/frontier/hlsp
+
+- script: scripts/fetch_hff_models.py
+- usage:
+  python scripts/fetch_hff_models.py --clusters macs0416,macs0717,macs1149 --teams cats,williams --dry-run
+  python scripts/fetch_hff_models.py --clusters macs0416 --teams caminha:v4,cats:v4.1,williams:v4

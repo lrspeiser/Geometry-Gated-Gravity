@@ -1,0 +1,1 @@
+viz: add 2D ray visualization with Actual vs GR toggle and deflection labels; refactor 3D to shared utils

@@ -1,0 +1,1 @@
+viz: add gold-standard dropdown 2D viz; search frontier HLSP; add gold metadata

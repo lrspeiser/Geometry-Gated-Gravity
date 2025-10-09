@@ -1,0 +1,8 @@
+{
+  "rho_c_Msun_pc2": 10.0,
+  "m_shape": 4.0,
+  "a0_kms2_per_kpc": 3702.8130972,
+  "rmse_median": 24.61479782665323,
+  "mape_median": 0.37964897864951397,
+  "n_galaxies": 24
+}

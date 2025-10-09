@@ -28,7 +28,7 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 if SCRIPT_DIR not in sys.path:
     sys.path.insert(0, SCRIPT_DIR)
 
-from cupy_utils import get_array_module, trapz_cumsum
+from cupy_utils import xp as get_xp, xp_cumtrapz
 from geometric_exponent import GeometricExponentGravity
 
 
@@ -79,7 +79,7 @@ def compute_v_model_gpu(xp, R_kpc, Sigma_eff_kpc2):
     Se = xp.asarray(Sigma_eff_kpc2)
 
     # Enclosed mass (Msun)
-    M_enclosed = 2.0 * np.pi * trapz_cumsum(xp, Se * R, R)
+    M_enclosed = 2.0 * np.pi * xp_cumtrapz(Se * R, R)
 
     # Avoid divide by zero
     R_safe = xp.maximum(R, 1e-6)
@@ -125,7 +125,7 @@ def fit_galaxy_gpu(xp, galaxy_data, params):
 
 
 def run_gpu_grid_search_galaxies(profiles, param_grid, output_dir):
-    xp = get_array_module()
+    xp = get_xp()
     print(f"Using array backend: {'CuPy (GPU)' if xp.__name__ == 'cupy' else 'NumPy (CPU)'}")
 
     results = []

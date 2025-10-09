@@ -265,7 +265,21 @@ def main():
         ax.set_ylim(-span, span)
         ax.set_zlim(-span*0.5, span*0.5)
         if i == 1:
-            ax.legend(loc='upper right')
+            leg = ax.legend(loc='upper right', title='Ray bundles')
+            leg.get_frame().set_alpha(0.9)
+            # Add explicit colored annotations near representative rays (first in list)
+            try:
+                phl0 = paths_hl[len(paths_hl)//2]
+                pgr0 = paths_gr[len(paths_gr)//2]
+                # pick a point ~60% along post-lens segment for labeling
+                idx_h = int(0.6 * phl0.shape[0])
+                idx_g = int(0.6 * pgr0.shape[0])
+                ax.text(phl0[idx_h,0], phl0[idx_h,1], phl0[idx_h,2], 'Actual', color='cyan',
+                        fontsize=10, bbox=dict(boxstyle='round,pad=0.2', fc='white', alpha=0.6))
+                ax.text(pgr0[idx_g,0], pgr0[idx_g,1], pgr0[idx_g,2], 'GR (baryons)', color='red',
+                        fontsize=10, bbox=dict(boxstyle='round,pad=0.2', fc='white', alpha=0.6))
+            except Exception:
+                pass
 
     fig.suptitle(f'{cid}: Photon paths around the cluster (sphere), Actual vs GR(baryons)'),
     fig.tight_layout(rect=[0, 0.03, 1, 0.95])
