@@ -261,6 +261,42 @@ def apply_dog_kernel(R_kpc: np.ndarray, Sigma_kpc2: np.ndarray,
 # PARAMETER FITTING (Per-cluster, physics-constrained)
 # =============================================================================
 
+def apply_slip_on_consistent_grid(theta_grid: np.ndarray, alpha_gr_theta: np.ndarray,
+                                   R_kpc: np.ndarray, S_R: np.ndarray, 
+                                   D_d_kpc: float = 1000.0) -> np.ndarray:
+    """
+    Apply slip factor on consistent grid to avoid shape mismatches.
+    
+    Args:
+        theta_grid: Observation angle grid [arcsec]
+        alpha_gr_theta: GR deflection on theta_grid [arcsec]
+        R_kpc: Radius grid [kpc]
+        S_R: Slip factor on R_kpc grid
+        D_d_kpc: Angular diameter distance [kpc] (for R->theta conversion)
+    
+    Returns:
+        α_model on theta_grid [arcsec]
+    """
+    # Grid consistency check
+    assert S_R.shape == R_kpc.shape, f"Slip and R grid must match: {S_R.shape} vs {R_kpc.shape}"
+    
+    # Convert R[kpc] -> theta_R[arcsec]
+    theta_R = (R_kpc / D_d_kpc) * 206265.0
+    
+    # Interpolate α_GR onto R-grid
+    alpha_gr_R = np.interp(theta_R, theta_grid, alpha_gr_theta,
+                          left=alpha_gr_theta[0], right=alpha_gr_theta[-1])
+    
+    # Apply slip on same grid
+    alpha_model_R = alpha_gr_R * S_R
+    
+    # Interpolate back to observation grid
+    alpha_model_theta = np.interp(theta_grid, theta_R, alpha_model_R,
+                                  left=alpha_model_R[0], right=alpha_model_R[-1])
+    
+    return alpha_model_theta
+
+
 def fit_cluster_parameters(R_kpc: np.ndarray, Sigma_kpc2: np.ndarray,
                            alpha_obs_theta: np.ndarray, alpha_obs: np.ndarray,
                            alpha_gr_theta: np.ndarray, alpha_gr: np.ndarray,
@@ -289,12 +325,18 @@ def fit_cluster_parameters(R_kpc: np.ndarray, Sigma_kpc2: np.ndarray,
     Ra_init = 1.3 * features.R_edge
     beta_init = 0.6 if (features.n_peaks > 1 or features.c_out < -0.2) else 0.0
     
+    print(f"    Initialization for {features.cluster_name}:")
+    print(f"      R_edge={features.R_edge:.0f} kpc, Rs_init={Rs_init:.0f} kpc")
+    
     def objective(params):
         """Minimize RMS error to observed deflection."""
         S_inf, Rs, eps0, Ra, beta = params
         
-        # Compute slip
+        # Compute slip on R_kpc grid
         S = compute_slip_factor(R_kpc, Sigma_bar_pc2, S_inf, Rs)
+        
+        # Grid consistency check
+        assert S.shape == R_kpc.shape, f"Slip and R grid mismatch: {S.shape} vs {R_kpc.shape}"
         
         # Compute response
         eps = compute_response_coupling(R_kpc, Sigma_bar_pc2, eps0, Ra)
@@ -306,28 +348,28 @@ def fit_cluster_parameters(R_kpc: np.ndarray, Sigma_kpc2: np.ndarray,
         
         Sigma_eff = Sigma_kpc2 + eps * Sigma_resp
         
-        # Convert to deflection (simplified - scale GR deflection by slip)
-        # Interpolate GR baseline and slip to common grid
-        alpha_gr_R = np.interp(R_kpc, alpha_gr_theta, alpha_gr_interp)
-        alpha_model_R = alpha_gr_R * S
-        
-        # Interpolate to grid
-        alpha_model = np.interp(theta_grid, R_kpc, alpha_model_R,
-                               left=alpha_model_R[0], right=alpha_model_R[-1])
+        # Apply slip on consistent grid (uses helper to avoid shape errors)
+        alpha_model = apply_slip_on_consistent_grid(theta_grid, alpha_gr_interp,
+                                                    R_kpc, S, D_d_kpc=1000.0)
         
         # RMS error
         residual = alpha_model - alpha_obs_interp
         rms = np.sqrt(np.mean(residual**2))
         
         # Add regularization to keep parameters reasonable
-        reg = 0.01 * ((S_inf - S_inf_init)**2 + (eps0 - eps0_init)**2)
+        # Weight Rs regularization more heavily to enforce learned rule
+        reg = 0.01 * ((S_inf - S_inf_init)**2 + (eps0 - eps0_init)**2) + \
+              0.05 * ((Rs - Rs_init) / Rs_init)**2
         
         return rms + reg
     
-    # Bounds to enforce physics
+    # Bounds to enforce physics (Rs bounds now based on R_edge)
+    Rs_min = max(5.0, 0.1 * features.R_edge)   # Allow down to 10% of R_edge but at least 5 kpc
+    Rs_max = min(500.0, 2.0 * features.R_edge) # Allow up to 2x R_edge but cap at 500 kpc
+    
     bounds = [
         (0.1, 50.0),      # S_inf
-        (10.0, 500.0),    # Rs_kpc
+        (Rs_min, Rs_max), # Rs_kpc (dynamically set from R_edge)
         (0.1, 50.0),      # eps0
         (50.0, 1000.0),   # Ra_kpc
         (0.0, 1.0) if use_dog else (0.0, 0.0)  # beta
@@ -497,13 +539,31 @@ def create_demo_training_data():
         Sigma_kpc2 = np.maximum(Sigma_kpc2, 0)
         
         # Synthetic observed deflection (what we're trying to match)
-        theta = np.linspace(10, 150, 200)
-        alpha_obs = 40 * (theta / 50) * (1 + 0.2*(theta/50)) / (1 + (theta/50) + 0.2*(theta/50)**2)
-        alpha_obs *= (M_core / 1e13)**0.5  # scale with mass
-        alpha_obs += np.random.randn(len(theta)) * 0.5  # noise
+        theta = np.linspace(10, 150, 200)  # arcsec
         
-        # GR baseline (too weak)
-        alpha_gr = alpha_obs / 10  # roughly 10x deficit
+        # Realistic GR deflection from baryon mass (Abel projection)
+        # α_GR(θ) = (4G/c^2) × M(<θ) / (D_d × θ)
+        # Simplified: α ∝ M(<R) / R
+        D_d_kpc = 1000.0  # typical angular diameter distance
+        R_theta = theta / 206265.0 * D_d_kpc  # convert theta[arcsec] -> R[kpc]
+        
+        # Enclosed mass from baryons
+        M_enc = np.zeros_like(R_theta)
+        for i, r in enumerate(R_theta):
+            idx = R < r
+            if idx.any():
+                # Integrate Σ × 2πR dR
+                M_enc[i] = np.trapz(Sigma_kpc2[idx] * 2 * np.pi * R[idx], R[idx])
+        
+        # GR deflection (normalize to ~few arcsec at 50")
+        alpha_gr = 4.0 * M_enc / (R_theta + 1.0) / 1e11  # simplified units
+        alpha_gr = np.maximum(alpha_gr, 0)
+        
+        # Observed deflection includes dark matter boost (factor ~10x at large R)
+        # Model as GR + extra mass component
+        boost_factor = 1.0 + 9.0 * (1 - np.exp(-R_theta / (2*R_edge)))
+        alpha_obs = alpha_gr * boost_factor
+        alpha_obs += np.random.randn(len(theta)) * 0.2  # noise
         
         # Extract features
         features = BaryonFeatures(
