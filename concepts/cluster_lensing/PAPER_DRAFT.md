@@ -398,6 +398,73 @@ class UniversalLensingModel:
         
     def predict(self, features_new):
         """Predict parameters for unseen cluster."""
+```
+
+---
+
+## 4. Validation and Diagnostics (2025-10-10)
+
+We added explicit, unit-consistent validations and diagnostics to the repository and used them to verify each stage of the pipeline.
+
+### 4.1 SIS Analytic Validation
+
+- Script: `scripts/validate_lensing_pipeline.py`
+- Procedure: build a synthetic SIS 3D density ρ(r) = σ_v²/(2πG r²), Abel-project to Σ(R), compute α_GR(θ) and find θ_E by solving α(θ)=θ, compare to analytic θ_E = 4π(σ_v/c)²(D_ls/D_s).
+- Current result (MACS-like geometry, z_l=0.396, z_s=2.0, σ_v=950 km/s):
+  - θ_E,num = 17.78", θ_E,theory = 18.30", relative error = 2.84%.
+  - We will tighten the r/R grid and integration to reduce this to <2%.
+
+### 4.2 Baryon Diagnostics
+
+- Script: `scripts/plot_baryon_diagnostics.py`
+- For each cluster (e.g., MACSJ0416): saves
+  - Σ(R) [Msun/kpc²]
+  - mean Σ̄(<R) [Msun/pc²] (with Σ₀=100 marked)
+  - M(<R) [Msun]
+  - α_GR(θ) [arcsec] with the identity α=θ
+- Output path: `out/cluster_lensing_comparison/diagnostics/<cluster>_diagnostics.png`
+- These plots are the gatekeepers to verify the Abel projection and units (Σcrit) generate plausible Σ, Σ̄, and M scaling (e.g., M_core(<100 kpc) ~ 0.5–3×10¹³ Msun; R_edge ~ 100–200 kpc).
+
+### 4.3 Real-Units Slip Tests vs Observed θ_E
+
+- Script: `scripts/run_real_cluster_tests.py`
+- Uses your cosmology/Σcrit, extracts features, predicts universal S_∞ and R_s, builds S(R), and evaluates:
+  - θ_E,model vs θ_E,obs (Zitrin+2015/gold-standard)
+  - Saves per-cluster JSON: `out/cluster_lensing_comparison/real_tests/<cluster>_real_test.json`
+- Our initial run shows θ_E,model trending small (∼5") compared to observed (20–55"). Diagnostics indicate Σ/M suppression from the current Abel/units path in this script; we are using the new SIS and diagnostic harnesses to correct this so features and α_GR are physically plausible before re-evaluating S(R).
+
+---
+
+## 5. Data and Code Availability (Updated)
+
+- Baryon profiles (gas/stars): `data/clusters/<cluster>/{gas_profile.csv,stars_profile.csv}`
+- Observed Einstein radii (Zitrin+2015): `data/literature/einstein_radii_zitrin2015.csv`
+- Gold-standard cluster metadata: `data/frontier/gold_standard/gold_standard_clusters.json`
+- NFW parameters (Umetsu+2016 Table 2): `data/literature/nfw_params.json`
+- Comparison scripts and outputs:
+  - NFW vs our model benchmark: `concepts/cluster_lensing/benchmark_vs_nfw.py`; outputs `out/cluster_lensing_comparison/benchmark_vs_nfw.*`
+  - Real-units tests runner: `scripts/run_real_cluster_tests.py`; outputs `out/cluster_lensing_comparison/real_tests/`
+  - Baryon diagnostics plots: `scripts/plot_baryon_diagnostics.py`; outputs `out/cluster_lensing_comparison/diagnostics/`
+  - SIS validation harness: `scripts/validate_lensing_pipeline.py`
+
+---
+
+## 6. Reproducibility Checklist
+
+1. Verify Σcrit consistency: use `sigma_crit_Msun_per_kpc2(z_l,z_s)` with all angular-diameter distances in kpc.
+2. Verify SIS α(θ) matches theory to <2% (Section 4.1).
+3. Inspect Σ(R), Σ̄(<R), M(<R), α_GR(θ) diagnostics (Section 4.2) for all evaluated clusters.
+4. Confirm θ_E,obs uses the same z_s as the model, else rescale by D_ls/D_s.
+5. Report θ_E,GR and required α_obs/α_GR at θ_E,obs; check that S(R(θ_E,obs)) matches.
+
+---
+
+## References (Updates)
+
+- Umetsu K. et al. (2016), ApJ 821, 116 — CLASH joint strong+weak-lensing analysis; we use Table 2 NFW parameters and Table 1 Einstein radii entries.
+- Zitrin A. et al. (2015), ApJ 801, 44 — CLASH strong-lensing mass models; Einstein radii used via Umetsu+2016 Table 1 entries.
+- Wright C.O. & Brainerd T.G. (2000), ApJ 534, 34 — analytic projected NFW lensing relations used in our NFW computation harness.
+- Additional references as already included in the main text.
         X_new = self.featurize(features_new)
         S_inf_pred = self.S_inf_model.predict(X_new[:, :2])
         Rs_pred = self.Rs_model.predict(X_new[:, 2:3])
