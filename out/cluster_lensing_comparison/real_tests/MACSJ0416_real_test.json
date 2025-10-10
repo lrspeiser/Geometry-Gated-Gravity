@@ -1,0 +1,13 @@
+{
+  "cluster": "MACSJ0416",
+  "z_l": 0.396,
+  "z_s": 2.0,
+  "R_edge_kpc": 94.5380588760458,
+  "edge_sharp": 0.7759360561933875,
+  "M_core_Msun": 3034404331556.3853,
+  "S_inf": 7.374027344933716,
+  "Rs_kpc": 85.08425298844122,
+  "thetaE_model_arcsec": 5.0,
+  "thetaE_obs_arcsec": 35.0,
+  "thetaE_abs_err_arcsec": 30.0
+}

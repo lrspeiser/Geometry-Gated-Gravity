@@ -1,0 +1,35 @@
+[
+  {
+    "cluster_id": "MACSJ0416",
+    "z_lens": 0.396,
+    "z_source": 2.0,
+    "theta_E_obs_arcsec": 35.0,
+    "theta_E_pred_baryon_arcsec": 0.18745836654965037,
+    "theta_E_pred_nfw_arcsec": 0.011873976496842265,
+    "RE_nfw_kpc": 0.06340784964939454,
+    "M200c_Msun": 1074000000000000.0,
+    "c200c": 2.9
+  },
+  {
+    "cluster_id": "MACSJ0717",
+    "z_lens": 0.548,
+    "z_source": 2.5,
+    "theta_E_obs_arcsec": 55.0,
+    "theta_E_pred_baryon_arcsec": 0.15640786371275905,
+    "theta_E_pred_nfw_arcsec": 0.0203907298622011,
+    "RE_nfw_kpc": 0.1305004003790822,
+    "M200c_Msun": 2677000000000000.0,
+    "c200c": 1.8
+  },
+  {
+    "cluster_id": "MACSJ1149",
+    "z_lens": 0.544,
+    "z_source": 2.0,
+    "theta_E_obs_arcsec": null,
+    "theta_E_pred_baryon_arcsec": 0.15698222401551618,
+    "theta_E_pred_nfw_arcsec": 0.01717828347740021,
+    "RE_nfw_kpc": 0.10953849646177301,
+    "M200c_Msun": 2502000000000000.0,
+    "c200c": 2.1
+  }
+]

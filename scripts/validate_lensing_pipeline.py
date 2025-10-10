@@ -20,18 +20,14 @@ from concepts.cluster_lensing.cluster_lensing_analysis_real_sigma import (
 
 # Constants consistent with the rest of the repo
 c_km_s = 299792.458
+G_kpc_km2s2_Msun = 4.300917270e-6  # kpc (km/s)^2 / Msun
 
 
 def build_SIS_density(r_kpc: np.ndarray, sigma_v_kms: float) -> np.ndarray:
-    """SIS 3D density: rho(r) = sigma_v^2 / (2 pi G r^2).
-    Using lensing units in the Abel projector; normalization will be absorbed by deflection comparison.
+    """SIS 3D density: rho(r) = sigma_v^2 / (2 pi G r^2) in Msun/kpc^3.
     """
-    # We can skip explicit G here since we project numerically and compare to analytic alpha which depends only on sigma_v and distances.
-    # However, for dimensional correctness, set rho ~ 1/r^2 with a scale factor A chosen to match alpha normalization.
-    # We'll calibrate A by matching the known SIS surface density Σ(R) ~ sigma_v^2 / (2 G R) when projecting.
-    # To avoid bringing G here, we just use rho ~ 1/r^2 and compare deflection shapes and Einstein radius; absolute normalization cancels via alpha ~ theta_E.
     r = np.maximum(r_kpc, 1e-6)
-    return 1.0 / (r * r)
+    return (sigma_v_kms ** 2) / (2.0 * np.pi * G_kpc_km2s2_Msun * r * r)
 
 
 def alpha_from_profiles(R_kpc: np.ndarray, Sigma_kpc2: np.ndarray, z_l: float, z_s: float, theta_arcsec: np.ndarray) -> np.ndarray:
