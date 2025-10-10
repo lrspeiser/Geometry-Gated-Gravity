@@ -1,0 +1,19 @@
+Tweaked Parameters
+==================
+
+eta            : 0.4
+R_gate         : 0.5
+p_gate         : 4.0
+R0             : 5.0
+p              : 2.0
+R1             : 70.0
+q              : 3.5
+Z0             : 1.8
+k_an           : 0.75
+ring_amp       : 0.1
+lambda_ring    : 35.0
+M_max          : 3.5
+
+Total Loss: 1424.49
+Rotation chi2: 684.18
+Vertical lag: 4.0 +/- 1.8 km/s
