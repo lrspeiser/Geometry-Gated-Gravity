@@ -1,5 +1,102 @@
 #!/usr/bin/env python3
 from __future__ import annotations
+import sys
+from pathlib import Path
+from typing import Tuple
+
+import numpy as np
+from scipy.integrate import cumulative_trapezoid
+
+# Wire project root
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+from concepts.cluster_lensing.cluster_lensing_analysis_real_sigma import (
+    angular_diameter_distance_kpc,
+    sigma_crit_Msun_per_kpc2,
+    abel_project_sigma as abel_project_sigma_ref,
+    comoving_distance_Mpc,
+)
+
+# Constants consistent with the rest of the repo
+c_km_s = 299792.458
+
+
+def build_SIS_density(r_kpc: np.ndarray, sigma_v_kms: float) -> np.ndarray:
+    """SIS 3D density: rho(r) = sigma_v^2 / (2 pi G r^2).
+    Using lensing units in the Abel projector; normalization will be absorbed by deflection comparison.
+    """
+    # We can skip explicit G here since we project numerically and compare to analytic alpha which depends only on sigma_v and distances.
+    # However, for dimensional correctness, set rho ~ 1/r^2 with a scale factor A chosen to match alpha normalization.
+    # We'll calibrate A by matching the known SIS surface density Σ(R) ~ sigma_v^2 / (2 G R) when projecting.
+    # To avoid bringing G here, we just use rho ~ 1/r^2 and compare deflection shapes and Einstein radius; absolute normalization cancels via alpha ~ theta_E.
+    r = np.maximum(r_kpc, 1e-6)
+    return 1.0 / (r * r)
+
+
+def alpha_from_profiles(R_kpc: np.ndarray, Sigma_kpc2: np.ndarray, z_l: float, z_s: float, theta_arcsec: np.ndarray) -> np.ndarray:
+    M_enc = cumulative_trapezoid(Sigma_kpc2 * 2.0 * np.pi * R_kpc, R_kpc, initial=0.0)
+    # Compute distances
+    Dd = float(angular_diameter_distance_kpc(z_l))
+    # For consistency, use the project's sigma_crit function
+    Sigma_crit = float(sigma_crit_Msun_per_kpc2(z_l, z_s))
+
+    # angle grid at R_kpc
+    theta_R = (R_kpc / max(Dd, 1e-12)) * 206265.0
+    Sbar = M_enc / (np.pi * np.maximum(R_kpc, 1e-9) ** 2)
+    kbar = Sbar / max(Sigma_crit, 1e-30)
+    alpha_R = kbar * theta_R
+    # interpolate to requested theta
+    return np.interp(theta_arcsec, theta_R, alpha_R, left=float(alpha_R[0]), right=float(alpha_R[-1]))
+
+
+def theta_E_SIS_theory(sigma_v_kms: float, z_l: float, z_s: float) -> float:
+    # theta_E = 4 pi (sigma_v/c)^2 (Dls/Ds) in radians; convert to arcsec
+    # Compute Dls via comoving distances
+    Dc_d = float(comoving_distance_Mpc(z_l)) * 1000.0
+    Dc_s = float(comoving_distance_Mpc(z_s)) * 1000.0
+    Dls = (Dc_s - Dc_d) / (1.0 + z_s)
+    Ds = float(angular_diameter_distance_kpc(z_s))
+    theta_rad = 4.0 * np.pi * (sigma_v_kms / c_km_s) ** 2 * (Dls / max(Ds, 1e-12))
+    return float(theta_rad * 206265.0)
+
+
+def validate_SIS(z_l: float = 0.396, z_s: float = 2.0, sigma_v_kms: float = 950.0) -> Tuple[float, float]:
+    """Build SIS 3D density, project to Σ, compute alpha(θ) and compare with analytic theta_E.
+    Returns (theta_E_numeric, theta_E_theory) in arcsec.
+    """
+    # Build r/R grids
+    Rmax = 3000.0  # kpc
+    r = np.logspace(-2, np.log10(Rmax * 10.0), 4000)
+    R = np.logspace(-2, np.log10(Rmax), 1200)
+    rho = build_SIS_density(r, sigma_v_kms)
+    Sigma = abel_project_sigma_ref(r, rho, R)
+
+    theta = np.linspace(0.5, 120.0, 500)
+    alpha = alpha_from_profiles(R, Sigma, z_l, z_s, theta)
+
+    # Find theta where alpha(theta)=theta
+    f = alpha - theta
+    s = np.sign(f)
+    cross = np.where(s[:-1] * s[1:] < 0)[0]
+    if cross.size == 0:
+        theta_E_num = float(theta[np.argmin(np.abs(f))])
+    else:
+        i = int(cross[0])
+        a, b = float(theta[i]), float(theta[i+1])
+        from scipy.optimize import brentq
+        theta_E_num = float(brentq(lambda t: np.interp(t, theta, alpha) - t, a, b))
+
+    theta_E_th = theta_E_SIS_theory(sigma_v_kms, z_l, z_s)
+    return theta_E_num, theta_E_th
+
+
+if __name__ == "__main__":
+    num, th = validate_SIS()
+    rel = abs(num - th) / max(th, 1e-9)
+    print({"theta_E_numeric_arcsec": num, "theta_E_theory_arcsec": th, "rel_err": rel})
+
+#!/usr/bin/env python3
 """
 Comprehensive validation of lensing computation pipeline adapted for HLSP file layout.
 - No SciPy dependency (implements connected component labeling locally)
