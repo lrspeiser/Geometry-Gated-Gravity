@@ -1,0 +1,8 @@
+cluster,z_lens,z_source,einstein_radius_arcsec,einstein_radius_err_arcsec,n_images,source,notes
+MACS0416,0.396,2.0,35.0,1.5,194,HFF_consensus,Gold standard from Frontier Fields Tier 1
+MACS0717,0.545,2.5,55.0,3.0,150,HFF_consensus,Largest lensing cluster; Tier 2
+MACS1149,0.544,2.0,42.0,2.0,100,Williams_v4,Frontier Fields; Williams model preferred
+Abell_370,0.375,2.0,38.0,2.0,114,HFF_consensus,Frontier Fields Tier 1
+Abell_2744,0.308,2.0,26.0,2.0,100,HFF_consensus,Complex merger; Tier 1
+Abell_1689,0.183,2.0,47.0,3.0,135,Literature,Classic strong lens benchmark
+RXJ1347,0.451,2.0,32.0,2.0,50,HFF_consensus,Brightest X-ray cluster; Tier 2
