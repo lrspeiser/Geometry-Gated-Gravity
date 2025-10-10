@@ -89,42 +89,63 @@ def nfw_density_profile(r_kpc: np.ndarray, M200c: float, c200c: float, z: float)
     return rho, r200, r_s, rho_s
 
 
+def _g_function(x: float) -> float:
+    # Piecewise g(x) per Wright & Brainerd (2000)
+    if x < 1.0:
+        t = math.sqrt((1.0 - x) / (1.0 + x))
+        val = math.log(max(x / 2.0, 1e-300)) + (2.0 / math.sqrt(1.0 - x * x)) * math.atanh(t)
+        return val
+    elif x > 1.0:
+        t = math.sqrt((x - 1.0) / (1.0 + x))
+        val = math.log(x / 2.0) + (2.0 / math.sqrt(x * x - 1.0)) * math.atan(t)
+        return val
+    else:
+        # x == 1
+        return 1.0 - math.log(2.0)
+
+
 def nfw_theta_E_arcsec(M200c: float, c200c: float, z_lens: float, z_source: float) -> Optional[Tuple[float, float]]:
-    # Build 3D r grid up to 3 r200
+    # Analytic NFW mean convergence: kappa_bar(x) = 4 * kappa_s * g(x) / x^2,
+    # where kappa_s = rho_s * r_s / Sigma_crit, x = R / r_s.
     r200 = nfw_r200c_from_M(M200c, z_lens)
-    r_min = max(0.5, r200 * 1e-4)
-    r_max = r200 * 3.0
-    r = np.geomspace(r_min, r_max, 2200)
-    rho, r200_check, r_s, rho_s = nfw_density_profile(r, M200c, c200c, z_lens)
+    # Avoid zero or negative
+    if r200 <= 0 or c200c <= 0:
+        return None
+    r_s = r200 / c200c
+    rho_s, _ = nfw_rho_s_delta_c(c200c, z_lens)
 
-    # Project to Σ(R) on a fine grid
-    R = np.geomspace(max(1.0, r[0]), r200_check * 2.0, 1400)
-    Sigma = abel_project_sigma(r, rho, R)
-
-    # Compute mean Σ(<R)
-    _, Sbar = sigma_to_Mproj(R, Sigma)
-
-    # Critical surface density
     Sigma_crit = sigma_crit_Msun_per_kpc2(z_lens, z_source)
     if not np.isfinite(Sigma_crit) or Sigma_crit <= 0:
         return None
+    kappa_s = (rho_s * r_s) / Sigma_crit
 
-    kappa_mean = Sbar / Sigma_crit
-    idx = np.where(kappa_mean >= 1.0)[0]
+    # Scan x over a log grid to find where kappa_bar crosses unity
+    x_grid = np.logspace(-4, 2, 2000)
+    g_vals = np.array([_g_function(float(x)) for x in x_grid])
+    kappa_bar = 4.0 * kappa_s * g_vals / (x_grid ** 2)
+
+    # Find first index where kappa_bar >= 1.0
+    idx = np.where(kappa_bar >= 1.0)[0]
     if idx.size == 0:
         return None
     i = int(idx[0])
     if i == 0:
-        R_E = R[0]
+        x_E = x_grid[0]
     else:
-        x0, y0 = R[i - 1], kappa_mean[i - 1]
-        x1, y1 = R[i], kappa_mean[i]
+        x0, y0 = x_grid[i - 1], kappa_bar[i - 1]
+        x1, y1 = x_grid[i], kappa_bar[i]
         if y1 == y0:
-            R_E = x1
+            x_E = x1
         else:
-            R_E = x0 + (1.0 - y0) * (x1 - x0) / (y1 - y0)
+            # Linear interpolation in log x for stability
+            lx0, lx1 = math.log(x0), math.log(x1)
+            ly0, ly1 = y0, y1
+            # Interpolate to y=1
+            t = (1.0 - ly0) / (ly1 - ly0)
+            lxE = lx0 + t * (lx1 - lx0)
+            x_E = math.exp(lxE)
 
-    # Convert to arcsec
+    R_E = x_E * r_s
     Dd = angular_diameter_distance_kpc(z_lens)
     theta_rad = R_E / max(Dd, 1e-12)
     theta_arcsec = theta_rad * (180.0 / math.pi) * 3600.0

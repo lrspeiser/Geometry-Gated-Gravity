@@ -1,5 +1,56 @@
 #!/usr/bin/env python3
 from __future__ import annotations
+from pathlib import Path
+import json
+from typing import Optional
+
+ROOT = Path(__file__).resolve().parents[1]
+GOLD_STD_JSON = ROOT / "data" / "frontier" / "gold_standard" / "gold_standard_clusters.json"
+ZITRIN_CSV = ROOT / "data" / "literature" / "einstein_radii_zitrin2015.csv"
+
+# Map common variations to our cluster directory names
+ALIASES = {
+    "MACS J0416.1-2403": "MACSJ0416",
+    "MACS J0717.5+3745": "MACSJ0717",
+    "MACS J1149.5+2223": "MACSJ1149",
+}
+
+
+def get_thetaE_observed(cluster: str) -> Optional[float]:
+    # Try gold standard JSON first
+    try:
+        if GOLD_STD_JSON.exists():
+            data = json.loads(GOLD_STD_JSON.read_text(encoding="utf-8"))
+            # keys like "macs0416", "a370", etc.
+            key = cluster.lower().replace("macsj", "macs")
+            if key in data:
+                return float(data[key]["accepted"]["theta_E_arcsec"])  # already arcsec
+            # Try tail digits match
+            tail = ''.join([c for c in cluster if c.isdigit()])
+            for k, v in data.items():
+                if tail and tail in k:
+                    return float(v["accepted"]["theta_E_arcsec"])
+    except Exception:
+        pass
+
+    # Fallback to Zitrin CSV
+    try:
+        if ZITRIN_CSV.exists():
+            import pandas as pd
+            df = pd.read_csv(ZITRIN_CSV)
+            # try exact cluster_id match, else fuzzy by digits
+            m = df[df["cluster_id"].str.upper() == cluster.upper()]
+            if not m.empty:
+                return float(m.iloc[0]["theta_E_arcsec"])
+            tail = ''.join([c for c in cluster if c.isdigit()])
+            if tail:
+                for _, row in df.iterrows():
+                    if tail in str(row["cluster_id"]).upper():
+                        return float(row["theta_E_arcsec"])
+    except Exception:
+        pass
+
+    return None
 """
 Shared lensing utilities for interactive visualizations.
 
