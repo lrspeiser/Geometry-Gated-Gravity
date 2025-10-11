@@ -1,0 +1,72 @@
+================================================================================
+MILKY WAY FROZEN BASELINE - VERSION 1
+================================================================================
+
+These parameters are the IMMUTABLE reference for all cross-galaxy tests.
+All SPARC and external galaxy comparisons should trace back to this baseline.
+
+DO NOT MODIFY THIS FILE - It serves as the provenance anchor for the study.
+
+================================================================================
+OPTIMIZED PARAMETERS (Gaia DR3 Fit)
+================================================================================
+
+eta            : 0.39      # Overall amplitude of many-path multiplier
+R_gate         : 0.5       # kpc, solar system safety gate
+p_gate         : 4.0       # Sharpness of distance gate
+R0             : 5.0       # kpc, onset scale for growth
+p              : 2.0       # Growth power
+R1             : 70.0      # kpc, saturation/roll scale
+q              : 3.5       # Saturation steepness (hard cap)
+k_an           : 1.4       # Base anisotropy strength
+ring_amp       : 0.07      # Azimuthal winding contribution
+lambda_ring    : 42.0      # kpc, ring winding scale
+M_max          : 3.3       # Maximum multiplier cap
+
+# Radially-modulated anisotropy (essential for vertical lag)
+Z0_in          : 1.02      # kpc, stronger planar pref inside R_lag
+Z0_out         : 1.72      # kpc, milder planar pref far out
+R_lag          : 8.0       # kpc, center of vertical lag enhancement
+w_lag          : 1.9       # kpc, width of radial transition
+k_boost        : 0.75      # Extra anisotropy bump near R_lag
+
+# Bulge gating (for cross-galaxy applications)
+bulge_gate_power : 2.0     # Power for suppressing ring winding in bulge regions
+
+================================================================================
+PERFORMANCE METRICS (Gaia DR3)
+================================================================================
+
+Total Loss        : 2351.83
+Rotation chi²     : 1610.49
+Vertical lag      : 11.4 ± 2.2 km/s (target: ~10-15 km/s)
+
+Solar System Safety Check:
+  M(d=1 AU) ≈ 1e-12 (negligible modification at AU scales)
+
+================================================================================
+PROVENANCE
+================================================================================
+
+Optimization method : Multi-objective loss (rotation χ² + vertical lag + slope)
+Data source         : Gaia DR3 processed kinematics
+Optimization script : parameter_optimizer.py (Family A, hard saturation)
+Date frozen         : 2025-01-18
+Git commit          : bac0eaea4
+
+================================================================================
+USAGE NOTES
+================================================================================
+
+1. Use these parameters as the zero-shot baseline for SPARC tests
+2. Any parameter modifications should be:
+   - Documented with clear scientific rationale
+   - Validated against MW performance degradation
+   - Saved as a NEW parameter set with version number
+
+3. Cross-galaxy optimization (SPARC Stage A/B) should:
+   - Start from these values as priors
+   - Report Δχ² relative to this baseline
+   - Preserve the kernel structure (gates, anisotropy, saturation)
+
+================================================================================
