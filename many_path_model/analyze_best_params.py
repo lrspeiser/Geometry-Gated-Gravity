@@ -70,11 +70,10 @@ def evaluate_galaxy(gal, params):
     ape_masked = ape[mask]
     
     return {
-        'v_pred': v_pred,
-        'ape_mean': np.mean(ape_masked),
-        'ape_median': np.median(ape_masked),
-        'ape_max': np.max(ape_masked),
-        'n_points': len(ape_masked)
+        'ape_mean': float(np.mean(ape_masked)),
+        'ape_median': float(np.median(ape_masked)),
+        'ape_max': float(np.max(ape_masked)),
+        'n_points': int(len(ape_masked))
     }
 
 
