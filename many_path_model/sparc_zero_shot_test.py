@@ -1,29 +1,34 @@
 #!/usr/bin/env python3
 """
-SPARC Zero-Shot Test: Many-Path Minimal Model on 20-30 Galaxies
+SPARC Zero-Shot Test for Many-Path Gravity Model
 
-Test the FROZEN minimal model parameters (from Milky Way) on diverse SPARC galaxies.
-NO per-galaxy fitting allowed - this tests universality of the kernel.
+This script applies the many-path gravity model with FIXED global parameters
+to SPARC galaxies and evaluates how well it predicts rotation curves without
+per-galaxy fitting.
 
-Strategy:
-1. Load SPARC data (rotation curves for ~175 galaxies)
-2. Select 20-30 diverse galaxies by morphology type
-3. Apply FROZEN minimal model parameters
-4. Compute chi-square and APE per galaxy
-5. Analyze performance by galaxy type (Sd, Im, etc.)
-6. Generate comparison plots
+Key features:
+- Loads SPARC rotation curve data (_rotmod.dat files)
+- Computes bulge fractions for each galaxy
+- Applies many-path kernel with fixed parameters
+- Supports both standard and bulge-gated kernels
+- Computes metrics: APE (Absolute Percentage Error), chi-squared, success rate
+- Analyzes performance by galaxy type
+
+Usage:
+    python sparc_zero_shot_test.py --sparc_dir external_data/Rotmod_LTG \
+        --n_galaxies 25 --use_bulge_gate 1 --output results/sparc_zero_shot.csv
 """
+
+import argparse
 import sys
+import csv
+import json
 from pathlib import Path
 import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-from matplotlib.gridspec import GridSpec
+import re
+from typing import Dict, List, Tuple, Optional
 
-sys.path.insert(0, str(Path(__file__).parent))
-from minimal_model import minimal_params
-from toy_many_path_gravity import rotation_curve, xp_array, to_cpu
-
+# Try CuPy first for GPU acceleration
 try:
     import cupy as cp
     _USING_CUPY = True
@@ -31,465 +36,389 @@ except Exception:
     import numpy as cp
     _USING_CUPY = False
 
-# Data paths
-DATA_DIR = Path(__file__).resolve().parents[1] / "data"
-SPARC_FILE = DATA_DIR / "sparc_rotmod_ltg.parquet"  # Rotation curve data
-SPARC_MASTER = DATA_DIR / "sparc_master_clean.parquet"  # Galaxy properties
-RESULTS_DIR = Path(__file__).parent / "results" / "sparc_zero_shot"
-
-
-def load_sparc_data():
-    """Load SPARC rotation curve data."""
-    print("Loading SPARC data...")
-    df_rot = pd.read_parquet(SPARC_FILE)
-    df_master = pd.read_parquet(SPARC_MASTER)
-    
-    # Merge to get galaxy types
-    df = df_rot.merge(df_master[['galaxy', 'T']], on='galaxy', how='left')
-    
-    # Map numeric type to string (Hubble classification)
-    # T: 10=Im, 9=Sm, 8=Sd, 7=Scd, 6=Sc, 5=Sbc, 4=Sb, 3=Sab, 2=Sa
-    type_map = {
-        10: 'Im', 9: 'Sm', 8: 'Sd', 7: 'Scd', 
-        6: 'Sc', 5: 'Sbc', 4: 'Sb', 3: 'Sab', 2: 'Sa'
-    }
-    df['Type'] = df['T'].map(type_map).fillna('Unknown')
-    
-    print(f"✓ Loaded {len(df)} data points from {df.galaxy.nunique()} galaxies")
-    print(f"\nGalaxy type distribution:")
-    print(df.groupby('Type').galaxy.nunique().sort_values(ascending=False))
-    
-    return df
-
-
-def select_diverse_sample(df, n_galaxies=25, seed=42):
-    """
-    Select diverse sample of galaxies by morphology type.
-    
-    Strategy:
-    - Include multiple types (Sd, Scd, Im, Sbc, etc.)
-    - Prefer galaxies with many data points
-    - Ensure range of masses and sizes
-    """
-    np.random.seed(seed)
-    
-    # Count points per galaxy
-    galaxy_stats = df.groupby('galaxy').agg({
-        'R_kpc': 'count',
-        'Type': 'first',
-        'Vobs_kms': lambda x: x.notna().sum()  # Non-NaN velocities
-    }).rename(columns={'R_kpc': 'n_points', 'Vobs_kms': 'n_valid'})
-    
-    # Filter: at least 10 valid points
-    galaxy_stats = galaxy_stats[galaxy_stats.n_valid >= 10]
-    
-    # Sample by type
-    types = galaxy_stats.Type.unique()
-    selected = []
-    
-    # Target: ~5 galaxies per common type, fewer for rare types
-    type_targets = {
-        'Sd': 6,
-        'Scd': 5,
-        'Im': 4,
-        'Sbc': 3,
-        'Sc': 3,
-        'Sm': 2,
-        'Sab': 1,
-        'Sb': 1
-    }
-    
-    for gtype, target in type_targets.items():
-        candidates = galaxy_stats[galaxy_stats.Type == gtype]
-        if len(candidates) == 0:
-            continue
-        
-        # Sample up to target, preferring more data points
-        n_select = min(target, len(candidates))
-        sampled = candidates.nlargest(n_select * 2, 'n_points').sample(
-            n=n_select, random_state=seed + len(selected)
-        )
-        selected.extend(sampled.index.tolist())
-    
-    # Fill to n_galaxies if needed
-    if len(selected) < n_galaxies:
-        remaining = galaxy_stats[~galaxy_stats.index.isin(selected)]
-        extra = remaining.nlargest(n_galaxies - len(selected), 'n_points')
-        selected.extend(extra.index.tolist())
-    
-    selected = selected[:n_galaxies]
-    
-    print(f"\n✓ Selected {len(selected)} galaxies:")
-    sample_stats = galaxy_stats.loc[selected]
-    for gtype in sample_stats.Type.unique():
-        count = (sample_stats.Type == gtype).sum()
-        print(f"  {gtype:5s}: {count} galaxies")
-    
-    return selected
-
-
-def sample_galaxy_mass_distribution(galaxy_name, df_galaxy, n_disk=50000, n_bulge=5000):
-    """
-    Sample mass distribution for a SPARC galaxy.
-    
-    Use observed stellar + gas surface density profiles to sample particles.
-    Simplified: exponential disk + optional bulge.
-    """
-    from toy_many_path_gravity import sample_exponential_disk, sample_hernquist_bulge, xp_zeros
-    
-    # Estimate scale parameters from data
-    # Use median radius and velocity to infer scale length
-    R_median = df_galaxy.R_kpc.median()
-    V_median = df_galaxy.Vobs_kms.median()
-    
-    # Rough estimates (can be improved with actual SPARC stellar mass profiles)
-    R_d = R_median / 1.7  # Typical: R_d ≈ 0.6 * R_half
-    z_d = 0.1 * R_d  # Thin disk assumption
-    R_max = df_galaxy.R_kpc.max() * 1.5
-    
-    # Total baryonic mass (rough estimate from V_median)
-    # M ≈ V² * R / G
-    G_SI = 4.30091e-6  # kpc (km/s)^2 / M_sun
-    M_total_est = V_median**2 * R_median / G_SI
-    
-    # Split: 80% disk, 20% bulge (if applicable)
-    M_disk = 0.8 * M_total_est
-    M_bulge = 0.2 * M_total_est
-    
-    # Sample disk
-    disk_pos, m_disk = sample_exponential_disk(
-        n_disk, M_disk=M_disk, R_d=R_d, z_d=z_d, R_max=R_max, seed=42
+# Import the many-path gravity functions
+# Assuming they are in the same directory
+try:
+    from toy_many_path_gravity import (
+        compute_accel_batched, rotation_curve, default_params,
+        xp_array, xp_zeros, to_cpu, G
     )
-    
-    # Sample bulge (smaller for late-type galaxies)
-    gtype = df_galaxy.Type.iloc[0]
-    if gtype in ['Sd', 'Scd', 'Im', 'Sm']:
-        # Late-type: minimal bulge
-        n_bulge = max(1000, n_bulge // 5)
-        M_bulge = M_bulge * 0.2
-    
-    bulge_pos, m_bulge = sample_hernquist_bulge(
-        n_bulge, M_bulge=M_bulge, a=R_d * 0.3, seed=123
-    )
-    
-    # Combine
-    src_pos = cp.concatenate([disk_pos, bulge_pos], axis=0)
-    src_mass = cp.concatenate([
-        xp_zeros(disk_pos.shape[0]) + m_disk,
-        xp_zeros(bulge_pos.shape[0]) + m_bulge
-    ])
-    
-    return src_pos, src_mass
+except ImportError:
+    print("ERROR: Could not import toy_many_path_gravity module")
+    print("Make sure toy_many_path_gravity.py is in the same directory")
+    sys.exit(1)
 
 
-def test_galaxy(galaxy_name, df_galaxy, params, eps=0.05, batch_size=25000):
+def load_sparc_galaxy(filepath: Path) -> Dict:
     """
-    Test frozen parameters on a single galaxy.
+    Load a SPARC galaxy rotation curve file (_rotmod.dat format).
     
-    Returns metrics: chi2, APE, RMS residual
+    Returns dict with:
+        - r_kpc: array of radii
+        - v_obs: observed velocities
+        - v_err: velocity errors
+        - v_gas, v_disk, v_bulge: baryonic velocity components
+        - distance_mpc: galaxy distance
+        - name: galaxy name
     """
-    # Extract observed rotation curve
-    df_clean = df_galaxy[df_galaxy.Vobs_kms.notna()].copy()
-    if len(df_clean) < 5:
-        return None  # Too few points
+    # Parse header for distance
+    distance_mpc = None
+    with open(filepath, 'r') as f:
+        for line in f:
+            if 'Distance' in line:
+                match = re.search(r'([\d.]+)\s*Mpc', line)
+                if match:
+                    distance_mpc = float(match.group(1))
+                break
     
-    R_obs = df_clean.R_kpc.values  # kpc
-    V_obs = df_clean.Vobs_kms.values  # km/s
-    V_err = df_clean.eVobs_kms.fillna(10.0).values  # km/s (default 10 km/s if missing)
+    # Load data
+    data = []
+    with open(filepath, 'r') as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith('#'):
+                continue
+            parts = line.split()
+            if len(parts) >= 8:
+                try:
+                    data.append([float(x) for x in parts[:8]])
+                except ValueError:
+                    continue
     
-    # Sample mass distribution
-    src_pos, src_mass = sample_galaxy_mass_distribution(
-        galaxy_name, df_galaxy, n_disk=50000, n_bulge=5000
-    )
+    if not data:
+        raise ValueError(f"No valid data in {filepath}")
     
-    # Compute model prediction (FROZEN parameters)
-    R_grid = xp_array(R_obs)
-    v_pred, _ = rotation_curve(
-        src_pos, src_mass, R_grid, z=0.0,
-        eps=eps, params=params, use_multiplier=True,
-        batch_size=batch_size
-    )
-    v_pred = to_cpu(v_pred)
-    
-    # Compute metrics
-    residuals = V_obs - v_pred
-    chi2 = np.sum((residuals / V_err)**2)
-    ape = np.median(np.abs(residuals / V_obs) * 100)  # Absolute percentage error
-    rms = np.sqrt(np.mean(residuals**2))
-    
-    # Reduced chi2
-    dof = len(R_obs) - 0  # No free parameters!
-    chi2_red = chi2 / max(1, dof)
+    data = np.array(data)
+    name = filepath.stem.replace('_rotmod', '')
     
     return {
-        'galaxy': galaxy_name,
-        'type': df_galaxy.Type.iloc[0],
-        'n_points': len(R_obs),
-        'chi2': chi2,
-        'chi2_red': chi2_red,
-        'ape': ape,
-        'rms': rms,
-        'R_obs': R_obs,
-        'V_obs': V_obs,
-        'V_err': V_err,
-        'V_pred': v_pred,
-        'residuals': residuals
+        'name': name,
+        'distance_mpc': distance_mpc,
+        'r_kpc': data[:, 0],
+        'v_obs': data[:, 1],
+        'v_err': data[:, 2],
+        'v_gas': data[:, 3],
+        'v_disk': data[:, 4],
+        'v_bulge': data[:, 5],
+        'sb_disk': data[:, 6],
+        'sb_bulge': data[:, 7],
     }
 
 
-def run_zero_shot_test(galaxies, df, params, batch_size=25000):
+def compute_bulge_fraction(v_gas: np.ndarray, v_disk: np.ndarray, 
+                          v_bulge: np.ndarray) -> np.ndarray:
     """
-    Run zero-shot test on all selected galaxies.
+    Compute bulge fraction at each radius.
     
-    Returns DataFrame with results per galaxy.
+    bulge_frac = V_bulge^2 / (V_gas^2 + V_disk^2 + V_bulge^2)
+    
+    This represents the fractional contribution of the bulge to the
+    total baryonic circular velocity squared.
     """
-    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+    v_total_sq = np.maximum(v_gas**2 + v_disk**2 + v_bulge**2, 1e-10)
+    bulge_frac = v_bulge**2 / v_total_sq
+    return bulge_frac
+
+
+def classify_galaxy_type(galaxy: Dict) -> str:
+    """
+    Simple classification based on bulge prominence.
     
-    results = []
+    Returns: 'bulge_dominated', 'intermediate', or 'disk_dominated'
+    """
+    bulge_frac = compute_bulge_fraction(
+        galaxy['v_gas'], galaxy['v_disk'], galaxy['v_bulge']
+    )
     
-    print(f"\n{'='*70}")
-    print("ZERO-SHOT TEST: FROZEN MINIMAL MODEL ON SPARC")
-    print(f"{'='*70}\n")
+    # Average bulge fraction weighted by velocity
+    v_total = np.sqrt(galaxy['v_gas']**2 + galaxy['v_disk']**2 + galaxy['v_bulge']**2)
+    avg_bulge_frac = np.average(bulge_frac, weights=v_total)
     
-    print(f"Testing {len(galaxies)} galaxies with FROZEN parameters:")
-    print(f"  (no per-galaxy fitting allowed)\n")
+    if avg_bulge_frac > 0.3:
+        return 'bulge_dominated'
+    elif avg_bulge_frac > 0.1:
+        return 'intermediate'
+    else:
+        return 'disk_dominated'
+
+
+def create_particle_distribution(galaxy: Dict, n_particles: int = 50000,
+                                 R_max: float = 40.0) -> Tuple:
+    """
+    Create a simple particle distribution from SPARC velocity profiles.
     
-    for i, galaxy in enumerate(galaxies):
-        df_galaxy = df[df.galaxy == galaxy]
+    This is a simplified approach: we sample particles with mass proportional
+    to the surface brightness and velocity contributions.
+    
+    Returns: (positions[N,3], masses[N])
+    """
+    r_kpc = galaxy['r_kpc']
+    sb_disk = galaxy['sb_disk']
+    sb_bulge = galaxy['sb_bulge']
+    
+    # Total mass proxy from surface brightness
+    sb_total = sb_disk + sb_bulge
+    
+    # Interpolate to create sampling distribution
+    # Sample more particles where there's more light
+    r_sample = []
+    m_sample = []
+    
+    # Exponential disk-like sampling based on SB profile
+    for i in range(n_particles):
+        # Sample radius weighted by SB and area (2πr)
+        weights = sb_total * r_kpc
+        weights = weights / np.sum(weights)
+        r = np.random.choice(r_kpc, p=weights)
         
-        print(f"[{i+1:2d}/{len(galaxies)}] {galaxy:20s} ({df_galaxy.Type.iloc[0]:5s})...", end=' ')
+        # Random azimuthal angle
+        phi = np.random.uniform(0, 2*np.pi)
         
-        try:
-            result = test_galaxy(galaxy, df_galaxy, params, batch_size=batch_size)
-            if result is None:
-                print("SKIP (too few points)")
-                continue
-            
-            results.append(result)
-            print(f"χ²={result['chi2']:.1f}, APE={result['ape']:.1f}%")
-            
-        except Exception as e:
-            print(f"ERROR: {e}")
-            continue
-    
-    return results
-
-
-def analyze_by_type(results):
-    """Analyze performance grouped by galaxy morphology type."""
-    df_results = pd.DataFrame([{
-        'galaxy': r['galaxy'],
-        'type': r['type'],
-        'n_points': r['n_points'],
-        'chi2': r['chi2'],
-        'chi2_red': r['chi2_red'],
-        'ape': r['ape'],
-        'rms': r['rms']
-    } for r in results])
-    
-    print(f"\n{'='*70}")
-    print("PERFORMANCE BY GALAXY TYPE")
-    print(f"{'='*70}\n")
-    
-    type_summary = df_results.groupby('type').agg({
-        'galaxy': 'count',
-        'chi2': 'mean',
-        'chi2_red': 'mean',
-        'ape': 'mean',
-        'rms': 'mean'
-    }).rename(columns={'galaxy': 'n_galaxies'})
-    
-    type_summary = type_summary.sort_values('n_galaxies', ascending=False)
-    
-    print(f"{'Type':5s} {'N':>3s} {'χ²':>8s} {'χ²_red':>8s} {'APE(%)':>8s} {'RMS':>8s}")
-    print("-" * 50)
-    for gtype, row in type_summary.iterrows():
-        print(f"{gtype:5s} {row.n_galaxies:3.0f} "
-              f"{row.chi2:8.1f} {row.chi2_red:8.2f} "
-              f"{row.ape:8.1f} {row.rms:8.1f}")
-    
-    print("\n" + "="*70)
-    print("OVERALL PERFORMANCE")
-    print("="*70 + "\n")
-    
-    print(f"Total galaxies tested: {len(df_results)}")
-    print(f"Median APE: {df_results.ape.median():.1f}%")
-    print(f"Mean χ²_red: {df_results.chi2_red.mean():.2f}")
-    print(f"Success rate (APE < 30%): {(df_results.ape < 30).sum() / len(df_results) * 100:.1f}%")
-    
-    return df_results, type_summary
-
-
-def plot_sample_galaxies(results, n_sample=6):
-    """Plot rotation curves for sample galaxies."""
-    import random
-    random.seed(42)
-    
-    # Sample diverse types
-    sampled = random.sample(results, min(n_sample, len(results)))
-    
-    fig = plt.figure(figsize=(15, 10))
-    gs = GridSpec(2, 3, figure=fig, hspace=0.3, wspace=0.3)
-    
-    for i, result in enumerate(sampled):
-        ax = fig.add_subplot(gs[i // 3, i % 3])
+        # Vertical position (thin disk approximation)
+        z = np.random.normal(0, 0.3)  # 0.3 kpc scale height
         
-        R = result['R_obs']
-        V_obs = result['V_obs']
-        V_err = result['V_err']
-        V_pred = result['V_pred']
+        x = r * np.cos(phi)
+        y = r * np.sin(phi)
         
-        # Plot observed
-        ax.errorbar(R, V_obs, yerr=V_err, fmt='o', color='blue', 
-                   alpha=0.6, label='SPARC obs', capsize=3, markersize=4)
+        r_sample.append([x, y, z])
         
-        # Plot predicted
-        ax.plot(R, V_pred, '-', color='red', linewidth=2, 
-               label='Many-path (frozen)')
+        # Mass proportional to local SB
+        sb_interp = np.interp(r, r_kpc, sb_total, left=0, right=0)
+        m_sample.append(sb_interp)
+    
+    positions = np.array(r_sample)
+    masses = np.array(m_sample)
+    
+    # Normalize total mass to match velocity at some fiducial radius
+    # Use V^2 * R ~ GM, so M ~ V^2 * R / G
+    idx_mid = len(r_kpc) // 2
+    r_fid = r_kpc[idx_mid]
+    v_fid = np.sqrt(galaxy['v_gas'][idx_mid]**2 + 
+                    galaxy['v_disk'][idx_mid]**2 + 
+                    galaxy['v_bulge'][idx_mid]**2)
+    M_total = v_fid**2 * r_fid / G
+    
+    masses = masses / np.sum(masses) * M_total
+    
+    return xp_array(positions, dtype=cp.float64), xp_array(masses, dtype=cp.float64)
+
+
+def predict_rotation_curve(galaxy: Dict, params: Dict, 
+                           use_bulge_gate: bool = False,
+                           n_particles: int = 50000) -> np.ndarray:
+    """
+    Predict rotation curve using many-path gravity with fixed parameters.
+    
+    Returns: v_pred[n_radii] in km/s
+    """
+    # Create particle distribution
+    positions, masses = create_particle_distribution(galaxy, n_particles)
+    
+    # Target radii (where we have observations)
+    R_vals = xp_array(galaxy['r_kpc'], dtype=cp.float64)
+    
+    # Bulge fractions for gating
+    bulge_frac = None
+    if use_bulge_gate:
+        bulge_frac = xp_array(
+            compute_bulge_fraction(galaxy['v_gas'], galaxy['v_disk'], galaxy['v_bulge']),
+            dtype=cp.float64
+        )
+    
+    # Compute rotation curve with many-path gravity
+    v_pred, _ = rotation_curve(
+        positions, masses, R_vals, z=0.0, 
+        eps=0.05, params=params,
+        use_multiplier=True, batch_size=50000,
+        bulge_frac=bulge_frac
+    )
+    
+    return to_cpu(v_pred)
+
+
+def compute_metrics(v_obs: np.ndarray, v_pred: np.ndarray, 
+                   v_err: np.ndarray) -> Dict[str, float]:
+    """
+    Compute performance metrics for rotation curve fit.
+    
+    Returns:
+        - ape: Absolute Percentage Error (mean)
+        - rms: RMS error
+        - chi2_reduced: Reduced chi-squared
+        - success: 1 if APE < 15%, 0 otherwise
+    """
+    # Mask out zero/negative observations
+    mask = (v_obs > 0) & (v_pred > 0)
+    
+    if np.sum(mask) == 0:
+        return {'ape': np.inf, 'rms': np.inf, 'chi2_reduced': np.inf, 'success': 0}
+    
+    v_obs_m = v_obs[mask]
+    v_pred_m = v_pred[mask]
+    v_err_m = v_err[mask]
+    
+    # Absolute percentage error
+    ape = 100.0 * np.abs(v_pred_m - v_obs_m) / v_obs_m
+    mean_ape = np.mean(ape)
+    
+    # RMS error
+    rms = np.sqrt(np.mean((v_pred_m - v_obs_m)**2))
+    
+    # Chi-squared
+    chi2 = np.sum(((v_pred_m - v_obs_m) / np.maximum(v_err_m, 2.0))**2)
+    chi2_reduced = chi2 / len(v_obs_m) if len(v_obs_m) > 0 else np.inf
+    
+    # Success: APE < 15% threshold (commonly used in literature)
+    success = 1 if mean_ape < 15.0 else 0
+    
+    return {
+        'ape': mean_ape,
+        'rms': rms,
+        'chi2_reduced': chi2_reduced,
+        'success': success,
+        'n_points': int(np.sum(mask))
+    }
+
+
+def test_galaxy(galaxy_file: Path, params: Dict, use_bulge_gate: bool = False) -> Dict:
+    """
+    Test many-path model on a single galaxy.
+    
+    Returns dict with galaxy info and metrics.
+    """
+    print(f"Testing {galaxy_file.name}...")
+    
+    try:
+        # Load galaxy data
+        galaxy = load_sparc_galaxy(galaxy_file)
         
-        ax.set_xlabel('Radius (kpc)', fontsize=10)
-        ax.set_ylabel('V$_{circ}$ (km/s)', fontsize=10)
-        ax.set_title(f"{result['galaxy']} ({result['type']})\n"
-                    f"APE={result['ape']:.1f}%, χ²$_r$={result['chi2_red']:.2f}",
-                    fontsize=10, fontweight='bold')
-        ax.legend(fontsize=8)
-        ax.grid(alpha=0.3)
-    
-    plt.suptitle('Many-Path Minimal Model: Zero-Shot SPARC Predictions\n'
-                 '(Frozen Milky Way Parameters)', 
-                 fontsize=14, fontweight='bold')
-    
-    output_file = RESULTS_DIR / "sample_galaxies.png"
-    plt.savefig(output_file, dpi=150, bbox_inches='tight')
-    print(f"\n✓ Saved sample plots: {output_file}")
-    plt.close()
-
-
-def plot_performance_by_type(df_results, type_summary):
-    """Plot performance metrics by galaxy type."""
-    fig, axes = plt.subplots(2, 2, figsize=(12, 10))
-    
-    # Sort by number of galaxies
-    types_sorted = type_summary.sort_values('n_galaxies', ascending=False).index.tolist()
-    
-    # Panel 1: APE by type
-    ax = axes[0, 0]
-    df_results['type'] = pd.Categorical(df_results['type'], categories=types_sorted, ordered=True)
-    df_results_sorted = df_results.sort_values('type')
-    
-    ax.boxplot([df_results[df_results.type == t].ape.values for t in types_sorted],
-               labels=types_sorted, showfliers=False)
-    ax.axhline(30, color='red', linestyle='--', alpha=0.5, label='APE=30% threshold')
-    ax.set_ylabel('APE (%)', fontsize=12)
-    ax.set_title('Absolute Percentage Error by Type', fontsize=12, fontweight='bold')
-    ax.grid(alpha=0.3, axis='y')
-    ax.legend()
-    
-    # Panel 2: Reduced chi-square by type
-    ax = axes[0, 1]
-    ax.boxplot([df_results[df_results.type == t].chi2_red.values for t in types_sorted],
-               labels=types_sorted, showfliers=False)
-    ax.axhline(1.0, color='green', linestyle='--', alpha=0.5, label='χ²$_r$=1')
-    ax.set_ylabel('χ²$_{red}$', fontsize=12)
-    ax.set_title('Reduced Chi-Square by Type', fontsize=12, fontweight='bold')
-    ax.grid(alpha=0.3, axis='y')
-    ax.legend()
-    
-    # Panel 3: Success rate by type
-    ax = axes[1, 0]
-    success_rates = []
-    for t in types_sorted:
-        subset = df_results[df_results.type == t]
-        rate = (subset.ape < 30).sum() / len(subset) * 100
-        success_rates.append(rate)
-    
-    ax.bar(types_sorted, success_rates, color='green', alpha=0.6, edgecolor='black')
-    ax.axhline(50, color='red', linestyle='--', alpha=0.5)
-    ax.set_ylabel('Success Rate (%)', fontsize=12)
-    ax.set_title('Success Rate by Type (APE < 30%)', fontsize=12, fontweight='bold')
-    ax.grid(alpha=0.3, axis='y')
-    
-    # Panel 4: Number of galaxies per type
-    ax = axes[1, 1]
-    ax.bar(types_sorted, type_summary.loc[types_sorted, 'n_galaxies'], 
-          color='blue', alpha=0.6, edgecolor='black')
-    ax.set_ylabel('Number of Galaxies', fontsize=12)
-    ax.set_title('Sample Size by Type', fontsize=12, fontweight='bold')
-    ax.grid(alpha=0.3, axis='y')
-    
-    plt.suptitle('Many-Path Minimal Model: Performance on SPARC by Galaxy Type\n'
-                 '(Zero-Shot Test, Frozen Parameters)',
-                 fontsize=14, fontweight='bold')
-    plt.tight_layout()
-    
-    output_file = RESULTS_DIR / "performance_by_type.png"
-    plt.savefig(output_file, dpi=150, bbox_inches='tight')
-    print(f"✓ Saved performance plots: {output_file}")
-    plt.close()
-
-
-def save_results(results, df_results, type_summary):
-    """Save numerical results to CSV."""
-    # Per-galaxy results
-    df_results.to_csv(RESULTS_DIR / "results_per_galaxy.csv", index=False)
-    print(f"✓ Saved per-galaxy results: {RESULTS_DIR / 'results_per_galaxy.csv'}")
-    
-    # Type summary
-    type_summary.to_csv(RESULTS_DIR / "summary_by_type.csv")
-    print(f"✓ Saved type summary: {RESULTS_DIR / 'summary_by_type.csv'}")
-    
-    # Full results with curves (pickle for later analysis)
-    import pickle
-    with open(RESULTS_DIR / "full_results.pkl", 'wb') as f:
-        pickle.dump(results, f)
-    print(f"✓ Saved full results: {RESULTS_DIR / 'full_results.pkl'}")
+        # Classify galaxy type
+        gal_type = classify_galaxy_type(galaxy)
+        
+        # Predict rotation curve
+        v_pred = predict_rotation_curve(galaxy, params, use_bulge_gate)
+        
+        # Compute metrics
+        metrics = compute_metrics(galaxy['v_obs'], v_pred, galaxy['v_err'])
+        
+        # Compute baryonic velocity for reference
+        v_bar = np.sqrt(galaxy['v_gas']**2 + galaxy['v_disk']**2 + galaxy['v_bulge']**2)
+        
+        result = {
+            'name': galaxy['name'],
+            'type': gal_type,
+            'distance_mpc': galaxy['distance_mpc'],
+            'n_points': len(galaxy['r_kpc']),
+            **metrics,
+            'mean_v_obs': float(np.mean(galaxy['v_obs'])),
+            'mean_v_bar': float(np.mean(v_bar)),
+        }
+        
+        print(f"  {galaxy['name']}: APE={metrics['ape']:.1f}%, Type={gal_type}, Success={metrics['success']}")
+        
+        return result
+        
+    except Exception as e:
+        print(f"  ERROR: {e}")
+        return {
+            'name': galaxy_file.stem.replace('_rotmod', ''),
+            'type': 'error',
+            'error': str(e)
+        }
 
 
 def main():
-    import argparse
-    parser = argparse.ArgumentParser(description="SPARC zero-shot test")
-    parser.add_argument("--n_galaxies", type=int, default=25, help="Number of galaxies to test")
-    parser.add_argument("--batch_size", type=int, default=25000, help="GPU batch size")
-    parser.add_argument("--gpu", type=int, default=1, help="Use GPU (1) or CPU (0)")
+    parser = argparse.ArgumentParser(description="SPARC zero-shot test for many-path gravity")
+    parser.add_argument('--sparc_dir', type=str, required=True,
+                       help='Directory containing SPARC _rotmod.dat files')
+    parser.add_argument('--n_galaxies', type=int, default=25,
+                       help='Number of galaxies to test (default: 25)')
+    parser.add_argument('--use_bulge_gate', type=int, default=0,
+                       help='Use bulge-gated kernel (1=yes, 0=no)')
+    parser.add_argument('--output', type=str, default='sparc_zero_shot_results.csv',
+                       help='Output CSV file for results')
+    parser.add_argument('--seed', type=int, default=42,
+                       help='Random seed for galaxy selection')
+    parser.add_argument('--n_particles', type=int, default=50000,
+                       help='Number of particles for galaxy model')
+    
     args = parser.parse_args()
     
-    # Load data
-    df = load_sparc_data()
+    # Set random seed
+    np.random.seed(args.seed)
+    if _USING_CUPY:
+        cp.random.seed(args.seed)
     
-    # Select diverse sample
-    galaxies = select_diverse_sample(df, n_galaxies=args.n_galaxies)
+    # Load default parameters for many-path model
+    params = default_params()
+    print(f"\nUsing many-path parameters:")
+    for k, v in params.items():
+        print(f"  {k}: {v}")
+    print(f"\nBulge gating: {'ENABLED' if args.use_bulge_gate else 'DISABLED'}")
     
-    # Get FROZEN parameters from Milky Way fit
-    params = minimal_params()
-    print(f"\n{'='*70}")
-    print("FROZEN MINIMAL MODEL PARAMETERS (from Milky Way)")
-    print(f"{'='*70}")
-    for key, val in params.items():
-        print(f"  {key:12s} = {val:.3f}")
-    print("="*70 + "\n")
+    # Find SPARC galaxy files
+    sparc_dir = Path(args.sparc_dir)
+    if not sparc_dir.exists():
+        print(f"ERROR: SPARC directory not found: {sparc_dir}")
+        sys.exit(1)
     
-    # Run zero-shot test
-    results = run_zero_shot_test(galaxies, df, params, batch_size=args.batch_size)
+    galaxy_files = list(sparc_dir.glob('*_rotmod.dat'))
+    if not galaxy_files:
+        print(f"ERROR: No *_rotmod.dat files found in {sparc_dir}")
+        sys.exit(1)
     
-    if len(results) == 0:
-        print("ERROR: No successful tests!")
-        return
+    print(f"\nFound {len(galaxy_files)} SPARC galaxies")
     
-    # Analyze by type
-    df_results, type_summary = analyze_by_type(results)
+    # Select random subset
+    if len(galaxy_files) > args.n_galaxies:
+        galaxy_files = np.random.choice(galaxy_files, args.n_galaxies, replace=False).tolist()
     
-    # Generate plots
-    plot_sample_galaxies(results, n_sample=6)
-    plot_performance_by_type(df_results, type_summary)
+    print(f"Testing {len(galaxy_files)} galaxies\n")
     
-    # Save results
-    save_results(results, df_results, type_summary)
+    # Test each galaxy
+    results = []
+    for gal_file in galaxy_files:
+        result = test_galaxy(gal_file, params, bool(args.use_bulge_gate))
+        results.append(result)
     
-    print(f"\n{'='*70}")
-    print("ZERO-SHOT TEST COMPLETE")
-    print(f"{'='*70}\n")
-    print(f"Results saved to: {RESULTS_DIR}")
+    # Write results to CSV
+    output_path = Path(args.output)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    
+    if results:
+        fieldnames = list(results[0].keys())
+        with open(output_path, 'w', newline='') as f:
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerows(results)
+        
+        print(f"\n=== Results written to {output_path} ===\n")
+        
+        # Print summary statistics
+        valid_results = [r for r in results if 'ape' in r and np.isfinite(r['ape'])]
+        
+        if valid_results:
+            apes = [r['ape'] for r in valid_results]
+            successes = [r['success'] for r in valid_results]
+            
+            print(f"=== Summary Statistics ===")
+            print(f"Total galaxies tested: {len(valid_results)}")
+            print(f"Mean APE: {np.mean(apes):.2f}%")
+            print(f"Median APE: {np.median(apes):.2f}%")
+            print(f"Success rate (APE < 15%): {np.mean(successes)*100:.1f}%")
+            
+            # By galaxy type
+            print(f"\n=== By Galaxy Type ===")
+            for gtype in ['disk_dominated', 'intermediate', 'bulge_dominated']:
+                type_results = [r for r in valid_results if r['type'] == gtype]
+                if type_results:
+                    type_apes = [r['ape'] for r in type_results]
+                    type_success = [r['success'] for r in type_results]
+                    print(f"{gtype}:")
+                    print(f"  N = {len(type_results)}")
+                    print(f"  Mean APE = {np.mean(type_apes):.2f}%")
+                    print(f"  Success rate = {np.mean(type_success)*100:.1f}%")
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

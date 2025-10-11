@@ -164,7 +164,7 @@ def sample_hernquist_bulge(n, M_bulge=1e10, a=0.7, seed=123):
 # ------------------------------
 # Many-path multiplier kernel
 # ------------------------------
-def many_path_multiplier(d, Rs, zs, Rt, zt, params):
+def many_path_multiplier(d, Rs, zs, Rt, zt, params, bulge_frac=None):
     """
     Compute a phenomenological "many-path" multiplier M(d, geometry).
 
@@ -175,6 +175,8 @@ def many_path_multiplier(d, Rs, zs, Rt, zt, params):
     - Rt  : target cylindrical radius [kpc], shape [Nt,]
     - zt  : target z [kpc], shape [Nt,]
     - params: dict of parameters (see defaults in default_params())
+    - bulge_frac: optional array of bulge fraction at target radii [Nt,], 
+                  used to suppress ring-winding in bulge-dominated regions
 
     Returns:
     - M: dimensionless multiplier, shape [Ns, Nt], to multiply the Newtonian force.
@@ -229,7 +231,18 @@ def many_path_multiplier(d, Rs, zs, Rt, zt, params):
     # geometric series sum exp(-2π Rmid / lam) + ...  -> e^{-x} / (1 - e^{-x})
     x = (2.0 * math.pi * Rmid) / lam
     ex = cp.exp(-x)
-    ring_term = ring_amp * (ex / cp.maximum(1e-20, 1.0 - ex))
+    ring_term_base = ring_amp * (ex / cp.maximum(1e-20, 1.0 - ex))
+    
+    # Bulge gating: suppress ring winding in bulge-dominated regions
+    if bulge_frac is not None:
+        # bulge_frac is [Nt,], broadcast to [1, Nt]
+        bulge_gate_power = params.get("bulge_gate_power", 2.0)
+        # Suppress ring term where bulge_frac is high
+        # gate = (1 - bulge_frac)^bulge_gate_power
+        bulge_gate = (1.0 - cp.minimum(bulge_frac[None, :], 1.0))**bulge_gate_power
+        ring_term = ring_term_base * bulge_gate
+    else:
+        ring_term = ring_term_base
 
     M = eta * g1 * f_d * plane_pref * (1.0 + ring_term)
     if M_max is not None:
@@ -256,12 +269,14 @@ def default_params():
         k_boost=0.6,      # extra anisotropy bump near R_lag
         Z0_in=1.1,        # kpc; stronger planar pref inside ~R_lag
         Z0_out=1.6,       # kpc; milder planar pref far out
+        # Bulge gating
+        bulge_gate_power=2.0,  # power for suppressing ring winding in bulge-dominated regions
     )
 
 # ------------------------------
 # Acceleration (batched pairwise sum)
 # ------------------------------
-def compute_accel_batched(src_pos, src_m, tgt_pos, eps=0.05, params=None, batch_size=100_000, use_multiplier=True):
+def compute_accel_batched(src_pos, src_m, tgt_pos, eps=0.05, params=None, batch_size=100_000, use_multiplier=True, bulge_frac=None):
     """
     Compute acceleration at target positions from source particles using batched pairwise summation.
     - src_pos: [Ns,3]
@@ -271,6 +286,7 @@ def compute_accel_batched(src_pos, src_m, tgt_pos, eps=0.05, params=None, batch_
     - params: dict for many-path multiplier
     - batch_size: number of source particles per chunk
     - use_multiplier: if False => pure Newtonian force
+    - bulge_frac: optional array [Nt] of bulge fraction at target positions
 
     Returns:
     - acc: [Nt,3]
@@ -308,7 +324,7 @@ def compute_accel_batched(src_pos, src_m, tgt_pos, eps=0.05, params=None, batch_
         # Multiplier
         if use_multiplier and (params is not None):
             d = cp.sqrt(r2)                         # [B, Nt]
-            M = many_path_multiplier(d, Rs_b, zs_b, Rt, zt, params)  # [B, Nt]
+            M = many_path_multiplier(d, Rs_b, zs_b, Rt, zt, params, bulge_frac=bulge_frac)  # [B, Nt]
             factor = (1.0 + M)                     # [B, Nt]
         else:
             factor = 1.0
@@ -329,9 +345,11 @@ def compute_accel_batched(src_pos, src_m, tgt_pos, eps=0.05, params=None, batch_
 # ------------------------------
 # Helpers: rotation curve & vertical frequency
 # ------------------------------
-def rotation_curve(src_pos, src_m, R_vals, z=0.0, eps=0.05, params=None, use_multiplier=True, batch_size=100_000):
+def rotation_curve(src_pos, src_m, R_vals, z=0.0, eps=0.05, params=None, use_multiplier=True, batch_size=100_000, bulge_frac=None):
     """
     Compute circular velocity v_c(R) in the plane z (default z=0).
+    
+    - bulge_frac: optional array [len(R_vals)] of bulge fraction at each radius
     """
     Nt = len(R_vals)
     tgt = xp_zeros((Nt, 3), dtype=cp.float64)
@@ -340,7 +358,7 @@ def rotation_curve(src_pos, src_m, R_vals, z=0.0, eps=0.05, params=None, use_mul
     tgt[:, 2] = z
 
     acc = compute_accel_batched(src_pos, src_m, tgt, eps=eps, params=params,
-                                batch_size=batch_size, use_multiplier=use_multiplier)
+                                batch_size=batch_size, use_multiplier=use_multiplier, bulge_frac=bulge_frac)
     # radial component along x (since y=0)
     a_R = acc[:, 0]
     v_c = cp.sqrt(cp.maximum(0.0, R_vals * (-a_R)))
