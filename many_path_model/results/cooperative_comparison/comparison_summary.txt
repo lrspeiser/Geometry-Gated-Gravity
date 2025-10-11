@@ -1,0 +1,13 @@
+Cooperative Response Model - Gaia Comparison
+==================================================
+
+Parameters: 4
+  alpha          : 0.5
+  beta           : 0.3
+  rho_solar      : 0.1
+  rho_threshold  : 0.01
+
+Rotation chi2:  73201.81
+Vertical lag:   8.8 +/- 7.8 km/s
+Outer slope:    456.27
+Total loss:     74142.93

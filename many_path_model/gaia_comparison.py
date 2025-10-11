@@ -44,7 +44,7 @@ def load_gaia_data():
         raise FileNotFoundError(f"Gaia data not found: {data_file}")
     
     df = pd.read_csv(data_file)
-    print(f"✓ Loaded {len(df)} REAL stars from Gaia DR3\n")
+    print(f"OK Loaded {len(df)} REAL stars from Gaia DR3\n")
     
     return df
 
