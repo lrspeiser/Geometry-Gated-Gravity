@@ -446,20 +446,15 @@ class HierarchicalSearch:
         
         # Objective function (CPU-based for CMA-ES)
         def objective(x):
-            # Clip to bounds to avoid numerical issues
-            x_clipped = np.array([
-                np.clip(x[i], self.param_bounds[self.param_names[i]][0], 
-                       self.param_bounds[self.param_names[i]][1])
-                for i in range(len(x))
-            ])
-            
-            params_gpu = cp.array([x_clipped], dtype=cp.float32)
+            # CMA-ES handles bounds internally - don't clip!
+            # Just evaluate the parameters as-is
+            params_gpu = cp.array([x], dtype=cp.float32)
             score = float(self.evaluate_params_vectorized(params_gpu)[0])
             
             # Update best
             if score < self.best_score:
                 self.best_score = score
-                self.best_params = {name: float(x_clipped[i]) 
+                self.best_params = {name: float(x[i]) 
                                    for i, name in enumerate(self.param_names)}
                 print(f"  🎯 NEW BEST: {self.best_score:.2f}%")
                 for name, val in self.best_params.items():
@@ -472,11 +467,12 @@ class HierarchicalSearch:
         # Use smaller sigma to avoid bounds issues
         sigma0 = min(0.1, np.mean([region.widths[name] for name in self.param_names]) * 0.5)
         
-        # Bounds (expanded slightly from region)
+        # Bounds: Use region-based bounds, NOT original narrow param_bounds
+        # This allows refinement around parameters found in wide search
         bounds = [
-            [max(self.param_bounds[name][0], region.center[name] - region.widths[name] * 2) 
+            [max(0.0, region.center[name] - region.widths[name] * 2) 
              for name in self.param_names],
-            [min(self.param_bounds[name][1], region.center[name] + region.widths[name] * 2) 
+            [region.center[name] + region.widths[name] * 2 
              for name in self.param_names]
         ]
         
@@ -518,11 +514,17 @@ class HierarchicalSearch:
         """Fallback refinement using dense adaptive grid"""
         print(f"  Using dense adaptive grid ({n_samples:,} samples)...")
         
+        # Initialize best from region if not already set
+        if self.best_score == np.inf:
+            self.best_score = region.score
+            self.best_params = region.center.copy()
+        
         samples = region.sample_uniform(n_samples, self.param_names)
         
         # Evaluate in batches
         batch_size = 10000
         scores_list = []
+        n_improved = 0
         
         for batch_start in range(0, len(samples), batch_size):
             batch_end = min(batch_start + batch_size, len(samples))
@@ -532,15 +534,22 @@ class HierarchicalSearch:
             scores_gpu = self.evaluate_params_vectorized(params_gpu)
             scores_batch = scores_gpu.get()
             scores_list.append(scores_batch)
+            
+            # Check for improvements in this batch
+            batch_best_idx = np.argmin(scores_batch)
+            if scores_batch[batch_best_idx] < self.best_score:
+                self.best_score = float(scores_batch[batch_best_idx])
+                global_idx = batch_start + batch_best_idx
+                self.best_params = {name: float(samples[global_idx, i]) 
+                                   for i, name in enumerate(self.param_names)}
+                n_improved += 1
+                print(f"    🎯 NEW BEST: {self.best_score:.2f}%")
+            
+            if (batch_end) % 100000 == 0:
+                print(f"    Evaluated {batch_end:,}/{n_samples:,}...")
         
         scores = np.concatenate(scores_list)
-        
-        # Find best
-        best_idx = np.argmin(scores)
-        if scores[best_idx] < self.best_score:
-            self.best_score = float(scores[best_idx])
-            self.best_params = {name: float(samples[best_idx, i]) 
-                               for i, name in enumerate(self.param_names)}
+        print(f"\n  ✓ Fallback refinement complete: {n_improved} improvements found")
         
         return self.best_params
     
