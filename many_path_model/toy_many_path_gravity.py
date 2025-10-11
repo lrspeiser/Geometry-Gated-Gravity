@@ -202,8 +202,27 @@ def many_path_multiplier(d, Rs, zs, Rt, zt, params):
 
     # Plane preference: prefer smaller z-avg (paths hugging the disk)
     # Build z_avg with broadcasting: zs[:,None], zt[None,:]
+    # Use radially-modulated anisotropy: stronger near solar circle, weaker far out
+    
+    # Radial modulation parameters
+    R_lag = params.get("R_lag", 8.0)      # kpc, center of lag enhancement
+    w_lag = params.get("w_lag", 2.0)      # kpc, width of transition
+    k_boost = params.get("k_boost", 0.6)  # extra anisotropy bump near R_lag
+    Z0_in = params.get("Z0_in", 1.1)      # stronger planar pref inside ~R_lag
+    Z0_out = params.get("Z0_out", 1.6)    # milder planar pref far out
+    
+    # Mid-radius (already computed for ring term)
+    Rmid = 0.5 * (cp.abs(Rs)[:, None] + cp.abs(Rt)[None, :])
+    
+    # Smooth transition: inner → Z0_in, outer → Z0_out
+    s = 0.5 * (1.0 + cp.tanh((R_lag - Rmid) / w_lag))
+    Zeff = Z0_out * (1.0 - s) + Z0_in * s
+    
+    # Effective anisotropy exponent: base k_an plus Gaussian bump at R_lag
+    k_eff = k_an + k_boost * cp.exp(-((Rmid - R_lag) / w_lag)**2)
+    
     zavg = 0.5 * (cp.abs(zs)[:, None] + cp.abs(zt)[None, :])
-    plane_pref = (Z0**2 / (Z0**2 + zavg**2))**k_an
+    plane_pref = (Zeff**2 / (Zeff**2 + zavg**2))**k_eff
 
     # Ring-winding term: depends on mid-radius
     Rmid = 0.5 * (cp.abs(Rs)[:, None] + cp.abs(Rt)[None, :])
@@ -226,11 +245,17 @@ def default_params():
         p=2.0,            # growth power
         R1=80.0,          # kpc; roll/saturation
         q=2.0,            # roll steepness
-        Z0=1.0,           # planar preference scale
-        k_an=1.0,         # anisotropy strength
+        Z0=1.0,           # planar preference scale (legacy, now uses Z0_in/Z0_out)
+        k_an=1.0,         # anisotropy strength (base level)
         ring_amp=0.2,     # azimuthal winding contribution
         lambda_ring=20.0, # kpc
         M_max=4.0,        # cap
+        # Radially-modulated anisotropy (new)
+        R_lag=8.0,        # kpc; center of vertical lag enhancement
+        w_lag=2.0,        # kpc; width of radial transition
+        k_boost=0.6,      # extra anisotropy bump near R_lag
+        Z0_in=1.1,        # kpc; stronger planar pref inside ~R_lag
+        Z0_out=1.6,       # kpc; milder planar pref far out
     )
 
 # ------------------------------

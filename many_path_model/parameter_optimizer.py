@@ -34,12 +34,17 @@ except Exception:
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def pack_params(eta, R0, R1, Z0, k_an, ring_amp, lambda_ring, 
-                R_gate=0.5, p_gate=4.0, p=2.0, q=3.0, M_max=4.0):
+def pack_params(eta, R0, R1, k_an, ring_amp, lambda_ring,
+                Z0_in=1.1, Z0_out=1.6, R_lag=8.0, w_lag=2.0, k_boost=0.6,
+                R_gate=0.5, p_gate=4.0, p=2.0, q=3.5, M_max=3.5):
     """Pack optimization parameters into full parameter dict."""
     return dict(
-        eta=eta, R0=R0, R1=R1, Z0=Z0, k_an=k_an, 
+        eta=eta, R0=R0, R1=R1, k_an=k_an, 
         ring_amp=ring_amp, lambda_ring=lambda_ring,
+        # Radially-modulated anisotropy
+        Z0_in=Z0_in, Z0_out=Z0_out, R_lag=R_lag, w_lag=w_lag, k_boost=k_boost,
+        # Fixed/legacy
+        Z0=1.0,  # legacy, not used with modulated version
         R_gate=R_gate, p_gate=p_gate, p=p, q=q, M_max=M_max
     )
 
@@ -91,7 +96,7 @@ def loss_manypath(params, src_pos, src_mass, obs_curve, R_grid,
     
     # Total with tunable weights
     w_rot = 1.0
-    w_lag = 0.5
+    w_lag = 0.8  # Increased from 0.5 to make 15±5 km/s a sharper target
     w_slope = 2.0
     
     total_loss = w_rot * chi2_rot + w_lag * chi2_lag + w_slope * chi2_slope
@@ -126,15 +131,21 @@ def random_narrow_search(src_pos, src_mass, obs_curve, R_grid,
     """
     rng = np.random.default_rng(seed)
     
-    # Initial box (broad but sane)
+    # Initial box - Family A (moderate anisotropy, safer outer curve)
+    # Tightened to hit 10-20 km/s vertical lag without overshoot
     box = {
-        'eta':          (0.25, 0.65),
-        'R0':           (3.0, 8.0),
-        'R1':           (50.0, 120.0),
-        'Z0':           (0.8, 2.5),
-        'k_an':         (0.5, 1.2),
-        'ring_amp':     (0.00, 0.20),
-        'lambda_ring':  (15.0, 60.0),
+        'eta':          (0.32, 0.44),
+        'R0':           (4.0, 6.0),
+        'R1':           (60.0, 90.0),
+        'k_an':         (1.0, 1.8),
+        'ring_amp':     (0.03, 0.12),
+        'lambda_ring':  (35.0, 55.0),
+        # Radially-modulated anisotropy parameters
+        'Z0_in':        (1.0, 1.3),
+        'Z0_out':       (1.5, 2.0),
+        'R_lag':        (7.0, 9.0),
+        'w_lag':        (1.5, 2.5),
+        'k_boost':      (0.4, 0.8),
     }
     
     print(f"\n{'='*70}")
@@ -224,27 +235,36 @@ def random_narrow_search(src_pos, src_mass, obs_curve, R_grid,
 
 def quick_param_tweak():
     """
-    Quick parameter tweaks based on manual analysis.
+    Quick parameter tweaks - Family A center values.
     
-    Suggested changes to fix overshoot:
-    - Lower eta: 0.60 → 0.35-0.45
-    - Harden saturation: q: 2 → 3-4
-    - Tone down planar preference: Z0: 1.0 → 1.5-2.0, k_an: 1.0 → 0.6-0.9
-    - Soften ring winding: ring_amp: 0.2 → 0.05-0.15
+    Targets:
+    - Rotation curve χ² < 1000
+    - Vertical lag ~15 km/s at z=0.5 kpc
+    - Flat outer curve (R > 12 kpc)
+    
+    Changes from v1 tweaks:
+    - Stronger planar preference (Z0_in lower, k_an higher)
+    - Radially modulated to avoid outer overshoot
+    - Lower eta to compensate for stronger anisotropy
     """
     tweaked = {
-        'eta': 0.40,          # Was 0.60
-        'R_gate': 0.5,        # Keep
+        'eta': 0.39,          # Balanced: not too low (preserves rotation fit)
+        'R_gate': 0.5,        # Keep solar system safe
         'p_gate': 4.0,        # Keep
         'R0': 5.0,            # Keep
         'p': 2.0,             # Keep
-        'R1': 70.0,           # Was 80.0
-        'q': 3.5,             # Was 2.0
-        'Z0': 1.8,            # Was 1.0
-        'k_an': 0.75,         # Was 1.0
-        'ring_amp': 0.10,     # Was 0.20
-        'lambda_ring': 35.0,  # Was 20.0
-        'M_max': 3.5,         # Was 4.0
+        'R1': 70.0,           # Keep hard saturation
+        'q': 3.5,             # Keep hard saturation
+        'k_an': 1.4,          # Strong anisotropy (was 1.5, dial back slightly)
+        'ring_amp': 0.07,     # Modest ring contribution
+        'lambda_ring': 42.0,  # Slightly longer scale
+        'M_max': 3.3,         # Keep
+        # Radially-modulated anisotropy - balanced for ~13-15 km/s lag
+        'Z0_in': 1.05,        # Strong planar pref (compromise between 1.0 and 1.15)
+        'Z0_out': 1.72,       # Milder far out
+        'R_lag': 8.0,         # Center at solar circle
+        'w_lag': 1.9,         # Smooth but focused transition
+        'k_boost': 0.68,      # Strong bump for lag (compromise)
     }
     return tweaked
 
