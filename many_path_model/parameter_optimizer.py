@@ -248,23 +248,23 @@ def quick_param_tweak():
     - Lower eta to compensate for stronger anisotropy
     """
     tweaked = {
-        'eta': 0.39,          # Balanced: not too low (preserves rotation fit)
+        'eta': 0.39,          # Keep balanced for rotation curve
         'R_gate': 0.5,        # Keep solar system safe
         'p_gate': 4.0,        # Keep
         'R0': 5.0,            # Keep
         'p': 2.0,             # Keep
         'R1': 70.0,           # Keep hard saturation
         'q': 3.5,             # Keep hard saturation
-        'k_an': 1.4,          # Strong anisotropy (was 1.5, dial back slightly)
+        'k_an': 1.4,          # Strong anisotropy
         'ring_amp': 0.07,     # Modest ring contribution
-        'lambda_ring': 42.0,  # Slightly longer scale
+        'lambda_ring': 42.0,  # Keep
         'M_max': 3.3,         # Keep
-        # Radially-modulated anisotropy - balanced for ~13-15 km/s lag
-        'Z0_in': 1.05,        # Strong planar pref (compromise between 1.0 and 1.15)
-        'Z0_out': 1.72,       # Milder far out
+        # Radially-modulated anisotropy - FINAL: targeting 13-15 km/s lag
+        'Z0_in': 1.02,        # Slightly stronger (lower = stronger)
+        'Z0_out': 1.72,       # Keep
         'R_lag': 8.0,         # Center at solar circle
-        'w_lag': 1.9,         # Smooth but focused transition
-        'k_boost': 0.68,      # Strong bump for lag (compromise)
+        'w_lag': 1.9,         # Keep
+        'k_boost': 0.75,      # Increased from 0.68, but conservative
     }
     return tweaked
 
