@@ -225,8 +225,11 @@ def main():
                 B_T = morph_to_bt(hubble_type, type_group)
                 
                 # Evaluate all three versions
-                v2p2_params = eval_all_laws_v2p3(B_T, theta_v2p2, Sigma0=Sigma0, R_d=R_d,
-                                                 shear=shear, g_bar_in=g_bar, bar_class=bar_class)
+                # V2.2: Use V2.2 laws (pre-taper, with bar gating only)
+                from bt_laws_v2p2 import eval_all_laws_v2p2
+                v2p2_params = eval_all_laws_v2p2(B_T, theta_v2p2, Sigma0=Sigma0, R_d=R_d,
+                                                 shear=shear, g_bar_in=g_bar)
+                # V2.3/V2.3b: Use V2.3 laws (with radial tapers)
                 v2p3_params = eval_all_laws_v2p3(B_T, theta_v2p3, Sigma0=Sigma0, R_d=R_d,
                                                  shear=shear, g_bar_in=g_bar, bar_class=bar_class)
                 v2p3b_params = eval_all_laws_v2p3(B_T, theta_v2p3b, Sigma0=Sigma0, R_d=R_d,
