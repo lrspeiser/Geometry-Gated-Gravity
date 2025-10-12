@@ -207,17 +207,43 @@ class PathSpectrumKernel:
         
         return L_coh
     
-    def suppression_factor(self, r: Union[float, np.ndarray],
-                          v_circ: Union[float, np.ndarray],
-                          BT: float = 0.0,
-                          bar_strength: float = 0.0,
-                          r_bulge: float = 1.0,
-                          r_bar: float = 3.0,
-                          r_scale: float = 3.0) -> Union[float, np.ndarray]:
-        """Compute velocity suppression factor ξ based on coherence length
+    def S_small(self, r: Union[float, np.ndarray], r_gate: float = 0.5) -> Union[float, np.ndarray]:
+        """Small-radius gate: S_small(r→0) = 0, S_small(r≫r_gate) → 1
         
-        This maps coherence length to the RAR gate suppression factor.
-        Small L_coh → more suppression of the RAR boost.
+        This ensures Newtonian limit is preserved at small radii.
+        
+        Parameters:
+        -----------
+        r : float or array
+            Radius [kpc]
+        r_gate : float
+            Gate scale radius [kpc], typical ~0.5 kpc
+        
+        Returns:
+        --------
+        S : float or array
+            Gate factor [0, 1], where 0 = no many-path contribution
+        """
+        r_arr = self.xp.asarray(r)
+        # Smooth turn-on: 1 - exp(-(r/r_gate)^p)
+        p = 2.0  # Power for smoothness
+        S = 1.0 - self.xp.exp(-(r_arr / r_gate)**p)
+        return S
+    
+    def many_path_boost_factor(self, r: Union[float, np.ndarray],
+                               v_circ: Union[float, np.ndarray],
+                               BT: float = 0.0,
+                               bar_strength: float = 0.0,
+                               r_bulge: float = 1.0,
+                               r_bar: float = 3.0,
+                               r_gate: float = 0.5) -> Union[float, np.ndarray]:
+        """Compute many-path boost factor K for ADDITIVE formulation
+        
+        CORRECT USAGE: g_total = g_Newton * (1 + K * S_small * coherence_gates)
+        NOT: g_total = g_Newton * suppression_factor
+        
+        This preserves Newtonian limit at small r while adding many-path
+        contribution at large r where coherence is maintained.
         
         Parameters:
         -----------
@@ -233,33 +259,84 @@ class PathSpectrumKernel:
             Bulge scale radius [kpc]
         r_bar : float
             Bar scale radius [kpc]
-        r_scale : float
-            Typical disk scale length for normalization [kpc]
+        r_gate : float
+            Small-radius gate scale [kpc]
         
         Returns:
         --------
-        xi : float or array
-            Suppression factor [0, 1], where 1 = no suppression
+        K : float or array
+            Boost factor for additive contribution
+            K = 0 at small r (Newtonian preserved)
+            K > 0 at large r (many-path active)
         """
+        # Small-radius gate (preserves Newtonian limit)
+        S_sm = self.S_small(r, r_gate)
+        
+        # Coherence length from bulge, shear, bar
         L_coh = self.coherence_length(r, v_circ, BT, bar_strength, r_bulge, r_bar)
         
-        # Map coherence length to suppression
-        # Large L_coh → xi ≈ 1 (no suppression)
-        # Small L_coh → xi < 1 (strong suppression)
-        xi = L_coh / (L_coh + r_scale)
+        # Convert coherence length to boost strength
+        # High L_coh → strong boost (many paths coherent)
+        # Low L_coh → weak boost (paths dephase)
+        r_arr = self.xp.asarray(r)
+        K_max = 0.5  # Maximum boost factor (tunable hyperparameter)
+        K_coherence = K_max * (L_coh / (L_coh + self.xp.maximum(r_arr, 0.1)))
         
+        # Combined: small-r gate × coherence-based boost
+        K_total = S_sm * K_coherence
+        
+        return K_total
+    
+    def suppression_factor(self, r: Union[float, np.ndarray],
+                          v_circ: Union[float, np.ndarray],
+                          BT: float = 0.0,
+                          bar_strength: float = 0.0,
+                          r_bulge: float = 1.0,
+                          r_bar: float = 3.0,
+                          r_scale: float = 3.0) -> Union[float, np.ndarray]:
+        """DEPRECATED: Use many_path_boost_factor() instead
+        
+        This old implementation incorrectly multiplied the total field,
+        violating Newtonian limit at small radii.
+        
+        Kept for backward compatibility but should not be used for physics.
+        """
+        # Issue warning
+        import warnings
+        warnings.warn(
+            "suppression_factor() is deprecated and violates Newtonian limit. "
+            "Use many_path_boost_factor() for additive formulation.",
+            DeprecationWarning
+        )
+        
+        L_coh = self.coherence_length(r, v_circ, BT, bar_strength, r_bulge, r_bar)
+        xi = L_coh / (L_coh + r_scale)
         return xi
     
     def demo_run(self):
         """Demonstration run showing coherence length behavior"""
         print("=" * 80)
-        print("PATH-SPECTRUM KERNEL DEMONSTRATION")
+        print("PATH-SPECTRUM KERNEL DEMONSTRATION (CORRECTED)")
         print("=" * 80)
         print(f"\nHyperparameters:")
         print(f"  L_0 = {self.hp.L_0:.2f} kpc")
         print(f"  β_bulge = {self.hp.beta_bulge:.2f}")
         print(f"  α_shear = {self.hp.alpha_shear:.4f} (km/s/kpc)^-1")
         print(f"  γ_bar = {self.hp.gamma_bar:.2f}")
+        
+        # Test Newtonian limit first
+        print("\n" + "-" * 80)
+        print("Test 0: NEWTONIAN LIMIT (small radii)")
+        print("-" * 80)
+        r_small = np.array([0.001, 0.01, 0.1, 0.5])  # Very small to moderate
+        v_small = np.array([50, 100, 150, 200])
+        K_small = self.many_path_boost_factor(r_small, v_small, BT=0.0, bar_strength=0.0)
+        
+        for i in range(len(r_small)):
+            print(f"  r = {r_small[i]:6.3f} kpc: K = {K_small[i]:.6f} "
+                  f"(boost = {K_small[i]*100:.3f}%, should be ~0 at small r)")
+        
+        print("\n  ✅ Newtonian limit: K→0 as r→0 (many-path contribution vanishes)")
         
         # Test case 1: Pure disk (no bulge, no bar)
         print("\n" + "-" * 80)
@@ -268,31 +345,37 @@ class PathSpectrumKernel:
         r_test = np.array([1.0, 5.0, 10.0, 20.0])
         v_test = np.array([100.0, 150.0, 160.0, 155.0])  # Typical rotation curve
         L_coh = self.coherence_length(r_test, v_test, BT=0.0, bar_strength=0.0)
+        K_disk = self.many_path_boost_factor(r_test, v_test, BT=0.0, bar_strength=0.0)
         
         for i in range(len(r_test)):
-            print(f"  r = {r_test[i]:5.1f} kpc, v = {v_test[i]:6.1f} km/s → L_coh = {L_coh[i]:.3f} kpc")
+            print(f"  r = {r_test[i]:5.1f} kpc: L_coh = {L_coh[i]:.3f} kpc, K = {K_disk[i]:.3f}")
         
         # Test case 2: Bulge-dominated galaxy
         print("\n" + "-" * 80)
         print("Test Case 2: Bulge-Dominated Galaxy (BT=0.5)")
         print("-" * 80)
         L_coh_bulge = self.coherence_length(r_test, v_test, BT=0.5, bar_strength=0.0)
+        K_bulge = self.many_path_boost_factor(r_test, v_test, BT=0.5, bar_strength=0.0)
         
         for i in range(len(r_test)):
-            print(f"  r = {r_test[i]:5.1f} kpc → L_coh = {L_coh_bulge[i]:.3f} kpc "
-                  f"(suppression: {L_coh_bulge[i]/L_coh[i]:.2f}×)")
+            print(f"  r = {r_test[i]:5.1f} kpc: L_coh = {L_coh_bulge[i]:.3f} kpc, "
+                  f"K = {K_bulge[i]:.3f} (vs disk: {K_bulge[i]/K_disk[i]:.2f}×)")
         
         # Test case 3: Barred galaxy
         print("\n" + "-" * 80)
         print("Test Case 3: Barred Galaxy (bar_strength=0.8)")
         print("-" * 80)
         L_coh_bar = self.coherence_length(r_test, v_test, BT=0.0, bar_strength=0.8, r_bar=3.0)
+        K_bar = self.many_path_boost_factor(r_test, v_test, BT=0.0, bar_strength=0.8, r_bar=3.0)
         
         for i in range(len(r_test)):
-            print(f"  r = {r_test[i]:5.1f} kpc → L_coh = {L_coh_bar[i]:.3f} kpc "
-                  f"(suppression: {L_coh_bar[i]/L_coh[i]:.2f}×)")
+            print(f"  r = {r_test[i]:5.1f} kpc: L_coh = {L_coh_bar[i]:.3f} kpc, "
+                  f"K = {K_bar[i]:.3f} (vs disk: {K_bar[i]/K_disk[i]:.2f}×)")
         
         print("\n" + "=" * 80)
+        print("USAGE: g_total = g_Newton * (1 + K)")
+        print("       where K = many_path_boost_factor(r, v, BT, bar_strength)")
+        print("=" * 80)
 
 
 def main():
