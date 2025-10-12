@@ -1,0 +1,77 @@
+{
+  "best_score": 24.686647415161133,
+  "best_params": {
+    "eta": 0.059688812458874835,
+    "ring_amp": 10.146581666372917,
+    "M_max": 1.3369478598577655,
+    "bulge_gate_power": 32.44400298767015
+  },
+  "all_results": [
+    {
+      "start_number": 5,
+      "initial_score": 26.109813690185547,
+      "final_score": 24.686647415161133,
+      "improvement": 1.423166275024414,
+      "final_params": {
+        "eta": 0.059688812458874835,
+        "ring_amp": 10.146581666372917,
+        "M_max": 1.3369478598577655,
+        "bulge_gate_power": 32.44400298767015
+      },
+      "elapsed_time": 185.58138036727905
+    },
+    {
+      "start_number": 2,
+      "initial_score": 24.926504135131836,
+      "final_score": 24.769771575927734,
+      "improvement": 0.15673255920410156,
+      "final_params": {
+        "eta": 0.1296595168682004,
+        "ring_amp": 9.868845350005927,
+        "M_max": 1.0844870063968466,
+        "bulge_gate_power": 15.766604094448168
+      },
+      "elapsed_time": 192.13024067878723
+    },
+    {
+      "start_number": 3,
+      "initial_score": 25.055437088012695,
+      "final_score": 24.769771575927734,
+      "improvement": 0.28566551208496094,
+      "final_params": {
+        "eta": 0.1296595168682004,
+        "ring_amp": 9.868845350005927,
+        "M_max": 1.0844870063968466,
+        "bulge_gate_power": 15.766604094448168
+      },
+      "elapsed_time": 181.25656151771545
+    },
+    {
+      "start_number": 4,
+      "initial_score": 25.088542938232422,
+      "final_score": 24.769771575927734,
+      "improvement": 0.3187713623046875,
+      "final_params": {
+        "eta": 0.1296595168682004,
+        "ring_amp": 9.868845350005927,
+        "M_max": 1.0844870063968466,
+        "bulge_gate_power": 15.766604094448168
+      },
+      "elapsed_time": 173.3246054649353
+    },
+    {
+      "start_number": 1,
+      "initial_score": 24.834152221679688,
+      "final_score": 24.806350708007812,
+      "improvement": 0.027801513671875,
+      "final_params": {
+        "eta": 0.12299430511115499,
+        "ring_amp": 8.6956688524417,
+        "M_max": 1.0032413704526681,
+        "bulge_gate_power": 40.06292230099895
+      },
+      "elapsed_time": 212.01843428611755
+    }
+  ],
+  "n_starts": 5
+}

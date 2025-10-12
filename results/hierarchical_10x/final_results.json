@@ -1,0 +1,12 @@
+{
+  "best_params": {
+    "eta": 0.16469552792509226,
+    "ring_amp": 7.742384595260438,
+    "M_max": 1.0837848879658099,
+    "bulge_gate_power": 47.690418040905236
+  },
+  "best_score": 24.807828903198242,
+  "elapsed_time": 386.35587215423584,
+  "total_evaluations": 599999,
+  "stages_completed": 3
+}

@@ -1,0 +1,3203 @@
+{
+  "mode": "global",
+  "parameters": {
+    "global": {
+      "eta": 0.175,
+      "ring_amp": 1.626,
+      "M_max": 2.542,
+      "bulge_gate_power": 32.941,
+      "lambda_hat": 19.883
+    }
+  },
+  "statistics": {
+    "mode": "global",
+    "n_total": 175,
+    "n_successful": 175,
+    "n_failed": 0,
+    "mean_ape": 48.831467750526976,
+    "median_ape": 41.903210133080904,
+    "std_ape": 28.897908027066627,
+    "min_ape": 14.41662087065059,
+    "max_ape": 194.515055094001,
+    "q25_ape": 31.62088968837675,
+    "q75_ape": 56.279960507456074,
+    "by_type": {
+      "early": {
+        "n": 28,
+        "mean_ape": 48.09268452602364,
+        "median_ape": 42.78057419800825,
+        "std_ape": 19.896273503748073,
+        "min_ape": 18.726012213677304,
+        "max_ape": 96.36168764936822
+      },
+      "intermediate": {
+        "n": 34,
+        "mean_ape": 69.97910867787097,
+        "median_ape": 52.860997751191974,
+        "std_ape": 39.065025660547334,
+        "min_ape": 22.584324464525494,
+        "max_ape": 155.63615743638354
+      },
+      "late": {
+        "n": 113,
+        "mean_ape": 42.651522075804834,
+        "median_ape": 37.83918329642899,
+        "std_ape": 23.730297080828272,
+        "min_ape": 14.41662087065059,
+        "max_ape": 194.515055094001
+      }
+    }
+  },
+  "results": [
+    {
+      "name": "CamB",
+      "hubble_type": "Im",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 65.92269111751074,
+      "rms": 4.938896422997999,
+      "chi2_reduced": 6.860446277935059,
+      "n_points": 9,
+      "elapsed": 0.014519691467285156,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "D512-2",
+      "hubble_type": "Im",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 27.261450734723027,
+      "rms": 10.266572174303654,
+      "chi2_reduced": 7.821015875099103,
+      "n_points": 4,
+      "elapsed": 0.011308431625366211,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "D564-8",
+      "hubble_type": "Im",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 35.54486662747431,
+      "rms": 9.404375870024184,
+      "chi2_reduced": 25.997438735223703,
+      "n_points": 6,
+      "elapsed": 0.01216268539428711,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "D631-7",
+      "hubble_type": "Im",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 54.3753825543763,
+      "rms": 22.90148142757011,
+      "chi2_reduced": 74.92478381666378,
+      "n_points": 16,
+      "elapsed": 0.018925189971923828,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "DDO064",
+      "hubble_type": "Im",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 34.07725308818901,
+      "rms": 17.490580432895406,
+      "chi2_reduced": 11.821645429661505,
+      "n_points": 14,
+      "elapsed": 0.01775813102722168,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "DDO154",
+      "hubble_type": "Im",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 50.17310239020808,
+      "rms": 20.974474938041826,
+      "chi2_reduced": 119.98052697996674,
+      "n_points": 12,
+      "elapsed": 0.0153045654296875,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "DDO161",
+      "hubble_type": "Im",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 60.45939536737371,
+      "rms": 26.000126864088905,
+      "chi2_reduced": 106.85970119437721,
+      "n_points": 30,
+      "elapsed": 0.02798771858215332,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "DDO168",
+      "hubble_type": "Im",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 33.62754762177931,
+      "rms": 18.52920849867755,
+      "chi2_reduced": 74.93766094035144,
+      "n_points": 10,
+      "elapsed": 0.014115333557128906,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "DDO170",
+      "hubble_type": "Im",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 28.68315841656817,
+      "rms": 15.6386556692805,
+      "chi2_reduced": 66.01318162963511,
+      "n_points": 8,
+      "elapsed": 0.013655662536621094,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "ESO079-G014",
+      "hubble_type": "Sbc",
+      "type_group": "intermediate",
+      "param_source": "global_median",
+      "ape": 44.17279415389187,
+      "rms": 48.695120307829214,
+      "chi2_reduced": 347.04468192704087,
+      "n_points": 15,
+      "elapsed": 0.019144535064697266,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "ESO116-G012",
+      "hubble_type": "Sd",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 46.01772007274132,
+      "rms": 35.02721173247479,
+      "chi2_reduced": 192.32184523727778,
+      "n_points": 15,
+      "elapsed": 0.017596006393432617,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "ESO444-G084",
+      "hubble_type": "Im",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 48.54389980014581,
+      "rms": 30.4393765500227,
+      "chi2_reduced": 146.1906179802289,
+      "n_points": 7,
+      "elapsed": 0.012997627258300781,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "ESO563-G021",
+      "hubble_type": "Sbc",
+      "type_group": "intermediate",
+      "param_source": "global_median",
+      "ape": 155.63615743638354,
+      "rms": 200.8164443503133,
+      "chi2_reduced": 1342.087064131299,
+      "n_points": 30,
+      "elapsed": 0.02714252471923828,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "F561-1",
+      "hubble_type": "Sm",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 35.85921018980431,
+      "rms": 14.11579601288401,
+      "chi2_reduced": 6.069306811761228,
+      "n_points": 6,
+      "elapsed": 0.011616230010986328,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "F563-1",
+      "hubble_type": "Sm",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 42.55623731247302,
+      "rms": 44.386815122404315,
+      "chi2_reduced": 17.453615119244535,
+      "n_points": 17,
+      "elapsed": 0.020064830780029297,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "F563-V1",
+      "hubble_type": "Im",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 24.9107656994785,
+      "rms": 5.275526940418269,
+      "chi2_reduced": 1.3358968559557893,
+      "n_points": 6,
+      "elapsed": 0.011766672134399414,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "F563-V2",
+      "hubble_type": "Im",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 46.15279578423491,
+      "rms": 49.079446361494966,
+      "chi2_reduced": 14.973979200694888,
+      "n_points": 10,
+      "elapsed": 0.015037775039672852,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "F565-V2",
+      "hubble_type": "Im",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 47.3073824789127,
+      "rms": 37.782212190744865,
+      "chi2_reduced": 46.30620020526954,
+      "n_points": 7,
+      "elapsed": 0.015623092651367188,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "F567-2",
+      "hubble_type": "Sm",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 21.635570283052076,
+      "rms": 10.69547016123133,
+      "chi2_reduced": 2.555129295344086,
+      "n_points": 5,
+      "elapsed": 0.012534618377685547,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "F568-1",
+      "hubble_type": "Sc",
+      "type_group": "intermediate",
+      "param_source": "global_median",
+      "ape": 58.60911269716373,
+      "rms": 63.3047990271303,
+      "chi2_reduced": 36.403683878014235,
+      "n_points": 12,
+      "elapsed": 0.01714634895324707,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "F568-3",
+      "hubble_type": "Sd",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 37.44332863598447,
+      "rms": 38.52550220384446,
+      "chi2_reduced": 17.376357816490415,
+      "n_points": 18,
+      "elapsed": 0.028148651123046875,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "F568-V1",
+      "hubble_type": "Sd",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 50.91162761817363,
+      "rms": 49.35992922507495,
+      "chi2_reduced": 22.016493993333434,
+      "n_points": 15,
+      "elapsed": 0.017740488052368164,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "F571-8",
+      "hubble_type": "Sc",
+      "type_group": "intermediate",
+      "param_source": "global_median",
+      "ape": 145.90515596545558,
+      "rms": 70.264293804961,
+      "chi2_reduced": 267.0656164505258,
+      "n_points": 13,
+      "elapsed": 0.017175912857055664,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "F571-V1",
+      "hubble_type": "Sd",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 32.95569651066713,
+      "rms": 25.225030511090655,
+      "chi2_reduced": 19.47896746187923,
+      "n_points": 7,
+      "elapsed": 0.013911247253417969,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "F574-1",
+      "hubble_type": "Sd",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 46.44591508996515,
+      "rms": 30.58066961033511,
+      "chi2_reduced": 49.13694087100138,
+      "n_points": 14,
+      "elapsed": 0.021825551986694336,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "F574-2",
+      "hubble_type": "Sm",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 60.836895829645655,
+      "rms": 13.749942689533237,
+      "chi2_reduced": 2.638627715310423,
+      "n_points": 5,
+      "elapsed": 0.012274980545043945,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "F579-V1",
+      "hubble_type": "Sc",
+      "type_group": "intermediate",
+      "param_source": "global_median",
+      "ape": 24.175809528668335,
+      "rms": 25.251881626118575,
+      "chi2_reduced": 6.279790243938413,
+      "n_points": 14,
+      "elapsed": 0.01951885223388672,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "F583-1",
+      "hubble_type": "Sm",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 56.519747685997245,
+      "rms": 37.372177271233966,
+      "chi2_reduced": 42.30604785626271,
+      "n_points": 25,
+      "elapsed": 0.026846647262573242,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "F583-4",
+      "hubble_type": "Sc",
+      "type_group": "intermediate",
+      "param_source": "global_median",
+      "ape": 44.119720056234684,
+      "rms": 17.919356633044146,
+      "chi2_reduced": 14.793958565403194,
+      "n_points": 12,
+      "elapsed": 0.015417098999023438,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "IC2574",
+      "hubble_type": "Sm",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 29.705057962967718,
+      "rms": 18.277398427541563,
+      "chi2_reduced": 33.463867403316115,
+      "n_points": 33,
+      "elapsed": 0.03288602828979492,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "IC4202",
+      "hubble_type": "Sbc",
+      "type_group": "intermediate",
+      "param_source": "global_median",
+      "ape": 111.56999722223128,
+      "rms": 176.0883808379526,
+      "chi2_reduced": 1766.2232344788154,
+      "n_points": 32,
+      "elapsed": 0.033945322036743164,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "KK98-251",
+      "hubble_type": "Im",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 35.18161453244879,
+      "rms": 11.931723021381558,
+      "chi2_reduced": 38.13375381936606,
+      "n_points": 15,
+      "elapsed": 0.01809215545654297,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC0024",
+      "hubble_type": "Sc",
+      "type_group": "intermediate",
+      "param_source": "global_median",
+      "ape": 32.480541742640916,
+      "rms": 36.43893617973591,
+      "chi2_reduced": 79.32771281369506,
+      "n_points": 29,
+      "elapsed": 0.028749942779541016,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC0055",
+      "hubble_type": "Sm",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 27.30638872314467,
+      "rms": 19.114137016806232,
+      "chi2_reduced": 41.61714392790334,
+      "n_points": 21,
+      "elapsed": 0.024491548538208008,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC0100",
+      "hubble_type": "Scd",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 54.81501039838056,
+      "rms": 25.4303902810368,
+      "chi2_reduced": 26.13078628294109,
+      "n_points": 21,
+      "elapsed": 0.055246591567993164,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC0247",
+      "hubble_type": "Sd",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 18.26884089999391,
+      "rms": 20.451925143928612,
+      "chi2_reduced": 16.205746695383187,
+      "n_points": 26,
+      "elapsed": 0.04549264907836914,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC0289",
+      "hubble_type": "Sbc",
+      "type_group": "intermediate",
+      "param_source": "global_median",
+      "ape": 41.8658328387796,
+      "rms": 100.6539421684315,
+      "chi2_reduced": 144.01886569282735,
+      "n_points": 28,
+      "elapsed": 0.03808403015136719,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC0300",
+      "hubble_type": "Sd",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 28.556171346242696,
+      "rms": 26.297276464670784,
+      "chi2_reduced": 49.75737344449613,
+      "n_points": 25,
+      "elapsed": 0.04481077194213867,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC0801",
+      "hubble_type": "Sc",
+      "type_group": "intermediate",
+      "param_source": "global_median",
+      "ape": 108.45256881211368,
+      "rms": 275.3863595344426,
+      "chi2_reduced": 2582.7081496251308,
+      "n_points": 13,
+      "elapsed": 0.03398251533508301,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC0891",
+      "hubble_type": "Sb",
+      "type_group": "early",
+      "param_source": "global_median",
+      "ape": 67.93342056470873,
+      "rms": 156.99185179136768,
+      "chi2_reduced": 1566.1542973310504,
+      "n_points": 18,
+      "elapsed": 0.021945953369140625,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC1003",
+      "hubble_type": "Scd",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 23.553508759561712,
+      "rms": 27.022431705385827,
+      "chi2_reduced": 86.61802381388175,
+      "n_points": 36,
+      "elapsed": 0.029544353485107422,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC1090",
+      "hubble_type": "Sbc",
+      "type_group": "intermediate",
+      "param_source": "global_median",
+      "ape": 149.93043186499284,
+      "rms": 149.74963834995884,
+      "chi2_reduced": 1282.6838215483087,
+      "n_points": 24,
+      "elapsed": 0.0222930908203125,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC1705",
+      "hubble_type": "BCD",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 43.959460710722524,
+      "rms": 34.45675201775649,
+      "chi2_reduced": 59.61259466057814,
+      "n_points": 14,
+      "elapsed": 0.016815900802612305,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC2366",
+      "hubble_type": "Im",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 63.30484999666976,
+      "rms": 19.23221152810872,
+      "chi2_reduced": 67.32807441049381,
+      "n_points": 26,
+      "elapsed": 0.026417255401611328,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC2403",
+      "hubble_type": "Scd",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 43.33144628049883,
+      "rms": 44.62641070119851,
+      "chi2_reduced": 396.7026157308136,
+      "n_points": 73,
+      "elapsed": 0.05123543739318848,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC2683",
+      "hubble_type": "Sb",
+      "type_group": "early",
+      "param_source": "global_median",
+      "ape": 41.6732593636418,
+      "rms": 75.14828811100298,
+      "chi2_reduced": 108.40245899825041,
+      "n_points": 11,
+      "elapsed": 0.014536380767822266,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC2841",
+      "hubble_type": "Sb",
+      "type_group": "early",
+      "param_source": "global_median",
+      "ape": 24.274281058667764,
+      "rms": 87.97136037017533,
+      "chi2_reduced": 131.61718883745866,
+      "n_points": 49,
+      "elapsed": 0.04042196273803711,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC2903",
+      "hubble_type": "Sbc",
+      "type_group": "intermediate",
+      "param_source": "global_median",
+      "ape": 94.06195298745462,
+      "rms": 152.03355206548565,
+      "chi2_reduced": 1296.855551336804,
+      "n_points": 34,
+      "elapsed": 0.07004714012145996,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC2915",
+      "hubble_type": "BCD",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 65.16900911820042,
+      "rms": 45.149003797010565,
+      "chi2_reduced": 44.07117918038487,
+      "n_points": 30,
+      "elapsed": 0.036844730377197266,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC2955",
+      "hubble_type": "Sb",
+      "type_group": "early",
+      "param_source": "global_median",
+      "ape": 68.44639871077136,
+      "rms": 180.68168113520517,
+      "chi2_reduced": 1182.7582917043057,
+      "n_points": 24,
+      "elapsed": 0.04096722602844238,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC2976",
+      "hubble_type": "Sc",
+      "type_group": "intermediate",
+      "param_source": "global_median",
+      "ape": 30.384119438915846,
+      "rms": 22.57544986412917,
+      "chi2_reduced": 37.45003287555271,
+      "n_points": 27,
+      "elapsed": 0.04770827293395996,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC2998",
+      "hubble_type": "Sc",
+      "type_group": "intermediate",
+      "param_source": "global_median",
+      "ape": 82.7521133489869,
+      "rms": 155.60485463559388,
+      "chi2_reduced": 472.3741652124004,
+      "n_points": 13,
+      "elapsed": 0.02043938636779785,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC3109",
+      "hubble_type": "Sm",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 44.25577064638446,
+      "rms": 29.43298730622211,
+      "chi2_reduced": 115.1637012210479,
+      "n_points": 25,
+      "elapsed": 0.025081396102905273,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC3198",
+      "hubble_type": "Sc",
+      "type_group": "intermediate",
+      "param_source": "global_median",
+      "ape": 61.00473511439488,
+      "rms": 60.830589401095615,
+      "chi2_reduced": 183.5460372811619,
+      "n_points": 43,
+      "elapsed": 0.03673267364501953,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC3521",
+      "hubble_type": "Sbc",
+      "type_group": "intermediate",
+      "param_source": "global_median",
+      "ape": 53.49509411131837,
+      "rms": 121.11260504246675,
+      "chi2_reduced": 191.13147406879213,
+      "n_points": 41,
+      "elapsed": 0.03317975997924805,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC3726",
+      "hubble_type": "Sc",
+      "type_group": "intermediate",
+      "param_source": "global_median",
+      "ape": 66.51673362223582,
+      "rms": 103.31342751060585,
+      "chi2_reduced": 459.75751559374106,
+      "n_points": 12,
+      "elapsed": 0.015323400497436523,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC3741",
+      "hubble_type": "Im",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 56.22193940151353,
+      "rms": 26.387179221570626,
+      "chi2_reduced": 130.7216403676527,
+      "n_points": 21,
+      "elapsed": 0.03795003890991211,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC3769",
+      "hubble_type": "Sb",
+      "type_group": "early",
+      "param_source": "global_median",
+      "ape": 27.671328904913135,
+      "rms": 38.37249848512463,
+      "chi2_reduced": 33.0228392936927,
+      "n_points": 12,
+      "elapsed": 0.03694868087768555,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC3877",
+      "hubble_type": "Sc",
+      "type_group": "intermediate",
+      "param_source": "global_median",
+      "ape": 44.71160752288332,
+      "rms": 48.29434938460732,
+      "chi2_reduced": 61.66622045995671,
+      "n_points": 13,
+      "elapsed": 0.03356313705444336,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC3893",
+      "hubble_type": "Sc",
+      "type_group": "intermediate",
+      "param_source": "global_median",
+      "ape": 45.04954734187485,
+      "rms": 85.26787508911708,
+      "chi2_reduced": 167.25953691863222,
+      "n_points": 10,
+      "elapsed": 0.03238034248352051,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC3917",
+      "hubble_type": "Scd",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 24.84024926032038,
+      "rms": 22.07976035496598,
+      "chi2_reduced": 33.10193731433136,
+      "n_points": 17,
+      "elapsed": 0.043213844299316406,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC3949",
+      "hubble_type": "Sbc",
+      "type_group": "intermediate",
+      "param_source": "global_median",
+      "ape": 36.33919405300428,
+      "rms": 65.91585634690188,
+      "chi2_reduced": 128.29191972332933,
+      "n_points": 7,
+      "elapsed": 0.029792308807373047,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC3953",
+      "hubble_type": "Sbc",
+      "type_group": "intermediate",
+      "param_source": "global_median",
+      "ape": 49.3534683539621,
+      "rms": 115.14672754190492,
+      "chi2_reduced": 391.75941600511453,
+      "n_points": 8,
+      "elapsed": 0.015219688415527344,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC3972",
+      "hubble_type": "Sbc",
+      "type_group": "intermediate",
+      "param_source": "global_median",
+      "ape": 22.584324464525494,
+      "rms": 20.864016897820267,
+      "chi2_reduced": 18.11680601122562,
+      "n_points": 10,
+      "elapsed": 0.01564311981201172,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC3992",
+      "hubble_type": "Sbc",
+      "type_group": "intermediate",
+      "param_source": "global_median",
+      "ape": 50.01962917714847,
+      "rms": 133.82306167686824,
+      "chi2_reduced": 557.1857872602723,
+      "n_points": 9,
+      "elapsed": 0.013424873352050781,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC4010",
+      "hubble_type": "Sd",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 37.83918329642899,
+      "rms": 34.79762682682045,
+      "chi2_reduced": 38.43608376551777,
+      "n_points": 12,
+      "elapsed": 0.016975879669189453,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC4013",
+      "hubble_type": "Sb",
+      "type_group": "early",
+      "param_source": "global_median",
+      "ape": 41.9613511854593,
+      "rms": 78.1259271786731,
+      "chi2_reduced": 312.2472509722305,
+      "n_points": 35,
+      "elapsed": 0.058209896087646484,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC4051",
+      "hubble_type": "Sbc",
+      "type_group": "intermediate",
+      "param_source": "global_median",
+      "ape": 32.56589842386546,
+      "rms": 52.30349731121423,
+      "chi2_reduced": 70.68267539604976,
+      "n_points": 7,
+      "elapsed": 0.02318882942199707,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC4068",
+      "hubble_type": "Im",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 58.50639019465289,
+      "rms": 10.314891286655428,
+      "chi2_reduced": 11.96188995062587,
+      "n_points": 6,
+      "elapsed": 0.03178906440734863,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC4085",
+      "hubble_type": "Sc",
+      "type_group": "intermediate",
+      "param_source": "global_median",
+      "ape": 67.46872628368415,
+      "rms": 60.635960570063766,
+      "chi2_reduced": 114.67214593255574,
+      "n_points": 7,
+      "elapsed": 0.030776500701904297,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC4088",
+      "hubble_type": "Sbc",
+      "type_group": "intermediate",
+      "param_source": "global_median",
+      "ape": 105.95588302735833,
+      "rms": 170.3930109058541,
+      "chi2_reduced": 646.1775330718,
+      "n_points": 12,
+      "elapsed": 0.03659534454345703,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC4100",
+      "hubble_type": "Sbc",
+      "type_group": "intermediate",
+      "param_source": "global_median",
+      "ape": 35.20965891848256,
+      "rms": 65.95029169697376,
+      "chi2_reduced": 145.61522766709805,
+      "n_points": 23,
+      "elapsed": 0.040337324142456055,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC4138",
+      "hubble_type": "S0",
+      "type_group": "early",
+      "param_source": "global_median",
+      "ape": 22.097063075848176,
+      "rms": 36.7085298197232,
+      "chi2_reduced": 12.798382834890477,
+      "n_points": 7,
+      "elapsed": 0.014084100723266602,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC4157",
+      "hubble_type": "Sb",
+      "type_group": "early",
+      "param_source": "global_median",
+      "ape": 72.78012206360256,
+      "rms": 129.20893637474995,
+      "chi2_reduced": 301.1681176828198,
+      "n_points": 17,
+      "elapsed": 0.019333600997924805,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC4183",
+      "hubble_type": "Scd",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 20.966162824617033,
+      "rms": 23.9768390188031,
+      "chi2_reduced": 17.60884151536966,
+      "n_points": 23,
+      "elapsed": 0.023116588592529297,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC4214",
+      "hubble_type": "Im",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 31.808966969655238,
+      "rms": 28.375600983609566,
+      "chi2_reduced": 19.49321466919915,
+      "n_points": 14,
+      "elapsed": 0.0171511173248291,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC4217",
+      "hubble_type": "Sb",
+      "type_group": "early",
+      "param_source": "global_median",
+      "ape": 96.36168764936822,
+      "rms": 143.92754128528543,
+      "chi2_reduced": 422.6540028191632,
+      "n_points": 19,
+      "elapsed": 0.020394325256347656,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC4389",
+      "hubble_type": "Sbc",
+      "type_group": "intermediate",
+      "param_source": "global_median",
+      "ape": 149.31309842470728,
+      "rms": 83.93772182808989,
+      "chi2_reduced": 205.9783067686754,
+      "n_points": 6,
+      "elapsed": 0.018347501754760742,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC4559",
+      "hubble_type": "Scd",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 48.35958926110174,
+      "rms": 54.178176934528686,
+      "chi2_reduced": 87.45001518236222,
+      "n_points": 32,
+      "elapsed": 0.029735803604125977,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC5005",
+      "hubble_type": "Sbc",
+      "type_group": "intermediate",
+      "param_source": "global_median",
+      "ape": 51.83998720370377,
+      "rms": 159.81967211232134,
+      "chi2_reduced": 130.13917844856317,
+      "n_points": 18,
+      "elapsed": 0.02220606803894043,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC5033",
+      "hubble_type": "Sc",
+      "type_group": "intermediate",
+      "param_source": "global_median",
+      "ape": 44.651468316591306,
+      "rms": 119.99813374185575,
+      "chi2_reduced": 807.2715054626514,
+      "n_points": 22,
+      "elapsed": 0.02201676368713379,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC5055",
+      "hubble_type": "Sbc",
+      "type_group": "intermediate",
+      "param_source": "global_median",
+      "ape": 98.87626291922626,
+      "rms": 206.0500107386024,
+      "chi2_reduced": 6622.473403588276,
+      "n_points": 28,
+      "elapsed": 0.02587270736694336,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC5371",
+      "hubble_type": "Sbc",
+      "type_group": "intermediate",
+      "param_source": "global_median",
+      "ape": 124.0774567029107,
+      "rms": 282.0772903906236,
+      "chi2_reduced": 6903.257320695056,
+      "n_points": 19,
+      "elapsed": 0.033637285232543945,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC5585",
+      "hubble_type": "Sd",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 87.6009258477813,
+      "rms": 41.5527094926266,
+      "chi2_reduced": 346.65592173553586,
+      "n_points": 24,
+      "elapsed": 0.0475771427154541,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC5907",
+      "hubble_type": "Sc",
+      "type_group": "intermediate",
+      "param_source": "global_median",
+      "ape": 52.226901391065574,
+      "rms": 126.47940097678519,
+      "chi2_reduced": 2561.21432800302,
+      "n_points": 19,
+      "elapsed": 0.03239178657531738,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC5985",
+      "hubble_type": "Sb",
+      "type_group": "early",
+      "param_source": "global_median",
+      "ape": 18.726012213677304,
+      "rms": 57.7636477500029,
+      "chi2_reduced": 150.13829033405452,
+      "n_points": 32,
+      "elapsed": 0.052788496017456055,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC6015",
+      "hubble_type": "Scd",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 41.13760180412173,
+      "rms": 62.086933879483254,
+      "chi2_reduced": 677.3613064010012,
+      "n_points": 44,
+      "elapsed": 0.05331587791442871,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC6195",
+      "hubble_type": "Sb",
+      "type_group": "early",
+      "param_source": "global_median",
+      "ape": 73.80292573097456,
+      "rms": 184.85358110751605,
+      "chi2_reduced": 1420.6940654301313,
+      "n_points": 23,
+      "elapsed": 0.02619624137878418,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC6503",
+      "hubble_type": "Scd",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 14.41662087065059,
+      "rms": 25.91241443278648,
+      "chi2_reduced": 109.36818251900914,
+      "n_points": 31,
+      "elapsed": 0.02632594108581543,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC6674",
+      "hubble_type": "Sb",
+      "type_group": "early",
+      "param_source": "global_median",
+      "ape": 34.745402368294194,
+      "rms": 106.56090173633166,
+      "chi2_reduced": 1044.0871288759959,
+      "n_points": 15,
+      "elapsed": 0.0175626277923584,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC6789",
+      "hubble_type": "BCD",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 48.87660828656897,
+      "rms": 25.96361207157461,
+      "chi2_reduced": 25.51605995757294,
+      "n_points": 4,
+      "elapsed": 0.014567136764526367,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC6946",
+      "hubble_type": "Scd",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 71.01904868283994,
+      "rms": 125.57369152921447,
+      "chi2_reduced": 1395.9309857270448,
+      "n_points": 58,
+      "elapsed": 0.04306674003601074,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC7331",
+      "hubble_type": "Sb",
+      "type_group": "early",
+      "param_source": "global_median",
+      "ape": 86.19919311445925,
+      "rms": 221.1074711594132,
+      "chi2_reduced": 2945.9239284483733,
+      "n_points": 35,
+      "elapsed": 0.02912116050720215,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC7793",
+      "hubble_type": "Sd",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 60.33970011623342,
+      "rms": 38.4307773055122,
+      "chi2_reduced": 32.07314287956322,
+      "n_points": 46,
+      "elapsed": 0.04109668731689453,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "NGC7814",
+      "hubble_type": "Sab",
+      "type_group": "early",
+      "param_source": "global_median",
+      "ape": 22.1686665798968,
+      "rms": 73.58054029950833,
+      "chi2_reduced": 82.61321136658323,
+      "n_points": 18,
+      "elapsed": 0.022627830505371094,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "PGC51017",
+      "hubble_type": "BCD",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 29.72260201678969,
+      "rms": 6.5651485247572605,
+      "chi2_reduced": 12.004688822620288,
+      "n_points": 6,
+      "elapsed": 0.01699376106262207,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC00128",
+      "hubble_type": "Sdm",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 39.87010326503255,
+      "rms": 41.41092664098514,
+      "chi2_reduced": 151.79299687524508,
+      "n_points": 22,
+      "elapsed": 0.022580623626708984,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC00191",
+      "hubble_type": "Sm",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 50.140104416240966,
+      "rms": 38.01464794265508,
+      "chi2_reduced": 358.16605369143343,
+      "n_points": 9,
+      "elapsed": 0.015208244323730469,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC00634",
+      "hubble_type": "Sm",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 19.1472297464273,
+      "rms": 21.50136647745381,
+      "chi2_reduced": 132.31233751257452,
+      "n_points": 4,
+      "elapsed": 0.01988053321838379,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC00731",
+      "hubble_type": "Im",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 40.63565423581408,
+      "rms": 31.433040350748218,
+      "chi2_reduced": 136.1034221389283,
+      "n_points": 12,
+      "elapsed": 0.0215151309967041,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC00891",
+      "hubble_type": "Sm",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 37.2418505186294,
+      "rms": 22.345888306545618,
+      "chi2_reduced": 152.72014956316315,
+      "n_points": 5,
+      "elapsed": 0.012224912643432617,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC01230",
+      "hubble_type": "Sm",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 56.222348094433684,
+      "rms": 37.26162964764651,
+      "chi2_reduced": 12.685414958779086,
+      "n_points": 11,
+      "elapsed": 0.015809297561645508,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC01281",
+      "hubble_type": "Sdm",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 42.98063671805781,
+      "rms": 22.27493373686634,
+      "chi2_reduced": 27.229784241685135,
+      "n_points": 25,
+      "elapsed": 0.02493119239807129,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC02023",
+      "hubble_type": "Im",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 31.321606152733125,
+      "rms": 13.159884979029476,
+      "chi2_reduced": 2.8666498379366394,
+      "n_points": 5,
+      "elapsed": 0.010123491287231445,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC02259",
+      "hubble_type": "Sdm",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 32.024311075227374,
+      "rms": 29.014056294410437,
+      "chi2_reduced": 183.31292963301408,
+      "n_points": 8,
+      "elapsed": 0.012918233871459961,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC02455",
+      "hubble_type": "Im",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 152.40157155585268,
+      "rms": 49.14748602236508,
+      "chi2_reduced": 208.34917990568525,
+      "n_points": 8,
+      "elapsed": 0.015866994857788086,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC02487",
+      "hubble_type": "S0",
+      "type_group": "early",
+      "param_source": "global_median",
+      "ape": 43.18652599896098,
+      "rms": 232.49034492994502,
+      "chi2_reduced": 1234.630853331075,
+      "n_points": 16,
+      "elapsed": 0.01914381980895996,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC02885",
+      "hubble_type": "Sc",
+      "type_group": "intermediate",
+      "param_source": "global_median",
+      "ape": 63.91371158075672,
+      "rms": 222.91960635560372,
+      "chi2_reduced": 524.5388150316717,
+      "n_points": 19,
+      "elapsed": 0.021299362182617188,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC02916",
+      "hubble_type": "Sab",
+      "type_group": "early",
+      "param_source": "global_median",
+      "ape": 41.76207769906414,
+      "rms": 109.86575974756717,
+      "chi2_reduced": 1351.5161021415256,
+      "n_points": 43,
+      "elapsed": 0.03837132453918457,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC02953",
+      "hubble_type": "Sab",
+      "type_group": "early",
+      "param_source": "global_median",
+      "ape": 61.39761123663865,
+      "rms": 215.3085228285054,
+      "chi2_reduced": 1019.3683751799963,
+      "n_points": 115,
+      "elapsed": 0.07596468925476074,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC03205",
+      "hubble_type": "Sab",
+      "type_group": "early",
+      "param_source": "global_median",
+      "ape": 51.26780338913298,
+      "rms": 124.38584924563659,
+      "chi2_reduced": 277.9616147082514,
+      "n_points": 48,
+      "elapsed": 0.04168987274169922,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC03546",
+      "hubble_type": "Sa",
+      "type_group": "early",
+      "param_source": "global_median",
+      "ape": 46.39377140091177,
+      "rms": 123.64367746879066,
+      "chi2_reduced": 167.1212770319873,
+      "n_points": 30,
+      "elapsed": 0.03078436851501465,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC03580",
+      "hubble_type": "Sa",
+      "type_group": "early",
+      "param_source": "global_median",
+      "ape": 70.22752299302283,
+      "rms": 65.54449374626202,
+      "chi2_reduced": 359.69537092739887,
+      "n_points": 47,
+      "elapsed": 0.037008047103881836,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC04278",
+      "hubble_type": "Sd",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 41.903210133080904,
+      "rms": 32.94167001852223,
+      "chi2_reduced": 41.14368777206443,
+      "n_points": 25,
+      "elapsed": 0.024098873138427734,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC04305",
+      "hubble_type": "Im",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 56.890587846803506,
+      "rms": 12.428347413973254,
+      "chi2_reduced": 10.525269492518776,
+      "n_points": 22,
+      "elapsed": 0.020771026611328125,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC04325",
+      "hubble_type": "Sm",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 26.953793782673863,
+      "rms": 25.706574780041766,
+      "chi2_reduced": 81.1606829156214,
+      "n_points": 8,
+      "elapsed": 0.013488292694091797,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC04483",
+      "hubble_type": "Im",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 40.026438612167574,
+      "rms": 8.467384693556394,
+      "chi2_reduced": 19.210404255183345,
+      "n_points": 8,
+      "elapsed": 0.015696287155151367,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC04499",
+      "hubble_type": "Sdm",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 34.33373616670296,
+      "rms": 20.83724528652075,
+      "chi2_reduced": 60.73519656360617,
+      "n_points": 9,
+      "elapsed": 0.013306617736816406,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC05005",
+      "hubble_type": "Im",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 59.8479306847475,
+      "rms": 31.658017251730637,
+      "chi2_reduced": 10.983221520252034,
+      "n_points": 11,
+      "elapsed": 0.014317989349365234,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC05253",
+      "hubble_type": "Sab",
+      "type_group": "early",
+      "param_source": "global_median",
+      "ape": 42.374622397055525,
+      "rms": 140.33102928754357,
+      "chi2_reduced": 1393.1218796992293,
+      "n_points": 73,
+      "elapsed": 0.052526235580444336,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC05414",
+      "hubble_type": "Im",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 28.03552993468654,
+      "rms": 13.888724172387121,
+      "chi2_reduced": 38.71895575769878,
+      "n_points": 6,
+      "elapsed": 0.016237258911132812,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC05716",
+      "hubble_type": "Sm",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 35.185849317828584,
+      "rms": 26.920089457065,
+      "chi2_reduced": 193.05682973655885,
+      "n_points": 12,
+      "elapsed": 0.01443934440612793,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC05721",
+      "hubble_type": "Sd",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 47.31022946293741,
+      "rms": 36.472725113096025,
+      "chi2_reduced": 63.56918120492812,
+      "n_points": 23,
+      "elapsed": 0.02258920669555664,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC05750",
+      "hubble_type": "Sdm",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 71.5736151036921,
+      "rms": 30.79890642316152,
+      "chi2_reduced": 15.4287427831055,
+      "n_points": 11,
+      "elapsed": 0.01587367057800293,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC05764",
+      "hubble_type": "Im",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 47.319932820781595,
+      "rms": 25.43080728657675,
+      "chi2_reduced": 156.20825672811847,
+      "n_points": 10,
+      "elapsed": 0.01486063003540039,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC05829",
+      "hubble_type": "Im",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 32.988861885713135,
+      "rms": 23.85844802679711,
+      "chi2_reduced": 24.455470967837215,
+      "n_points": 11,
+      "elapsed": 0.017975568771362305,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC05918",
+      "hubble_type": "Im",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 41.01218664696994,
+      "rms": 16.758673280489614,
+      "chi2_reduced": 20.781941343352095,
+      "n_points": 8,
+      "elapsed": 0.013934612274169922,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC05986",
+      "hubble_type": "Sm",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 32.65458492620612,
+      "rms": 28.256127608111136,
+      "chi2_reduced": 104.96333778103725,
+      "n_points": 15,
+      "elapsed": 0.01871633529663086,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC05999",
+      "hubble_type": "Im",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 26.81023004529326,
+      "rms": 23.12696472708226,
+      "chi2_reduced": 26.74282487438535,
+      "n_points": 5,
+      "elapsed": 0.012822151184082031,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC06399",
+      "hubble_type": "Sm",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 31.306858771211044,
+      "rms": 26.030610185168182,
+      "chi2_reduced": 34.70540456830706,
+      "n_points": 9,
+      "elapsed": 0.01903080940246582,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC06446",
+      "hubble_type": "Sd",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 38.11093709303783,
+      "rms": 32.48074453302761,
+      "chi2_reduced": 50.02324411278659,
+      "n_points": 17,
+      "elapsed": 0.019484996795654297,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC06614",
+      "hubble_type": "Sa",
+      "type_group": "early",
+      "param_source": "global_median",
+      "ape": 49.14775320462226,
+      "rms": 98.88286966995238,
+      "chi2_reduced": 107.36834138677119,
+      "n_points": 13,
+      "elapsed": 0.01826000213623047,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC06628",
+      "hubble_type": "Sm",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 26.641781006664722,
+      "rms": 10.341111258487974,
+      "chi2_reduced": 1.8241905091098323,
+      "n_points": 7,
+      "elapsed": 0.014919519424438477,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC06667",
+      "hubble_type": "Scd",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 66.64474105390303,
+      "rms": 48.281878494350046,
+      "chi2_reduced": 247.32877812428285,
+      "n_points": 9,
+      "elapsed": 0.013991832733154297,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC06786",
+      "hubble_type": "S0",
+      "type_group": "early",
+      "param_source": "global_median",
+      "ape": 34.21197683571233,
+      "rms": 114.05381400828996,
+      "chi2_reduced": 164.44788215795754,
+      "n_points": 45,
+      "elapsed": 0.03665328025817871,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC06787",
+      "hubble_type": "Sab",
+      "type_group": "early",
+      "param_source": "global_median",
+      "ape": 37.665833230921066,
+      "rms": 139.98193507995552,
+      "chi2_reduced": 261.1564021761597,
+      "n_points": 71,
+      "elapsed": 0.0535891056060791,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC06818",
+      "hubble_type": "Sm",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 51.741991401177756,
+      "rms": 23.568107973925045,
+      "chi2_reduced": 22.522509146166332,
+      "n_points": 8,
+      "elapsed": 0.0136566162109375,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC06917",
+      "hubble_type": "Sm",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 19.66525911699358,
+      "rms": 22.00944018795276,
+      "chi2_reduced": 28.12861166147229,
+      "n_points": 11,
+      "elapsed": 0.018386125564575195,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC06923",
+      "hubble_type": "Im",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 27.362327956020724,
+      "rms": 17.94602619068762,
+      "chi2_reduced": 11.36011032458208,
+      "n_points": 6,
+      "elapsed": 0.010576725006103516,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC06930",
+      "hubble_type": "Sd",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 17.835419488787757,
+      "rms": 19.211290728708427,
+      "chi2_reduced": 8.081107681304575,
+      "n_points": 10,
+      "elapsed": 0.013613462448120117,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC06973",
+      "hubble_type": "Sab",
+      "type_group": "early",
+      "param_source": "global_median",
+      "ape": 52.37767769925622,
+      "rms": 103.82942536368974,
+      "chi2_reduced": 624.0664551600925,
+      "n_points": 9,
+      "elapsed": 0.010934829711914062,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC06983",
+      "hubble_type": "Scd",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 22.692943512080678,
+      "rms": 24.835130532691487,
+      "chi2_reduced": 20.902224726052083,
+      "n_points": 17,
+      "elapsed": 0.016980409622192383,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC07089",
+      "hubble_type": "Sdm",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 31.62997999274313,
+      "rms": 17.082201202821434,
+      "chi2_reduced": 16.13150334550294,
+      "n_points": 12,
+      "elapsed": 0.01479649543762207,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC07125",
+      "hubble_type": "Sm",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 32.21414118399144,
+      "rms": 19.046062244238385,
+      "chi2_reduced": 47.271349019122994,
+      "n_points": 13,
+      "elapsed": 0.014529943466186523,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC07151",
+      "hubble_type": "Scd",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 27.873715400198396,
+      "rms": 17.97877011098254,
+      "chi2_reduced": 42.63540413156903,
+      "n_points": 11,
+      "elapsed": 0.014089584350585938,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC07232",
+      "hubble_type": "Im",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 22.641202301813763,
+      "rms": 11.419066989695938,
+      "chi2_reduced": 15.965116732802386,
+      "n_points": 4,
+      "elapsed": 0.015245676040649414,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC07261",
+      "hubble_type": "Sdm",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 18.651578410420836,
+      "rms": 16.605993654384474,
+      "chi2_reduced": 10.042542134095617,
+      "n_points": 7,
+      "elapsed": 0.011622190475463867,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC07323",
+      "hubble_type": "Sdm",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 26.963961106690867,
+      "rms": 16.818137074736057,
+      "chi2_reduced": 20.984147784967487,
+      "n_points": 10,
+      "elapsed": 0.012835025787353516,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC07399",
+      "hubble_type": "Sdm",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 41.84988343137663,
+      "rms": 45.75641448987773,
+      "chi2_reduced": 185.4147729367624,
+      "n_points": 10,
+      "elapsed": 0.017325162887573242,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC07524",
+      "hubble_type": "Sm",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 32.75800377509863,
+      "rms": 26.140179826651778,
+      "chi2_reduced": 62.22945775539232,
+      "n_points": 31,
+      "elapsed": 0.02626800537109375,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC07559",
+      "hubble_type": "Im",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 33.09767189147155,
+      "rms": 9.38572670211077,
+      "chi2_reduced": 9.850937260764915,
+      "n_points": 7,
+      "elapsed": 0.012213945388793945,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC07577",
+      "hubble_type": "Im",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 22.611954145787802,
+      "rms": 3.2821655182913956,
+      "chi2_reduced": 1.2060212362192533,
+      "n_points": 9,
+      "elapsed": 0.017940759658813477,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC07603",
+      "hubble_type": "Sd",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 38.88118659372558,
+      "rms": 23.32787074595774,
+      "chi2_reduced": 71.07928917693351,
+      "n_points": 12,
+      "elapsed": 0.015307426452636719,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC07608",
+      "hubble_type": "Im",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 48.65227228399253,
+      "rms": 30.731174743447305,
+      "chi2_reduced": 24.115597997969143,
+      "n_points": 8,
+      "elapsed": 0.012794733047485352,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC07690",
+      "hubble_type": "Im",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 17.086653277411212,
+      "rms": 10.580765763772876,
+      "chi2_reduced": 7.031151399152652,
+      "n_points": 7,
+      "elapsed": 0.010518074035644531,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC07866",
+      "hubble_type": "Im",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 24.709230451101558,
+      "rms": 9.259565592761724,
+      "chi2_reduced": 6.038640788319451,
+      "n_points": 7,
+      "elapsed": 0.01129913330078125,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC08286",
+      "hubble_type": "Scd",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 33.870088140292324,
+      "rms": 28.571343050912628,
+      "chi2_reduced": 211.0465743418546,
+      "n_points": 17,
+      "elapsed": 0.016978979110717773,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC08490",
+      "hubble_type": "Sm",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 39.332686443629086,
+      "rms": 31.750208008700458,
+      "chi2_reduced": 76.58851946788246,
+      "n_points": 30,
+      "elapsed": 0.02643609046936035,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC08550",
+      "hubble_type": "Sd",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 39.98198561132554,
+      "rms": 24.487140449658025,
+      "chi2_reduced": 155.66746870986648,
+      "n_points": 11,
+      "elapsed": 0.013101339340209961,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC08699",
+      "hubble_type": "Sab",
+      "type_group": "early",
+      "param_source": "global_median",
+      "ape": 31.611799384010364,
+      "rms": 100.68985750430402,
+      "chi2_reduced": 247.21814845532194,
+      "n_points": 41,
+      "elapsed": 0.033124685287475586,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC08837",
+      "hubble_type": "Im",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 52.58470456731751,
+      "rms": 12.196604458041824,
+      "chi2_reduced": 26.485068316080305,
+      "n_points": 8,
+      "elapsed": 0.012837409973144531,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC09037",
+      "hubble_type": "Scd",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 86.88949937398303,
+      "rms": 114.31179048034898,
+      "chi2_reduced": 566.1388654905265,
+      "n_points": 22,
+      "elapsed": 0.024104833602905273,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC09133",
+      "hubble_type": "Sab",
+      "type_group": "early",
+      "param_source": "global_median",
+      "ape": 56.337572920478465,
+      "rms": 211.24223404263842,
+      "chi2_reduced": 1513.805866232524,
+      "n_points": 68,
+      "elapsed": 0.04801511764526367,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC09992",
+      "hubble_type": "Im",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 15.086579504309174,
+      "rms": 5.944334063462437,
+      "chi2_reduced": 1.3787437826215145,
+      "n_points": 5,
+      "elapsed": 0.01036977767944336,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC10310",
+      "hubble_type": "Sm",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 25.68202691851861,
+      "rms": 20.224895049520228,
+      "chi2_reduced": 18.638815494362476,
+      "n_points": 7,
+      "elapsed": 0.012042522430419922,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC11455",
+      "hubble_type": "Scd",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 95.04921807917106,
+      "rms": 174.54520760026452,
+      "chi2_reduced": 704.8835720462773,
+      "n_points": 36,
+      "elapsed": 0.030193090438842773,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC11557",
+      "hubble_type": "Sdm",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 194.515055094001,
+      "rms": 41.47099640003865,
+      "chi2_reduced": 27.00324308469524,
+      "n_points": 12,
+      "elapsed": 0.015726566314697266,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC11820",
+      "hubble_type": "Sm",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 73.4526440561178,
+      "rms": 36.22384219066768,
+      "chi2_reduced": 281.9189108536066,
+      "n_points": 10,
+      "elapsed": 0.014882564544677734,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC11914",
+      "hubble_type": "Sab",
+      "type_group": "early",
+      "param_source": "global_median",
+      "ape": 29.791505754591316,
+      "rms": 108.29547017390833,
+      "chi2_reduced": 440.72928587159623,
+      "n_points": 65,
+      "elapsed": 0.05541658401489258,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC12506",
+      "hubble_type": "Scd",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 27.67520628116539,
+      "rms": 71.26792063868659,
+      "chi2_reduced": 32.978391330343186,
+      "n_points": 31,
+      "elapsed": 0.027625083923339844,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC12632",
+      "hubble_type": "Sm",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 34.5206757324247,
+      "rms": 26.04141509973312,
+      "chi2_reduced": 80.764628769503,
+      "n_points": 15,
+      "elapsed": 0.017673730850219727,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGC12732",
+      "hubble_type": "Sm",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 33.180191278766046,
+      "rms": 29.923513546596354,
+      "chi2_reduced": 83.08126289625815,
+      "n_points": 16,
+      "elapsed": 0.017473697662353516,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGCA281",
+      "hubble_type": "BCD",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 34.091779707419995,
+      "rms": 9.783676368844162,
+      "chi2_reduced": 24.812654522888646,
+      "n_points": 7,
+      "elapsed": 0.013421297073364258,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGCA442",
+      "hubble_type": "Sm",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 46.49576644765321,
+      "rms": 22.308393714353453,
+      "chi2_reduced": 105.65624821904247,
+      "n_points": 8,
+      "elapsed": 0.016670942306518555,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    },
+    {
+      "name": "UGCA444",
+      "hubble_type": "Im",
+      "type_group": "late",
+      "param_source": "global_median",
+      "ape": 43.47370141744573,
+      "rms": 14.447452111506355,
+      "chi2_reduced": 11.510543898246421,
+      "n_points": 36,
+      "elapsed": 0.03113532066345215,
+      "params_used": {
+        "eta": 0.175,
+        "ring_amp": 1.626,
+        "M_max": 2.542,
+        "bulge_gate_power": 32.941,
+        "lambda_hat": 19.883
+      }
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "best_params": {
+    "eta": 0.053507398813962936,
+    "ring_amp": 0.15000000596046448,
+    "M_max": 2.2399234771728516,
+    "bulge_gate_power": 4.0
+  },
+  "best_score": 28.99351692199707,
+  "total_iterations": 1000,
+  "total_evaluations": 10000000,
+  "elapsed_time": 128.07515454292297,
+  "n_galaxies": 175
+}

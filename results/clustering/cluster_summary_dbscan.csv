@@ -1,0 +1,2 @@
+cluster,size,mean_error,std_error,early_count,intermediate_count,late_count,mean_eta,mean_ring_amp,mean_M_max,mean_bulge_gate_power,mean_lambda_hat
+-1,175,12.452643430914197,14.672362885772385,28,34,113,0.6464284399413347,4.73839168257472,2.680589488298177,31.899565803091008,23.435659437834037

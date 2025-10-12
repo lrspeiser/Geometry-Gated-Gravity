@@ -1,0 +1,1402 @@
+[
+  {
+    "ape_mean": 2.0210645621898684,
+    "ape_median": 1.2578301127884879,
+    "ape_max": 5.542341249525258,
+    "n_points": 6,
+    "name": "UGC05414",
+    "type": "late"
+  },
+  {
+    "ape_mean": 5.036043323108834,
+    "ape_median": 1.3328548042173005,
+    "ape_max": 16.775022030352556,
+    "n_points": 10,
+    "name": "UGC06930",
+    "type": "late"
+  },
+  {
+    "ape_mean": 3.1792976880950583,
+    "ape_median": 2.2171548106111945,
+    "ape_max": 8.044976488490576,
+    "n_points": 7,
+    "name": "UGC07690",
+    "type": "late"
+  },
+  {
+    "ape_mean": 4.673045403187546,
+    "ape_median": 4.729679765334352,
+    "ape_max": 7.7034543285399115,
+    "n_points": 11,
+    "name": "UGC07151",
+    "type": "late"
+  },
+  {
+    "ape_mean": 6.325693078576456,
+    "ape_median": 4.95302610827591,
+    "ape_max": 15.341942326689887,
+    "n_points": 11,
+    "name": "UGC06917",
+    "type": "late"
+  },
+  {
+    "ape_mean": 11.11744242312998,
+    "ape_median": 5.046449468459242,
+    "ape_max": 31.146165508224428,
+    "n_points": 13,
+    "name": "UGC07125",
+    "type": "late"
+  },
+  {
+    "ape_mean": 9.484221497517698,
+    "ape_median": 5.634863084827222,
+    "ape_max": 27.65593305656949,
+    "n_points": 21,
+    "name": "NGC0055",
+    "type": "late"
+  },
+  {
+    "ape_mean": 7.0020255759791885,
+    "ape_median": 6.093646302617633,
+    "ape_max": 17.49051974482967,
+    "n_points": 33,
+    "name": "NGC5985",
+    "type": "early"
+  },
+  {
+    "ape_mean": 10.697532619994442,
+    "ape_median": 7.323710367221587,
+    "ape_max": 32.976678553742474,
+    "n_points": 7,
+    "name": "UGC07261",
+    "type": "late"
+  },
+  {
+    "ape_mean": 8.040031863189219,
+    "ape_median": 7.456587944223666,
+    "ape_max": 22.937212993672176,
+    "n_points": 23,
+    "name": "NGC4183",
+    "type": "late"
+  },
+  {
+    "ape_mean": 9.930770454213352,
+    "ape_median": 8.449951231616984,
+    "ape_max": 30.017192219424654,
+    "n_points": 9,
+    "name": "UGC04499",
+    "type": "late"
+  },
+  {
+    "ape_mean": 16.56444482942926,
+    "ape_median": 8.711154859258066,
+    "ape_max": 55.69202265106297,
+    "n_points": 14,
+    "name": "F579-V1",
+    "type": "intermediate"
+  },
+  {
+    "ape_mean": 10.311485120465086,
+    "ape_median": 9.029538044952632,
+    "ape_max": 65.23668818444422,
+    "n_points": 31,
+    "name": "UGC12506",
+    "type": "late"
+  },
+  {
+    "ape_mean": 10.830060516104322,
+    "ape_median": 9.253020749643944,
+    "ape_max": 26.588981413164685,
+    "n_points": 26,
+    "name": "NGC0247",
+    "type": "late"
+  },
+  {
+    "ape_mean": 12.777792097686689,
+    "ape_median": 9.3595562550026,
+    "ape_max": 31.12348875650609,
+    "n_points": 4,
+    "name": "UGC07232",
+    "type": "late"
+  },
+  {
+    "ape_mean": 13.087503989165754,
+    "ape_median": 9.476645593342916,
+    "ape_max": 47.516679202512265,
+    "n_points": 12,
+    "name": "F583-4",
+    "type": "intermediate"
+  },
+  {
+    "ape_mean": 9.850274743804139,
+    "ape_median": 9.940550484557182,
+    "ape_max": 15.72739209471897,
+    "n_points": 7,
+    "name": "UGC07559",
+    "type": "late"
+  },
+  {
+    "ape_mean": 9.526209328929045,
+    "ape_median": 10.479764810024617,
+    "ape_max": 18.75366428477445,
+    "n_points": 5,
+    "name": "F567-2",
+    "type": "late"
+  },
+  {
+    "ape_mean": 11.749438180193593,
+    "ape_median": 10.665324540301231,
+    "ape_max": 24.945561472457854,
+    "n_points": 34,
+    "name": "IC2574",
+    "type": "late"
+  },
+  {
+    "ape_mean": 18.537751873465282,
+    "ape_median": 10.949177346099727,
+    "ape_max": 42.048195531250435,
+    "n_points": 6,
+    "name": "UGC06923",
+    "type": "late"
+  },
+  {
+    "ape_mean": 14.711299601899247,
+    "ape_median": 11.078560605937776,
+    "ape_max": 35.324443002577596,
+    "n_points": 11,
+    "name": "UGC05750",
+    "type": "late"
+  },
+  {
+    "ape_mean": 12.380299780217351,
+    "ape_median": 11.096900004533094,
+    "ape_max": 26.23671221415459,
+    "n_points": 15,
+    "name": "UGC05986",
+    "type": "late"
+  },
+  {
+    "ape_mean": 11.873235780211804,
+    "ape_median": 11.380596277458363,
+    "ape_max": 26.097470824654685,
+    "n_points": 7,
+    "name": "UGC10310",
+    "type": "late"
+  },
+  {
+    "ape_mean": 19.301192132832234,
+    "ape_median": 11.41387608621836,
+    "ape_max": 47.59516683877519,
+    "n_points": 6,
+    "name": "NGC4068",
+    "type": "late"
+  },
+  {
+    "ape_mean": 14.18257962297075,
+    "ape_median": 11.581244101047371,
+    "ape_max": 34.56539822940649,
+    "n_points": 12,
+    "name": "UGC07089",
+    "type": "late"
+  },
+  {
+    "ape_mean": 16.988699656000193,
+    "ape_median": 12.197843477841907,
+    "ape_max": 48.60195446700932,
+    "n_points": 15,
+    "name": "ESO079-G014",
+    "type": "intermediate"
+  },
+  {
+    "ape_mean": 17.58851651515389,
+    "ape_median": 12.27691079148613,
+    "ape_max": 56.989217391443624,
+    "n_points": 19,
+    "name": "UGC02885",
+    "type": "intermediate"
+  },
+  {
+    "ape_mean": 21.661633504286787,
+    "ape_median": 13.672108497983483,
+    "ape_max": 53.78970037673437,
+    "n_points": 22,
+    "name": "NGC5033",
+    "type": "intermediate"
+  },
+  {
+    "ape_mean": 12.89790456016078,
+    "ape_median": 13.751715359595632,
+    "ape_max": 27.090521781074806,
+    "n_points": 15,
+    "name": "ESO116-G012",
+    "type": "late"
+  },
+  {
+    "ape_mean": 14.456272815521107,
+    "ape_median": 14.834499743962152,
+    "ape_max": 27.46801698557309,
+    "n_points": 15,
+    "name": "NGC6674",
+    "type": "early"
+  },
+  {
+    "ape_mean": 16.209428989408348,
+    "ape_median": 15.127053634498441,
+    "ape_max": 23.925639056483522,
+    "n_points": 7,
+    "name": "UGC07866",
+    "type": "late"
+  },
+  {
+    "ape_mean": 14.205155461715119,
+    "ape_median": 15.147298917807454,
+    "ape_max": 20.86176442264779,
+    "n_points": 26,
+    "name": "NGC2366",
+    "type": "late"
+  },
+  {
+    "ape_mean": 16.8190749073935,
+    "ape_median": 15.184117328459845,
+    "ape_max": 33.136205452892376,
+    "n_points": 9,
+    "name": "NGC3992",
+    "type": "intermediate"
+  },
+  {
+    "ape_mean": 15.56084925859112,
+    "ape_median": 15.310882752439547,
+    "ape_max": 62.82626570486601,
+    "n_points": 17,
+    "name": "NGC3917",
+    "type": "late"
+  },
+  {
+    "ape_mean": 16.882094654281943,
+    "ape_median": 15.58259239063563,
+    "ape_max": 36.978121019196486,
+    "n_points": 25,
+    "name": "NGC0300",
+    "type": "late"
+  },
+  {
+    "ape_mean": 16.668037891031418,
+    "ape_median": 15.659484874510685,
+    "ape_max": 33.29122892031737,
+    "n_points": 31,
+    "name": "DDO161",
+    "type": "late"
+  },
+  {
+    "ape_mean": 17.00124303264725,
+    "ape_median": 15.692818767132763,
+    "ape_max": 24.736535927911333,
+    "n_points": 15,
+    "name": "KK98-251",
+    "type": "late"
+  },
+  {
+    "ape_mean": 14.66511523437588,
+    "ape_median": 16.099767295752184,
+    "ape_max": 21.69256783861176,
+    "n_points": 9,
+    "name": "UGC06399",
+    "type": "late"
+  },
+  {
+    "ape_mean": 24.358224797941283,
+    "ape_median": 16.104324628236533,
+    "ape_max": 53.67262873107842,
+    "n_points": 13,
+    "name": "NGC2998",
+    "type": "intermediate"
+  },
+  {
+    "ape_mean": 20.58636964051964,
+    "ape_median": 16.36381708767327,
+    "ape_max": 68.59519085446823,
+    "n_points": 8,
+    "name": "UGC08837",
+    "type": "late"
+  },
+  {
+    "ape_mean": 19.635449094332998,
+    "ape_median": 16.39338627617181,
+    "ape_max": 41.72125294060815,
+    "n_points": 29,
+    "name": "NGC0024",
+    "type": "intermediate"
+  },
+  {
+    "ape_mean": 15.975228287084317,
+    "ape_median": 16.434831859102758,
+    "ape_max": 35.09982342144442,
+    "n_points": 10,
+    "name": "NGC3972",
+    "type": "intermediate"
+  },
+  {
+    "ape_mean": 14.942932031809448,
+    "ape_median": 16.440359441094174,
+    "ape_max": 25.682289734547926,
+    "n_points": 18,
+    "name": "F568-3",
+    "type": "late"
+  },
+  {
+    "ape_mean": 11.740607251258103,
+    "ape_median": 16.73697423132295,
+    "ape_max": 17.14874536352229,
+    "n_points": 5,
+    "name": "UGC09992",
+    "type": "late"
+  },
+  {
+    "ape_mean": 15.765199759237241,
+    "ape_median": 16.947980862580696,
+    "ape_max": 26.838591967846074,
+    "n_points": 17,
+    "name": "UGC02487",
+    "type": "early"
+  },
+  {
+    "ape_mean": 16.948967946452726,
+    "ape_median": 17.230230360493493,
+    "ape_max": 24.39272972820578,
+    "n_points": 10,
+    "name": "UGC07323",
+    "type": "late"
+  },
+  {
+    "ape_mean": 19.643084414360025,
+    "ape_median": 17.34347071243107,
+    "ape_max": 43.97227267649655,
+    "n_points": 44,
+    "name": "NGC6015",
+    "type": "late"
+  },
+  {
+    "ape_mean": 17.473240083394288,
+    "ape_median": 17.54211765536377,
+    "ape_max": 42.74699402688229,
+    "n_points": 21,
+    "name": "NGC0100",
+    "type": "late"
+  },
+  {
+    "ape_mean": 18.415754449288052,
+    "ape_median": 17.877983731738397,
+    "ape_max": 34.18412593624408,
+    "n_points": 18,
+    "name": "NGC7814",
+    "type": "early"
+  },
+  {
+    "ape_mean": 19.222048975210356,
+    "ape_median": 18.044496887719394,
+    "ape_max": 34.76263536339118,
+    "n_points": 45,
+    "name": "UGC06786",
+    "type": "early"
+  },
+  {
+    "ape_mean": 28.250999434850808,
+    "ape_median": 18.31075231346903,
+    "ape_max": 80.52158669759189,
+    "n_points": 28,
+    "name": "NGC0289",
+    "type": "intermediate"
+  },
+  {
+    "ape_mean": 17.057357713142693,
+    "ape_median": 18.391161556889347,
+    "ape_max": 25.994249400320296,
+    "n_points": 17,
+    "name": "UGC06983",
+    "type": "late"
+  },
+  {
+    "ape_mean": 20.079024152661713,
+    "ape_median": 18.444950499321795,
+    "ape_max": 41.501690648721535,
+    "n_points": 19,
+    "name": "NGC5907",
+    "type": "intermediate"
+  },
+  {
+    "ape_mean": 25.52801127707297,
+    "ape_median": 18.618780406451236,
+    "ape_max": 43.32176446408621,
+    "n_points": 11,
+    "name": "UGC05829",
+    "type": "late"
+  },
+  {
+    "ape_mean": 17.897244671774782,
+    "ape_median": 18.69028403384799,
+    "ape_max": 34.94679908847601,
+    "n_points": 25,
+    "name": "UGC04278",
+    "type": "late"
+  },
+  {
+    "ape_mean": 17.597818283116766,
+    "ape_median": 18.925819328292118,
+    "ape_max": 26.015695522253214,
+    "n_points": 31,
+    "name": "UGC07524",
+    "type": "late"
+  },
+  {
+    "ape_mean": 22.870943091114096,
+    "ape_median": 19.48243892338693,
+    "ape_max": 76.87075523336848,
+    "n_points": 27,
+    "name": "NGC2976",
+    "type": "intermediate"
+  },
+  {
+    "ape_mean": 25.347780346624596,
+    "ape_median": 19.63277083201246,
+    "ape_max": 44.27191614191808,
+    "n_points": 8,
+    "name": "UGC04325",
+    "type": "late"
+  },
+  {
+    "ape_mean": 19.562450948703393,
+    "ape_median": 19.776562033745577,
+    "ape_max": 24.600901465350987,
+    "n_points": 4,
+    "name": "D512-2",
+    "type": "late"
+  },
+  {
+    "ape_mean": 23.2194681835504,
+    "ape_median": 19.974470634334615,
+    "ape_max": 52.85444206309546,
+    "n_points": 24,
+    "name": "NGC4100",
+    "type": "intermediate"
+  },
+  {
+    "ape_mean": 21.765099073577108,
+    "ape_median": 20.56142621246825,
+    "ape_max": 45.3804570312849,
+    "n_points": 24,
+    "name": "NGC5585",
+    "type": "late"
+  },
+  {
+    "ape_mean": 18.249012848239165,
+    "ape_median": 20.578925177662317,
+    "ape_max": 23.27763748918287,
+    "n_points": 14,
+    "name": "F574-1",
+    "type": "late"
+  },
+  {
+    "ape_mean": 23.921917159338275,
+    "ape_median": 20.623072299981686,
+    "ape_max": 60.47429278247519,
+    "n_points": 11,
+    "name": "NGC2683",
+    "type": "early"
+  },
+  {
+    "ape_mean": 21.47428167013924,
+    "ape_median": 20.736161870287074,
+    "ape_max": 33.41135082580014,
+    "n_points": 8,
+    "name": "DDO170",
+    "type": "late"
+  },
+  {
+    "ape_mean": 18.288875469016364,
+    "ape_median": 20.73822536971377,
+    "ape_max": 26.606245534889155,
+    "n_points": 9,
+    "name": "UGC00191",
+    "type": "late"
+  },
+  {
+    "ape_mean": 21.792988101067614,
+    "ape_median": 20.97095933434983,
+    "ape_max": 26.548846382197638,
+    "n_points": 5,
+    "name": "UGC05999",
+    "type": "late"
+  },
+  {
+    "ape_mean": 22.30654992089361,
+    "ape_median": 21.012744677198103,
+    "ape_max": 65.85420759815918,
+    "n_points": 31,
+    "name": "NGC6503",
+    "type": "late"
+  },
+  {
+    "ape_mean": 30.647964230108787,
+    "ape_median": 21.11357561403957,
+    "ape_max": 68.81397588938974,
+    "n_points": 12,
+    "name": "NGC4010",
+    "type": "late"
+  },
+  {
+    "ape_mean": 25.985100547492127,
+    "ape_median": 21.130008661023844,
+    "ape_max": 199.32616268854574,
+    "n_points": 46,
+    "name": "NGC7793",
+    "type": "late"
+  },
+  {
+    "ape_mean": 23.836544428899582,
+    "ape_median": 21.52828003970864,
+    "ape_max": 40.55283454410032,
+    "n_points": 7,
+    "name": "UGCA281",
+    "type": "late"
+  },
+  {
+    "ape_mean": 22.568696758234076,
+    "ape_median": 21.731476847082995,
+    "ape_max": 40.24419768163634,
+    "n_points": 5,
+    "name": "UGC00891",
+    "type": "late"
+  },
+  {
+    "ape_mean": 24.220348898490812,
+    "ape_median": 21.77396625357609,
+    "ape_max": 48.73954492436175,
+    "n_points": 48,
+    "name": "UGC03205",
+    "type": "early"
+  },
+  {
+    "ape_mean": 20.17218040211222,
+    "ape_median": 21.860195041361457,
+    "ape_max": 32.740307239213784,
+    "n_points": 11,
+    "name": "UGC05005",
+    "type": "late"
+  },
+  {
+    "ape_mean": 18.3873721935227,
+    "ape_median": 22.193797792234946,
+    "ape_max": 29.45994084058563,
+    "n_points": 10,
+    "name": "DDO168",
+    "type": "late"
+  },
+  {
+    "ape_mean": 25.821865429705504,
+    "ape_median": 22.202613513606245,
+    "ape_max": 61.0842213772822,
+    "n_points": 32,
+    "name": "NGC4559",
+    "type": "late"
+  },
+  {
+    "ape_mean": 20.771112604823756,
+    "ape_median": 22.264366906149935,
+    "ape_max": 35.721895290765346,
+    "n_points": 50,
+    "name": "NGC2841",
+    "type": "early"
+  },
+  {
+    "ape_mean": 21.061995318072942,
+    "ape_median": 23.06310816989623,
+    "ape_max": 30.262463622004038,
+    "n_points": 11,
+    "name": "UGC01230",
+    "type": "late"
+  },
+  {
+    "ape_mean": 37.279049182564435,
+    "ape_median": 23.227637734770493,
+    "ape_max": 254.68343845960004,
+    "n_points": 30,
+    "name": "ESO563-G021",
+    "type": "intermediate"
+  },
+  {
+    "ape_mean": 19.80028662849615,
+    "ape_median": 23.25112383457949,
+    "ape_max": 33.456258480968465,
+    "n_points": 7,
+    "name": "F571-V1",
+    "type": "late"
+  },
+  {
+    "ape_mean": 27.662222086980755,
+    "ape_median": 23.596264391119398,
+    "ape_max": 66.05590463150776,
+    "n_points": 36,
+    "name": "NGC4013",
+    "type": "early"
+  },
+  {
+    "ape_mean": 22.400546159030604,
+    "ape_median": 23.797471352078027,
+    "ape_max": 39.2151270707706,
+    "n_points": 7,
+    "name": "NGC4138",
+    "type": "early"
+  },
+  {
+    "ape_mean": 23.02209408992606,
+    "ape_median": 23.96475773576414,
+    "ape_max": 42.51932421071505,
+    "n_points": 73,
+    "name": "NGC2403",
+    "type": "late"
+  },
+  {
+    "ape_mean": 22.531719737981362,
+    "ape_median": 24.318876620469702,
+    "ape_max": 45.392604561127065,
+    "n_points": 41,
+    "name": "UGC08699",
+    "type": "early"
+  },
+  {
+    "ape_mean": 28.57817873665825,
+    "ape_median": 24.59460703488366,
+    "ape_max": 68.79121262652068,
+    "n_points": 8,
+    "name": "UGC06818",
+    "type": "late"
+  },
+  {
+    "ape_mean": 23.610397322960303,
+    "ape_median": 25.382148948085174,
+    "ape_max": 41.17759513808391,
+    "n_points": 14,
+    "name": "NGC4214",
+    "type": "late"
+  },
+  {
+    "ape_mean": 24.993118721639455,
+    "ape_median": 25.951537790893543,
+    "ape_max": 47.31050255832731,
+    "n_points": 65,
+    "name": "UGC11914",
+    "type": "early"
+  },
+  {
+    "ape_mean": 22.682906803599945,
+    "ape_median": 26.44332891258322,
+    "ape_max": 41.804884654668356,
+    "n_points": 9,
+    "name": "UGC07577",
+    "type": "late"
+  },
+  {
+    "ape_mean": 25.728859095056883,
+    "ape_median": 26.609615690498995,
+    "ape_max": 35.65487069876333,
+    "n_points": 15,
+    "name": "UGC12632",
+    "type": "late"
+  },
+  {
+    "ape_mean": 29.925383886680244,
+    "ape_median": 27.04185790139789,
+    "ape_max": 46.36551487955627,
+    "n_points": 10,
+    "name": "UGC11820",
+    "type": "late"
+  },
+  {
+    "ape_mean": 20.80654816749146,
+    "ape_median": 27.478917138188162,
+    "ape_max": 35.610977893059115,
+    "n_points": 5,
+    "name": "UGC02023",
+    "type": "late"
+  },
+  {
+    "ape_mean": 30.27177857246828,
+    "ape_median": 27.605045823522794,
+    "ape_max": 49.890327458046315,
+    "n_points": 8,
+    "name": "UGC02259",
+    "type": "late"
+  },
+  {
+    "ape_mean": 31.379391976148277,
+    "ape_median": 27.781318000117786,
+    "ape_max": 64.03087630961639,
+    "n_points": 14,
+    "name": "DDO064",
+    "type": "late"
+  },
+  {
+    "ape_mean": 24.3169241402246,
+    "ape_median": 27.833116944888666,
+    "ape_max": 39.05232617013673,
+    "n_points": 4,
+    "name": "UGC00634",
+    "type": "late"
+  },
+  {
+    "ape_mean": 25.93327850542948,
+    "ape_median": 28.05951492668528,
+    "ape_max": 49.30368470946334,
+    "n_points": 71,
+    "name": "UGC06787",
+    "type": "early"
+  },
+  {
+    "ape_mean": 29.655307893608096,
+    "ape_median": 28.410764677889222,
+    "ape_max": 55.3657596392078,
+    "n_points": 73,
+    "name": "UGC05253",
+    "type": "early"
+  },
+  {
+    "ape_mean": 32.17945217498953,
+    "ape_median": 28.624524638971124,
+    "ape_max": 83.8652224113265,
+    "n_points": 12,
+    "name": "NGC3769",
+    "type": "early"
+  },
+  {
+    "ape_mean": 28.380853028156693,
+    "ape_median": 28.80222544884289,
+    "ape_max": 32.855680059839976,
+    "n_points": 16,
+    "name": "UGC12732",
+    "type": "late"
+  },
+  {
+    "ape_mean": 29.7264959664479,
+    "ape_median": 28.83501415147182,
+    "ape_max": 41.34545121859545,
+    "n_points": 17,
+    "name": "UGC08286",
+    "type": "late"
+  },
+  {
+    "ape_mean": 31.65040291328829,
+    "ape_median": 28.937746529275437,
+    "ape_max": 63.637170476126826,
+    "n_points": 68,
+    "name": "UGC09133",
+    "type": "early"
+  },
+  {
+    "ape_mean": 40.34891142511019,
+    "ape_median": 29.17740038279924,
+    "ape_max": 328.31832176472795,
+    "n_points": 25,
+    "name": "UGC01281",
+    "type": "late"
+  },
+  {
+    "ape_mean": 25.769198585086425,
+    "ape_median": 29.20281340610248,
+    "ape_max": 39.83974965068482,
+    "n_points": 12,
+    "name": "UGC07603",
+    "type": "late"
+  },
+  {
+    "ape_mean": 25.958356735564543,
+    "ape_median": 29.357591649159982,
+    "ape_max": 33.54261723630172,
+    "n_points": 8,
+    "name": "UGC04483",
+    "type": "late"
+  },
+  {
+    "ape_mean": 33.31550650571383,
+    "ape_median": 29.508969362549408,
+    "ape_max": 161.03426168496026,
+    "n_points": 43,
+    "name": "NGC3198",
+    "type": "intermediate"
+  },
+  {
+    "ape_mean": 31.539507880298242,
+    "ape_median": 30.367607175250036,
+    "ape_max": 47.48793145739384,
+    "n_points": 22,
+    "name": "UGC00128",
+    "type": "late"
+  },
+  {
+    "ape_mean": 30.72735934637341,
+    "ape_median": 30.53057652814497,
+    "ape_max": 59.59147202696453,
+    "n_points": 16,
+    "name": "D631-7",
+    "type": "late"
+  },
+  {
+    "ape_mean": 30.303937985405515,
+    "ape_median": 30.784496502348624,
+    "ape_max": 43.49938875641402,
+    "n_points": 30,
+    "name": "UGC08490",
+    "type": "late"
+  },
+  {
+    "ape_mean": 31.467968282863254,
+    "ape_median": 31.16998175809767,
+    "ape_max": 38.36731956011333,
+    "n_points": 17,
+    "name": "UGC06446",
+    "type": "late"
+  },
+  {
+    "ape_mean": 35.345134456159755,
+    "ape_median": 31.982798199412436,
+    "ape_max": 71.4412366954818,
+    "n_points": 10,
+    "name": "NGC3893",
+    "type": "intermediate"
+  },
+  {
+    "ape_mean": 30.719091540193755,
+    "ape_median": 32.24187592269065,
+    "ape_max": 64.75766016291989,
+    "n_points": 115,
+    "name": "UGC02953",
+    "type": "early"
+  },
+  {
+    "ape_mean": 31.343617094896278,
+    "ape_median": 33.14467145449676,
+    "ape_max": 38.1215370470884,
+    "n_points": 11,
+    "name": "UGC08550",
+    "type": "late"
+  },
+  {
+    "ape_mean": 44.40392065644341,
+    "ape_median": 33.392807759014225,
+    "ape_max": 288.5232733670342,
+    "n_points": 32,
+    "name": "IC4202",
+    "type": "intermediate"
+  },
+  {
+    "ape_mean": 37.635862576327035,
+    "ape_median": 33.833060666831,
+    "ape_max": 51.31262895369977,
+    "n_points": 8,
+    "name": "UGC05918",
+    "type": "late"
+  },
+  {
+    "ape_mean": 34.85200348880044,
+    "ape_median": 34.11505772192612,
+    "ape_max": 45.45890975552629,
+    "n_points": 12,
+    "name": "F568-1",
+    "type": "intermediate"
+  },
+  {
+    "ape_mean": 37.75934717248069,
+    "ape_median": 34.984424631729766,
+    "ape_max": 50.90685589543431,
+    "n_points": 8,
+    "name": "UGCA442",
+    "type": "late"
+  },
+  {
+    "ape_mean": 33.83149013413636,
+    "ape_median": 35.0083924865627,
+    "ape_max": 40.066774944623454,
+    "n_points": 12,
+    "name": "UGC05716",
+    "type": "late"
+  },
+  {
+    "ape_mean": 31.654945645638588,
+    "ape_median": 35.01928091140246,
+    "ape_max": 43.2402512539736,
+    "n_points": 6,
+    "name": "D564-8",
+    "type": "late"
+  },
+  {
+    "ape_mean": 28.685170847912516,
+    "ape_median": 35.66897151619435,
+    "ape_max": 46.13774939438623,
+    "n_points": 36,
+    "name": "NGC1003",
+    "type": "late"
+  },
+  {
+    "ape_mean": 36.485233025071246,
+    "ape_median": 36.1672699691286,
+    "ape_max": 135.6301439622949,
+    "n_points": 24,
+    "name": "NGC1090",
+    "type": "intermediate"
+  },
+  {
+    "ape_mean": 40.9290832918543,
+    "ape_median": 36.89634659865039,
+    "ape_max": 84.79887857804844,
+    "n_points": 47,
+    "name": "UGC03580",
+    "type": "early"
+  },
+  {
+    "ape_mean": 36.518139101089325,
+    "ape_median": 37.14132986993298,
+    "ape_max": 42.202291694629984,
+    "n_points": 15,
+    "name": "F568-V1",
+    "type": "late"
+  },
+  {
+    "ape_mean": 31.531428178385134,
+    "ape_median": 38.175922068978835,
+    "ape_max": 44.805469801244115,
+    "n_points": 23,
+    "name": "UGC05721",
+    "type": "late"
+  },
+  {
+    "ape_mean": 36.834434356443104,
+    "ape_median": 38.292498207241266,
+    "ape_max": 60.930021085932594,
+    "n_points": 6,
+    "name": "F563-V1",
+    "type": "late"
+  },
+  {
+    "ape_mean": 41.460969702639375,
+    "ape_median": 38.351673449466446,
+    "ape_max": 70.59355342783623,
+    "n_points": 58,
+    "name": "NGC6946",
+    "type": "late"
+  },
+  {
+    "ape_mean": 35.51413567280252,
+    "ape_median": 39.49827635939688,
+    "ape_max": 47.26026950596134,
+    "n_points": 12,
+    "name": "DDO154",
+    "type": "late"
+  },
+  {
+    "ape_mean": 39.121894510661704,
+    "ape_median": 39.551943373403134,
+    "ape_max": 51.905524890144974,
+    "n_points": 14,
+    "name": "NGC1705",
+    "type": "late"
+  },
+  {
+    "ape_mean": 39.11460923691953,
+    "ape_median": 39.555061036902316,
+    "ape_max": 60.429969186378464,
+    "n_points": 43,
+    "name": "UGC02916",
+    "type": "early"
+  },
+  {
+    "ape_mean": 43.48630820743452,
+    "ape_median": 39.878548797826184,
+    "ape_max": 73.3725469855844,
+    "n_points": 36,
+    "name": "UGCA444",
+    "type": "late"
+  },
+  {
+    "ape_mean": 36.12306982938218,
+    "ape_median": 39.900601513585066,
+    "ape_max": 65.0894172794247,
+    "n_points": 25,
+    "name": "F583-1",
+    "type": "late"
+  },
+  {
+    "ape_mean": 39.59925287939908,
+    "ape_median": 41.01488038284081,
+    "ape_max": 45.959551188410394,
+    "n_points": 10,
+    "name": "UGC07399",
+    "type": "late"
+  },
+  {
+    "ape_mean": 39.79897647238947,
+    "ape_median": 41.46924003809208,
+    "ape_max": 46.941979952309374,
+    "n_points": 10,
+    "name": "F563-V2",
+    "type": "late"
+  },
+  {
+    "ape_mean": 40.09384882851185,
+    "ape_median": 41.69791856501387,
+    "ape_max": 46.043686574968284,
+    "n_points": 7,
+    "name": "F565-V2",
+    "type": "late"
+  },
+  {
+    "ape_mean": 43.77386179731996,
+    "ape_median": 42.57892004029674,
+    "ape_max": 51.566951724754674,
+    "n_points": 25,
+    "name": "NGC3109",
+    "type": "late"
+  },
+  {
+    "ape_mean": 55.383280143556014,
+    "ape_median": 43.081141077535165,
+    "ape_max": 184.73828652514564,
+    "n_points": 22,
+    "name": "UGC09037",
+    "type": "late"
+  },
+  {
+    "ape_mean": 68.23791046642235,
+    "ape_median": 44.04018368389089,
+    "ape_max": 209.20935018479,
+    "n_points": 13,
+    "name": "F571-8",
+    "type": "intermediate"
+  },
+  {
+    "ape_mean": 42.15607984081635,
+    "ape_median": 44.068890833325376,
+    "ape_max": 51.90364148127921,
+    "n_points": 8,
+    "name": "UGC07608",
+    "type": "late"
+  },
+  {
+    "ape_mean": 40.24894646727268,
+    "ape_median": 44.690608799863014,
+    "ape_max": 70.84925983713671,
+    "n_points": 30,
+    "name": "UGC03546",
+    "type": "early"
+  },
+  {
+    "ape_mean": 45.51075663772725,
+    "ape_median": 44.829367025843325,
+    "ape_max": 55.92536326563273,
+    "n_points": 4,
+    "name": "NGC6789",
+    "type": "late"
+  },
+  {
+    "ape_mean": 44.8718505204601,
+    "ape_median": 44.91906979238261,
+    "ape_max": 81.42275821223022,
+    "n_points": 17,
+    "name": "NGC4157",
+    "type": "early"
+  },
+  {
+    "ape_mean": 36.0162701850375,
+    "ape_median": 44.922211175222266,
+    "ape_max": 62.401818544014354,
+    "n_points": 13,
+    "name": "UGC06614",
+    "type": "early"
+  },
+  {
+    "ape_mean": 45.483759538681454,
+    "ape_median": 45.04515412714028,
+    "ape_max": 62.38254352809369,
+    "n_points": 6,
+    "name": "F561-1",
+    "type": "late"
+  },
+  {
+    "ape_mean": 44.22125557899574,
+    "ape_median": 45.25493239810971,
+    "ape_max": 70.38709294579202,
+    "n_points": 12,
+    "name": "UGC00731",
+    "type": "late"
+  },
+  {
+    "ape_mean": 42.99703626554444,
+    "ape_median": 45.79398751701022,
+    "ape_max": 53.40647706060832,
+    "n_points": 17,
+    "name": "F563-1",
+    "type": "late"
+  },
+  {
+    "ape_mean": 58.90471438272953,
+    "ape_median": 46.096525361346664,
+    "ape_max": 352.5206384987774,
+    "n_points": 34,
+    "name": "NGC2903",
+    "type": "intermediate"
+  },
+  {
+    "ape_mean": 49.64488271495527,
+    "ape_median": 47.99811784031842,
+    "ape_max": 61.87559099541529,
+    "n_points": 7,
+    "name": "ESO444-G084",
+    "type": "late"
+  },
+  {
+    "ape_mean": 49.68798994723476,
+    "ape_median": 48.768974467948894,
+    "ape_max": 88.8910681453344,
+    "n_points": 24,
+    "name": "NGC2955",
+    "type": "early"
+  },
+  {
+    "ape_mean": 46.910686261603274,
+    "ape_median": 49.17769143083164,
+    "ape_max": 57.98727007916189,
+    "n_points": 6,
+    "name": "PGC51017",
+    "type": "late"
+  },
+  {
+    "ape_mean": 49.96327955611051,
+    "ape_median": 49.41077010585143,
+    "ape_max": 69.5374365529283,
+    "n_points": 18,
+    "name": "NGC5005",
+    "type": "intermediate"
+  },
+  {
+    "ape_mean": 48.27926776050241,
+    "ape_median": 49.937996256079174,
+    "ape_max": 76.98638588868569,
+    "n_points": 13,
+    "name": "NGC0801",
+    "type": "intermediate"
+  },
+  {
+    "ape_mean": 50.89722225552086,
+    "ape_median": 50.828384996319826,
+    "ape_max": 71.55913353052803,
+    "n_points": 10,
+    "name": "UGC05764",
+    "type": "late"
+  },
+  {
+    "ape_mean": 54.064487547826616,
+    "ape_median": 52.04432677265911,
+    "ape_max": 71.11864938454359,
+    "n_points": 9,
+    "name": "UGC06667",
+    "type": "late"
+  },
+  {
+    "ape_mean": 46.725202472972654,
+    "ape_median": 52.63926261085038,
+    "ape_max": 91.42218842594036,
+    "n_points": 12,
+    "name": "NGC3726",
+    "type": "intermediate"
+  },
+  {
+    "ape_mean": 54.198838032054354,
+    "ape_median": 52.64287130024988,
+    "ape_max": 235.94988503957305,
+    "n_points": 30,
+    "name": "NGC2915",
+    "type": "late"
+  },
+  {
+    "ape_mean": 52.23937786711405,
+    "ape_median": 54.41943788806179,
+    "ape_max": 104.10878380362706,
+    "n_points": 28,
+    "name": "NGC5055",
+    "type": "intermediate"
+  },
+  {
+    "ape_mean": 47.72916377237676,
+    "ape_median": 54.439142294269736,
+    "ape_max": 61.43830182440949,
+    "n_points": 21,
+    "name": "NGC3741",
+    "type": "late"
+  },
+  {
+    "ape_mean": 53.94810526381132,
+    "ape_median": 54.89676493368256,
+    "ape_max": 59.293159185539544,
+    "n_points": 8,
+    "name": "NGC3953",
+    "type": "intermediate"
+  },
+  {
+    "ape_mean": 57.39459945442684,
+    "ape_median": 58.18246881513935,
+    "ape_max": 112.70479434405603,
+    "n_points": 36,
+    "name": "NGC7331",
+    "type": "early"
+  },
+  {
+    "ape_mean": 47.56470939056692,
+    "ape_median": 59.26145593449863,
+    "ape_max": 106.51001474258457,
+    "n_points": 22,
+    "name": "UGC04305",
+    "type": "late"
+  },
+  {
+    "ape_mean": 62.987111869909995,
+    "ape_median": 59.66468957521198,
+    "ape_max": 93.15481024271054,
+    "n_points": 18,
+    "name": "NGC0891",
+    "type": "early"
+  },
+  {
+    "ape_mean": 70.45314899037106,
+    "ape_median": 60.717742974194024,
+    "ape_max": 227.40863919125061,
+    "n_points": 19,
+    "name": "NGC4217",
+    "type": "early"
+  },
+  {
+    "ape_mean": 57.561522816412015,
+    "ape_median": 61.27073067970817,
+    "ape_max": 80.96436262031935,
+    "n_points": 19,
+    "name": "NGC5371",
+    "type": "intermediate"
+  },
+  {
+    "ape_mean": 61.85578346478162,
+    "ape_median": 61.58529435049819,
+    "ape_max": 86.93638522128154,
+    "n_points": 7,
+    "name": "NGC3949",
+    "type": "intermediate"
+  },
+  {
+    "ape_mean": 60.61656437537517,
+    "ape_median": 63.03190919979981,
+    "ape_max": 117.48997451124237,
+    "n_points": 36,
+    "name": "UGC11455",
+    "type": "late"
+  },
+  {
+    "ape_mean": 57.45783958808192,
+    "ape_median": 64.79502566387718,
+    "ape_max": 89.61341654402626,
+    "n_points": 7,
+    "name": "UGC06628",
+    "type": "late"
+  },
+  {
+    "ape_mean": 57.60197292994294,
+    "ape_median": 65.16466270864588,
+    "ape_max": 82.3224964784695,
+    "n_points": 23,
+    "name": "NGC6195",
+    "type": "early"
+  },
+  {
+    "ape_mean": 67.52471560031351,
+    "ape_median": 65.40582875754156,
+    "ape_max": 199.1903262509867,
+    "n_points": 13,
+    "name": "NGC3877",
+    "type": "intermediate"
+  },
+  {
+    "ape_mean": 62.19153658189527,
+    "ape_median": 67.4630549469066,
+    "ape_max": 84.84924203108486,
+    "n_points": 41,
+    "name": "NGC3521",
+    "type": "intermediate"
+  },
+  {
+    "ape_mean": 66.03824192539084,
+    "ape_median": 68.94052585183658,
+    "ape_max": 75.00259508624667,
+    "n_points": 7,
+    "name": "NGC4051",
+    "type": "intermediate"
+  },
+  {
+    "ape_mean": 80.94036671803086,
+    "ape_median": 69.37816503282774,
+    "ape_max": 149.3956805604475,
+    "n_points": 7,
+    "name": "NGC4085",
+    "type": "intermediate"
+  },
+  {
+    "ape_mean": 67.42697912174523,
+    "ape_median": 70.8148537889279,
+    "ape_max": 118.57177029038293,
+    "n_points": 9,
+    "name": "CamB",
+    "type": "late"
+  },
+  {
+    "ape_mean": 73.80619940259925,
+    "ape_median": 72.58387494719305,
+    "ape_max": 121.88710424510796,
+    "n_points": 9,
+    "name": "UGC06973",
+    "type": "early"
+  },
+  {
+    "ape_mean": 83.08616304557033,
+    "ape_median": 75.39679569560552,
+    "ape_max": 133.38056588603447,
+    "n_points": 5,
+    "name": "F574-2",
+    "type": "late"
+  },
+  {
+    "ape_mean": 78.16393575940953,
+    "ape_median": 85.94493653539328,
+    "ape_max": 112.39519681686849,
+    "n_points": 12,
+    "name": "NGC4088",
+    "type": "intermediate"
+  },
+  {
+    "ape_mean": 124.88330552779166,
+    "ape_median": 89.3065306945928,
+    "ape_max": 454.299168925792,
+    "n_points": 12,
+    "name": "UGC11557",
+    "type": "late"
+  },
+  {
+    "ape_mean": 155.66513290550137,
+    "ape_median": 149.0478007396427,
+    "ape_max": 252.35204355336376,
+    "n_points": 6,
+    "name": "NGC4389",
+    "type": "intermediate"
+  },
+  {
+    "ape_mean": 156.16009061952371,
+    "ape_median": 156.18261642168,
+    "ape_max": 231.53126371064232,
+    "n_points": 8,
+    "name": "UGC02455",
+    "type": "late"
+  }
+]

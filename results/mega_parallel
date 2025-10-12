@@ -1,0 +1,32 @@
+{
+  "class_params": {
+    "early": {
+      "eta": 0.027,
+      "ring_amp": 1.508,
+      "M_max": 2.74,
+      "bulge_gate_power": 32.645,
+      "lambda_hat": 17.236
+    },
+    "intermediate": {
+      "eta": 0.015,
+      "ring_amp": 0.0,
+      "M_max": 1.376,
+      "bulge_gate_power": 32.962,
+      "lambda_hat": 15.499
+    },
+    "late": {
+      "eta": 0.691,
+      "ring_amp": 2.212,
+      "M_max": 2.954,
+      "bulge_gate_power": 33.05,
+      "lambda_hat": 21.787
+    }
+  },
+  "global_median_params": {
+    "eta": 0.175,
+    "ring_amp": 1.626,
+    "M_max": 2.542,
+    "bulge_gate_power": 32.941,
+    "lambda_hat": 19.883
+  }
+}

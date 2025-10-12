@@ -310,11 +310,24 @@ def eval_all_laws_v2p3(B_T: float, theta: dict,
     use_bar_taper = theta.get('use_bar_taper', True) and bar_class in ['SAB', 'SB']
     use_shear_taper = theta.get('use_shear_taper', True) and shear is not None
     
-    # Bar taper parameters (applied only to SB/SAB)
+    # V2.3b: Differentiated bar taper parameters for SAB vs SB
     if use_bar_taper and R_d is not None:
-        R_bar_factor = theta.get('R_bar_factor', 2.0)  # in units of R_d
-        w_bar_factor = theta.get('w_bar_factor', 0.3)
-        gamma_bar_taper = theta.get('gamma_bar_taper', 1.5)
+        # Check for differentiated parameters (V2.3b)
+        if bar_class == 'SAB' and 'R_bar_factor_SAB' in theta:
+            # Weak bar: moderate suppression at larger radius
+            R_bar_factor = theta.get('R_bar_factor_SAB', 2.0)
+            w_bar_factor = theta.get('w_bar_factor_SAB', 0.3)
+            gamma_bar_taper = theta.get('gamma_bar_taper_SAB', 1.5)
+        elif bar_class == 'SB' and 'R_bar_factor_SB' in theta:
+            # Strong bar: aggressive suppression at corotation (~1.5 R_d)
+            R_bar_factor = theta.get('R_bar_factor_SB', 1.5)
+            w_bar_factor = theta.get('w_bar_factor_SB', 0.2)
+            gamma_bar_taper = theta.get('gamma_bar_taper_SB', 2.5)
+        else:
+            # Fallback to V2.3 unified parameters
+            R_bar_factor = theta.get('R_bar_factor', 2.0)
+            w_bar_factor = theta.get('w_bar_factor', 0.3)
+            gamma_bar_taper = theta.get('gamma_bar_taper', 1.5)
         
         R_bar = R_bar_factor * R_d
         w_bar = w_bar_factor * R_d
