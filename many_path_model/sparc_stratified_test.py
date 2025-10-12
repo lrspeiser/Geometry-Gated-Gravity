@@ -133,9 +133,13 @@ def load_sparc_master_table(master_file: Path) -> Dict[str, Dict]:
         if len(line) < 20:
             continue
             
-        # Parse fixed-width format
+        # Parse fixed-width format (from MRT description)
+        # Columns: Galaxy (1-11), T (12-13), D (14-19), e_D (20-24), f_D (25-26),
+        #          Inc (27-30), e_Inc (31-34), L[3.6] (35-41), e_L[3.6] (42-48),
+        #          Reff (49-53), SBeff (54-61), Rdisk (62-66), SBdisk (67-74),
+        #          MHI (75-81), RHI (82-86), Vflat (87-91), e_Vflat (92-96)
         try:
-            # Galaxy name: columns 0-11 (right-aligned, spaces on left)
+            # Galaxy name: columns 1-11
             name = line[0:11].strip()
             if not name:  # Skip empty names
                 continue
@@ -147,10 +151,21 @@ def load_sparc_master_table(master_file: Path) -> Dict[str, Dict]:
             distance_str = line[14:20].strip() if len(line) > 19 else ''
             distance = float(distance_str) if distance_str else None
             
+            # Rdisk (disk scale length): columns 62-66
+            Rdisk_str = line[62:67].strip() if len(line) > 66 else ''
+            R_d_kpc = float(Rdisk_str) if Rdisk_str else None
+            
+            # SBdisk (disk central surface brightness): columns 67-74
+            SBdisk_str = line[67:75].strip() if len(line) > 74 else ''
+            SBdisk = float(SBdisk_str) if SBdisk_str else None
+            
             galaxies[name] = {
                 'hubble_type': hubble_type,
                 'hubble_name': HUBBLE_TYPES.get(hubble_type, 'Unknown'),
-                'distance_mpc': distance
+                'distance_mpc': distance,
+                'R_d_kpc': R_d_kpc,
+                'SBdisk_solLum_pc2': SBdisk,
+                'mu0_mag': None  # Will compute from SBdisk if needed
             }
         except (ValueError, IndexError) as e:
             continue
