@@ -139,9 +139,13 @@ class ValidationSuite:
     # ============================================================================
     
     def test_newtonian_limit(self) -> bool:
-        """Test A: Newtonian/Solar-System limit must pass"""
+        """Test A: Newtonian/Solar-System limit must pass
+        
+        Tests the NEW additive formulation: g_total = g_Newton * (1 + K)
+        where K should be near 0 at small radii (Newtonian limit)
+        """
         print("\n" + "="*80)
-        print("TEST 1A: NEWTONIAN LIMIT")
+        print("TEST 1A: NEWTONIAN LIMIT (ADDITIVE BOOST FORMULATION)")
         print("="*80)
         
         # Test at 1 AU equivalent in inner regions
@@ -152,22 +156,29 @@ class ValidationSuite:
         hp = PathSpectrumHyperparams(L_0=2.5, beta_bulge=1.0, alpha_shear=0.05, gamma_bar=1.0)
         kernel = PathSpectrumKernel(hp, use_cupy=False)
         
-        # Compute suppression - should be minimal at small r
-        xi = kernel.suppression_factor(r=r_test, v_circ=v_test, BT=0.0, bar_strength=0.0)
+        # Compute BOOST FACTOR K - should be near 0 at small r
+        # This is the CORRECT formulation: g_total = g_Newton * (1 + K)
+        K = kernel.many_path_boost_factor(r=r_test, v_circ=v_test, BT=0.0, bar_strength=0.0)
         
-        # Check: suppression factor should be near 1.0 (< 1% deviation)
-        deviation = np.abs(1.0 - xi)
-        max_deviation = np.max(deviation)
+        # Check: boost factor K should be near 0.0 (< 1% boost)
+        max_boost = np.max(K)
         
-        passed = max_deviation < 0.01
+        passed = max_boost < 0.01
         
-        print(f"\nSuppression at inner radii (r < 0.1 kpc):")
+        print(f"\nBoost factor K at inner radii (should be ~0):")
+        print(f"  g_total = g_Newton × (1 + K)")
+        print(f"  At r→0: K→0 preserves Newtonian limit\n")
         for i in range(len(r_test)):
-            print(f"  r = {r_test[i]:.4f} kpc: ξ = {xi[i]:.6f}, deviation = {deviation[i]*100:.3f}%")
+            print(f"  r = {r_test[i]:.4f} kpc: K = {K[i]:.6f} ({K[i]*100:.3f}% boost)")
         
-        print(f"\nMax deviation: {max_deviation*100:.3f}%")
-        print(f"Threshold: 1.0%")
+        print(f"\nMax boost: {max_boost*100:.3f}%")
+        print(f"Threshold: 1.0% (K < 0.01)")
         print(f"Result: {'✅ PASS' if passed else '❌ FAIL'}")
+        
+        if not passed:
+            print(f"\n⚠️  WARNING: Newtonian limit violated!")
+            print(f"   At small r, many-path boost should vanish (K→0)")
+            print(f"   Current: K_max = {max_boost:.6f} = {max_boost*100:.3f}% boost")
         
         self.results.newtonian_limit_passed = passed
         return passed
@@ -538,14 +549,14 @@ class ValidationSuite:
         """Generate comprehensive validation report"""
         report_path = self.output_dir / 'VALIDATION_REPORT.md'
         
-        with open(report_path, 'w') as f:
-            f.write("# Validation Report: Many-Path Gravity Model\n\n")
+        with open(report_path, 'w', encoding='utf-8') as f:
+            f.write(f"# Validation Report: Many-Path Gravity Model\n\n")
             f.write(f"Generated: {pd.Timestamp.now()}\n\n")
             
             f.write("## 1. Internal Consistency & Invariants\n\n")
-            f.write(f"- **Newtonian Limit**: {'✅ PASS' if self.results.newtonian_limit_passed else '❌ FAIL'}\n")
-            f.write(f"- **Energy Conservation**: {'✅ PASS' if self.results.energy_conservation_passed else '❌ FAIL'}\n")
-            f.write(f"- **Symmetry Tests**: {'✅ PASS' if self.results.symmetry_tests_passed else '❌ FAIL'}\n\n")
+            f.write(f"- **Newtonian Limit**: {'PASS' if self.results.newtonian_limit_passed else 'FAIL'}\n")
+            f.write(f"- **Energy Conservation**: {'PASS' if self.results.energy_conservation_passed else 'FAIL'}\n")
+            f.write(f"- **Symmetry Tests**: {'PASS' if self.results.symmetry_tests_passed else 'FAIL'}\n\n")
             
             f.write("## 2. Statistical Validation\n\n")
             f.write(f"- **Training APE**: {self.results.train_ape:.2f}%\n")
@@ -556,10 +567,10 @@ class ValidationSuite:
             f.write("## 3. Astrophysical Cross-Checks\n\n")
             f.write(f"- **BTFR Scatter**: {self.results.btfr_scatter:.3f} dex\n")
             f.write(f"  - Target: < 0.15 dex\n")
-            f.write(f"  - Status: {'✅ PASS' if self.results.btfr_scatter < 0.15 else '⚠️  HIGH'}\n\n")
+            f.write(f"  - Status: {'PASS' if self.results.btfr_scatter < 0.15 else 'HIGH'}\n\n")
             f.write(f"- **RAR Scatter**: {self.results.rar_scatter:.3f}\n")
             f.write(f"  - Target: < 0.13\n")
-            f.write(f"  - Status: {'✅ PASS' if self.results.rar_scatter < 0.13 else '⚠️  HIGH'}\n\n")
+            f.write(f"  - Status: {'PASS' if self.results.rar_scatter < 0.13 else 'HIGH'}\n\n")
             
             f.write("## 4. Outlier Triage\n\n")
             f.write(f"- **Problematic Galaxies**: {self.results.outliers_flagged}\n")
@@ -572,7 +583,7 @@ class ValidationSuite:
                          self.results.btfr_scatter < 0.15 and
                          self.results.rar_scatter < 0.13)
             
-            f.write(f"**Overall Status**: {'✅ ALL CHECKS PASSED' if all_passed else '⚠️  SOME CHECKS NEED ATTENTION'}\n\n")
+            f.write(f"**Overall Status**: {'ALL CHECKS PASSED' if all_passed else 'SOME CHECKS NEED ATTENTION'}\n\n")
             
             f.write("## Recommendations\n\n")
             if not all_passed:
