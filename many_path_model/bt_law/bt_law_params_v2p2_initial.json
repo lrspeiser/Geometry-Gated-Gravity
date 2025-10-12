@@ -1,0 +1,39 @@
+{
+  "eta": {
+    "lo": 0.01,
+    "hi": 1.0,
+    "gamma": 4.0
+  },
+  "ring_amp": {
+    "lo": 0.37,
+    "hi": 3.0,
+    "gamma": 4.0
+  },
+  "M_max": {
+    "lo": 1.2,
+    "hi": 3.0,
+    "gamma": 4.0
+  },
+  "lambda_ring": {
+    "lo": 8.0,
+    "hi": 22.0,
+    "gamma_bulge": 4.0,
+    "gamma_shear": 3.0
+  },
+  "Sigma_ref": 100.0,
+  "gamma_Sigma": 0.8,
+  "eta_min_fraction": 0.3,
+  "Mmax_min_fraction": 0.5,
+  "S0": 0.8,
+  "S0_lambda": 0.8,
+  "n_shear": 2.0,
+  "ring_min_fraction": 0.2,
+  "kappa_min": 0.3,
+  "kappa_max": 1.0,
+  "a0": 2.0,
+  "a1": 28.0,
+  "b0_ring": 2.5,
+  "b1_ring": 1.2,
+  "sigma_ring": 0.5,
+  "use_bar_gate": true
+}
