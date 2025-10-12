@@ -1,0 +1,1227 @@
+{
+  "CamB": {
+    "name": "CamB",
+    "hubble_type": "Im",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "D512-2": {
+    "name": "D512-2",
+    "hubble_type": "Im",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "D564-8": {
+    "name": "D564-8",
+    "hubble_type": "Im",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "D631-7": {
+    "name": "D631-7",
+    "hubble_type": "Im",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "DDO064": {
+    "name": "DDO064",
+    "hubble_type": "Im",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "DDO154": {
+    "name": "DDO154",
+    "hubble_type": "Im",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "DDO161": {
+    "name": "DDO161",
+    "hubble_type": "Im",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "DDO168": {
+    "name": "DDO168",
+    "hubble_type": "Im",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "DDO170": {
+    "name": "DDO170",
+    "hubble_type": "Im",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "ESO079-G014": {
+    "name": "ESO079-G014",
+    "hubble_type": "Sbc",
+    "bar_class": "SB",
+    "bar_strength": 1.0,
+    "g_bar": 0.45
+  },
+  "ESO116-G012": {
+    "name": "ESO116-G012",
+    "hubble_type": "Sd",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "ESO444-G084": {
+    "name": "ESO444-G084",
+    "hubble_type": "Im",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "ESO563-G021": {
+    "name": "ESO563-G021",
+    "hubble_type": "Sbc",
+    "bar_class": "SB",
+    "bar_strength": 1.0,
+    "g_bar": 0.45
+  },
+  "F561-1": {
+    "name": "F561-1",
+    "hubble_type": "Sm",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "F563-1": {
+    "name": "F563-1",
+    "hubble_type": "Sm",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "F563-V1": {
+    "name": "F563-V1",
+    "hubble_type": "Im",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "F563-V2": {
+    "name": "F563-V2",
+    "hubble_type": "Im",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "F565-V2": {
+    "name": "F565-V2",
+    "hubble_type": "Im",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "F567-2": {
+    "name": "F567-2",
+    "hubble_type": "Sm",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "F568-1": {
+    "name": "F568-1",
+    "hubble_type": "Sc",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "F568-3": {
+    "name": "F568-3",
+    "hubble_type": "Sd",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "F568-V1": {
+    "name": "F568-V1",
+    "hubble_type": "Sd",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "F571-8": {
+    "name": "F571-8",
+    "hubble_type": "Sc",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "F571-V1": {
+    "name": "F571-V1",
+    "hubble_type": "Sd",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "F574-1": {
+    "name": "F574-1",
+    "hubble_type": "Sd",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "F574-2": {
+    "name": "F574-2",
+    "hubble_type": "Sm",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "F579-V1": {
+    "name": "F579-V1",
+    "hubble_type": "Sc",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "F583-1": {
+    "name": "F583-1",
+    "hubble_type": "Sm",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "F583-4": {
+    "name": "F583-4",
+    "hubble_type": "Sc",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "IC2574": {
+    "name": "IC2574",
+    "hubble_type": "Sm",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "IC4202": {
+    "name": "IC4202",
+    "hubble_type": "Sbc",
+    "bar_class": "SB",
+    "bar_strength": 1.0,
+    "g_bar": 0.45
+  },
+  "KK98-251": {
+    "name": "KK98-251",
+    "hubble_type": "Im",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "NGC0024": {
+    "name": "NGC0024",
+    "hubble_type": "Sc",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "NGC0055": {
+    "name": "NGC0055",
+    "hubble_type": "Sm",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "NGC0100": {
+    "name": "NGC0100",
+    "hubble_type": "Scd",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "NGC0247": {
+    "name": "NGC0247",
+    "hubble_type": "Sd",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "NGC0289": {
+    "name": "NGC0289",
+    "hubble_type": "Sbc",
+    "bar_class": "SB",
+    "bar_strength": 1.0,
+    "g_bar": 0.45
+  },
+  "NGC0300": {
+    "name": "NGC0300",
+    "hubble_type": "Sd",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "NGC0801": {
+    "name": "NGC0801",
+    "hubble_type": "Sc",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "NGC0891": {
+    "name": "NGC0891",
+    "hubble_type": "Sb",
+    "bar_class": "SB",
+    "bar_strength": 1.0,
+    "g_bar": 0.45
+  },
+  "NGC1003": {
+    "name": "NGC1003",
+    "hubble_type": "Scd",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "NGC1090": {
+    "name": "NGC1090",
+    "hubble_type": "Sbc",
+    "bar_class": "SB",
+    "bar_strength": 1.0,
+    "g_bar": 0.45
+  },
+  "NGC1705": {
+    "name": "NGC1705",
+    "hubble_type": "BCD",
+    "bar_class": "unknown",
+    "bar_strength": 0.5,
+    "g_bar": 0.51875
+  },
+  "NGC2366": {
+    "name": "NGC2366",
+    "hubble_type": "Im",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "NGC2403": {
+    "name": "NGC2403",
+    "hubble_type": "Scd",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "NGC2683": {
+    "name": "NGC2683",
+    "hubble_type": "Sb",
+    "bar_class": "SB",
+    "bar_strength": 1.0,
+    "g_bar": 0.45
+  },
+  "NGC2841": {
+    "name": "NGC2841",
+    "hubble_type": "Sb",
+    "bar_class": "SB",
+    "bar_strength": 1.0,
+    "g_bar": 0.45
+  },
+  "NGC2903": {
+    "name": "NGC2903",
+    "hubble_type": "Sbc",
+    "bar_class": "SB",
+    "bar_strength": 1.0,
+    "g_bar": 0.45
+  },
+  "NGC2915": {
+    "name": "NGC2915",
+    "hubble_type": "BCD",
+    "bar_class": "unknown",
+    "bar_strength": 0.5,
+    "g_bar": 0.51875
+  },
+  "NGC2955": {
+    "name": "NGC2955",
+    "hubble_type": "Sb",
+    "bar_class": "SB",
+    "bar_strength": 1.0,
+    "g_bar": 0.45
+  },
+  "NGC2976": {
+    "name": "NGC2976",
+    "hubble_type": "Sc",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "NGC2998": {
+    "name": "NGC2998",
+    "hubble_type": "Sc",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "NGC3109": {
+    "name": "NGC3109",
+    "hubble_type": "Sm",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "NGC3198": {
+    "name": "NGC3198",
+    "hubble_type": "Sc",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "NGC3521": {
+    "name": "NGC3521",
+    "hubble_type": "Sbc",
+    "bar_class": "SB",
+    "bar_strength": 1.0,
+    "g_bar": 0.45
+  },
+  "NGC3726": {
+    "name": "NGC3726",
+    "hubble_type": "Sc",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "NGC3741": {
+    "name": "NGC3741",
+    "hubble_type": "Im",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "NGC3769": {
+    "name": "NGC3769",
+    "hubble_type": "Sb",
+    "bar_class": "SB",
+    "bar_strength": 1.0,
+    "g_bar": 0.45
+  },
+  "NGC3877": {
+    "name": "NGC3877",
+    "hubble_type": "Sc",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "NGC3893": {
+    "name": "NGC3893",
+    "hubble_type": "Sc",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "NGC3917": {
+    "name": "NGC3917",
+    "hubble_type": "Scd",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "NGC3949": {
+    "name": "NGC3949",
+    "hubble_type": "Sbc",
+    "bar_class": "SB",
+    "bar_strength": 1.0,
+    "g_bar": 0.45
+  },
+  "NGC3953": {
+    "name": "NGC3953",
+    "hubble_type": "Sbc",
+    "bar_class": "SB",
+    "bar_strength": 1.0,
+    "g_bar": 0.45
+  },
+  "NGC3972": {
+    "name": "NGC3972",
+    "hubble_type": "Sbc",
+    "bar_class": "SB",
+    "bar_strength": 1.0,
+    "g_bar": 0.45
+  },
+  "NGC3992": {
+    "name": "NGC3992",
+    "hubble_type": "Sbc",
+    "bar_class": "SB",
+    "bar_strength": 1.0,
+    "g_bar": 0.45
+  },
+  "NGC4010": {
+    "name": "NGC4010",
+    "hubble_type": "Sd",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "NGC4013": {
+    "name": "NGC4013",
+    "hubble_type": "Sb",
+    "bar_class": "SB",
+    "bar_strength": 1.0,
+    "g_bar": 0.45
+  },
+  "NGC4051": {
+    "name": "NGC4051",
+    "hubble_type": "Sbc",
+    "bar_class": "SB",
+    "bar_strength": 1.0,
+    "g_bar": 0.45
+  },
+  "NGC4068": {
+    "name": "NGC4068",
+    "hubble_type": "Im",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "NGC4085": {
+    "name": "NGC4085",
+    "hubble_type": "Sc",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "NGC4088": {
+    "name": "NGC4088",
+    "hubble_type": "Sbc",
+    "bar_class": "SB",
+    "bar_strength": 1.0,
+    "g_bar": 0.45
+  },
+  "NGC4100": {
+    "name": "NGC4100",
+    "hubble_type": "Sbc",
+    "bar_class": "SB",
+    "bar_strength": 1.0,
+    "g_bar": 0.45
+  },
+  "NGC4138": {
+    "name": "NGC4138",
+    "hubble_type": "S0",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "NGC4157": {
+    "name": "NGC4157",
+    "hubble_type": "Sb",
+    "bar_class": "SB",
+    "bar_strength": 1.0,
+    "g_bar": 0.45
+  },
+  "NGC4183": {
+    "name": "NGC4183",
+    "hubble_type": "Scd",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "NGC4214": {
+    "name": "NGC4214",
+    "hubble_type": "Im",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "NGC4217": {
+    "name": "NGC4217",
+    "hubble_type": "Sb",
+    "bar_class": "SB",
+    "bar_strength": 1.0,
+    "g_bar": 0.45
+  },
+  "NGC4389": {
+    "name": "NGC4389",
+    "hubble_type": "Sbc",
+    "bar_class": "SB",
+    "bar_strength": 1.0,
+    "g_bar": 0.45
+  },
+  "NGC4559": {
+    "name": "NGC4559",
+    "hubble_type": "Scd",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "NGC5005": {
+    "name": "NGC5005",
+    "hubble_type": "Sbc",
+    "bar_class": "SB",
+    "bar_strength": 1.0,
+    "g_bar": 0.45
+  },
+  "NGC5033": {
+    "name": "NGC5033",
+    "hubble_type": "Sc",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "NGC5055": {
+    "name": "NGC5055",
+    "hubble_type": "Sbc",
+    "bar_class": "SB",
+    "bar_strength": 1.0,
+    "g_bar": 0.45
+  },
+  "NGC5371": {
+    "name": "NGC5371",
+    "hubble_type": "Sbc",
+    "bar_class": "SB",
+    "bar_strength": 1.0,
+    "g_bar": 0.45
+  },
+  "NGC5585": {
+    "name": "NGC5585",
+    "hubble_type": "Sd",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "NGC5907": {
+    "name": "NGC5907",
+    "hubble_type": "Sc",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "NGC5985": {
+    "name": "NGC5985",
+    "hubble_type": "Sb",
+    "bar_class": "SB",
+    "bar_strength": 1.0,
+    "g_bar": 0.45
+  },
+  "NGC6015": {
+    "name": "NGC6015",
+    "hubble_type": "Scd",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "NGC6195": {
+    "name": "NGC6195",
+    "hubble_type": "Sb",
+    "bar_class": "SB",
+    "bar_strength": 1.0,
+    "g_bar": 0.45
+  },
+  "NGC6503": {
+    "name": "NGC6503",
+    "hubble_type": "Scd",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "NGC6674": {
+    "name": "NGC6674",
+    "hubble_type": "Sb",
+    "bar_class": "SB",
+    "bar_strength": 1.0,
+    "g_bar": 0.45
+  },
+  "NGC6789": {
+    "name": "NGC6789",
+    "hubble_type": "BCD",
+    "bar_class": "unknown",
+    "bar_strength": 0.5,
+    "g_bar": 0.51875
+  },
+  "NGC6946": {
+    "name": "NGC6946",
+    "hubble_type": "Scd",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "NGC7331": {
+    "name": "NGC7331",
+    "hubble_type": "Sb",
+    "bar_class": "SB",
+    "bar_strength": 1.0,
+    "g_bar": 0.45
+  },
+  "NGC7793": {
+    "name": "NGC7793",
+    "hubble_type": "Sd",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "NGC7814": {
+    "name": "NGC7814",
+    "hubble_type": "Sab",
+    "bar_class": "SAB",
+    "bar_strength": 0.6,
+    "g_bar": 0.4852
+  },
+  "PGC51017": {
+    "name": "PGC51017",
+    "hubble_type": "BCD",
+    "bar_class": "unknown",
+    "bar_strength": 0.5,
+    "g_bar": 0.51875
+  },
+  "UGC00128": {
+    "name": "UGC00128",
+    "hubble_type": "Sdm",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC00191": {
+    "name": "UGC00191",
+    "hubble_type": "Sm",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC00634": {
+    "name": "UGC00634",
+    "hubble_type": "Sm",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC00731": {
+    "name": "UGC00731",
+    "hubble_type": "Im",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC00891": {
+    "name": "UGC00891",
+    "hubble_type": "Sm",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC01230": {
+    "name": "UGC01230",
+    "hubble_type": "Sm",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC01281": {
+    "name": "UGC01281",
+    "hubble_type": "Sdm",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC02023": {
+    "name": "UGC02023",
+    "hubble_type": "Im",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC02259": {
+    "name": "UGC02259",
+    "hubble_type": "Sdm",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC02455": {
+    "name": "UGC02455",
+    "hubble_type": "Im",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC02487": {
+    "name": "UGC02487",
+    "hubble_type": "S0",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC02885": {
+    "name": "UGC02885",
+    "hubble_type": "Sc",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC02916": {
+    "name": "UGC02916",
+    "hubble_type": "Sab",
+    "bar_class": "SAB",
+    "bar_strength": 0.6,
+    "g_bar": 0.4852
+  },
+  "UGC02953": {
+    "name": "UGC02953",
+    "hubble_type": "Sab",
+    "bar_class": "SAB",
+    "bar_strength": 0.6,
+    "g_bar": 0.4852
+  },
+  "UGC03205": {
+    "name": "UGC03205",
+    "hubble_type": "Sab",
+    "bar_class": "SAB",
+    "bar_strength": 0.6,
+    "g_bar": 0.4852
+  },
+  "UGC03546": {
+    "name": "UGC03546",
+    "hubble_type": "Sa",
+    "bar_class": "SA",
+    "bar_strength": 0.0,
+    "g_bar": 1.0
+  },
+  "UGC03580": {
+    "name": "UGC03580",
+    "hubble_type": "Sa",
+    "bar_class": "SA",
+    "bar_strength": 0.0,
+    "g_bar": 1.0
+  },
+  "UGC04278": {
+    "name": "UGC04278",
+    "hubble_type": "Sd",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC04305": {
+    "name": "UGC04305",
+    "hubble_type": "Im",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC04325": {
+    "name": "UGC04325",
+    "hubble_type": "Sm",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC04483": {
+    "name": "UGC04483",
+    "hubble_type": "Im",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC04499": {
+    "name": "UGC04499",
+    "hubble_type": "Sdm",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC05005": {
+    "name": "UGC05005",
+    "hubble_type": "Im",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC05253": {
+    "name": "UGC05253",
+    "hubble_type": "Sab",
+    "bar_class": "SAB",
+    "bar_strength": 0.6,
+    "g_bar": 0.4852
+  },
+  "UGC05414": {
+    "name": "UGC05414",
+    "hubble_type": "Im",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC05716": {
+    "name": "UGC05716",
+    "hubble_type": "Sm",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC05721": {
+    "name": "UGC05721",
+    "hubble_type": "Sd",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC05750": {
+    "name": "UGC05750",
+    "hubble_type": "Sdm",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC05764": {
+    "name": "UGC05764",
+    "hubble_type": "Im",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC05829": {
+    "name": "UGC05829",
+    "hubble_type": "Im",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC05918": {
+    "name": "UGC05918",
+    "hubble_type": "Im",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC05986": {
+    "name": "UGC05986",
+    "hubble_type": "Sm",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC05999": {
+    "name": "UGC05999",
+    "hubble_type": "Im",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC06399": {
+    "name": "UGC06399",
+    "hubble_type": "Sm",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC06446": {
+    "name": "UGC06446",
+    "hubble_type": "Sd",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC06614": {
+    "name": "UGC06614",
+    "hubble_type": "Sa",
+    "bar_class": "SA",
+    "bar_strength": 0.0,
+    "g_bar": 1.0
+  },
+  "UGC06628": {
+    "name": "UGC06628",
+    "hubble_type": "Sm",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC06667": {
+    "name": "UGC06667",
+    "hubble_type": "Scd",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC06786": {
+    "name": "UGC06786",
+    "hubble_type": "S0",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC06787": {
+    "name": "UGC06787",
+    "hubble_type": "Sab",
+    "bar_class": "SAB",
+    "bar_strength": 0.6,
+    "g_bar": 0.4852
+  },
+  "UGC06818": {
+    "name": "UGC06818",
+    "hubble_type": "Sm",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC06917": {
+    "name": "UGC06917",
+    "hubble_type": "Sm",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC06923": {
+    "name": "UGC06923",
+    "hubble_type": "Im",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC06930": {
+    "name": "UGC06930",
+    "hubble_type": "Sd",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC06973": {
+    "name": "UGC06973",
+    "hubble_type": "Sab",
+    "bar_class": "SAB",
+    "bar_strength": 0.6,
+    "g_bar": 0.4852
+  },
+  "UGC06983": {
+    "name": "UGC06983",
+    "hubble_type": "Scd",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC07089": {
+    "name": "UGC07089",
+    "hubble_type": "Sdm",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC07125": {
+    "name": "UGC07125",
+    "hubble_type": "Sm",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC07151": {
+    "name": "UGC07151",
+    "hubble_type": "Scd",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC07232": {
+    "name": "UGC07232",
+    "hubble_type": "Im",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC07261": {
+    "name": "UGC07261",
+    "hubble_type": "Sdm",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC07323": {
+    "name": "UGC07323",
+    "hubble_type": "Sdm",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC07399": {
+    "name": "UGC07399",
+    "hubble_type": "Sdm",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC07524": {
+    "name": "UGC07524",
+    "hubble_type": "Sm",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC07559": {
+    "name": "UGC07559",
+    "hubble_type": "Im",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC07577": {
+    "name": "UGC07577",
+    "hubble_type": "Im",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC07603": {
+    "name": "UGC07603",
+    "hubble_type": "Sd",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC07608": {
+    "name": "UGC07608",
+    "hubble_type": "Im",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC07690": {
+    "name": "UGC07690",
+    "hubble_type": "Im",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC07866": {
+    "name": "UGC07866",
+    "hubble_type": "Im",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC08286": {
+    "name": "UGC08286",
+    "hubble_type": "Scd",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC08490": {
+    "name": "UGC08490",
+    "hubble_type": "Sm",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC08550": {
+    "name": "UGC08550",
+    "hubble_type": "Sd",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC08699": {
+    "name": "UGC08699",
+    "hubble_type": "Sab",
+    "bar_class": "SAB",
+    "bar_strength": 0.6,
+    "g_bar": 0.4852
+  },
+  "UGC08837": {
+    "name": "UGC08837",
+    "hubble_type": "Im",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC09037": {
+    "name": "UGC09037",
+    "hubble_type": "Scd",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC09133": {
+    "name": "UGC09133",
+    "hubble_type": "Sab",
+    "bar_class": "SAB",
+    "bar_strength": 0.6,
+    "g_bar": 0.4852
+  },
+  "UGC09992": {
+    "name": "UGC09992",
+    "hubble_type": "Im",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC10310": {
+    "name": "UGC10310",
+    "hubble_type": "Sm",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC11455": {
+    "name": "UGC11455",
+    "hubble_type": "Scd",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC11557": {
+    "name": "UGC11557",
+    "hubble_type": "Sdm",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC11820": {
+    "name": "UGC11820",
+    "hubble_type": "Sm",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC11914": {
+    "name": "UGC11914",
+    "hubble_type": "Sab",
+    "bar_class": "SAB",
+    "bar_strength": 0.6,
+    "g_bar": 0.4852
+  },
+  "UGC12506": {
+    "name": "UGC12506",
+    "hubble_type": "Scd",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC12632": {
+    "name": "UGC12632",
+    "hubble_type": "Sm",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGC12732": {
+    "name": "UGC12732",
+    "hubble_type": "Sm",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGCA281": {
+    "name": "UGCA281",
+    "hubble_type": "BCD",
+    "bar_class": "unknown",
+    "bar_strength": 0.5,
+    "g_bar": 0.51875
+  },
+  "UGCA442": {
+    "name": "UGCA442",
+    "hubble_type": "Sm",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  },
+  "UGCA444": {
+    "name": "UGCA444",
+    "hubble_type": "Im",
+    "bar_class": "S",
+    "bar_strength": 0.2,
+    "g_bar": 0.7316
+  }
+}
