@@ -419,6 +419,24 @@ def test_einstein_radius():
     return True
 
 
+# Convenience functions for easy imports
+def default_cosmology():
+    """Return default cosmology instance."""
+    return LensingCosmology()
+
+
+def abel_project(r, rho):
+    """Convenience wrapper for Abel projection."""
+    R = r.copy()
+    projector = AbelProjection()
+    return projector.project_density_to_surface(r, rho, R)
+
+
+def critical_surface_density(z_lens, z_src, cosmo):
+    """Convenience wrapper for critical surface density."""
+    return cosmo.critical_surface_density(z_lens, z_src)
+
+
 if __name__ == "__main__":
     print("Running Lensing Utilities Tests")
     print("="*70)

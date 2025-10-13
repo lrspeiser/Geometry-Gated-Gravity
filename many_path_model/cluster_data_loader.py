@@ -413,5 +413,28 @@ def test_loader():
         return False
 
 
+def load_cluster_profile(cluster_name: str) -> Tuple[float, np.ndarray, np.ndarray]:
+    """
+    Convenience function to load cluster profile for lensing.
+    
+    Parameters
+    ----------
+    cluster_name : str
+        Cluster name (e.g., 'MACSJ0416')
+    
+    Returns
+    -------
+    z_lens : float
+        Cluster redshift
+    r_kpc : ndarray
+        Radial points in kpc
+    rho_total : ndarray
+        Total baryon density in Msun/kpc^3
+    """
+    loader = ClusterDataLoader()
+    data = loader.load_cluster(cluster_name, validate=False)
+    return data.z_lens, data.r_kpc, data.rho_total
+
+
 if __name__ == "__main__":
     test_loader()
