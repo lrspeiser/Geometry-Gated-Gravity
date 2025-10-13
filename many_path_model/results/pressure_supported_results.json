@@ -1,0 +1,20 @@
+{
+  "test_type": "pressure_supported_systems",
+  "elliptical": {
+    "boost_median": 5.547088442433265e-22,
+    "boost_percentage": 5.547088442433265e-20,
+    "R_eff_kpc": 10.0,
+    "M_star_Msun": 100000000000.0
+  },
+  "dsph": {
+    "boost_median": 4.88703391404944e-22,
+    "boost_percentage": 4.88703391404944e-20,
+    "R_eff_kpc": 0.5,
+    "M_star_Msun": 10000000.0
+  },
+  "summary": {
+    "elliptical_boost": 5.547088442433265e-22,
+    "dsph_boost": 4.88703391404944e-22,
+    "mechanism_disk_specific": true
+  }
+}
