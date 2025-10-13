@@ -51,13 +51,15 @@ class PathSpectrumHyperparams:
     beta_bulge: float = 1.0   # Bulge suppression exponent
     alpha_shear: float = 0.05 # Shear suppression rate [(km/s/kpc)^-1]
     gamma_bar: float = 1.0    # Bar suppression strength
+    A_0: float = 1.0          # GLOBAL AMPLITUDE scaling factor (RAR calibration)
     
     def to_dict(self):
         return {
             'L_0': self.L_0,
             'beta_bulge': self.beta_bulge,
             'alpha_shear': self.alpha_shear,
-            'gamma_bar': self.gamma_bar
+            'gamma_bar': self.gamma_bar,
+            'A_0': self.A_0
         }
     
     @classmethod
@@ -285,7 +287,9 @@ class PathSpectrumKernel:
         # Combined: small-r gate × coherence-based boost
         K_total = S_sm * K_coherence
         
-        return K_total
+        # Apply global amplitude scaling (A_0)
+        # K_scaled = A_0 * K_total, preserving K=0 at small r
+        return self.hp.A_0 * K_total
     
     def suppression_factor(self, r: Union[float, np.ndarray],
                           v_circ: Union[float, np.ndarray],
