@@ -1,0 +1,15 @@
+{
+  "test_type": "outer_annulus_blind_predictions",
+  "n_galaxies_outer": 100,
+  "n_galaxies_inner": 94,
+  "summary": {
+    "outer_mean_ape": 21.499268057020263,
+    "outer_median_ape": 12.863766530362307,
+    "global_mean_ape": 29.235966841014584,
+    "global_median_ape": 17.536751339254526,
+    "diff_mean": -7.736698783994321,
+    "diff_median": -4.672984808892219,
+    "success": true,
+    "inner_median_ape": 23.250090092736443
+  }
+}
