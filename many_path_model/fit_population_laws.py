@@ -340,8 +340,8 @@ def fit_population_laws_cv(galaxies: List, n_folds: int = 5,
                                              return_details=False, l2_lambda=l2_lambda),
             bounds=bounds,
             seed=42 + fold_idx,
-            maxiter=100,
-            popsize=15,
+            maxiter=50,  # Reduced for faster completion
+            popsize=10,  # Reduced for faster completion
             workers=1,  # Avoid nested parallelism
             updating='deferred',
             polish=True
