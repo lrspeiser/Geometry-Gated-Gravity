@@ -190,9 +190,13 @@ class TuningPipeline:
                     print(f"      V_model range: {v_model.min():.1f}-{v_model.max():.1f} km/s")
                     print(f"      R range: {r_obs.min():.2f}-{r_obs.max():.2f} kpc")
                 
+                # Get inclination for hygiene filtering
+                inclination = galaxy.get('Inc', galaxy.get('inclination', 50.0))
+                
                 predictions.append({
                     'galaxy': galaxy['Galaxy'],
                     'type': galaxy['type'],
+                    'inclination': inclination,
                     'v_flat_model': v_flat_model,
                     'v_flat_obs': v_flat_obs,
                     'v_flat_ratio': v_flat_model / v_flat_obs if v_flat_obs > 0 else 1.0,
@@ -237,10 +241,27 @@ class TuningPipeline:
         
         # RAR: g_obs vs g_bar from MODEL in LOG-SPACE DEX
         # Collect all (g_bar, g_obs) points from all galaxies
+        # WITH INCLINATION HYGIENE FILTER
         all_g_bar = []
         all_g_obs = []
+        n_total_galaxies = 0
+        n_filtered_galaxies = 0
         
         for idx, row in pred_df.iterrows():
+            n_total_galaxies += 1
+            
+            # INCLINATION HYGIENE FILTER
+            # Filter out edge-on (|i-90°| < 3°) or face-on (i < 30°) galaxies
+            # These have poor deprojection and contaminate the RAR
+            inclination = row.get('inclination', 50.0)
+            
+            if abs(inclination - 90.0) < 3.0:  # Edge-on: i > 87° or i < 93°
+                n_filtered_galaxies += 1
+                continue
+            if inclination < 30.0:  # Face-on: i < 30°
+                n_filtered_galaxies += 1
+                continue
+            
             g_obs = row['g_obs_model']
             g_bar = row['g_bar']
             
@@ -280,6 +301,9 @@ class TuningPipeline:
         
         print(f"\nModel-based RAR scatter: {rar_scatter_dex:.3f} dex")
         print(f"  Fitted g† = {g_dagger_fit:.2e} m/s²")
+        print(f"  Galaxies total: {n_total_galaxies}")
+        print(f"  Galaxies filtered (inclination): {n_filtered_galaxies} ({n_filtered_galaxies/n_total_galaxies*100:.1f}%)")
+        print(f"  Galaxies used: {n_total_galaxies - n_filtered_galaxies}")
         print(f"  N_points = {len(all_g_obs)}")
         print(f"  g_bar range: {all_g_bar.min():.2e} - {all_g_bar.max():.2e} m/s²")
         print(f"  g_obs range: {all_g_obs.min():.2e} - {all_g_obs.max():.2e} m/s²")
