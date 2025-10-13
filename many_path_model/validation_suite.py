@@ -559,7 +559,8 @@ class ValidationSuite:
             base_ape = 20.0
             
             # Inclination issues: very low or very high inclination
-            inc = galaxy['inclination']
+            # SPARC uses 'Inc' not 'inclination'
+            inc = galaxy.get('Inc', galaxy.get('inclination', 50.0))
             if inc < 35 or inc > 75:
                 base_ape += 15.0
             
@@ -571,8 +572,10 @@ class ValidationSuite:
             ape = base_ape + np.random.normal(0, 5)
             
             if ape > ape_threshold:
+                # SPARC uses 'Galaxy' not 'galaxy_id'
+                galaxy_id = galaxy.get('Galaxy', galaxy.get('galaxy_id', f'GAL{idx}'))
                 outliers.append({
-                    'galaxy_id': galaxy['galaxy_id'],
+                    'galaxy_id': galaxy_id,
                     'type': galaxy['type'],
                     'ape': ape,
                     'inclination': inc,
