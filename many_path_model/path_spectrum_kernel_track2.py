@@ -52,6 +52,8 @@ class PathSpectrumHyperparams:
     alpha_shear: float = 0.05 # Shear suppression rate [(km/s/kpc)^-1]
     gamma_bar: float = 1.0    # Bar suppression strength
     A_0: float = 1.0          # GLOBAL AMPLITUDE scaling factor (RAR calibration)
+    p: float = 0.7            # RAR slope exponent (low-acceleration steepness)
+    g_dagger: float = 1.2e-10 # RAR acceleration scale [m/s²]
     
     def to_dict(self):
         return {
@@ -59,7 +61,9 @@ class PathSpectrumHyperparams:
             'beta_bulge': self.beta_bulge,
             'alpha_shear': self.alpha_shear,
             'gamma_bar': self.gamma_bar,
-            'A_0': self.A_0
+            'A_0': self.A_0,
+            'p': self.p,
+            'g_dagger': self.g_dagger
         }
     
     @classmethod
@@ -234,18 +238,24 @@ class PathSpectrumKernel:
     
     def many_path_boost_factor(self, r: Union[float, np.ndarray],
                                v_circ: Union[float, np.ndarray],
+                               g_bar: Optional[Union[float, np.ndarray]] = None,
                                BT: float = 0.0,
                                bar_strength: float = 0.0,
                                r_bulge: float = 1.0,
                                r_bar: float = 3.0,
                                r_gate: float = 0.5) -> Union[float, np.ndarray]:
-        """Compute many-path boost factor K for ADDITIVE formulation
+        """Compute many-path boost factor K with RAR-shaped curvature
         
-        CORRECT USAGE: g_total = g_Newton * (1 + K * S_small * coherence_gates)
-        NOT: g_total = g_Newton * suppression_factor
+        NEW FORMULATION (post-diagnostic):
+        K = A_0 * (g†/g_bar)^p * exp(-L/ℓ_coh) * S_small * [geometry gates]
         
-        This preserves Newtonian limit at small r while adding many-path
-        contribution at large r where coherence is maintained.
+        This gives proper RAR curvature:
+        - At low g_bar (outer radii): K grows as (g†/g_bar)^p → steeper boost
+        - At high g_bar (inner radii): K → 0 from S_small gate
+        - Coherence length ℓ_coh modulates all path families
+        - p parameter (0.3-1.2) controls RAR slope
+        
+        USAGE: g_total = g_bar * (1 + K)
         
         Parameters:
         -----------
@@ -253,6 +263,8 @@ class PathSpectrumKernel:
             Radius [kpc]
         v_circ : float or array
             Circular velocity [km/s]
+        g_bar : float or array, optional
+            Baryonic acceleration [m/s²]. If None, estimated from v_circ
         BT : float
             Bulge-to-total ratio
         bar_strength : float
@@ -269,7 +281,7 @@ class PathSpectrumKernel:
         K : float or array
             Boost factor for additive contribution
             K = 0 at small r (Newtonian preserved)
-            K > 0 at large r (many-path active)
+            K increases at low g_bar (RAR curvature)
         """
         # Small-radius gate (preserves Newtonian limit)
         S_sm = self.S_small(r, r_gate)
@@ -277,19 +289,33 @@ class PathSpectrumKernel:
         # Coherence length from bulge, shear, bar
         L_coh = self.coherence_length(r, v_circ, BT, bar_strength, r_bulge, r_bar)
         
-        # Convert coherence length to boost strength
-        # High L_coh → strong boost (many paths coherent)
-        # Low L_coh → weak boost (paths dephase)
+        # Estimate g_bar if not provided (from v_circ/r approximation)
         r_arr = self.xp.asarray(r)
-        K_max = 0.5  # Maximum boost factor (tunable hyperparameter)
-        K_coherence = K_max * (L_coh / (L_coh + self.xp.maximum(r_arr, 0.1)))
+        if g_bar is None:
+            # Rough estimate: g ≈ V²/R, convert to SI
+            KM_TO_M = 1000.0
+            KPC_TO_M = 3.0856776e19
+            v_m_s = self.xp.asarray(v_circ) * KM_TO_M
+            r_m = r_arr * KPC_TO_M
+            g_bar = v_m_s**2 / r_m
+        else:
+            g_bar = self.xp.asarray(g_bar)
         
-        # Combined: small-r gate × coherence-based boost
-        K_total = S_sm * K_coherence
+        # RAR-shaped response: (g†/g_bar)^p
+        # This creates the key low-acceleration steepening
+        g_ratio = self.hp.g_dagger / self.xp.maximum(g_bar, 1e-14)  # Avoid division by zero
+        K_rar = self.xp.power(g_ratio, self.hp.p)
         
-        # Apply global amplitude scaling (A_0)
-        # K_scaled = A_0 * K_total, preserving K=0 at small r
-        return self.hp.A_0 * K_total
+        # Coherence exponential damping: exp(-L/ℓ_coh)
+        # This suppresses contributions when paths dephase
+        # Use characteristic length scale L ~ r (azimuthal path scale)
+        K_coherence = self.xp.exp(-r_arr / L_coh)
+        
+        # Combined kernel:
+        # K = A_0 * RAR_shape * coherence * small_r_gate
+        K_total = self.hp.A_0 * K_rar * K_coherence * S_sm
+        
+        return K_total
     
     def suppression_factor(self, r: Union[float, np.ndarray],
                           v_circ: Union[float, np.ndarray],
