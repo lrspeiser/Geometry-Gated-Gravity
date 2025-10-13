@@ -116,8 +116,12 @@ class ValidationSuite:
                 
                 df['type'] = df['T'].apply(t_to_type)
                 
+                # Load rotation curves from individual files
+                df = self._load_rotation_curves(df, sparc_path.parent)
+                
                 print(f"✅ Loaded {len(df)} REAL SPARC galaxies from {sparc_path.name}")
                 print(f"   Type distribution: {dict(df['type'].value_counts())}")
+                print(f"   Rotation curves loaded for {len(df[df['r_all'].notna()])} galaxies")
                 return df
                 
             except Exception as e:
@@ -129,6 +133,43 @@ class ValidationSuite:
             "\n".join(f"  - {p}" for p in sparc_paths) +
             "\n\nWe NEVER use fake data. Please provide real SPARC data."
         )
+    
+    def _load_rotation_curves(self, df: pd.DataFrame, data_dir: Path) -> pd.DataFrame:
+        """Load rotation curves from individual *_rotmod.dat files"""
+        print("   Loading rotation curves from individual files...")
+        
+        # Initialize columns for rotation curve data
+        df['r_all'] = None
+        df['v_all'] = None
+        df['v_err'] = None
+        
+        loaded_count = 0
+        for idx, row in df.iterrows():
+            galaxy_name = row['Galaxy'].replace(' ', '')
+            rotmod_file = data_dir / f"{galaxy_name}_rotmod.dat"
+            
+            if not rotmod_file.exists():
+                continue
+            
+            try:
+                # Read rotation curve file
+                # Format: # Distance = X Mpc
+                #         # Rad  Vobs  errV  Vgas  Vdisk  Vbul  SBdisk  SBbul
+                #         # kpc  km/s  km/s  km/s  km/s   km/s  L/pc^2  L/pc^2
+                data = pd.read_csv(rotmod_file, sep=r'\s+', comment='#', 
+                                   names=['Rad', 'Vobs', 'errV', 'Vgas', 'Vdisk', 'Vbul', 'SBdisk', 'SBbul'])
+                
+                df.at[idx, 'r_all'] = data['Rad'].values
+                df.at[idx, 'v_all'] = data['Vobs'].values
+                df.at[idx, 'v_err'] = data['errV'].values
+                loaded_count += 1
+                
+            except Exception as e:
+                # Skip galaxies with loading errors
+                continue
+        
+        print(f"   Successfully loaded {loaded_count}/{len(df)} rotation curves")
+        return df
     
     def _generate_synthetic_sparc(self, n_galaxies: int = 175) -> pd.DataFrame:
         """Generate synthetic SPARC-like galaxy sample"""
