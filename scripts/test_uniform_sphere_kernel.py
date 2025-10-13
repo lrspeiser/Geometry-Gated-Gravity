@@ -204,9 +204,12 @@ def test_interior_exterior_split():
     r_ext = r_grid[mask_ext]
     rho_ext = rho_3d[mask_ext] / np.median(rho_3d[rho_3d > 0])  # Normalized
     
-    # Compute contributions
-    K_int = interior_contribution(R_test, r_int, rho_int, params)
-    K_ext = exterior_contribution(R_test, r_ext, rho_ext, params)
+    # Compute baseline surface density at R_test
+    Sigma_baseline = abel_project_uniform_sphere(R_test, R_sphere, rho_0)
+    
+    # Compute contributions (now with Sigma_baseline)
+    K_int = interior_contribution(R_test, r_int, rho_int, params, Sigma_baseline)
+    K_ext = exterior_contribution(R_test, r_ext, rho_ext, params, Sigma_baseline)
     K_total = K_int + K_ext
     
     print(f"Interior chord contribution: K_int = {K_int:.6f}")

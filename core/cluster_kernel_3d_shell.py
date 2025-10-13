@@ -200,15 +200,14 @@ def interior_contribution(
     R: float,
     r_shells_interior: np.ndarray,
     rho_interior: np.ndarray,
-    params: Shell3DKernelParams
+    params: Shell3DKernelParams,
+    Sigma_baseline: float
 ) -> float:
     """
     Compute interior chord family contribution to K_Σ(R).
     
-    Integrates over all shells with r < R, weighting by:
-    - Chord length through shell
-    - Density at shell
-    - Coherence damping
+    The boost is normalized by baseline surface density to be dimensionless:
+    K_int = [∫ chord_paths] / [Σ_baseline × R]
     
     Parameters
     ----------
@@ -220,45 +219,54 @@ def interior_contribution(
         Density at interior shells [Msun/kpc³]
     params : Shell3DKernelParams
         Kernel parameters
+    Sigma_baseline : float
+        Baseline surface density at R [Msun/kpc²]
     
     Returns
     -------
     K_interior : float
         Interior contribution (dimensionless)
     """
-    if len(r_shells_interior) == 0:
+    if len(r_shells_interior) == 0 or Sigma_baseline == 0:
         return 0.0
     
-    integrand = np.zeros_like(r_shells_interior)
+    # Compute weighted sum over interior shells
+    total_weight = 0.0
     
-    for i, r_s in enumerate(r_shells_interior):
-        # Chord length
+    for i in range(len(r_shells_interior)):
+        if i == 0:
+            continue  # Skip first point to avoid singularity
+        
+        r_s = r_shells_interior[i]
+        
+        # Chord length through sphere at radius r_s
         L_chord = chord_length_through_sphere(R, r_s)
         
-        # Coherence damping (based on chord length as effective path)
+        if L_chord == 0:
+            continue
+        
+        # Coherence damping based on chord length
         C_damp = coherence_damping(
             L_chord, params.ell0, params.coherence_mode, params.n_coh
         )
         
-        # Density weighting (normalized, dimensionless)
-        rho_factor = rho_interior[i]**params.p_density
+        # Density weighting (constructive interference)
+        rho_weighted = rho_interior[i]**params.p_density
         
-        # Dimensionless weight: chord length normalized by coherence
-        # This gives ~O(1) contributions per shell
-        weight = (L_chord / params.ell0) * C_damp * rho_factor
+        # Shell volume element contribution
+        # Weight by: chord_length × coherence × density × shell_area
+        dr = r_shells_interior[i] - r_shells_interior[i-1]
+        shell_area = 4 * np.pi * r_s**2
         
-        # Shell surface area factor (for proper weighting, not integration measure)
-        # Normalized by R² to make dimensionless
-        area_factor = (r_s / R)**2
+        # Total dimensional contribution from this shell
+        contrib = L_chord * C_damp * rho_weighted * shell_area * dr
         
-        # Accumulate (dimensionless integrand)
-        integrand[i] = weight * area_factor
+        total_weight += contrib
     
-    # Integrate over interior shells (dimensionless dr/R)
-    if len(integrand) > 1:
-        # Dimensionless radial coordinate
-        r_norm = r_shells_interior / R
-        K_int = simpson(integrand, x=r_norm)
+    # Normalize by (Sigma_baseline × R) to make dimensionless
+    # This gives K_int ~ O(1) for typical cluster profiles
+    if total_weight > 0 and Sigma_baseline > 0:
+        K_int = total_weight / (Sigma_baseline * R * params.ell0)
     else:
         K_int = 0.0
     
@@ -269,15 +277,14 @@ def exterior_contribution(
     R: float,
     r_shells_exterior: np.ndarray,
     rho_exterior: np.ndarray,
-    params: Shell3DKernelParams
+    params: Shell3DKernelParams,
+    Sigma_baseline: float
 ) -> float:
     """
     Compute exterior shell contribution to K_Σ(R).
     
-    Integrates over all shells with r > R, weighting by:
-    - Path curvature weight (up-and-over arcs)
-    - Density at shell
-    - Coherence damping
+    The boost is normalized by baseline surface density to be dimensionless:
+    K_ext = [∫ arc_paths] / [Σ_baseline × R]
     
     Parameters
     ----------
@@ -289,41 +296,50 @@ def exterior_contribution(
         Density at exterior shells [Msun/kpc³]
     params : Shell3DKernelParams
         Kernel parameters
+    Sigma_baseline : float
+        Baseline surface density at R [Msun/kpc²]
     
     Returns
     -------
     K_exterior : float
         Exterior contribution (dimensionless)
     """
-    if len(r_shells_exterior) == 0:
+    if len(r_shells_exterior) == 0 or Sigma_baseline == 0:
         return 0.0
     
-    integrand = np.zeros_like(r_shells_exterior)
+    # Compute weighted sum over exterior shells
+    total_weight = 0.0
     
-    for i, r_s in enumerate(r_shells_exterior):
-        # Separation for coherence damping
-        dr = r_s - R
+    for i in range(1, len(r_shells_exterior)):
+        r_s = r_shells_exterior[i]
+        
+        # Radial separation from field point
+        dr_sep = r_s - R
+        
+        # Coherence damping based on separation
         C_damp = coherence_damping(
-            dr, params.ell0, params.coherence_mode, params.n_coh
+            dr_sep, params.ell0, params.coherence_mode, params.n_coh
         )
         
-        # Density weighting (normalized, dimensionless)
-        rho_factor = rho_exterior[i]**params.p_density
+        # Density weighting
+        rho_weighted = rho_exterior[i]**params.p_density
         
-        # Dimensionless weight: separation normalized by coherence
-        weight = (dr / params.ell0) * C_damp * rho_factor
+        # Shell volume element contribution
+        # Weight by: separation × coherence × density × shell_area
+        dr = r_shells_exterior[i] - r_shells_exterior[i-1]
+        shell_area = 4 * np.pi * r_s**2
         
-        # Shell area factor (dimensionless)
-        area_factor = (r_s / R)**2
+        # Geometric weight for exterior arcs (decreases with distance)
+        geom_weight = R / r_s  # Simple inverse-distance weighting
         
-        # Accumulate (dimensionless integrand)
-        integrand[i] = weight * area_factor
+        # Total dimensional contribution
+        contrib = dr_sep * C_damp * rho_weighted * shell_area * dr * geom_weight
+        
+        total_weight += contrib
     
-    # Integrate over exterior shells (dimensionless)
-    if len(integrand) > 1:
-        # Dimensionless radial coordinate
-        r_norm = r_shells_exterior / R
-        K_ext = simpson(integrand, x=r_norm)
+    # Normalize by (Sigma_baseline × R) to make dimensionless
+    if total_weight > 0 and Sigma_baseline > 0:
+        K_ext = total_weight / (Sigma_baseline * R * params.ell0)
     else:
         K_ext = 0.0
     
@@ -367,33 +383,42 @@ def K_Sigma_3D_shell(
         K_Σ(R) = A_c × gate(R) × [K_interior(R) + K_exterior(R)] × taper(R)
     
     where gate and taper preserve Newtonian limits and prevent divergence.
+    
+    FIXED: Now properly normalizes by baseline surface density.
     """
+    # First, compute baseline surface density via Abel projection
+    from many_path_model.lensing_utilities import AbelProjection
+    
+    projector = AbelProjection()
+    # Project on r_grid first, then interpolate to R
+    Sigma_on_rgrid = projector.project_density_to_surface(r_grid, rho_3d, r_grid)
+    
+    # Interpolate to R grid
+    f_Sigma = interp1d(r_grid, Sigma_on_rgrid, kind='linear',
+                       bounds_error=False, fill_value=0.0)
+    Sigma_baseline = f_Sigma(R)
+    
+    # Now compute boost K_Sigma
     K_Sigma = np.zeros_like(R)
     
-    # Normalization density scale (for dimensionless weighting)
-    if normalize:
-        rho_norm = np.median(rho_3d[rho_3d > 0]) if np.any(rho_3d > 0) else 1.0
-    else:
-        rho_norm = 1.0
-    
-    # Interpolate density for smooth queries
-    rho_interp = interp1d(r_grid, rho_3d, kind='linear', 
-                          bounds_error=False, fill_value=0.0)
-    
     for i, R_eval in enumerate(R):
+        if Sigma_baseline[i] == 0:
+            K_Sigma[i] = 0.0
+            continue
+        
         # Split into interior and exterior shells
         mask_interior = r_grid < R_eval
         mask_exterior = r_grid >= R_eval
         
         r_int = r_grid[mask_interior]
-        rho_int = rho_3d[mask_interior] / rho_norm
+        rho_int = rho_3d[mask_interior]  # Use actual density, not normalized
         
         r_ext = r_grid[mask_exterior]
-        rho_ext = rho_3d[mask_exterior] / rho_norm
+        rho_ext = rho_3d[mask_exterior]  # Use actual density
         
-        # Compute contributions
-        K_int = interior_contribution(R_eval, r_int, rho_int, params)
-        K_ext = exterior_contribution(R_eval, r_ext, rho_ext, params)
+        # Compute contributions (now with Sigma_baseline normalization)
+        K_int = interior_contribution(R_eval, r_int, rho_int, params, Sigma_baseline[i])
+        K_ext = exterior_contribution(R_eval, r_ext, rho_ext, params, Sigma_baseline[i])
         
         # Total boost (before gates/tapers)
         K_raw = K_int + K_ext
