@@ -1,0 +1,14 @@
+{
+  "solar_system": {
+    "cassini_constraint": 2e-05,
+    "k_at_saturn": 2.742926634777217e-19,
+    "safety_factor": 72914819326272.0,
+    "passed": true
+  },
+  "wide_binaries": {
+    "k_at_10kau": 9.465405529106685e-09,
+    "k_at_20kau": 1.0807127398223371e-07,
+    "mond_anomaly_predicted": false,
+    "interpretation": "No anomaly - geometry suppresses boost at small scales"
+  }
+}
