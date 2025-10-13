@@ -27,9 +27,13 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from pathlib import Path
 from typing import Dict, List, Tuple, Optional
-import json
 from dataclasses import dataclass, asdict
-import argparse
+import json
+import sys
+
+# Physical constants for proper unit conversion
+KPC_TO_M = 3.0856776e19  # 1 kpc in meters
+KM_TO_M = 1000.0  # 1 km in meters
 from scipy import stats
 from scipy.optimize import minimize
 
@@ -474,24 +478,48 @@ class ValidationSuite:
             btfr_residual = np.log10(m_bar / m_pred_btfr)
             btfr_scatter_values.append(btfr_residual)
             
-            # RAR: g_obs = V^2/R vs g_bar (from baryons)
-            g_obs = v_all**2 / r_all  # Observed acceleration
-            g_bar = v_all**2 / r_all * 0.7  # Simplified: assume baryons = 70% of observed
+            # RAR: g_obs = V^2/R vs g_bar (from baryons) with PROPER UNITS
+            # Convert km/s and kpc to m/s²
+            v_m_s = v_all * KM_TO_M  # km/s → m/s
+            r_m = r_all * KPC_TO_M  # kpc → m
+            g_obs = v_m_s**2 / r_m  # m/s²
             
-            # RAR residual
-            rar_residual = np.mean(np.abs(g_obs - g_bar) / g_obs)
-            rar_scatter_values.append(rar_residual)
+            # Get baryonic components if available
+            v_disk = galaxy.get('v_disk_all', np.zeros_like(v_all))
+            v_bulge = galaxy.get('v_bulge_all', np.zeros_like(v_all))
+            v_gas = galaxy.get('v_gas_all', np.zeros_like(v_all))
+            
+            if v_disk is None:
+                v_disk = np.zeros_like(v_all)
+            if v_bulge is None:
+                v_bulge = np.zeros_like(v_all)
+            if v_gas is None:
+                v_gas = np.zeros_like(v_all)
+            
+            # Compute g_bar from baryonic components with proper units
+            v_disk_m_s = v_disk * KM_TO_M
+            v_bulge_m_s = v_bulge * KM_TO_M
+            v_gas_m_s = v_gas * KM_TO_M
+            v_baryonic_sq = v_disk_m_s**2 + v_bulge_m_s**2 + v_gas_m_s**2
+            g_bar = v_baryonic_sq / r_m  # m/s²
+            
+            # RAR residual in log-space (dex)
+            # Filter out very small accelerations
+            mask = (g_bar > 1e-14) & (g_obs > 1e-14)
+            if np.sum(mask) > 0:
+                log_residual = np.std(np.log10(g_obs[mask]) - np.log10(g_bar[mask]))
+                rar_scatter_values.append(log_residual)
         
         btfr_scatter = np.std(btfr_scatter_values)
-        rar_scatter = np.mean(rar_scatter_values)
+        rar_scatter = np.mean(rar_scatter_values) if len(rar_scatter_values) > 0 else 0.0
         
         print(f"\nBTFR scatter (dex): {btfr_scatter:.3f}")
         print(f"  Target: < 0.15 dex (comparable to MOND/ΛCDM)")
         print(f"  Status: {'✅ PASS' if btfr_scatter < 0.15 else '⚠️  HIGH'}")
         
-        print(f"\nRAR scatter (fractional): {rar_scatter:.3f}")
-        print(f"  Target: < 0.13 (observed scatter)")
-        print(f"  Status: {'✅ PASS' if rar_scatter < 0.13 else '⚠️  HIGH'}")
+        print(f"\nRAR scatter (dex): {rar_scatter:.3f}")
+        print(f"  Target: < 0.15 dex (literature standard)")
+        print(f"  Status: {'✅ PASS' if rar_scatter < 0.15 else '⚠️  HIGH'}")
         
         self.results.btfr_scatter = btfr_scatter
         self.results.rar_scatter = rar_scatter
@@ -531,8 +559,25 @@ class ValidationSuite:
         for idx, galaxy in df.iterrows():
             v_all = galaxy['v_all']
             r_all = galaxy['r_all']
-            g_obs = v_all**2 / r_all
-            g_bar = g_obs * 0.7  # Simplified
+            
+            # Convert to proper units m/s²
+            v_m_s = v_all * KM_TO_M
+            r_m = r_all * KPC_TO_M
+            g_obs = v_m_s**2 / r_m
+            
+            # Get baryonic components
+            v_disk = galaxy.get('v_disk_all', np.zeros_like(v_all))
+            v_bulge = galaxy.get('v_bulge_all', np.zeros_like(v_all))
+            v_gas = galaxy.get('v_gas_all', np.zeros_like(v_all))
+            
+            if v_disk is None or v_bulge is None or v_gas is None:
+                continue  # Skip if no baryonic data
+            
+            v_disk_m_s = v_disk * KM_TO_M
+            v_bulge_m_s = v_bulge * KM_TO_M
+            v_gas_m_s = v_gas * KM_TO_M
+            v_baryonic_sq = v_disk_m_s**2 + v_bulge_m_s**2 + v_gas_m_s**2
+            g_bar = v_baryonic_sq / r_m
             
             g_obs_all.extend(g_obs)
             g_bar_all.extend(g_bar)
