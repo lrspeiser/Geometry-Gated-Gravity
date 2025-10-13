@@ -74,26 +74,41 @@ class ValidationSuite:
         
     def _load_sparc_data(self) -> pd.DataFrame:
         """Load SPARC data - REAL DATA ONLY, NO FAKE DATA"""
-        # Try primary path
+        # Try both MRT and CSV formats
         sparc_paths = [
+            REPO_ROOT / "data" / "Rotmod_LTG" / "MasterSheet_SPARC.mrt",
             REPO_ROOT / "data" / "Rotmod_LTG" / "MasterSheet_SPARC.csv",
+            REPO_ROOT / "data" / "sparc" / "MasterSheet_SPARC.mrt",
             REPO_ROOT / "data" / "sparc" / "MasterSheet_SPARC.csv",
         ]
         
         for sparc_path in sparc_paths:
-            if sparc_path.exists():
-                try:
-                    # Skip header lines (data starts at line 103)
-                    df = pd.read_csv(sparc_path, skiprows=102, sep=r'\s*,\s*', engine='python',
+            if not sparc_path.exists():
+                continue
+                
+            try:
+                if sparc_path.suffix == '.mrt':
+                    # Parse Machine-Readable Table
+                    # Data is whitespace-separated after the header
+                    df = pd.read_csv(sparc_path, 
+                                     sep=r'\s+',
+                                     skiprows=107,  # Data starts at line 108
                                      names=['Galaxy', 'T', 'D', 'e_D', 'f_D', 'Inc', 'e_Inc',
                                             'L', 'e_L', 'Reff', 'SBeff', 'Rdisk', 'SBdisk',
                                             'MHI', 'RHI', 'Vflat', 'e_Vflat', 'Q', 'Ref'])
-                    # Remove any rows with NaN in critical columns
-                    df = df.dropna(subset=['Galaxy', 'D', 'Inc', 'Vflat'])
-                    print(f"✅ Loaded {len(df)} REAL SPARC galaxies from {sparc_path.name}")
-                    return df
-                except Exception as e:
-                    print(f"Failed to load SPARC data from {sparc_path}: {e}")
+                else:
+                    # CSV fallback
+                    df = pd.read_csv(sparc_path, on_bad_lines='skip')
+                
+                # Clean up
+                df['Galaxy'] = df['Galaxy'].str.strip()
+                df = df.dropna(subset=['Galaxy', 'D', 'Inc', 'Vflat'])
+                
+                print(f"✅ Loaded {len(df)} REAL SPARC galaxies from {sparc_path.name}")
+                return df
+                
+            except Exception as e:
+                print(f"Failed to load SPARC data from {sparc_path}: {e}")
         
         # NEVER use synthetic data - fail explicitly
         raise FileNotFoundError(
