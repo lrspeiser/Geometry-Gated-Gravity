@@ -116,7 +116,7 @@ def objective_function(x, train_df):
     """Optimization objective: minimize RAR scatter + APE penalty"""
     
     # Unpack parameters
-    p, L_0, beta_bulge, alpha_shear, gamma_bar, A_0 = x
+    p, L_0, beta_bulge, alpha_shear, gamma_bar, A_0, n_coh = x
     
     # Create hyperparameters
     hp = PathSpectrumHyperparams(
@@ -126,6 +126,7 @@ def objective_function(x, train_df):
         alpha_shear=alpha_shear,
         gamma_bar=gamma_bar,
         A_0=A_0,
+        n_coh=n_coh,
         g_dagger=G_DAGGER_LIT  # Fixed
     )
     
@@ -148,18 +149,19 @@ def run_optimization(train_df: pd.DataFrame, n_iter: int = 60):
     print(f"Fixed g† = {G_DAGGER_LIT:.2e} m/s²")
     print(f"Target: RAR scatter ≤ 0.15 dex\n")
     
-    # Parameter bounds: (p, L_0, beta_bulge, alpha_shear, gamma_bar, A_0)
+    # Parameter bounds: (p, L_0, beta_bulge, alpha_shear, gamma_bar, A_0, n_coh)
     bounds = [
         (0.3, 1.2),      # p: RAR slope exponent
         (1.0, 5.0),      # L_0: baseline coherence length [kpc]
         (0.5, 2.0),      # beta_bulge: bulge suppression
         (0.01, 0.15),    # alpha_shear: shear suppression rate
         (0.5, 3.5),      # gamma_bar: bar suppression
-        (0.5, 3.0)       # A_0: global amplitude
+        (0.5, 3.0),      # A_0: global amplitude
+        (0.5, 2.0)       # n_coh: coherence damping exponent
     ]
     
     print("Parameter bounds:")
-    param_names = ['p', 'L_0', 'beta_bulge', 'alpha_shear', 'gamma_bar', 'A_0']
+    param_names = ['p', 'L_0', 'beta_bulge', 'alpha_shear', 'gamma_bar', 'A_0', 'n_coh']
     for name, (low, high) in zip(param_names, bounds):
         print(f"  {name:<15} [{low:.3f}, {high:.3f}]")
     print()
@@ -189,7 +191,7 @@ def run_optimization(train_df: pd.DataFrame, n_iter: int = 60):
     print()
     
     # Extract best parameters
-    p, L_0, beta_bulge, alpha_shear, gamma_bar, A_0 = result.x
+    p, L_0, beta_bulge, alpha_shear, gamma_bar, A_0, n_coh = result.x
     
     best_hp = PathSpectrumHyperparams(
         p=p,
@@ -198,6 +200,7 @@ def run_optimization(train_df: pd.DataFrame, n_iter: int = 60):
         alpha_shear=alpha_shear,
         gamma_bar=gamma_bar,
         A_0=A_0,
+        n_coh=n_coh,
         g_dagger=G_DAGGER_LIT
     )
     

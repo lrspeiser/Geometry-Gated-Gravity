@@ -53,6 +53,7 @@ class PathSpectrumHyperparams:
     gamma_bar: float = 1.0    # Bar suppression strength
     A_0: float = 1.0          # GLOBAL AMPLITUDE scaling factor (RAR calibration)
     p: float = 0.7            # RAR slope exponent (low-acceleration steepness)
+    n_coh: float = 1.0        # Coherence damping exponent (gentler than exponential)
     g_dagger: float = 1.2e-10 # RAR acceleration scale [m/s²]
     
     def to_dict(self):
@@ -63,6 +64,7 @@ class PathSpectrumHyperparams:
             'gamma_bar': self.gamma_bar,
             'A_0': self.A_0,
             'p': self.p,
+            'n_coh': self.n_coh,
             'g_dagger': self.g_dagger
         }
     
@@ -306,10 +308,12 @@ class PathSpectrumKernel:
         g_ratio = self.hp.g_dagger / self.xp.maximum(g_bar, 1e-14)  # Avoid division by zero
         K_rar = self.xp.power(g_ratio, self.hp.p)
         
-        # Coherence exponential damping: exp(-L/ℓ_coh)
-        # This suppresses contributions when paths dephase
-        # Use characteristic length scale L ~ r (azimuthal path scale)
-        K_coherence = self.xp.exp(-r_arr / L_coh)
+        # Coherence damping: POWER LAW (gentler than exponential)
+        # Old: exp(-r/ℓ_coh) → too aggressive (96% suppression at r=3×ℓ_coh)
+        # New: (ℓ_coh / (ℓ_coh + r))^n_coh → tunable falloff
+        # At r=ℓ_coh: K_coh = 0.5^n_coh (50% if n=1, 25% if n=2)
+        # At r=10×ℓ_coh: K_coh = (1/11)^n_coh (9% if n=1, 0.8% if n=2)
+        K_coherence = self.xp.power(L_coh / (L_coh + r_arr), self.hp.n_coh)
         
         # Combined kernel:
         # K = A_0 * RAR_shape * coherence * small_r_gate
