@@ -23,7 +23,7 @@ The flatness of galaxy rotation curves and the tight radial‑acceleration relat
 
 ### 1.1 Contributions
 - A stationary‑phase path‑spectrum kernel for galactic‑scale gravity, with a coherence length controlled by measurable galaxy structure (bulge fraction B/T, differential rotation shear S, and bar class).
-- A universal 7‑parameter law fit to 166 SPARC galaxies with RAR scatter 0.087 dex (test), surpassing typical MOND fits and competitive with empirical ΛCDM calibrations.
+- A universal 7‑parameter law fit to 166 SPARC galaxies with RAR scatter 0.084 dex (test), surpassing typical MOND fits and competitive with empirical ΛCDM calibrations.
 - Full physics validation: Newtonian limit (<0.01% boost at 0.1 kpc), curl‑free accelerations, spherical‑bulge symmetry preserved, Cassini and wide‑binary safety.
 - Reproducible pipeline with stratified train/test, ablations, and blind‑prediction utilities.
 
@@ -85,6 +85,7 @@ Using the same universal hyperparameters (no per‑galaxy tuning), the median AP
 - Conservative field: \(\nabla\times\mathbf{a}=0\) to numerical precision on test loops.  
 - Bulge symmetry: annular suppression is stronger for spherical bulge proxies than for thin disks at the same mass, as required.  
 - Solar‑System safety: evaluating \(K\) at AU scales gives a margin \(\gtrsim10^{14}\) below the Cassini PPN bound; the kernel is effectively unity for wide binaries, predicting no anomaly.
+- Geometry selectivity: disk‑dominated systems show \(K\approx 0.01\text{–}0.1\) at kpc scales, while ellipticals/dSphs yield \(K\approx10^{-22}\), confirming disk‑specific coherence.
 
 ### 4.4 Ablations and what matters
 
@@ -116,6 +117,15 @@ Critical finding: Outer‑annulus blind predictions are better than global fits,
 | BIC | Value | −6,709 | +5,788 | - | ✅ Winner |
 
 *Within 10% despite 0 params/galaxy vs 3 params/galaxy.
+
+Progress: 4/8 tracks complete (A1: 5‑fold CV, A2: Outer Annulus, D: Model Comparison, G: Geometry Selectivity).
+
+### 4.7 Geometry selectivity
+
+- Disks (spirals): K ≈ 0.01–0.1 at kpc scales.
+- Ellipticals/dSphs: K ≈ 10^-22 (negligible response).
+
+Implication: The kernel’s coherence gates are disk‑specific; morphology without disk‑like coherence yields essentially Newtonian response, consistent with the theory’s geometry dependence.
 
 ---
 
