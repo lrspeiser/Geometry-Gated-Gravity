@@ -1,0 +1,895 @@
+{
+  "metadata": {
+    "tag": "v-pathspec-0.9-rar0p087",
+    "export_date": "2025-10-13T06:48:03.492351",
+    "total_galaxies": 166,
+    "train_galaxies": 134,
+    "test_galaxies": 32,
+    "split_method": "stratified_by_morphology",
+    "random_seed": 42,
+    "test_fraction": 0.2
+  },
+  "performance": {
+    "train_rar_scatter": 0.084,
+    "test_rar_scatter": 0.087,
+    "test_rar_bias": -0.078,
+    "train_median_ape": 17.5,
+    "test_median_ape": 19.1,
+    "target_rar": 0.15,
+    "achieved": true
+  },
+  "hyperparameters": {
+    "L_0": 4.992525,
+    "beta_bulge": 1.759351,
+    "alpha_shear": 0.149265,
+    "gamma_bar": 1.931874,
+    "A_0": 0.590634,
+    "p": 0.756591,
+    "n_coh": 0.500019,
+    "g_dagger": 1.2e-10
+  },
+  "train_set": [
+    {
+      "index": 0,
+      "galaxy": "IC4202",
+      "type": "Sbc"
+    },
+    {
+      "index": 1,
+      "galaxy": "NGC0289",
+      "type": "Sbc"
+    },
+    {
+      "index": 2,
+      "galaxy": "NGC1090",
+      "type": "Sbc"
+    },
+    {
+      "index": 3,
+      "galaxy": "NGC2903",
+      "type": "Sbc"
+    },
+    {
+      "index": 4,
+      "galaxy": "NGC3521",
+      "type": "Sbc"
+    },
+    {
+      "index": 5,
+      "galaxy": "NGC3949",
+      "type": "Sbc"
+    },
+    {
+      "index": 6,
+      "galaxy": "NGC3972",
+      "type": "Sbc"
+    },
+    {
+      "index": 7,
+      "galaxy": "NGC3992",
+      "type": "Sbc"
+    },
+    {
+      "index": 8,
+      "galaxy": "NGC4051",
+      "type": "Sbc"
+    },
+    {
+      "index": 9,
+      "galaxy": "NGC4088",
+      "type": "Sbc"
+    },
+    {
+      "index": 10,
+      "galaxy": "NGC4100",
+      "type": "Sbc"
+    },
+    {
+      "index": 11,
+      "galaxy": "NGC4389",
+      "type": "Sbc"
+    },
+    {
+      "index": 12,
+      "galaxy": "NGC5005",
+      "type": "Sbc"
+    },
+    {
+      "index": 13,
+      "galaxy": "NGC5055",
+      "type": "Sbc"
+    },
+    {
+      "index": 14,
+      "galaxy": "NGC5371",
+      "type": "Sbc"
+    },
+    {
+      "index": 15,
+      "galaxy": "F568-V1",
+      "type": "Sd"
+    },
+    {
+      "index": 16,
+      "galaxy": "F571-V1",
+      "type": "Sd"
+    },
+    {
+      "index": 17,
+      "galaxy": "F574-1",
+      "type": "Sd"
+    },
+    {
+      "index": 18,
+      "galaxy": "NGC0300",
+      "type": "Sd"
+    },
+    {
+      "index": 19,
+      "galaxy": "NGC4010",
+      "type": "Sd"
+    },
+    {
+      "index": 20,
+      "galaxy": "NGC5585",
+      "type": "Sd"
+    },
+    {
+      "index": 21,
+      "galaxy": "NGC7793",
+      "type": "Sd"
+    },
+    {
+      "index": 22,
+      "galaxy": "UGC04278",
+      "type": "Sd"
+    },
+    {
+      "index": 23,
+      "galaxy": "UGC05721",
+      "type": "Sd"
+    },
+    {
+      "index": 24,
+      "galaxy": "UGC06446",
+      "type": "Sd"
+    },
+    {
+      "index": 25,
+      "galaxy": "UGC06930",
+      "type": "Sd"
+    },
+    {
+      "index": 26,
+      "galaxy": "UGC07603",
+      "type": "Sd"
+    },
+    {
+      "index": 27,
+      "galaxy": "UGC08550",
+      "type": "Sd"
+    },
+    {
+      "index": 28,
+      "galaxy": "ESO444-G084",
+      "type": "Im"
+    },
+    {
+      "index": 29,
+      "galaxy": "F563-V1",
+      "type": "Im"
+    },
+    {
+      "index": 30,
+      "galaxy": "F563-V2",
+      "type": "Im"
+    },
+    {
+      "index": 31,
+      "galaxy": "F565-V2",
+      "type": "Im"
+    },
+    {
+      "index": 32,
+      "galaxy": "KK98-251",
+      "type": "Im"
+    },
+    {
+      "index": 33,
+      "galaxy": "NGC2366",
+      "type": "Im"
+    },
+    {
+      "index": 34,
+      "galaxy": "NGC3741",
+      "type": "Im"
+    },
+    {
+      "index": 35,
+      "galaxy": "NGC4068",
+      "type": "Im"
+    },
+    {
+      "index": 36,
+      "galaxy": "UGC02023",
+      "type": "Im"
+    },
+    {
+      "index": 37,
+      "galaxy": "UGC02455",
+      "type": "Im"
+    },
+    {
+      "index": 38,
+      "galaxy": "UGC04305",
+      "type": "Im"
+    },
+    {
+      "index": 39,
+      "galaxy": "UGC04483",
+      "type": "Im"
+    },
+    {
+      "index": 40,
+      "galaxy": "UGC05005",
+      "type": "Im"
+    },
+    {
+      "index": 41,
+      "galaxy": "UGC05764",
+      "type": "Im"
+    },
+    {
+      "index": 42,
+      "galaxy": "UGC05918",
+      "type": "Im"
+    },
+    {
+      "index": 43,
+      "galaxy": "UGC05999",
+      "type": "Im"
+    },
+    {
+      "index": 44,
+      "galaxy": "UGC06923",
+      "type": "Im"
+    },
+    {
+      "index": 45,
+      "galaxy": "UGC07232",
+      "type": "Im"
+    },
+    {
+      "index": 46,
+      "galaxy": "UGC07559",
+      "type": "Im"
+    },
+    {
+      "index": 47,
+      "galaxy": "UGC07608",
+      "type": "Im"
+    },
+    {
+      "index": 48,
+      "galaxy": "UGC07690",
+      "type": "Im"
+    },
+    {
+      "index": 49,
+      "galaxy": "UGC07866",
+      "type": "Im"
+    },
+    {
+      "index": 50,
+      "galaxy": "UGC09992",
+      "type": "Im"
+    },
+    {
+      "index": 51,
+      "galaxy": "UGCA444",
+      "type": "Im"
+    },
+    {
+      "index": 52,
+      "galaxy": "F563-1",
+      "type": "Sm"
+    },
+    {
+      "index": 53,
+      "galaxy": "F567-2",
+      "type": "Sm"
+    },
+    {
+      "index": 54,
+      "galaxy": "F574-2",
+      "type": "Sm"
+    },
+    {
+      "index": 55,
+      "galaxy": "F583-1",
+      "type": "Sm"
+    },
+    {
+      "index": 56,
+      "galaxy": "IC2574",
+      "type": "Sm"
+    },
+    {
+      "index": 57,
+      "galaxy": "NGC0055",
+      "type": "Sm"
+    },
+    {
+      "index": 58,
+      "galaxy": "NGC3109",
+      "type": "Sm"
+    },
+    {
+      "index": 59,
+      "galaxy": "UGC00891",
+      "type": "Sm"
+    },
+    {
+      "index": 60,
+      "galaxy": "UGC01230",
+      "type": "Sm"
+    },
+    {
+      "index": 61,
+      "galaxy": "UGC04325",
+      "type": "Sm"
+    },
+    {
+      "index": 62,
+      "galaxy": "UGC05986",
+      "type": "Sm"
+    },
+    {
+      "index": 63,
+      "galaxy": "UGC06399",
+      "type": "Sm"
+    },
+    {
+      "index": 64,
+      "galaxy": "UGC06628",
+      "type": "Sm"
+    },
+    {
+      "index": 65,
+      "galaxy": "UGC06818",
+      "type": "Sm"
+    },
+    {
+      "index": 66,
+      "galaxy": "UGC06917",
+      "type": "Sm"
+    },
+    {
+      "index": 67,
+      "galaxy": "UGC07125",
+      "type": "Sm"
+    },
+    {
+      "index": 68,
+      "galaxy": "UGC07524",
+      "type": "Sm"
+    },
+    {
+      "index": 69,
+      "galaxy": "UGC10310",
+      "type": "Sm"
+    },
+    {
+      "index": 70,
+      "galaxy": "UGC11820",
+      "type": "Sm"
+    },
+    {
+      "index": 71,
+      "galaxy": "UGC12632",
+      "type": "Sm"
+    },
+    {
+      "index": 72,
+      "galaxy": "UGC12732",
+      "type": "Sm"
+    },
+    {
+      "index": 73,
+      "galaxy": "UGCA442",
+      "type": "Sm"
+    },
+    {
+      "index": 74,
+      "galaxy": "F579-V1",
+      "type": "Sc"
+    },
+    {
+      "index": 75,
+      "galaxy": "F583-4",
+      "type": "Sc"
+    },
+    {
+      "index": 76,
+      "galaxy": "NGC0024",
+      "type": "Sc"
+    },
+    {
+      "index": 77,
+      "galaxy": "NGC2976",
+      "type": "Sc"
+    },
+    {
+      "index": 78,
+      "galaxy": "NGC2998",
+      "type": "Sc"
+    },
+    {
+      "index": 79,
+      "galaxy": "NGC3198",
+      "type": "Sc"
+    },
+    {
+      "index": 80,
+      "galaxy": "NGC3726",
+      "type": "Sc"
+    },
+    {
+      "index": 81,
+      "galaxy": "NGC3877",
+      "type": "Sc"
+    },
+    {
+      "index": 82,
+      "galaxy": "NGC3893",
+      "type": "Sc"
+    },
+    {
+      "index": 83,
+      "galaxy": "NGC4085",
+      "type": "Sc"
+    },
+    {
+      "index": 84,
+      "galaxy": "NGC5033",
+      "type": "Sc"
+    },
+    {
+      "index": 85,
+      "galaxy": "NGC5907",
+      "type": "Sc"
+    },
+    {
+      "index": 86,
+      "galaxy": "UGC02885",
+      "type": "Sc"
+    },
+    {
+      "index": 87,
+      "galaxy": "NGC2403",
+      "type": "Scd"
+    },
+    {
+      "index": 88,
+      "galaxy": "NGC3917",
+      "type": "Scd"
+    },
+    {
+      "index": 89,
+      "galaxy": "NGC4183",
+      "type": "Scd"
+    },
+    {
+      "index": 90,
+      "galaxy": "NGC6015",
+      "type": "Scd"
+    },
+    {
+      "index": 91,
+      "galaxy": "NGC6503",
+      "type": "Scd"
+    },
+    {
+      "index": 92,
+      "galaxy": "NGC6946",
+      "type": "Scd"
+    },
+    {
+      "index": 93,
+      "galaxy": "UGC06667",
+      "type": "Scd"
+    },
+    {
+      "index": 94,
+      "galaxy": "UGC06983",
+      "type": "Scd"
+    },
+    {
+      "index": 95,
+      "galaxy": "UGC07151",
+      "type": "Scd"
+    },
+    {
+      "index": 96,
+      "galaxy": "UGC08286",
+      "type": "Scd"
+    },
+    {
+      "index": 97,
+      "galaxy": "UGC09037",
+      "type": "Scd"
+    },
+    {
+      "index": 98,
+      "galaxy": "UGC11455",
+      "type": "Scd"
+    },
+    {
+      "index": 99,
+      "galaxy": "UGC12506",
+      "type": "Scd"
+    },
+    {
+      "index": 100,
+      "galaxy": "NGC0891",
+      "type": "Sb"
+    },
+    {
+      "index": 101,
+      "galaxy": "NGC2683",
+      "type": "Sb"
+    },
+    {
+      "index": 102,
+      "galaxy": "NGC2841",
+      "type": "Sb"
+    },
+    {
+      "index": 103,
+      "galaxy": "NGC2955",
+      "type": "Sb"
+    },
+    {
+      "index": 104,
+      "galaxy": "NGC3769",
+      "type": "Sb"
+    },
+    {
+      "index": 105,
+      "galaxy": "NGC4013",
+      "type": "Sb"
+    },
+    {
+      "index": 106,
+      "galaxy": "NGC4157",
+      "type": "Sb"
+    },
+    {
+      "index": 107,
+      "galaxy": "NGC4217",
+      "type": "Sb"
+    },
+    {
+      "index": 108,
+      "galaxy": "NGC5985",
+      "type": "Sb"
+    },
+    {
+      "index": 109,
+      "galaxy": "NGC7331",
+      "type": "Sb"
+    },
+    {
+      "index": 110,
+      "galaxy": "NGC1705",
+      "type": "BCD"
+    },
+    {
+      "index": 111,
+      "galaxy": "NGC6789",
+      "type": "BCD"
+    },
+    {
+      "index": 112,
+      "galaxy": "PGC51017",
+      "type": "BCD"
+    },
+    {
+      "index": 113,
+      "galaxy": "UGCA281",
+      "type": "BCD"
+    },
+    {
+      "index": 114,
+      "galaxy": "UGC02487",
+      "type": "S0"
+    },
+    {
+      "index": 115,
+      "galaxy": "UGC06786",
+      "type": "S0"
+    },
+    {
+      "index": 116,
+      "galaxy": "NGC7814",
+      "type": "Sab"
+    },
+    {
+      "index": 117,
+      "galaxy": "UGC02953",
+      "type": "Sab"
+    },
+    {
+      "index": 118,
+      "galaxy": "UGC03205",
+      "type": "Sab"
+    },
+    {
+      "index": 119,
+      "galaxy": "UGC05253",
+      "type": "Sab"
+    },
+    {
+      "index": 120,
+      "galaxy": "UGC06787",
+      "type": "Sab"
+    },
+    {
+      "index": 121,
+      "galaxy": "UGC06973",
+      "type": "Sab"
+    },
+    {
+      "index": 122,
+      "galaxy": "UGC08699",
+      "type": "Sab"
+    },
+    {
+      "index": 123,
+      "galaxy": "UGC11914",
+      "type": "Sab"
+    },
+    {
+      "index": 124,
+      "galaxy": "UGC00128",
+      "type": "Sdm"
+    },
+    {
+      "index": 125,
+      "galaxy": "UGC02259",
+      "type": "Sdm"
+    },
+    {
+      "index": 126,
+      "galaxy": "UGC04499",
+      "type": "Sdm"
+    },
+    {
+      "index": 127,
+      "galaxy": "UGC05750",
+      "type": "Sdm"
+    },
+    {
+      "index": 128,
+      "galaxy": "UGC07089",
+      "type": "Sdm"
+    },
+    {
+      "index": 129,
+      "galaxy": "UGC07261",
+      "type": "Sdm"
+    },
+    {
+      "index": 130,
+      "galaxy": "UGC07323",
+      "type": "Sdm"
+    },
+    {
+      "index": 131,
+      "galaxy": "UGC11557",
+      "type": "Sdm"
+    },
+    {
+      "index": 132,
+      "galaxy": "UGC03580",
+      "type": "Sa"
+    },
+    {
+      "index": 133,
+      "galaxy": "UGC06614",
+      "type": "Sa"
+    }
+  ],
+  "test_set": [
+    {
+      "index": 0,
+      "galaxy": "ESO079-G014",
+      "type": "Sbc"
+    },
+    {
+      "index": 1,
+      "galaxy": "ESO563-G021",
+      "type": "Sbc"
+    },
+    {
+      "index": 2,
+      "galaxy": "NGC3953",
+      "type": "Sbc"
+    },
+    {
+      "index": 3,
+      "galaxy": "ESO116-G012",
+      "type": "Sd"
+    },
+    {
+      "index": 4,
+      "galaxy": "F568-3",
+      "type": "Sd"
+    },
+    {
+      "index": 5,
+      "galaxy": "NGC0247",
+      "type": "Sd"
+    },
+    {
+      "index": 6,
+      "galaxy": "UGC08837",
+      "type": "Im"
+    },
+    {
+      "index": 7,
+      "galaxy": "UGC05414",
+      "type": "Im"
+    },
+    {
+      "index": 8,
+      "galaxy": "UGC07577",
+      "type": "Im"
+    },
+    {
+      "index": 9,
+      "galaxy": "UGC05829",
+      "type": "Im"
+    },
+    {
+      "index": 10,
+      "galaxy": "NGC4214",
+      "type": "Im"
+    },
+    {
+      "index": 11,
+      "galaxy": "UGC00731",
+      "type": "Im"
+    },
+    {
+      "index": 12,
+      "galaxy": "UGC00191",
+      "type": "Sm"
+    },
+    {
+      "index": 13,
+      "galaxy": "UGC05716",
+      "type": "Sm"
+    },
+    {
+      "index": 14,
+      "galaxy": "UGC00634",
+      "type": "Sm"
+    },
+    {
+      "index": 15,
+      "galaxy": "UGC08490",
+      "type": "Sm"
+    },
+    {
+      "index": 16,
+      "galaxy": "F561-1",
+      "type": "Sm"
+    },
+    {
+      "index": 17,
+      "galaxy": "F568-1",
+      "type": "Sc"
+    },
+    {
+      "index": 18,
+      "galaxy": "F571-8",
+      "type": "Sc"
+    },
+    {
+      "index": 19,
+      "galaxy": "NGC0801",
+      "type": "Sc"
+    },
+    {
+      "index": 20,
+      "galaxy": "NGC0100",
+      "type": "Scd"
+    },
+    {
+      "index": 21,
+      "galaxy": "NGC1003",
+      "type": "Scd"
+    },
+    {
+      "index": 22,
+      "galaxy": "NGC4559",
+      "type": "Scd"
+    },
+    {
+      "index": 23,
+      "galaxy": "NGC6674",
+      "type": "Sb"
+    },
+    {
+      "index": 24,
+      "galaxy": "NGC6195",
+      "type": "Sb"
+    },
+    {
+      "index": 25,
+      "galaxy": "NGC2915",
+      "type": "BCD"
+    },
+    {
+      "index": 26,
+      "galaxy": "NGC4138",
+      "type": "S0"
+    },
+    {
+      "index": 27,
+      "galaxy": "UGC09133",
+      "type": "Sab"
+    },
+    {
+      "index": 28,
+      "galaxy": "UGC02916",
+      "type": "Sab"
+    },
+    {
+      "index": 29,
+      "galaxy": "UGC07399",
+      "type": "Sdm"
+    },
+    {
+      "index": 30,
+      "galaxy": "UGC01281",
+      "type": "Sdm"
+    },
+    {
+      "index": 31,
+      "galaxy": "UGC03546",
+      "type": "Sa"
+    }
+  ],
+  "morphology_distribution": {
+    "train": {
+      "Im": 24,
+      "Sm": 22,
+      "Sbc": 15,
+      "Sd": 13,
+      "Sc": 13,
+      "Scd": 13,
+      "Sb": 10,
+      "Sab": 8,
+      "Sdm": 8,
+      "BCD": 4,
+      "S0": 2,
+      "Sa": 2
+    },
+    "test": {
+      "Im": 6,
+      "Sm": 5,
+      "Sd": 3,
+      "Sbc": 3,
+      "Sc": 3,
+      "Scd": 3,
+      "Sb": 2,
+      "Sab": 2,
+      "Sdm": 2,
+      "BCD": 1,
+      "S0": 1,
+      "Sa": 1
+    }
+  }
+}
