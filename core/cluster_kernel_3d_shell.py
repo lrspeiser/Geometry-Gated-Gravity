@@ -91,11 +91,12 @@ def chord_length_through_sphere(R: float, r_shell: float) -> float:
     Compute chord length through a spherical shell at radius r_shell
     viewed from projected radius R.
     
-    For R < r_shell (exterior view):
-        Returns 0 (no intersection)
-    
-    For R > r_shell (interior view):
-        Chord length = 2 × sqrt(r_shell² - R²)
+    Physical setup:
+    - For a field point at projected radius R
+    - Interior shell (r < R): Chord passes THROUGH the shell
+      Length = 2 × sqrt(R² - r²)
+    - Exterior shell (r > R): Standard Abel projection
+      Length = 2 × sqrt(r² - R²)
     
     Parameters
     ----------
@@ -109,9 +110,11 @@ def chord_length_through_sphere(R: float, r_shell: float) -> float:
     L_chord : float
         Chord length [kpc]
     """
-    if R > r_shell:
-        return 0.0
+    if r_shell < R:
+        # Interior: chord through shell at smaller radius
+        return 2.0 * np.sqrt(R**2 - r_shell**2)
     else:
+        # Exterior: standard Abel projection
         return 2.0 * np.sqrt(r_shell**2 - R**2)
 
 
