@@ -1,0 +1,50 @@
+{
+  "comparison_type": "lcdm_vs_mond_vs_universal",
+  "metrics": {
+    "lcdm": {
+      "rar_scatter": 0.1832103102722994,
+      "rar_bias": -0.27864268031095196,
+      "median_ape": 16.3595628657502,
+      "n_params_total": 318.0,
+      "params_per_galaxy": 3.0,
+      "n_galaxies": 106.0,
+      "n_data_points": 2160.0,
+      "aic": -2725.7463105978663,
+      "bic": -920.1857173821954,
+      "log_likelihood": 1680.8731552989332
+    },
+    "mond": {
+      "rar_scatter": NaN,
+      "rar_bias": NaN,
+      "median_ape": 99.99972636648194,
+      "n_params_total": 106.0,
+      "params_per_galaxy": 1.0,
+      "n_galaxies": 106.0,
+      "n_data_points": 0.0,
+      "aic": NaN,
+      "bic": NaN,
+      "log_likelihood": NaN
+    },
+    "universal": {
+      "rar_scatter": 0.08442621124000356,
+      "rar_bias": -0.07499185636594614,
+      "median_ape": 18.110256560537145,
+      "n_params_total": 0.0,
+      "params_per_galaxy": 0.0,
+      "n_galaxies": 106.0,
+      "n_data_points": 2160.0,
+      "aic": -6708.695757149768,
+      "bic": -6708.695757149768,
+      "log_likelihood": 3354.347878574884
+    }
+  },
+  "interpretation": {
+    "universal_rar_vs_mond": NaN,
+    "universal_rar_vs_lcdm": 53.91841697417373,
+    "params_per_galaxy": {
+      "lcdm": 3.0,
+      "mond": 1.0,
+      "universal": 0.0
+    }
+  }
+}
