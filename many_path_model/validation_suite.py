@@ -116,6 +116,10 @@ class ValidationSuite:
                 
                 df['type'] = df['T'].apply(t_to_type)
                 
+                # Normalize field names: add 'inclination' as alias for 'Inc'
+                # This ensures the rest of the validation code works unchanged
+                df['inclination'] = df['Inc']
+                
                 # Load rotation curves from individual files
                 df = self._load_rotation_curves(df, sparc_path.parent)
                 
@@ -142,6 +146,10 @@ class ValidationSuite:
         df['r_all'] = None
         df['v_all'] = None
         df['v_err'] = None
+        # Store baryonic velocity components for real g_bar calculation
+        df['v_disk_all'] = None
+        df['v_bulge_all'] = None
+        df['v_gas_all'] = None
         
         loaded_count = 0
         for idx, row in df.iterrows():
@@ -162,6 +170,10 @@ class ValidationSuite:
                 df.at[idx, 'r_all'] = data['Rad'].values
                 df.at[idx, 'v_all'] = data['Vobs'].values
                 df.at[idx, 'v_err'] = data['errV'].values
+                # Store baryonic velocity components for real g_bar calculation
+                df.at[idx, 'v_disk_all'] = data['Vdisk'].values
+                df.at[idx, 'v_bulge_all'] = data['Vbul'].values
+                df.at[idx, 'v_gas_all'] = data['Vgas'].values
                 loaded_count += 1
                 
             except Exception as e:

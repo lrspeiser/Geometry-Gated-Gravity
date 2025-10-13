@@ -146,9 +146,29 @@ class TuningPipeline:
                 v_flat_model = np.median(v_model[-min(5, len(v_model)//2):])
                 v_flat_obs = galaxy.get('Vflat', np.median(v_obs[-3:]))
                 
-                # Compute g_obs and g_bar from MODEL
-                g_obs_model = (v_model**2 / r_obs) * 1e-10  # Convert to SI-ish
-                g_bar = g_obs_model * 0.7  # Simplified: assume 70% baryonic
+                # Compute g_obs from MODEL
+                g_obs_model = (v_model**2 / r_obs) * 1e-10  # Convert to SI-ish units
+                
+                # Compute g_bar from REAL baryonic velocity components
+                # g_bar = v_baryonic² / r where v_baryonic² = v_disk² + v_bulge² + v_gas²
+                v_disk = galaxy.get('v_disk_all', np.zeros_like(r_obs))
+                v_bulge = galaxy.get('v_bulge_all', np.zeros_like(r_obs))
+                v_gas = galaxy.get('v_gas_all', np.zeros_like(r_obs))
+                
+                # Handle None values (galaxies without loaded rotation curves)
+                if v_disk is None:
+                    v_disk = np.zeros_like(r_obs)
+                if v_bulge is None:
+                    v_bulge = np.zeros_like(r_obs)
+                if v_gas is None:
+                    v_gas = np.zeros_like(r_obs)
+                
+                # Compute baryonic velocity squared sum
+                v_baryonic_sq = v_disk**2 + v_bulge**2 + v_gas**2
+                
+                # Compute baryonic acceleration: g_bar = v_baryonic² / r
+                # Convert to same units as g_obs_model (with 1e-10 factor)
+                g_bar = (v_baryonic_sq / r_obs) * 1e-10
                 
                 predictions.append({
                     'galaxy': galaxy['Galaxy'],
@@ -393,11 +413,11 @@ class TuningPipeline:
         frac_within_20pct = (pred_df['ape'] < 20).sum() / len(pred_df)
         
         # Check guardrails
-        pass_rar = test_rar <= 0.13
-        pass_ape = test_ape_median <= 20.0
-        pass_frac = frac_within_20pct >= 0.6
-        
-        passed = pass_rar and pass_ape and pass_frac
+        pass_rar = bool(test_rar <= 0.13)
+        pass_ape = bool(test_ape_median <= 20.0)
+        pass_frac = bool(frac_within_20pct >= 0.6)
+
+        passed = bool(pass_rar and pass_ape and pass_frac)
         
         print("\n" + "="*80)
         print("GUARDRAIL CHECK")
