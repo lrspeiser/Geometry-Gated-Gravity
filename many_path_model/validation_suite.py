@@ -62,30 +62,45 @@ class ValidationResults:
 class ValidationSuite:
     """Comprehensive validation suite for many-path gravity models"""
     
-    def __init__(self, output_dir: Path):
+    def __init__(self, output_dir: Path, load_sparc: bool = True):
         self.output_dir = output_dir
         self.output_dir.mkdir(exist_ok=True, parents=True)
         self.results = ValidationResults()
         
-        # Load or generate SPARC sample
-        self.sparc_data = self._load_sparc_data()
+        # Load SPARC sample if needed (not required for physics checks)
+        self.sparc_data = None
+        if load_sparc:
+            self.sparc_data = self._load_sparc_data()
         
     def _load_sparc_data(self) -> pd.DataFrame:
-        """Load SPARC data or generate synthetic sample"""
-        # Try to load real SPARC data
-        sparc_path = REPO_ROOT / "data" / "sparc" / "MasterSheet_SPARC.csv"
+        """Load SPARC data - REAL DATA ONLY, NO FAKE DATA"""
+        # Try primary path
+        sparc_paths = [
+            REPO_ROOT / "data" / "Rotmod_LTG" / "MasterSheet_SPARC.csv",
+            REPO_ROOT / "data" / "sparc" / "MasterSheet_SPARC.csv",
+        ]
         
-        if sparc_path.exists():
-            try:
-                df = pd.read_csv(sparc_path, on_bad_lines='skip')
-                print(f"Loaded {len(df)} SPARC galaxies")
-                return df
-            except Exception as e:
-                print(f"Failed to load SPARC data: {e}")
+        for sparc_path in sparc_paths:
+            if sparc_path.exists():
+                try:
+                    # Skip header lines (data starts at line 103)
+                    df = pd.read_csv(sparc_path, skiprows=102, sep=r'\s*,\s*', engine='python',
+                                     names=['Galaxy', 'T', 'D', 'e_D', 'f_D', 'Inc', 'e_Inc',
+                                            'L', 'e_L', 'Reff', 'SBeff', 'Rdisk', 'SBdisk',
+                                            'MHI', 'RHI', 'Vflat', 'e_Vflat', 'Q', 'Ref'])
+                    # Remove any rows with NaN in critical columns
+                    df = df.dropna(subset=['Galaxy', 'D', 'Inc', 'Vflat'])
+                    print(f"✅ Loaded {len(df)} REAL SPARC galaxies from {sparc_path.name}")
+                    return df
+                except Exception as e:
+                    print(f"Failed to load SPARC data from {sparc_path}: {e}")
         
-        # Generate synthetic SPARC-like data
-        print("Generating synthetic SPARC sample (175 galaxies)")
-        return self._generate_synthetic_sparc(n_galaxies=175)
+        # NEVER use synthetic data - fail explicitly
+        raise FileNotFoundError(
+            f"❌ REAL SPARC data not found. Checked paths:\n" +
+            "\n".join(f"  - {p}" for p in sparc_paths) +
+            "\n\nWe NEVER use fake data. Please provide real SPARC data."
+        )
     
     def _generate_synthetic_sparc(self, n_galaxies: int = 175) -> pd.DataFrame:
         """Generate synthetic SPARC-like galaxy sample"""
@@ -617,7 +632,9 @@ def main():
     repo_root = Path(__file__).resolve().parents[1]
     output_dir = repo_root / "many_path_model" / "results" / "validation_suite"
     
-    suite = ValidationSuite(output_dir)
+    # Skip SPARC loading for physics-only tests
+    load_sparc = not (args.physics_checks and not (args.all or args.quick or args.stats_checks or args.astro_checks))
+    suite = ValidationSuite(output_dir, load_sparc=load_sparc)
     
     print("="*80)
     print("MANY-PATH GRAVITY VALIDATION SUITE")
