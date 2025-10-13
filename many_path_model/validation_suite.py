@@ -104,7 +104,20 @@ class ValidationSuite:
                 df['Galaxy'] = df['Galaxy'].str.strip()
                 df = df.dropna(subset=['Galaxy', 'D', 'Inc', 'Vflat'])
                 
+                # Convert Hubble T-type number to string classification
+                # Based on SPARC encoding: 0=S0, 1=Sa, 2=Sab, 3=Sb, 4=Sbc, 5=Sc,
+                #                          6=Scd, 7=Sd, 8=Sdm, 9=Sm, 10=Im, 11=BCD
+                def t_to_type(t):
+                    if pd.isna(t): return 'Unknown'
+                    t = int(t)
+                    type_map = {0: 'S0', 1: 'Sa', 2: 'Sab', 3: 'Sb', 4: 'Sbc', 5: 'Sc',
+                               6: 'Scd', 7: 'Sd', 8: 'Sdm', 9: 'Sm', 10: 'Im', 11: 'BCD'}
+                    return type_map.get(t, 'Unknown')
+                
+                df['type'] = df['T'].apply(t_to_type)
+                
                 print(f"✅ Loaded {len(df)} REAL SPARC galaxies from {sparc_path.name}")
+                print(f"   Type distribution: {dict(df['type'].value_counts())}")
                 return df
                 
             except Exception as e:
