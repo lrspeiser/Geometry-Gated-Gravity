@@ -199,10 +199,10 @@ def test_interior_exterior_split():
     mask_ext = r_grid >= R_test
     
     r_int = r_grid[mask_int]
-    rho_int = rho_3d[mask_int] / np.median(rho_3d[rho_3d > 0])  # Normalized
+    rho_int = rho_3d[mask_int]  # ACTUAL density, not normalized!
     
     r_ext = r_grid[mask_ext]
-    rho_ext = rho_3d[mask_ext] / np.median(rho_3d[rho_3d > 0])  # Normalized
+    rho_ext = rho_3d[mask_ext]  # ACTUAL density, not normalized!
     
     # Compute baseline surface density at R_test
     Sigma_baseline = abel_project_uniform_sphere(R_test, R_sphere, rho_0)

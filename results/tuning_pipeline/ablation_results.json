@@ -1,0 +1,26 @@
+{
+  "Baseline (full model)": {
+    "ape_median": 7.512930667965977,
+    "btfr_scatter": 2.220446049250313e-16,
+    "rar_scatter": 0.5949098030569147,
+    "n_params": 4
+  },
+  "No bulge suppression": {
+    "ape_median": 7.512930667965977,
+    "btfr_scatter": 2.220446049250313e-16,
+    "rar_scatter": 0.5949098030569147,
+    "n_params": 3
+  },
+  "No shear suppression": {
+    "ape_median": 8.37262182084012,
+    "btfr_scatter": 3.1401849173675503e-16,
+    "rar_scatter": 0.5881495274813231,
+    "n_params": 3
+  },
+  "No bar suppression": {
+    "ape_median": 7.512930667965977,
+    "btfr_scatter": 2.220446049250313e-16,
+    "rar_scatter": 0.5949098030569147,
+    "n_params": 3
+  }
+}

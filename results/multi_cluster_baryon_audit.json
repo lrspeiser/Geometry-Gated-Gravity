@@ -1,0 +1,36 @@
+{
+  "n_clusters": 3,
+  "clusters": [
+    {
+      "name": "MACSJ0416",
+      "f_gas_ratio": 0.40425558947934326,
+      "shortfall_factor": 66.64501240186713,
+      "slope": -0.44221108113456875,
+      "boost_needed": 65.64501240186713
+    },
+    {
+      "name": "MACSJ0717",
+      "f_gas_ratio": 0.25231658358029024,
+      "shortfall_factor": 87.97134540378867,
+      "slope": -0.634096702847083,
+      "boost_needed": 86.97134540378867
+    },
+    {
+      "name": "ABELL_1689",
+      "f_gas_ratio": 0.25942468210495484,
+      "shortfall_factor": 61.230372833106564,
+      "slope": -1.1181625594992826,
+      "boost_needed": 60.230372833106564
+    }
+  ],
+  "failed": [
+    [
+      "ABELL_0370",
+      "Cluster directory not found: data\\clusters\\ABELL_0370"
+    ],
+    [
+      "ABELL_2744",
+      "Cluster directory not found: data\\clusters\\ABELL_2744"
+    ]
+  ]
+}

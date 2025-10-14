@@ -230,7 +230,7 @@ def lensing_profiles(
     if idx.size > 0:
         # Take outermost crossing for robustness
         i = idx[-1]
-        theta_E_arcsec = cosmo.kpc_to_arcsec(R[i], z_lens)
+        theta_E_arcsec = cosmo.physical_to_angular(R[i], z_lens)
     
     return dict(
         R=R,

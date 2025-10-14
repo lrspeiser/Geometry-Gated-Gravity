@@ -1,0 +1,19 @@
+{
+  "cluster": "MACSJ0416",
+  "gas_scale": 6.0,
+  "kappa_ext": 0.08,
+  "q_los": 0.7,
+  "use_boost": true,
+  "theta_E_pred": 35.710562280386696,
+  "theta_E_obs": 35.0,
+  "max_kappa": 1.485414967708496,
+  "kernel": {
+    "A_c": 10.0,
+    "r_gate": 5.0,
+    "n_gate": 4,
+    "ell0": 180.0,
+    "p": 1.2,
+    "L1": 1200.0,
+    "q": 2.0
+  }
+}

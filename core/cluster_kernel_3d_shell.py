@@ -265,11 +265,26 @@ def interior_contribution(
         contrib = L_chord * C_damp * rho_weighted * shell_area * dr
         
         total_weight += contrib
-    
-    # Normalize by (Sigma_baseline × R) to make dimensionless
-    # This gives K_int ~ O(1) for typical cluster profiles
-    if total_weight > 0 and Sigma_baseline > 0:
-        K_int = total_weight / (Sigma_baseline * R * params.ell0)
+    # Normalize to make K_int dimensionless
+    # The challenge: total_weight has units [Msun^p × kpc^(4-3p)]
+    # We want K ~ O(0.01-1) when coherence is moderate
+    #
+    # Empirical approach: divide by a characteristic "baseline" integral
+    # that would arise from uniform weighting over coherence scale:
+    #   baseline ~ Sigma_baseline × R^2 × R
+    # (surface mass × linear scale for path integral weighting)
+    if total_weight > 0 and Sigma_baseline > 0 and R > 0:
+        # For p_density != 1, rescale by characteristic density
+        if params.p_density != 1.0:
+            rho_ref = Sigma_baseline / R
+            # Dimensionally: [Msun^p × kpc^(4-3p)] / ([Msun/kpc³]^p × [kpc^4])
+            # = [Msun^p × kpc^(4-3p)] / [Msun^p × kpc^(4-3p)] = dimensionless!
+            norm_factor = (rho_ref**params.p_density) * R**4
+            K_int = total_weight / norm_factor
+        else:
+            # p_density = 1: simple mass normalization
+            norm_factor = Sigma_baseline * R**3
+            K_int = total_weight / norm_factor
     else:
         K_int = 0.0
     
@@ -340,9 +355,16 @@ def exterior_contribution(
         
         total_weight += contrib
     
-    # Normalize by (Sigma_baseline × R) to make dimensionless
-    if total_weight > 0 and Sigma_baseline > 0:
-        K_ext = total_weight / (Sigma_baseline * R * params.ell0)
+    # Normalize to make K_ext dimensionless
+    # Same approach as interior: dimensional matching for any p_density
+    if total_weight > 0 and Sigma_baseline > 0 and R > 0:
+        if params.p_density != 1.0:
+            rho_ref = Sigma_baseline / R
+            norm_factor = (rho_ref**params.p_density) * R**4
+            K_ext = total_weight / norm_factor
+        else:
+            norm_factor = Sigma_baseline * R**3
+            K_ext = total_weight / norm_factor
     else:
         K_ext = 0.0
     
