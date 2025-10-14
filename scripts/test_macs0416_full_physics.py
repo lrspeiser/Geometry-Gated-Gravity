@@ -47,20 +47,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import trapezoid
 
-# Import gNFW gas profiles (Phase 1)
-from core.gnfw_gas_profiles import build_gnfw_gas_profile, integrate_gas_mass
+# Import physically-calibrated baryon model (Phase 1 + unified clumping)
+from core.build_cluster_baryons import (
+    build_cluster_baryon_model,
+    ClusterBaryonParams
+)
 
 # Import 3D shell kernel (Phase 2.1)
 from core.cluster_kernel_3d_shell import (
     Shell3DKernelParams,
     lensing_profiles_3d_shell
-)
-
-# Import stellar profiles
-from core.gas_profiles import (
-    rho_hernquist,
-    rho_icl_exponential,
-    apply_clumping_correction
 )
 
 # Import cosmology
@@ -70,128 +66,85 @@ from many_path_model.lensing_utilities import default_cosmology
 def build_macs0416_baryon_profile(
     r_grid: np.ndarray,
     fgas_target: float = 0.11,
-    apply_clumping: bool = True,
-    C0_clump: float = 0.3,
-    eta_clump: float = 2.0,
     verbose: bool = False
 ) -> tuple:
     """
-    Build complete baryon profile for MACS0416.
+    Build complete baryon profile for MACS0416 using unified physics.
+    
+    Now uses the same physically-motivated clumping model as the blind suite
+    (C0=1.3, C_max=2.5) to ensure consistent predictions everywhere.
     
     Parameters
     ----------
     r_grid : ndarray
         3D radial grid [kpc]
     fgas_target : float
-        Target gas fraction at R_500
-    apply_clumping : bool
-        Apply clumping correction to gas
-    C0_clump : float
-        Clumping amplitude
-    eta_clump : float
-        Clumping radial power law
+        Target gas fraction at R_500 (default: 0.11, cosmic fraction)
     verbose : bool
         Print diagnostics
     
     Returns
     -------
-    rho_gas : ndarray
-        Gas density [Msun/kpc³]
-    rho_bcg : ndarray
-        BCG density [Msun/kpc³]
-    rho_icl : ndarray
-        ICL density [Msun/kpc³]
     rho_total : ndarray
         Total baryon density [Msun/kpc³]
     info : dict
-        Profile diagnostics
+        Profile diagnostics including component masses
     """
     # MACS0416 parameters (from literature)
     M_500 = 1.15e15  # Msun (Jauzac+ 2015)
     R_500 = 1200.0  # kpc
     z = 0.396
+    T_keV = 10.5  # Temperature estimate
     
     if verbose:
         print("=" * 70)
-        print("MACS0416 Baryon Profile (Phase 1 + Phase 2)")
+        print("MACS0416 Baryon Profile (Unified Physics)")
         print("=" * 70)
         print()
         print("Cluster Properties:")
         print(f"  M_500 = {M_500:.2e} Msun")
         print(f"  R_500 = {R_500:.1f} kpc")
         print(f"  z = {z:.3f}")
+        print(f"  T_keV = {T_keV:.1f} keV")
+        print()
+        print("Physics:")
+        print("  - gNFW gas (Arnaud+ 2010)")
+        print("  - Normalized to f_gas(R_500) = 0.11")
+        print("  - Clumping: C0=1.3, C_max=2.5 (Simionescu+ 2011)")
+        print("  - BCG + ICL from mass scaling relations")
         print()
     
-    # Build gNFW gas profile (Phase 1)
-    if verbose:
-        print("Building gNFW gas profile (Arnaud+ 2010)...")
-    
-    rho_gas, gas_info = build_gnfw_gas_profile(
-        r_grid, R_500, M_500, z, fgas_target=fgas_target, verbose=False
+    # Build using unified model
+    params = ClusterBaryonParams(
+        M_500=M_500,
+        R_500=R_500,
+        z=z,
+        fgas_target=fgas_target,
+        T_keV=T_keV,
+        # Use physically-motivated clumping (same as blind suite)
+        C0=1.3,
+        eta=2.0,
+        C_max=2.5
     )
     
-    if verbose:
-        print(f"  f_gas(raw) = {gas_info['fgas_raw']:.4f}")
-        print(f"  Scale factor = {gas_info['scale_factor']:.2f}")
-        print(f"  f_gas(normalized) = {gas_info['fgas_normalized']:.4f}")
-        print(f"  Target f_gas = {fgas_target:.3f} achieved")
-        print()
+    components = build_cluster_baryon_model(
+        r_grid, params, apply_clumping=True, verbose=verbose
+    )
     
-    # Apply clumping correction
-    if apply_clumping:
-        R_200 = R_500 * 1.5  # Rough scaling
-        rho_gas = apply_clumping_correction(
-            r_grid, rho_gas, C0=C0_clump, eta=eta_clump, R_200=R_200
-        )
-        M_gas_clump = integrate_gas_mass(r_grid, rho_gas, R_500)
-        fgas_clump = M_gas_clump / M_500
-        
-        if verbose:
-            print(f"Clumping correction applied (C0={C0_clump:.2f}, η={eta_clump:.1f}):")
-            print(f"  f_gas(with clumping) = {fgas_clump:.4f}")
-            print()
-    
-    # BCG (Hernquist profile)
-    M_bcg = 2.0e12  # Msun (typical massive BCG)
-    a_bcg = 25.0  # kpc
-    rho_bcg = rho_hernquist(r_grid, M_bcg, a_bcg)
-    
-    # ICL (exponential halo)
-    M_icl = 8.0e11  # Msun (diffuse stellar envelope)
-    rs_icl = 150.0  # kpc
-    rho_icl = rho_icl_exponential(r_grid, M_icl, rs_icl)
-    
-    # Total baryon density
-    rho_total = rho_gas + rho_bcg + rho_icl
-    
-    # Diagnostics
-    M_bcg_check = integrate_gas_mass(r_grid, rho_bcg, R_500)
-    M_icl_check = integrate_gas_mass(r_grid, rho_icl, R_500)
-    M_gas_check = integrate_gas_mass(r_grid, rho_gas, R_500)
-    M_total = M_gas_check + M_bcg_check + M_icl_check
-    
-    if verbose:
-        print("Stellar Components:")
-        print(f"  M_BCG(<R_500) = {M_bcg_check:.2e} Msun")
-        print(f"  M_ICL(<R_500) = {M_icl_check:.2e} Msun")
-        print(f"  M_baryon(<R_500) = {M_total:.2e} Msun")
-        print(f"  f_baryon = {M_total/M_500:.4f}")
-        print()
-    
+    # Return in format expected by caller
     info = {
         'M_500': M_500,
         'R_500': R_500,
         'z': z,
-        'M_gas': M_gas_check,
-        'M_bcg': M_bcg_check,
-        'M_icl': M_icl_check,
-        'M_total': M_total,
-        'fgas': M_gas_check / M_500,
-        'fbaryon': M_total / M_500,
-        'gas_info': gas_info
+        'M_gas': components.info['M_gas_R500'],
+        'M_bcg': components.info['M_BCG'],
+        'M_icl': components.info['M_ICL'],
+        'M_total': components.info['M_baryon_R500'],
+        'fgas': components.info['fgas_R500'],
+        'fbaryon': components.info['fbaryon_R500']
     }
     
-    return rho_gas, rho_bcg, rho_icl, rho_total, info
+    return components.rho_total, info
 
 
 def test_full_physics(
@@ -225,8 +178,8 @@ def test_full_physics(
     # Build radial grid
     r_3d = np.logspace(-1, 3.5, 2000)  # 0.1 to ~3000 kpc
     
-    # Build baryon profile
-    rho_gas, rho_bcg, rho_icl, rho_total, baryon_info = build_macs0416_baryon_profile(
+    # Build baryon profile (unified physics)
+    rho_total, baryon_info = build_macs0416_baryon_profile(
         r_3d, verbose=verbose
     )
     
@@ -414,7 +367,7 @@ def ablation_study(verbose: bool = True):
         
         print("Key Insight:")
         print(f"  Interior chords provide {interior_fraction*100:.0f}% of total lensing signal")
-        print(f"  → This is what standard 2D ring projections MISS!")
+        print(f"  --> This is what standard 2D ring projections MISS!")
         print()
     
     return results_ablation
