@@ -213,6 +213,30 @@ Next steps planned
 
 ---
 
+## Σ‑Gravity (Sigma Gravity) quickstart (clusters)
+
+Reproduce the validated MACS0416 baseline (baryons only, Option A 2D projected kernel):
+
+```
+python scripts/validate_macs0416_einstein_mass.py      # checks ⟨κ⟩(R_E)=1, reports θ_E
+python scripts/plot_macs0416_diagnostics.py            # profiles, maps, cumulative mass
+python scripts/parameter_sensitivity_Ac.py             # dθ_E/dA_c and acceptable A_c band
+```
+
+Triaxial geometry sensitivity and multi‑cluster calibration:
+
+```
+python scripts/test_macs0416_triaxial_kernel.py        # ~21.5% θ_E sensitivity to q_plane
+python scripts/run_hierarchical_12cluster_calibration.py
+python scripts/run_cluster_hierarchical_fit.py
+```
+
+Docs: see `docs/MACS0416_Einstein_Validation.md` and `REPRODUCE_CLUSTER_FIT.md`.
+
+Artifacts: `output/` (diagnostics, sensitivity, triaxial) and `many_path_model/results/`, plus `splits/`.
+
+---
+
 ### Notes for GitHub rendering
 
 * Prefer `v_{\rm bar}`-style math over `\text{}` (GitHub often won’t render `\text{}` inline).

@@ -103,6 +103,28 @@ a_total = a_Newton × (1 + M_many_path) × G_eff(density)
 - **Observation**: From baseline analysis - 2.0 km/s velocity difference by mass (15.8σ)
 - **Test**: Can the model reproduce this with physically reasonable parameters?
 
+## Sigma‑Gravity (Σ‑Gravity) cluster quickstart
+
+Validated MACS0416 baseline (baryons only; Option A 2D projected kernel):
+
+```
+python ../scripts/validate_macs0416_einstein_mass.py
+python ../scripts/plot_macs0416_diagnostics.py
+python ../scripts/parameter_sensitivity_Ac.py
+```
+
+Triaxial sensitivity and hierarchical calibration:
+
+```
+python ../scripts/test_macs0416_triaxial_kernel.py
+python ../scripts/run_hierarchical_12cluster_calibration.py
+python ../scripts/run_cluster_hierarchical_fit.py
+```
+
+Docs & artifacts:
+- docs/MACS0416_Einstein_Validation.md, REPRODUCE_CLUSTER_FIT.md
+- output/ (diagnostics, sensitivity, triaxial), many_path_model/results/, splits/
+
 ## Next Steps
 
 1. ✅ Set up model in dedicated folder
