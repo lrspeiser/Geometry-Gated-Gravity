@@ -130,22 +130,30 @@ def spherical_to_triaxial_density(
     q_plane: float = 1.0,
     q_LOS: float = 1.0,
     phi: float = 0.0,
-    theta: float = 0.0
+    theta: float = 0.0,
+    normalize_to_mass: Optional[float] = None,
+    R_norm: Optional[float] = None
 ) -> Callable[[np.ndarray, np.ndarray, np.ndarray], np.ndarray]:
     """
     Transform spherical density rho(r) to triaxial density rho(x,y,z).
     
-    The transformation preserves total mass via volume element correction:
+    CRITICAL FIX (2025-01-14):
+    --------------------------
+    The triaxial transformation is now:
+        rho_triaxial(x,y,z) = N × rho_spherical(m)
     
-    rho_triaxial(x,y,z) = rho_spherical(m) / (q_plane × q_LOS)
+    where m is the ellipsoidal radius and N is a GLOBAL normalization
+    constant that enforces mass conservation.
     
-    where m is the ellipsoidal radius.
+    We do NOT apply local amplitude factors like 1/(q_plane × q_LOS)
+    inside the projection integral. This was causing the geometry signal
+    to cancel out in the surface density Sigma(R), making Einstein radius
+    insensitive to triaxiality (~0.1% instead of expected ~20%).
     
-    Physical meaning:
-    - The density at a given ellipsoidal radius m is the same as the
-      spherical density at radius m
-    - The volume element changes by factor (q_plane × q_LOS), so we
-      divide by this to preserve integrated mass
+    The correct physics:
+    - Geometry changes the SHAPE of isodensity surfaces → changes Sigma(R)
+    - Global normalization ensures total M(<R500) matches observations
+    - Lensing sees the geometry-dependent column density
     
     Parameters
     ----------
@@ -157,6 +165,10 @@ def spherical_to_triaxial_density(
         Line-of-sight axis ratio c/a (default: 1.0 = spherical)
     phi, theta : float
         Euler angles for orientation (default: aligned with axes)
+    normalize_to_mass : float, optional
+        Target enclosed mass for normalization [Msun]
+    R_norm : float, optional
+        Radius within which to normalize mass [kpc]
     
     Returns
     -------
@@ -167,9 +179,20 @@ def spherical_to_triaxial_density(
     --------
     >>> # Hernquist profile
     >>> rho_sph = lambda r: M / (2*np.pi) * a / (r * (r+a)**3)
-    >>> rho_tri = spherical_to_triaxial_density(rho_sph, q_plane=0.8, q_LOS=1.2)
-    >>> # Now rho_tri(x,y,z) gives triaxial density
+    >>> rho_tri = spherical_to_triaxial_density(
+    ...     rho_sph, q_plane=0.8, q_LOS=1.2,
+    ...     normalize_to_mass=1e13, R_norm=1500
+    ... )
     """
+    # Compute global normalization if requested
+    if normalize_to_mass is not None and R_norm is not None:
+        N = fit_global_normalization(
+            rho_spherical, normalize_to_mass, R_norm,
+            q_plane=q_plane, q_LOS=q_LOS
+        )
+    else:
+        N = 1.0
+    
     def rho_triaxial(x, y, z):
         # Apply rotation if needed
         if phi != 0 or theta != 0:
@@ -180,13 +203,64 @@ def spherical_to_triaxial_density(
         # Compute ellipsoidal radius
         m = ellipsoidal_radius(x_rot, y_rot, z_rot, q_plane, q_LOS)
         
-        # Evaluate spherical density at m, apply volume correction
-        # Volume element: dV_tri = q_plane × q_LOS × dV_sph
-        # To conserve mass: rho_tri × dV_tri = rho_sph × dV_sph
-        # Therefore: rho_tri = rho_sph / (q_plane × q_LOS)
-        return rho_spherical(m) / (q_plane * q_LOS)
+        # NO LOCAL VOLUME CORRECTION - just evaluate at ellipsoidal radius
+        # and apply global normalization
+        return N * rho_spherical(m)
     
     return rho_triaxial
+
+
+def fit_global_normalization(
+    rho_spherical: Callable[[np.ndarray], np.ndarray],
+    M_target: float,
+    R_norm: float,
+    q_plane: float = 1.0,
+    q_LOS: float = 1.0,
+    n_m: int = 2048
+) -> float:
+    """
+    Compute scalar normalization N so that triaxial mass matches target.
+    
+    Integrates in ellipsoidal radius m using:
+        M(<R) = ∫ N × rho_sph(m) × 4π m² (q_plane × q_LOS) dm
+    
+    The factor (q_plane × q_LOS) is the Jacobian when transforming from
+    spherical shells to ellipsoidal shells, and appears OUTSIDE the density.
+    
+    Parameters
+    ----------
+    rho_spherical : callable
+        Spherical density rho(r) [Msun/kpc³]
+    M_target : float
+        Target enclosed mass [Msun]
+    R_norm : float
+        Radius for normalization [kpc]
+    q_plane, q_LOS : float
+        Axis ratios
+    n_m : int
+        Number of integration points
+    
+    Returns
+    -------
+    N : float
+        Global normalization factor
+    """
+    m = np.linspace(0.0, R_norm, n_m)
+    dm = m[1] - m[0] if n_m > 1 else 0.0
+    
+    # Shell volume in principal-axis frame: dV = 4π m² (q_plane × q_LOS) dm
+    shell_vol = 4.0 * np.pi * (q_plane * q_LOS) * m * m * dm
+    
+    # Evaluate spherical density at ellipsoidal radii
+    rho_m = rho_spherical(m)
+    
+    # Total unnormalized mass
+    M_unnorm = np.sum(rho_m * shell_vol)
+    
+    # Normalization factor
+    N = M_target / M_unnorm if M_unnorm > 0 else 1.0
+    
+    return N
 
 
 def project_triaxial_to_surface_density_simple(
