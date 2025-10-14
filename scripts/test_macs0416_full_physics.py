@@ -134,7 +134,7 @@ def build_macs0416_baryon_profile(
         print(f"  f_gas(raw) = {gas_info['fgas_raw']:.4f}")
         print(f"  Scale factor = {gas_info['scale_factor']:.2f}")
         print(f"  f_gas(normalized) = {gas_info['fgas_normalized']:.4f}")
-        print(f"  ✓ Target f_gas = {fgas_target:.3f} achieved")
+        print(f"  Target f_gas = {fgas_target:.3f} achieved")
         print()
     
     # Apply clumping correction
@@ -305,24 +305,24 @@ def test_full_physics(
         print()
         
         if frac_error < 0.10:
-            print("  ✅ EXCELLENT: Within ±10% of observed!")
+            print("  [PASS] EXCELLENT: Within +/-10% of observed!")
         elif frac_error < 0.25:
-            print("  ✓ GOOD: Within ±25% of observed")
+            print("  [OK] GOOD: Within +/-25% of observed")
         elif frac_error < 0.50:
-            print("  ⚠ ACCEPTABLE: Within ±50% of observed")
+            print("  [CHECK] ACCEPTABLE: Within +/-50% of observed")
         else:
-            print("  ✗ NEEDS TUNING: More than 50% off")
+            print("  [FAIL] NEEDS TUNING: More than 50% off")
         print()
         
         print(f"Peak Convergence:")
-        print(f"  Max ⟨κ⟩ = {max_mean_kappa:.3f}")
+        print(f"  Max mean_kappa = {max_mean_kappa:.3f}")
         print()
         
         print(f"At Einstein Radius (R_E = {R_E_kpc:.1f} kpc):")
-        print(f"  K_Σ(R_E) = {K_Sigma_at_RE:.2f}")
-        print(f"  Σ_baryon(R_E) = {Sigma_at_RE:.2e} Msun/kpc²")
-        print(f"  Σ_eff(R_E) = {Sigma_eff_at_RE:.2e} Msun/kpc²")
-        print(f"  Boost factor = {Sigma_eff_at_RE/Sigma_at_RE:.2f}×" if Sigma_at_RE > 0 else "")
+        print(f"  K_Sigma(R_E) = {K_Sigma_at_RE:.2f}")
+        print(f"  Sigma_baryon(R_E) = {Sigma_at_RE:.2e} Msun/kpc^2")
+        print(f"  Sigma_eff(R_E) = {Sigma_eff_at_RE:.2e} Msun/kpc^2")
+        print(f"  Boost factor = {Sigma_eff_at_RE/Sigma_at_RE:.2f}x" if Sigma_at_RE > 0 else "")
         print()
     
     results = {
@@ -371,9 +371,9 @@ def ablation_study(verbose: bool = True):
     
     for config in configs:
         if verbose:
-            print(f"\n{'─'*70}")
+            print(f"\n{'-'*70}")
             print(f"Test: {config['name']}")
-            print(f"{'─'*70}\n")
+            print(f"{'-'*70}\n")
         
         res = test_full_physics(
             w_interior=config['w_int'],
@@ -392,16 +392,16 @@ def ablation_study(verbose: bool = True):
         })
         
         if verbose:
-            print(f"  θ_E = {res['theta_E_pred']:.2f}\" (error: {res['frac_error']*100:.1f}%)")
-            print(f"  K_Σ(R_E) = {res['K_Sigma_at_RE']:.2f}")
+            print(f"  theta_E = {res['theta_E_pred']:.2f}\" (error: {res['frac_error']*100:.1f}%)")
+            print(f"  K_Sigma(R_E) = {res['K_Sigma_at_RE']:.2f}")
     
     if verbose:
         print("\n" + "=" * 70)
         print("ABLATION SUMMARY")
         print("=" * 70)
         print()
-        print(f"{'Configuration':<20} {'θ_E [arcsec]':<15} {'Error [%]':<12} {'K_Σ(R_E)':<10}")
-        print("─" * 70)
+        print(f"{'Configuration':<20} {'theta_E [arcsec]':<15} {'Error [%]':<12} {'K_Sigma(R_E)':<10}")
+        print("-" * 70)
         for r in results_ablation:
             print(f"{r['name']:<20} {r['theta_E']:<15.2f} {r['error_pct']:<12.1f} {r['K_Sigma_at_RE']:<10.2f}")
         print()
@@ -444,7 +444,7 @@ def generate_diagnostic_plots(results: dict, output_dir: str = '../figures'):
     ax.loglog(R, Sigma_eff, 'r-', lw=2, label='Σ_eff (with 3D kernel)')
     ax.axvline(R_E, color='gray', ls='--', alpha=0.7, label=f'R_E = {R_E:.0f} kpc')
     ax.set_xlabel('Projected Radius R [kpc]', fontsize=11)
-    ax.set_ylabel('Surface Density [Msun/kpc²]', fontsize=11)
+    ax.set_ylabel('Surface Density [Msun/kpc^2]', fontsize=11)
     ax.set_title('Surface Density Profiles', fontsize=12, fontweight='bold')
     ax.legend(loc='best', fontsize=9)
     ax.grid(alpha=0.3)
@@ -455,15 +455,15 @@ def generate_diagnostic_plots(results: dict, output_dir: str = '../figures'):
     ax.axvline(R_E, color='gray', ls='--', alpha=0.7)
     ax.axhline(0, color='k', ls=':', lw=1)
     ax.set_xlabel('Projected Radius R [kpc]', fontsize=11)
-    ax.set_ylabel('Boost Factor K_Σ(R)', fontsize=11)
+    ax.set_ylabel('Boost Factor K_Sigma(R)', fontsize=11)
     ax.set_title('3D Shell Kernel Boost', fontsize=12, fontweight='bold')
     ax.grid(alpha=0.3)
     
     # (0, 2): Convergence
     ax = axes[0, 2]
-    ax.loglog(R, kappa, 'b-', lw=2, label='κ(R)')
-    ax.loglog(R, mean_kappa, 'r-', lw=2, label='⟨κ⟩(<R)')
-    ax.axhline(1.0, color='k', ls='--', lw=1, alpha=0.7, label='κ = 1')
+    ax.loglog(R, kappa, 'b-', lw=2, label='kappa(R)')
+    ax.loglog(R, mean_kappa, 'r-', lw=2, label='mean_kappa(<R)')
+    ax.axhline(1.0, color='k', ls='--', lw=1, alpha=0.7, label='kappa = 1')
     ax.axvline(R_E, color='gray', ls='--', alpha=0.7)
     ax.set_xlabel('Projected Radius R [kpc]', fontsize=11)
     ax.set_ylabel('Convergence', fontsize=11)
@@ -476,7 +476,7 @@ def generate_diagnostic_plots(results: dict, output_dir: str = '../figures'):
     ax.loglog(R, np.abs(gamma_t), 'purple', lw=2)
     ax.axvline(R_E, color='gray', ls='--', alpha=0.7)
     ax.set_xlabel('Projected Radius R [kpc]', fontsize=11)
-    ax.set_ylabel('|γ_t(R)|', fontsize=11)
+    ax.set_ylabel('|gamma_t(R)|', fontsize=11)
     ax.set_title('Tangential Shear', fontsize=12, fontweight='bold')
     ax.grid(alpha=0.3)
     
@@ -494,27 +494,27 @@ def generate_diagnostic_plots(results: dict, output_dir: str = '../figures'):
     
     summary = f"""
     MACS0416 Full Physics Test
-    {'─'*40}
+    {'-'*40}
     
     Baryon Model (Phase 1):
-      • gNFW gas (Arnaud+ 2010)
-      • f_gas(R_500) = {results['baryon_info']['fgas']:.3f}
-      • BCG + ICL included
+      * gNFW gas (Arnaud+ 2010)
+      * f_gas(R_500) = {results['baryon_info']['fgas']:.3f}
+      * BCG + ICL included
     
     Path Kernel (Phase 2.1):
-      • 3D shell integral
-      • Interior chords + exterior arcs
-      • ℓ₀ = {results['params'].ell0:.0f} kpc
+      * 3D shell integral
+      * Interior chords + exterior arcs
+      * ell0 = {results['params'].ell0:.0f} kpc
     
     Einstein Radius:
-      • Predicted: {theta_E_pred:.2f} arcsec
-      • Observed:  {theta_E_obs:.2f} arcsec
-      • Error: {results['frac_error']*100:.1f}%
-      {'✅ PASS' if results['frac_error'] < 0.10 else '⚠ Check' if results['frac_error'] < 0.25 else '✗ Needs tuning'}
+      * Predicted: {theta_E_pred:.2f} arcsec
+      * Observed:  {theta_E_obs:.2f} arcsec
+      * Error: {results['frac_error']*100:.1f}%
+      {'[PASS]' if results['frac_error'] < 0.10 else '[CHECK]' if results['frac_error'] < 0.25 else '[FAIL]'}
     
     At Einstein Radius:
-      • K_Σ(R_E) = {results['K_Sigma_at_RE']:.2f}
-      • Boost = {results['Sigma_eff_at_RE']/results['Sigma_at_RE']:.2f}×
+      * K_Sigma(R_E) = {results['K_Sigma_at_RE']:.2f}
+      * Boost = {results['Sigma_eff_at_RE']/results['Sigma_at_RE']:.2f}x
     
     NO DARK MATTER
     """
@@ -557,7 +557,7 @@ if __name__ == '__main__':
     print("=" * 70)
     print()
     print("Next Steps:")
-    print("  1. Tune (A_c, ell0) if needed to hit θ_E within ±10%")
+    print("  1. Tune (A_c, ell0) if needed to hit theta_E within +/-10%")
     print("  2. Add triaxial geometry test (vary q_los)")
     print("  3. Test on A1689 and MACS0717 for universality")
     print("  4. Optional: Explicit path sum validation (Phase 2.2)")

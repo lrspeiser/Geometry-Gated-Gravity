@@ -196,18 +196,22 @@ def apply_clumping_correction(r: np.ndarray, rho_gas: np.ndarray,
     """
     Apply clumping correction to gas density.
     
-    X-ray observations underestimate density by factor sqrt(C) due to
-    unresolved clumping (X-ray ∝ n_e² sees clumps as overdense).
+    X-ray observations OVERestimate density by factor sqrt(C) due to
+    unresolved clumping (L_X ∝ n_e² weights clumps).
+    
+    Clumping factor: C(r) = <n_e²>/<n_e>² >= 1 (Simionescu+ 2011)
+    
+    True density: n_e(true) = n_e(X-ray) / sqrt(C)
+    Therefore:    ρ_true = ρ_X-ray / sqrt(C(r))
     
     C(r) = 1 + C₀ (r/R_200)^η
-    ρ_true = sqrt(C(r)) × ρ_X-ray
     
     Parameters
     ----------
     r : ndarray
         Radii in kpc
     rho_gas : ndarray
-        Gas density from X-ray in Msun/kpc^3
+        Gas density from X-ray in Msun/kpc^3 (BEFORE clumping correction)
     C0 : float
         Clumping amplitude (typically 0.2-0.5)
     eta : float
@@ -218,13 +222,19 @@ def apply_clumping_correction(r: np.ndarray, rho_gas: np.ndarray,
     Returns
     -------
     rho_gas_corrected : ndarray
-        Corrected gas density
+        Corrected (reduced) gas density
+    
+    References
+    ----------
+    Simionescu+ 2011, ApJ, 757, 182
+    Eckert+ 2015, A&A, 575, A72
     """
     if R_200 is None or C0 == 0:
         return rho_gas
     
     C_r = 1 + C0 * (r / R_200)**eta
-    return rho_gas * np.sqrt(C_r)
+    # FIX: Divide by sqrt(C), not multiply! X-ray observations OVERestimate density.
+    return rho_gas / np.sqrt(C_r)
 
 
 def rho_hernquist(r: np.ndarray, M_star: float, a: float) -> np.ndarray:

@@ -1,0 +1,27 @@
+{
+  "n_clusters": 12,
+  "n_converged": 12,
+  "n_failed": 0,
+  "theta_E_residuals": {
+    "median": -0.41909597343300947,
+    "mean": -0.3492963850020446,
+    "std": 0.2480171457587309,
+    "median_abs": 0.41909597343300947,
+    "within_10pct": 1,
+    "within_15pct": 2,
+    "within_20pct": 3
+  },
+  "kernel_params": {
+    "A_c": 10.0,
+    "r_gate": 5.0,
+    "n_gate": 4,
+    "ell0": 180.0,
+    "p_density": 1.2,
+    "L1": 1200.0,
+    "q_taper": 2.0,
+    "w_interior": 1.0,
+    "w_exterior": 0.0,
+    "coherence_mode": "power_law",
+    "n_coh": 1.5
+  }
+}
