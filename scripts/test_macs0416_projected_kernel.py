@@ -89,8 +89,9 @@ def build_macs0416_baryon_profile_3d(
         C_max=2.5
     )
     
+    # Don't apply clumping - already included in gNFW parameters from observations
     components = build_cluster_baryon_model(
-        r_grid, params, apply_clumping=True, verbose=verbose
+        r_grid, params, apply_clumping=False, verbose=verbose
     )
     
     info = {
