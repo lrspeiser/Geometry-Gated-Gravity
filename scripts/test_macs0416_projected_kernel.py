@@ -140,14 +140,10 @@ def project_to_surface_density(
     Sigma_2d : ndarray
         Projected surface density [Msun/kpc^2]
     """
-    # Use existing triaxial projection code
-    # For now, simple Abel transform for spherical case
-    # TODO: Hook up full triaxial projection when q_los != 1.0 or q_plane != 1.0
+    from scipy.interpolate import interp1d
     
     if q_los == 1.0 and q_plane == 1.0:
-        # Spherical Abel transform
-        from scipy.interpolate import interp1d
-        
+        # Spherical Abel transform (fast path)
         # Interpolate rho(r)
         rho_interp = interp1d(r_3d, rho_3d, kind='linear', 
                              bounds_error=False, fill_value=0.0)
@@ -171,10 +167,37 @@ def project_to_surface_density(
         
         return Sigma_flat.reshape(R_2d.shape)
     else:
-        # Full triaxial projection
-        # Use the validated triaxial_lensing module
-        # For 2D grid, compute for each point
-        raise NotImplementedError("Full triaxial projection: use project_triaxial_surface_density")
+        # Full triaxial projection using triaxial_lensing module
+        import sys
+        from pathlib import Path
+        sys.path.insert(0, str(Path(__file__).parent.parent))
+        from core.triaxial_lensing import (
+            spherical_to_triaxial_density,
+            project_triaxial_to_surface_density_simple
+        )
+        
+        # Create spherical density interpolator
+        rho_interp = interp1d(r_3d, rho_3d, kind='linear',
+                             bounds_error=False, fill_value=0.0)
+        
+        # Transform to triaxial
+        rho_triaxial = spherical_to_triaxial_density(
+            rho_interp,
+            q_plane=q_plane,
+            q_LOS=q_los,
+            normalize_to_mass=None  # Keep same normalization as input
+        )
+        
+        # Flatten R_2d for projection
+        R_flat = np.atleast_1d(R_2d).flatten()
+        
+        # Project to surface density
+        z_max = r_3d[-1]  # Use same integration limit as spherical case
+        Sigma_flat = project_triaxial_to_surface_density_simple(
+            rho_triaxial, R_flat, z_max=z_max, n_z=300
+        )
+        
+        return Sigma_flat.reshape(R_2d.shape)
 
 
 def compute_lensing_from_sigma_eff(
