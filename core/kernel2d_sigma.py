@@ -24,14 +24,41 @@ Physics:
 --------
 - A_c: Coherence amplitude (dimensionless, ~0.1-1.0)
 - ell0: Coherence length scale (kpc, ~50-500)
+  * Can be mass-scaled: ell0(M) = ell0_star * (R500/1Mpc)^gamma
+  * Physics: larger halos may sustain longer-range coherent path interference
+  * Typical values: ell0_star ~ 100-300 kpc, gamma ~ 0.3-0.8
 - p: Window power-law index (~1-3)
 - n_coh: Coherence decay rate (~1-5)
 
 The "interior-emphasis" mode upweights contributions from R' < R, reflecting
 the path-integral insight that interior chords dominate the boost.
 
+Mass-Scaling Motivation:
+-------------------------
+The coherence length ell0 sets the spatial scale over which quantum-gravitational
+path interference remains phase-coherent. For larger/more massive halos:
+  1. Deeper potential wells may sustain longer decoherence times
+  2. Larger virial radii R500 naturally correlate with extended path networks
+  3. The dimensionless ratio (ell0 / R500) may be approximately universal
+
+We parameterize this as:
+    ell0(M) = ell0_star * (R500 / R500_pivot)^gamma
+
+where:
+  - ell0_star: coherence length at pivot mass (kpc)
+  - R500: cluster scale radius (kpc), proxy for mass M500
+  - R500_pivot: normalization scale (default 1000 kpc = 1 Mpc)
+  - gamma: power-law index (0 = no mass dependence, >0 = increasing with mass)
+
+Expected gamma range: 0.0-1.0
+  - gamma = 0: fixed coherence scale (mass-independent)
+  - gamma ~ 0.3-0.5: weak mass scaling (sub-linear with R500)
+  - gamma ~ 1.0: linear scaling (ell0 ∝ R500, constant ell0/R500 ratio)
+
+This mass-scaling ansatz is testable via hierarchical inference over cluster samples.
+
 Author: Many-Paths Gravity Research Team
-Date: 2025-01-14
+Date: 2025-01-14 (updated 2025-01-19 with mass-scaling)
 """
 
 import numpy as np
@@ -39,6 +66,115 @@ from scipy import signal
 import logging
 
 logger = logging.getLogger(__name__)
+
+
+def compute_mass_scaled_coherence_length(R500, ell0_star=200.0, gamma=0.0, R500_pivot=1000.0):
+    """
+    Compute mass-dependent coherence length ell0(M) from cluster scale radius R500.
+    
+    Physics Motivation:
+    -------------------
+    The coherence length ell0 represents the spatial scale over which gravitational
+    path interference remains phase-coherent. For massive galaxy clusters:
+      - Larger halos (higher M500, larger R500) have deeper potential wells
+      - Deeper wells may sustain longer decoherence times → larger ell0
+      - The ratio (ell0 / R500) may be approximately universal across mass scales
+    
+    This function parameterizes the mass-dependence as a power law:
+    
+        ell0(M) = ell0_star × (R500 / R500_pivot)^gamma
+    
+    where:
+      - R500: cluster scale radius (kpc), defined as the radius within which
+              the mean density is 500× critical density of the universe
+      - ell0_star: coherence length at the pivot mass (kpc)
+      - gamma: power-law index controlling mass-scaling strength
+      - R500_pivot: normalization scale (default 1 Mpc = 1000 kpc)
+    
+    Parameters:
+    -----------
+    R500 : float or array
+        Cluster scale radius (kpc), proxy for M500
+        Typical range: 500-1500 kpc for cluster-scale halos
+    ell0_star : float, optional
+        Coherence length at pivot mass R500_pivot (kpc)
+        Default: 200 kpc (intermediate scale, ~0.2× typical R500)
+    gamma : float, optional
+        Power-law index for mass scaling
+        Default: 0.0 (no mass dependence, fixed ell0 = ell0_star)
+        Typical range: 0.0-1.0
+          gamma = 0.0 → ell0 constant (mass-independent)
+          gamma = 0.5 → ell0 ∝ sqrt(R500) (weak scaling)
+          gamma = 1.0 → ell0 ∝ R500 (linear scaling, constant ell0/R500)
+    R500_pivot : float, optional
+        Pivot scale for normalization (kpc)
+        Default: 1000 kpc = 1 Mpc (characteristic cluster scale)
+    
+    Returns:
+    --------
+    ell0 : float or array
+        Mass-scaled coherence length (kpc), same shape as R500
+    
+    Examples:
+    ---------
+    # Fixed coherence length (mass-independent)
+    >>> compute_mass_scaled_coherence_length(R500=800, ell0_star=200, gamma=0.0)
+    200.0  # kpc, independent of R500
+    
+    # Linear scaling (constant ell0/R500 ratio)
+    >>> compute_mass_scaled_coherence_length(R500=1500, ell0_star=200, gamma=1.0, R500_pivot=1000)
+    300.0  # kpc = 200 × (1500/1000)^1.0
+    
+    # Sub-linear scaling (weaker mass dependence)
+    >>> compute_mass_scaled_coherence_length(R500=1600, ell0_star=200, gamma=0.5, R500_pivot=1000)
+    252.98  # kpc = 200 × (1600/1000)^0.5 ≈ 200 × 1.265
+    
+    Physics Interpretation:
+    -----------------------
+    - gamma = 0: Coherence scale set by fundamental quantum-gravity length,
+                 independent of halo mass (e.g., Planck scale, modified gravity scale)
+    - gamma > 0: Coherence scale tracks halo size, suggesting path networks
+                 scale with gravitational radius
+    - gamma = 1: Perfectly self-similar scaling, ell0/R500 constant across masses
+    
+    Testability:
+    ------------
+    The exponent gamma is a free parameter constrained by hierarchical Bayesian
+    inference over cluster lensing data. A statistically significant gamma > 0
+    would provide evidence for mass-dependent coherence, potentially distinguishing
+    many-paths gravity from models with fixed fundamental scales.
+    
+    Notes:
+    ------
+    - This implementation assumes R500 as a mass proxy. For more precise modeling,
+      one could use M500 directly or calibrate R500(M500) via scaling relations.
+    - The pivot R500_pivot = 1 Mpc is chosen as a typical cluster scale; results
+      are independent of this choice given appropriate ell0_star.
+    - For gamma = 0 (default), this reduces to constant ell0 = ell0_star, matching
+      the original fixed-ell0 implementation.
+    """
+    # Validate inputs
+    if np.any(R500 <= 0):
+        raise ValueError("R500 must be positive (got values <= 0)")
+    if ell0_star <= 0:
+        raise ValueError(f"ell0_star must be positive, got {ell0_star}")
+    if gamma < 0:
+        logger.warning(f"gamma = {gamma} < 0: negative mass-scaling is unphysical but allowed")
+    if R500_pivot <= 0:
+        raise ValueError(f"R500_pivot must be positive, got {R500_pivot}")
+    
+    # Compute mass-scaled coherence length
+    # ell0(M) = ell0_star × (R500 / R500_pivot)^gamma
+    ell0 = ell0_star * (R500 / R500_pivot)**gamma
+    
+    # Log the scaling parameters (useful for diagnostics)
+    if gamma != 0.0:
+        logger.info(f"Mass-scaled coherence: ell0_star={ell0_star:.1f} kpc, gamma={gamma:.3f}, "
+                    f"R500={np.mean(R500):.1f} kpc → ell0={np.mean(ell0):.1f} kpc")
+    else:
+        logger.debug(f"Fixed coherence length: ell0={ell0_star:.1f} kpc (gamma=0, mass-independent)")
+    
+    return ell0
 
 
 def radial_window(R, ell0, p, ncoh, emphasize_interior=False, R_eval=None):
@@ -90,7 +226,8 @@ def exponential_window(R, ell0, p):
 
 def convolve_sigma_with_kernel(Sigma_triax, R_grid, ell0, p, ncoh, A_c,
                                emphasize_interior=True, use_fft=True,
-                               window_type='power_law'):
+                               window_type='power_law',
+                               R500=None, ell0_star=None, gamma=0.0, R500_pivot=1000.0):
     """
     Apply 2D projected-space Sigma-Gravity kernel to triaxial surface density.
     
@@ -106,8 +243,10 @@ def convolve_sigma_with_kernel(Sigma_triax, R_grid, ell0, p, ncoh, A_c,
         Must be centered on cluster center
     R_grid : 2D array
         Radial distance for each grid point (kpc), same shape as Sigma_triax
-    ell0 : float
+    ell0 : float or None
         Coherence length scale (kpc)
+        If None, must provide R500 and ell0_star for mass-scaling
+        If provided, overrides mass-scaling computation
     p : float
         Window power-law index
     ncoh : float
@@ -120,6 +259,18 @@ def convolve_sigma_with_kernel(Sigma_triax, R_grid, ell0, p, ncoh, A_c,
         If True, use FFT-based convolution (faster for large grids)
     window_type : str
         'power_law' or 'exponential'
+    R500 : float or None, optional
+        Cluster scale radius (kpc) for mass-scaling
+        Used only if ell0 is None
+    ell0_star : float or None, optional
+        Coherence length at pivot mass (kpc) for mass-scaling
+        Used only if ell0 is None
+    gamma : float, optional
+        Mass-scaling exponent: ell0(M) = ell0_star * (R500/R500_pivot)^gamma
+        Default: 0.0 (no mass-scaling)
+    R500_pivot : float, optional
+        Pivot scale for mass-scaling normalization (kpc)
+        Default: 1000 kpc = 1 Mpc
         
     Returns:
     --------
@@ -128,21 +279,58 @@ def convolve_sigma_with_kernel(Sigma_triax, R_grid, ell0, p, ncoh, A_c,
     K_sigma : 2D array
         Dimensionless boost kernel field
     diagnostics : dict
-        Additional diagnostic information
+        Additional diagnostic information, including 'ell0_used' and mass-scaling params
+    
+    Notes:
+    ------
+    Two modes for specifying coherence length:
+    1. Fixed ell0: Pass ell0 directly (original behavior)
+    2. Mass-scaled ell0: Pass R500 and ell0_star, set ell0=None
+    
+    For mass-scaled mode:
+        ell0(M) = ell0_star * (R500 / R500_pivot)^gamma
+    where gamma controls the strength of mass-dependence:
+        gamma = 0: fixed ell0 (mass-independent)
+        gamma > 0: ell0 increases with halo mass
+    
+    Example (fixed ell0):
+        Sigma_eff, K, diag = convolve_sigma_with_kernel(
+            Sigma, R_grid, ell0=200, p=2, ncoh=2, A_c=0.5
+        )
+    
+    Example (mass-scaled ell0):
+        Sigma_eff, K, diag = convolve_sigma_with_kernel(
+            Sigma, R_grid, ell0=None, p=2, ncoh=2, A_c=0.5,
+            R500=800, ell0_star=200, gamma=0.5
+        )
     """
     # Validate inputs
     assert Sigma_triax.shape == R_grid.shape, "Sigma and R_grid must have same shape"
     assert np.all(Sigma_triax >= 0), "Surface density must be non-negative"
-    assert ell0 > 0, "Coherence length must be positive"
     assert A_c >= 0, "Coherence amplitude must be non-negative"
     
-    # Build coherence window on grid
+    # Handle coherence length: fixed ell0 or mass-scaled
+    if ell0 is None:
+        # Mass-scaling mode: compute ell0(M) from R500
+        if R500 is None or ell0_star is None:
+            raise ValueError("If ell0 is None, must provide R500 and ell0_star for mass-scaling")
+        ell0_used = compute_mass_scaled_coherence_length(R500, ell0_star, gamma, R500_pivot)
+        logger.info(f"Using mass-scaled coherence length: R500={R500:.1f} kpc → ell0={ell0_used:.1f} kpc "
+                    f"(ell0_star={ell0_star:.1f}, gamma={gamma:.3f})")
+    else:
+        # Fixed ell0 mode (original behavior)
+        ell0_used = ell0
+        logger.debug(f"Using fixed coherence length: ell0={ell0_used:.1f} kpc")
+    
+    assert ell0_used > 0, "Coherence length must be positive"
+    
+    # Build coherence window on grid using the determined ell0
     if window_type == 'power_law':
-        w = radial_window(R_grid, ell0, p, ncoh,
+        w = radial_window(R_grid, ell0_used, p, ncoh,
                          emphasize_interior=emphasize_interior,
                          R_eval=R_grid if emphasize_interior else None)
     elif window_type == 'exponential':
-        w = exponential_window(R_grid, ell0, p)
+        w = exponential_window(R_grid, ell0_used, p)
     else:
         raise ValueError(f"Unknown window_type: {window_type}")
     
@@ -167,7 +355,7 @@ def convolve_sigma_with_kernel(Sigma_triax, R_grid, ell0, p, ncoh, A_c,
     # Effective surface density
     Sigma_eff = Sigma_triax * (1.0 + K_sigma)
     
-    # Diagnostic info
+    # Diagnostic info (include mass-scaling parameters)
     diagnostics = {
         'K_sigma_mean': np.mean(K_sigma),
         'K_sigma_std': np.std(K_sigma),
@@ -179,11 +367,17 @@ def convolve_sigma_with_kernel(Sigma_triax, R_grid, ell0, p, ncoh, A_c,
         'window_type': window_type,
         'emphasize_interior': emphasize_interior,
         'normalization': 'local_annular_mean',  # Document the normalization used
-        'ell0': ell0,
-        'A_c': A_c
+        'ell0_used': ell0_used,  # Actual ell0 used (may be mass-scaled)
+        'ell0_input': ell0,  # Original ell0 parameter (may be None)
+        'A_c': A_c,
+        # Mass-scaling parameters (for provenance)
+        'R500': R500,
+        'ell0_star': ell0_star,
+        'gamma': gamma,
+        'R500_pivot': R500_pivot
     }
     
-    logger.info(f"Kernel applied: <K> = {diagnostics['K_sigma_mean']:.4f}, "
+    logger.info(f"Kernel applied: ell0={ell0_used:.1f} kpc, <K> = {diagnostics['K_sigma_mean']:.4f}, "
                 f"<1+K> = {diagnostics['boost_factor_mean']:.4f}")
     
     return Sigma_eff, K_sigma, diagnostics
