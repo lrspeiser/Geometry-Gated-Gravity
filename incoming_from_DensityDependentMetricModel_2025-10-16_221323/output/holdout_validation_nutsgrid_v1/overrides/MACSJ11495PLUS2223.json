@@ -1,0 +1,18 @@
+{
+  "kappa_ext_sigma": 0.07,
+  "bcg": { "M_Msun": 2.5e12, "a_kpc": 16.0 },
+  "extra_baryon_components": [
+    { "type": "hernquist", "M_Msun": 1.0e13, "a_kpc": 100.0 }
+  ],
+  "second_gnfw": { "r_s_kpc": 150.0, "rho0_Msun_kpc3": 2.0e7, "alpha": 1.0, "beta": 3.0, "gamma": 1.0 },
+  "source_distribution": {
+    "type": "mixture_normal",
+    "components": [
+      { "weight": 0.6, "mu": 1.7, "sigma": 0.2 },
+      { "weight": 0.4, "mu": 3.0, "sigma": 0.3 }
+    ],
+    "dirichlet_alpha": [1.0, 1.0],
+    "z_min": 0.3, "z_max": 6.0, "n_grid": 400
+  },
+  "geometry": { "mu_q": 1.05, "sigma_q": 0.30 }
+}

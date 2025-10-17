@@ -1,0 +1,86 @@
+{
+  "snapshot_date": "2025-01-15",
+  "model": "Sigma-Gravity with mass-scaled coherence",
+  
+  "population_parameters": {
+    "mu_A": {
+      "description": "Population mean amplitude",
+      "value": 16.410,
+      "units": "dimensionless",
+      "prior": "N(16.5, 1.5²)",
+      "source": "Fit to N=5 relaxed clusters"
+    },
+    "sigma_A": {
+      "description": "Population scatter in amplitude",
+      "value": 1.264,
+      "units": "dimensionless",
+      "prior": "HalfNormal(1.0)"
+    },
+    "ell_0_star": {
+      "description": "Coherence length at pivot mass (R500=1 Mpc)",
+      "value": 200.1,
+      "units": "kpc",
+      "prior": "LogNormal(ln(200), 0.5²)",
+      "source": "Fit to mass-scaled model"
+    },
+    "gamma": {
+      "description": "Mass-scaling exponent: ℓ₀ ∝ R₅₀₀^γ",
+      "value": 0.465,
+      "confidence_interval_68pct": [0.181, 0.761],
+      "units": "dimensionless",
+      "prior": "Uniform(0, 1)",
+      "interpretation": "Moderate positive mass-scaling (tentative)",
+      "notes": "γ=0 is scale-invariant; γ>0 means coherence grows with mass"
+    }
+  },
+  
+  "kernel_shape_parameters": {
+    "p": {
+      "description": "Power-law index for interior chords (density dependence)",
+      "value": 0.5,
+      "status": "FIXED",
+      "notes": "Could be freed in future; current value from galaxy fits"
+    },
+    "n_coh": {
+      "description": "Coherence falloff power",
+      "value": 1.0,
+      "status": "FIXED",
+      "notes": "Exponential decay exp(-r/ℓ₀); could test n=2 (Gaussian)"
+    },
+    "interior_weight": {
+      "description": "Weight for chords passing through interior",
+      "value": 1.0,
+      "status": "FIXED"
+    },
+    "exterior_weight": {
+      "description": "Weight for exterior chords",
+      "value": 0.0,
+      "status": "FIXED",
+      "notes": "Currently only interior chords contribute"
+    }
+  },
+  
+  "mass_scaling_relation": {
+    "formula": "ℓ₀(M) = ℓ₀,⋆ × (R₅₀₀ / 1 Mpc)^γ",
+    "pivot_radius": 1.0,
+    "pivot_units": "Mpc",
+    "interpretation": {
+      "gamma_near_0": "Scale-invariant (MOND-like)",
+      "gamma_near_0.33": "Self-similar virial scaling",
+      "gamma_near_1": "Linear with halo size"
+    }
+  },
+  
+  "fit_quality": {
+    "chi2_per_dof": 6.54,
+    "n_clusters_fit": 5,
+    "notes": "High chi2/dof suggests: (1) underestimated errors, (2) missing systematics, or (3) model limitations"
+  },
+  
+  "next_iteration_plans": {
+    "increase_sample": "Refit with N=18 clusters (tiers 1+2)",
+    "add_redshift_dependence": "Include proper D_LS/D_S lensing efficiency",
+    "cluster_specific_masses": "Use NFW conversion per cluster from c200c",
+    "add_BCG": "Include central stellar component ~10^11-10^12 Msun"
+  }
+}

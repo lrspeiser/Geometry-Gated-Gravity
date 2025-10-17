@@ -1,0 +1,4 @@
+{
+  "target_fb": 0.062,
+  "geometry": { "mu_q": 0.95, "sigma_q": 0.20 }
+}

@@ -1,0 +1,200 @@
+[
+  {
+    "cluster_name": "Abell383",
+    "file": "ABELL383.npz",
+    "shape": [
+      21,
+      21,
+      11,
+      11,
+      9
+    ]
+  },
+  {
+    "cluster_name": "Abell209",
+    "file": "ABELL209.npz",
+    "shape": [
+      21,
+      21,
+      11,
+      11,
+      9
+    ]
+  },
+  {
+    "cluster_name": "Abell2261",
+    "file": "ABELL2261.npz",
+    "shape": [
+      21,
+      21,
+      11,
+      11,
+      9
+    ]
+  },
+  {
+    "cluster_name": "RXJ2129.7+0005",
+    "file": "RXJ21297PLUS0005.npz",
+    "shape": [
+      21,
+      21,
+      11,
+      11,
+      9
+    ]
+  },
+  {
+    "cluster_name": "Abell611",
+    "file": "ABELL611.npz",
+    "shape": [
+      21,
+      21,
+      11,
+      11,
+      9
+    ]
+  },
+  {
+    "cluster_name": "MS2137-2353",
+    "file": "MS21372353.npz",
+    "shape": [
+      21,
+      21,
+      11,
+      11,
+      9
+    ]
+  },
+  {
+    "cluster_name": "RXJ2248.7-4431",
+    "file": "RXJ224874431.npz",
+    "shape": [
+      21,
+      21,
+      11,
+      11,
+      9
+    ]
+  },
+  {
+    "cluster_name": "MACSJ1115.9+0129",
+    "file": "MACSJ11159PLUS0129.npz",
+    "shape": [
+      21,
+      21,
+      11,
+      11,
+      9
+    ]
+  },
+  {
+    "cluster_name": "MACSJ1931.8-2635",
+    "file": "MACSJ193182635.npz",
+    "shape": [
+      21,
+      21,
+      11,
+      11,
+      9
+    ]
+  },
+  {
+    "cluster_name": "RXJ1532.9+3021",
+    "file": "RXJ15329PLUS3021.npz",
+    "shape": [
+      21,
+      21,
+      11,
+      11,
+      9
+    ]
+  },
+  {
+    "cluster_name": "MACSJ1720.3+3536",
+    "file": "MACSJ17203PLUS3536.npz",
+    "shape": [
+      21,
+      21,
+      11,
+      11,
+      9
+    ]
+  },
+  {
+    "cluster_name": "MACSJ0429.6-0253",
+    "file": "MACSJ042960253.npz",
+    "shape": [
+      21,
+      21,
+      11,
+      11,
+      9
+    ]
+  },
+  {
+    "cluster_name": "MACSJ1206.2-0847",
+    "file": "MACSJ120620847.npz",
+    "shape": [
+      21,
+      21,
+      11,
+      11,
+      9
+    ]
+  },
+  {
+    "cluster_name": "MACSJ0329.7-0211",
+    "file": "MACSJ032970211.npz",
+    "shape": [
+      21,
+      21,
+      11,
+      11,
+      9
+    ]
+  },
+  {
+    "cluster_name": "RXJ1347.5-1145",
+    "file": "RXJ134751145.npz",
+    "shape": [
+      21,
+      21,
+      11,
+      11,
+      9
+    ]
+  },
+  {
+    "cluster_name": "MACSJ0744.9+3927",
+    "file": "MACSJ07449PLUS3927.npz",
+    "shape": [
+      21,
+      21,
+      11,
+      11,
+      9
+    ]
+  },
+  {
+    "cluster_name": "MACSJ1149.5+2223",
+    "file": "MACSJ11495PLUS2223.npz",
+    "shape": [
+      21,
+      21,
+      11,
+      11,
+      9
+    ]
+  },
+  {
+    "cluster_name": "MACSJ0647.7+7015",
+    "file": "MACSJ06477PLUS7015.npz",
+    "shape": [
+      21,
+      21,
+      11,
+      11,
+      9
+    ]
+  }
+]

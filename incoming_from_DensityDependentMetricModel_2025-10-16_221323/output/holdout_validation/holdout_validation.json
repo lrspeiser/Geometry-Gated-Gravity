@@ -1,0 +1,23 @@
+{
+  "n_holdouts": 1,
+  "median_frac_error": 0.2218263686776739,
+  "inside_68_frac": 0.0,
+  "systematic_bias": "negative",
+  "pass_error_criterion": false,
+  "pass_coverage_criterion": false,
+  "pass_bias_criterion": false,
+  "pass_overall": false,
+  "per_cluster": [
+    {
+      "cluster": "MACSJ1149.5+2223",
+      "theta_E_obs": 46.2,
+      "sigma_obs": 3.6,
+      "theta_E_pred_median": 35.95162176709147,
+      "theta_E_pred_16": 28.91045069546326,
+      "theta_E_pred_84": 44.148793326592894,
+      "frac_error": 0.2218263686776739,
+      "inside_68": false,
+      "residual": -10.248378232908536
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "n_clusters": 10,
+  "gamma_fixed": true,
+  "gamma_value": 0.0,
+  "use_triaxial": true,
+  "waic": null,
+  "waic_se": null,
+  "loo": null,
+  "loo_se": null,
+  "n_divergences": null,
+  "mean_tree_depth": null
+}

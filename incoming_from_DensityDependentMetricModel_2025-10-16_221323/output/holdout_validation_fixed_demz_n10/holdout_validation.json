@@ -1,0 +1,34 @@
+{
+  "n_holdouts": 2,
+  "median_frac_error": 0.1811429145738193,
+  "inside_68_frac": 0.0,
+  "systematic_bias": "none",
+  "pass_error_criterion": true,
+  "pass_coverage_criterion": false,
+  "pass_bias_criterion": true,
+  "pass_overall": false,
+  "per_cluster": [
+    {
+      "cluster": "Abell2261",
+      "theta_E_obs": 48.5,
+      "sigma_obs": 3.6,
+      "theta_E_pred_median": 55.04493620775204,
+      "theta_E_pred_16": 49.59169496233089,
+      "theta_E_pred_84": 60.11573168239905,
+      "frac_error": 0.13494713830416571,
+      "inside_68": false,
+      "residual": 6.544936207752038
+    },
+    {
+      "cluster": "MACSJ1149.5+2223",
+      "theta_E_obs": 46.2,
+      "sigma_obs": 3.6,
+      "theta_E_pred_median": 35.69695248303155,
+      "theta_E_pred_16": 29.17356380115393,
+      "theta_E_pred_84": 42.54156171861545,
+      "frac_error": 0.22733869084347294,
+      "inside_68": false,
+      "residual": -10.50304751696845
+    }
+  ]
+}

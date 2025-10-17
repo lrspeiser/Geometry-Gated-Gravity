@@ -1,0 +1,77 @@
+{
+  "snapshot_date": "2025-01-15",
+  "description": "Priors on triaxiality and nuisance parameters",
+  
+  "triaxial_geometry": {
+    "enabled": true,
+    "status": "VERIFY_IF_FIT",
+    "notes": "Code has q_plane, q_LOS but unclear if they were sampled in 3.6min run",
+    
+    "q_plane": {
+      "description": "Axis ratio in plane of sky (intermediate/major)",
+      "prior_distribution": "Normal(1.0, 0.15²)",
+      "bounds": [0.7, 1.4],
+      "physical_range": "0.8-1.2 typical for triaxial halos",
+      "per_cluster": true,
+      "notes": "Independent for each cluster"
+    },
+    
+    "q_LOS": {
+      "description": "Line-of-sight axis ratio (minor/major projection)",
+      "prior_distribution": "Normal(1.0, 0.15²)",
+      "bounds": [0.7, 1.4],
+      "physical_range": "0.8-1.2 typical",
+      "per_cluster": true,
+      "notes": "20-30% θ_E leverage; critical to fit, not fix"
+    },
+    
+    "projection_method": {
+      "formula": "Σ_projected = q_LOS × q_plane × Σ_spherical",
+      "implementation": "Applied to gas+BCG before kernel computation",
+      "reference": "See triaxial_lensing.py"
+    }
+  },
+  
+  "external_convergence": {
+    "kappa_ext": {
+      "description": "LSS convergence sheet along line of sight",
+      "prior_distribution": "Normal(0, 0.03²)",
+      "per_cluster": true,
+      "physical_motivation": "Large-scale structure projection effects",
+      "typical_magnitude": "σ ≈ 0.02-0.04 from ray-tracing sims",
+      "correlations": "Should check for mass-dependence in posterior"
+    }
+  },
+  
+  "clumping_factor": {
+    "C0": {
+      "description": "Gas density clumping normalization",
+      "prior_distribution": "Uniform(1.0, 2.5)",
+      "current_status": "FIXED at 1.5 or fit as global nuisance",
+      "physical_interpretation": "X-ray L_X ∝ n_e² overestimates <n_e>",
+      "literature_range": "C ~ 1.2-2.0 from simulations",
+      "implementation": "n_e_true = n_e_xray / sqrt(C(r))"
+    }
+  },
+  
+  "measurement_error_inflation": {
+    "description": "Allow for catalog heterogeneity",
+    "implementation": "σ_total² = σ_obs² + f_sys² × θ_E²",
+    "f_sys": {
+      "prior": "Uniform(0, 0.15)",
+      "interpretation": "Shared fractional systematic across sample",
+      "motivation": "Accounts for model mismatch, catalog differences"
+    }
+  },
+  
+  "action_items": {
+    "critical": [
+      "Verify q_plane, q_LOS were actually sampled (check posterior columns)",
+      "If not sampled, add to free parameters and rerun"
+    ],
+    "recommended": [
+      "Check κ_ext posterior for mass-correlation (diagnostic plot)",
+      "Consider letting C0 vary per cluster with weak hierarchical prior"
+    ]
+  }
+}

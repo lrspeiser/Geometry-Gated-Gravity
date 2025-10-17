@@ -1,0 +1,10 @@
+{
+  "posterior": "output/nuts_grid_n10/trace.netcdf",
+  "holdout": "output/holdout_validation_nuts_grid_n10_profiles_fb_overrides2/holdout_validation.json",
+  "overrides": [
+    "data/overrides/ABELL2261.json",
+    "data/overrides/MACSJ11495PLUS2223.json"
+  ],
+  "grid_dir": "data/thetaE_grids",
+  "runner": "scripts/run_mass_scaled_nuts_grid.py"
+}

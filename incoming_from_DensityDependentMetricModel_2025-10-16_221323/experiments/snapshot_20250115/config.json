@@ -1,0 +1,45 @@
+{
+  "snapshot_date": "2025-01-15",
+  "version": "v0.9_prototype",
+  "description": "Working configuration for mass-scaled Sigma-Gravity inference",
+  
+  "cosmology": {
+    "H0_km_s_Mpc": 70.0,
+    "Omega_m": 0.27,
+    "Omega_Lambda": 0.73,
+    "model": "FlatLambdaCDM",
+    "source": "Umetsu+2016 (CLASH defaults)"
+  },
+  
+  "lensing_calculation": {
+    "uses_redshift_dependent_Sigma_crit": false,
+    "current_approximation": "single median z_source per cluster",
+    "angular_diameter_distances": "NOT_YET_IMPLEMENTED",
+    "notes": "CRITICAL: Must add D_LS/D_S(z_lens, z_source) in next iteration"
+  },
+  
+  "mass_conversion": {
+    "method": "M500 = 0.65 × M200c",
+    "is_cluster_specific": false,
+    "notes": "NEEDS_UPGRADE: Should use per-cluster c200c from Umetsu Table 2"
+  },
+  
+  "constants": {
+    "G_cgs": 6.67430e-8,
+    "c_cgs": 2.99792458e10,
+    "M_sun_g": 1.98841e33,
+    "kpc_cm": 3.08567758149137e21,
+    "Mpc_cm": 3.08567758149137e24,
+    "m_p_g": 1.67262192369e-24,
+    "mu_e": 1.17
+  },
+  
+  "fixed_parameters": {
+    "clumping_correction": {
+      "enabled": true,
+      "model": "sqrt(C(r)) divisor in n_e",
+      "C0_range": [1.0, 2.5],
+      "notes": "Applied consistently to gas density before kernel"
+    }
+  }
+}

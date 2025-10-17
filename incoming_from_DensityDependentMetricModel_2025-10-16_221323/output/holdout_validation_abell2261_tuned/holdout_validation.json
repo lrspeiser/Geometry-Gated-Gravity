@@ -1,0 +1,23 @@
+{
+  "n_holdouts": 1,
+  "median_frac_error": 0.22114428548211018,
+  "inside_68_frac": 1.0,
+  "systematic_bias": "positive",
+  "pass_error_criterion": false,
+  "pass_coverage_criterion": true,
+  "pass_bias_criterion": false,
+  "pass_overall": false,
+  "per_cluster": [
+    {
+      "cluster": "Abell2261",
+      "theta_E_obs": 48.5,
+      "sigma_obs": 3.6,
+      "theta_E_pred_median": 59.225497845882344,
+      "theta_E_pred_16": 47.280324349752846,
+      "theta_E_pred_84": 71.7710132632578,
+      "frac_error": 0.22114428548211018,
+      "inside_68": true,
+      "residual": 10.725497845882344
+    }
+  ]
+}
