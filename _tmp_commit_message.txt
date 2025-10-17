@@ -1,0 +1,9 @@
+﻿chore: incoming sync from DensityDependentMetricModel (96 files) at 2025-10-16_221719
+
+Cutoff (local): 2025-10-10 00:00:00
+Incoming folder: C:\Users\henry\dev\GravityCalculator\incoming_from_DensityDependentMetricModel_2025-10-16_221323
+Manifest: C:\Users\henry\dev\GravityCalculator\incoming_from_DensityDependentMetricModel_2025-10-16_221323\manifest.csv
+
+Duplicates kept separate (no overwrites). See incoming README for details.
+
+Automated commit.

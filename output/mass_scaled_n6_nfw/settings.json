@@ -1,0 +1,19 @@
+{
+  "catalog": "C:\\Users\\henry\\dev\\GravityCalculator\\data\\clusters\\master_catalog_nfw.csv",
+  "tiers": [
+    1,
+    2
+  ],
+  "exclude": [
+    "NONE"
+  ],
+  "holdout": [
+    "A1689",
+    "MACS1149"
+  ],
+  "walkers": 48,
+  "steps": 2000,
+  "burn_in": 600,
+  "acceptance_fraction_mean": 0.13330208333333332,
+  "seed": 42
+}

@@ -1,0 +1,28 @@
+{
+  "A1689": {
+    "theta_E_obs": 47.0,
+    "theta_E_err": 3.0,
+    "theta_E_pred_med": 36.82446817657017,
+    "theta_E_pred_16": 27.004609996151462,
+    "theta_E_pred_84": 61.37411362761695,
+    "residual": 10.175531823429829,
+    "z_score": 3.3918439411432764,
+    "within_1sigma": true
+  },
+  "MACS1149": {
+    "theta_E_obs": 42.0,
+    "theta_E_err": 2.0,
+    "theta_E_pred_med": 31.970027364535916,
+    "theta_E_pred_16": 22.49742666393268,
+    "theta_E_pred_84": 43.81077824028996,
+    "residual": 10.029972635464084,
+    "z_score": 5.014986317732042,
+    "within_1sigma": true
+  },
+  "summary": {
+    "n_clusters": 2,
+    "n_within_1sigma": 2,
+    "n_within_2sigma": 0,
+    "pass": false
+  }
+}

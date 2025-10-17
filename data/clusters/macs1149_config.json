@@ -1,0 +1,18 @@
+{
+  "cluster_name": "MACS1149",
+  "z_lens": 0.544,
+  "arc_redshifts": {
+    "source": "Williams+2017_HFF",
+    "note": "Effective z_source slightly higher than catalog median due to high-z tail",
+    "z_eff": 2.1,
+    "description": "Use z_eff=2.1 instead of catalog 2.0 to account for high-z arc population"
+  },
+  "geometry": {
+    "source": "Xray_Chandra_analysis",
+    "q_plane_prior": {"mean": 0.85, "std": 0.15, "note": "X-ray isophotes show moderate ellipticity"},
+    "q_los_prior": {"mean": 1.1, "std": 0.2, "note": "Weakly prolate from velocity dispersion"}
+  },
+  "environment": {
+    "kappa_ext_prior": {"mean": 0.0, "std": 0.05, "note": "Wider prior for known LOS structure"}
+  }
+}

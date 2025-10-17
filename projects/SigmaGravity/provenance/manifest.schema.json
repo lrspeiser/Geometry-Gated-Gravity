@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SigmaGravity Run Manifest",
+  "type": "object",
+  "required": [
+    "run_id", "train_clusters", "tiers", "cosmology", "physics",
+    "kernel", "catalog_md5", "catalog_path"
+  ],
+  "properties": {
+    "run_id": { "type": "string" },
+    "train_clusters": { "type": "array", "items": { "type": "string" } },
+    "tiers": { "type": "array", "items": { "type": ["integer", "string"] } },
+    "cosmology": {
+      "type": "object",
+      "required": ["H0", "Om0"],
+      "properties": {
+        "H0": { "type": "number" },
+        "Om0": { "type": "number" },
+        "flat": { "type": ["boolean", "null"], "default": true }
+      }
+    },
+    "physics": {
+      "type": "object",
+      "required": ["bcg", "triaxial", "pzsource"],
+      "properties": {
+        "bcg": { "type": "boolean" },
+        "triaxial": { "type": "boolean" },
+        "pzsource": { "type": "string" }
+      }
+    },
+    "kernel": {
+      "type": "object",
+      "required": ["norm", "mass_scaling"],
+      "properties": {
+        "norm": { "type": "string" },
+        "ell0_star_init_kpc": { "type": ["number", "null"] },
+        "mass_scaling": { "type": "boolean" },
+        "gamma_prior": { "type": ["string", "null"] }
+      }
+    },
+    "catalog_md5": { "type": "string" },
+    "catalog_path": { "type": "string" },
+    "code_commit": { "type": ["string", "null"] }
+  }
+}

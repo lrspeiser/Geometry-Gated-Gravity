@@ -46,6 +46,7 @@ class BaryonComponents:
     rho_gas: np.ndarray  # Gas density [Msun/kpc^3]
     rho_bcg: np.ndarray  # BCG stellar density [Msun/kpc^3]
     rho_icl: np.ndarray  # ICL density [Msun/kpc^3]
+    rho_members: np.ndarray  # Satellite galaxy stellar density [Msun/kpc^3]
     rho_total: np.ndarray  # Total baryon density [Msun/kpc^3]
     clumping_factor: np.ndarray  # C(r) clumping correction
     info: Dict  # Diagnostic information
@@ -71,6 +72,12 @@ class ClusterBaryonParams:
     M_ICL: Optional[float] = None  # ICL mass [Msun], auto-scaled if None
     r_s_ICL: float = 150.0  # Scale radius [kpc]
     n_sersic_ICL: float = 1.5  # Sersic index
+    
+    # Member galaxy parameters (NEW: satellite stellar mass)
+    M_members: Optional[float] = None  # Member galaxy stellar mass [Msun], auto-scaled if None
+    r_s_members: float = 200.0  # Member profile scale [kpc]
+    alpha_members: float = 1.5  # Inner slope (NFW-like)
+    beta_members: float = 3.0  # Outer slope
     
     # Clumping parameters (Simionescu+ 2011)
     C0: float = 1.3  # Clumping at core
@@ -242,6 +249,82 @@ def estimate_icl_mass(M_500: float) -> float:
     return 0.4 * M_BCG
 
 
+def estimate_member_mass(M_500: float) -> float:
+    """
+    Estimate total satellite galaxy stellar mass from cluster mass.
+    
+    Member galaxies contribute ~1-2% of M_500 in stars within R_500.
+    Scaling from Gonzalez+ 2013, Budzynski+ 2014:
+    
+    M_members ~ 0.015 × M_500 (inside R_500)
+    
+    This captures the integrated stellar mass of all cluster members
+    excluding the BCG (which is handled separately).
+    
+    Physical motivation:
+    - Cluster richness N ~ M_500^0.8
+    - Mean stellar mass per galaxy ~ 1-2e11 Msun
+    - For N ~ 50-100 galaxies: M_members ~ 5-15e12 Msun
+    
+    Parameters
+    ----------
+    M_500 : float
+        Cluster M_500 [Msun]
+    
+    Returns
+    -------
+    M_members : float
+        Estimated member galaxy stellar mass [Msun]
+    """
+    # Conservative 1.5% of M_500 in member stars
+    return 0.015 * M_500
+
+
+def member_galaxy_profile(
+    r: np.ndarray,
+    M_members: float,
+    r_s: float,
+    alpha: float = 1.5,
+    beta: float = 3.0
+) -> np.ndarray:
+    """
+    Satellite member galaxy stellar density profile.
+    
+    Uses a double power-law (similar to NFW but softer core):
+    ρ(r) = ρ₀ / [(r/r_s)^α × (1 + r/r_s)^(β-α)]
+    
+    This follows the cluster galaxy number density, which is
+    more extended than the BCG but more concentrated than ICL.
+    
+    Parameters
+    ----------
+    r : ndarray
+        Radii [kpc]
+    M_members : float
+        Total member galaxy stellar mass [Msun]
+    r_s : float
+        Scale radius [kpc] (typically ~200 kpc, following NFW)
+    alpha : float
+        Inner slope (default: 1.5, softer than NFW's 1.0)
+    beta : float
+        Outer slope (default: 3.0, standard NFW)
+    
+    Returns
+    -------
+    rho_members : ndarray
+        Member galaxy stellar density [Msun/kpc^3]
+    """
+    x = r / r_s
+    profile = 1.0 / (x**alpha * (1 + x)**(beta - alpha))
+    
+    # Normalize to total mass
+    integrand = 4 * np.pi * r**2 * profile
+    M_integral = trapezoid(integrand, r)
+    rho_0 = M_members / M_integral
+    
+    return rho_0 * profile
+
+
 def build_cluster_baryon_model(
     r: np.ndarray,
     params: ClusterBaryonParams,
@@ -288,7 +371,11 @@ def build_cluster_baryon_model(
     M_ICL = params.M_ICL if params.M_ICL is not None else estimate_icl_mass(params.M_500)
     rho_icl = icl_sersic(r, M_ICL, params.r_s_ICL, params.n_sersic_ICL)
     
-    # 4. Clumping correction
+    # 4. Member galaxy profile (NEW: satellite stellar mass)
+    M_members = params.M_members if params.M_members is not None else estimate_member_mass(params.M_500)
+    rho_members = member_galaxy_profile(r, M_members, params.r_s_members, params.alpha_members, params.beta_members)
+    
+    # 5. Clumping correction
     if apply_clumping:
         C_factor = clumping_profile(r, params.R_500, params.C0, params.eta, params.C_max)
         # Apply to gas: n_e -> sqrt(C) × n_e  =>  rho_gas -> C × rho_gas (squared)
@@ -302,22 +389,23 @@ def build_cluster_baryon_model(
         C_factor = np.ones_like(r)
         rho_gas_corrected = rho_gas
     
-    # 5. Total baryons
-    rho_total = rho_gas_corrected + rho_bcg + rho_icl
+    # 6. Total baryons (now includes members)
+    rho_total = rho_gas_corrected + rho_bcg + rho_icl + rho_members
     
-    # 6. Compute total masses at R_500
+    # 7. Compute total masses at R_500
     idx_R500 = np.argmin(np.abs(r - params.R_500))
     mask_R500 = r <= params.R_500
     
     M_gas_R500 = trapezoid(4 * np.pi * r[mask_R500]**2 * rho_gas_corrected[mask_R500], r[mask_R500])
     M_bcg_total = trapezoid(4 * np.pi * r**2 * rho_bcg, r)
     M_icl_total = trapezoid(4 * np.pi * r**2 * rho_icl, r)
-    M_baryon_R500 = M_gas_R500 + M_bcg_total + M_icl_total
+    M_members_R500 = trapezoid(4 * np.pi * r[mask_R500]**2 * rho_members[mask_R500], r[mask_R500])
+    M_baryon_R500 = M_gas_R500 + M_bcg_total + M_icl_total + M_members_R500
     
     fgas_R500 = M_gas_R500 / params.M_500
     fbaryon_R500 = M_baryon_R500 / params.M_500
     
-    # 7. Diagnostic info
+    # 8. Diagnostic info
     info = {
         'M_500': params.M_500,
         'R_500': params.R_500,
@@ -325,13 +413,16 @@ def build_cluster_baryon_model(
         'M_gas_R500': M_gas_R500,
         'M_BCG': M_BCG,
         'M_ICL': M_ICL,
+        'M_members': M_members,
+        'M_members_R500': M_members_R500,
         'M_baryon_R500': M_baryon_R500,
         'fgas_R500': fgas_R500,
         'fbaryon_R500': fbaryon_R500,
         'apply_clumping': apply_clumping,
         'gas_info': gas_info,
         'r_eff_BCG': params.r_eff_BCG,
-        'r_s_ICL': params.r_s_ICL
+        'r_s_ICL': params.r_s_ICL,
+        'r_s_members': params.r_s_members
     }
     
     if verbose:
@@ -342,9 +433,10 @@ def build_cluster_baryon_model(
         print(f"R_500 = {params.R_500:.1f} kpc")
         print(f"z = {params.z:.3f}")
         print(f"\nComponent Masses:")
-        print(f"  M_gas(<R_500) = {M_gas_R500:.2e} Msun")
-        print(f"  M_BCG = {M_BCG:.2e} Msun")
-        print(f"  M_ICL = {M_ICL:.2e} Msun")
+        print(f"  M_gas(<R_500) = {M_gas_R500:.2e} Msun ({M_gas_R500/M_baryon_R500*100:.1f}%)")
+        print(f"  M_BCG = {M_BCG:.2e} Msun ({M_BCG/M_baryon_R500*100:.1f}%)")
+        print(f"  M_ICL = {M_ICL:.2e} Msun ({M_ICL/M_baryon_R500*100:.1f}%)")
+        print(f"  M_members(<R_500) = {M_members_R500:.2e} Msun ({M_members_R500/M_baryon_R500*100:.1f}%)")
         print(f"  M_baryon(<R_500) = {M_baryon_R500:.2e} Msun")
         print(f"\nBaryon Fractions:")
         print(f"  f_gas(R_500) = {fgas_R500:.4f}")
@@ -360,6 +452,7 @@ def build_cluster_baryon_model(
         rho_gas=rho_gas_corrected,
         rho_bcg=rho_bcg,
         rho_icl=rho_icl,
+        rho_members=rho_members,
         rho_total=rho_total,
         clumping_factor=C_factor,
         info=info

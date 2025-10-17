@@ -1,0 +1,12 @@
+{
+  "geometry": {
+    "q_plane_prior": { "mean": 0.95, "std": 0.10 },
+    "q_los_prior":   { "mean": 0.90, "std": 0.10 }
+  },
+  "environment": {
+    "kappa_ext_prior": { "std": 0.03 }
+  },
+  "arc_redshifts": {
+    "z_eff": 2.0
+  }
+}

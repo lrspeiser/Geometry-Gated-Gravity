@@ -1,0 +1,17 @@
+# Cluster selection for paper replication
+# Two variants are provided:
+# - paper: matches the manuscript (holdouts: Abell 2261, MACSJ1149.5+2223)
+# - current_catalog: uses clusters present in data/clusters/master_catalog.csv (holdouts: A1689, MACS1149)
+
+variant: current_catalog  # set to 'paper' once A2261 data are added
+
+paper:
+  holdout_names: ["A2261", "MACS1149"]
+  train_names: []  # computed as all tier in {1,2} minus holdouts and excluded
+  exclude_names: ["MACS0717"]
+
+current_catalog:
+  holdout_names: ["A1689", "MACS1149"]
+  exclude_names: ["MACS0717"]
+  # If train_names is empty, driver will compute from tiers {1,2} minus holdouts/excluded
+  train_names: []

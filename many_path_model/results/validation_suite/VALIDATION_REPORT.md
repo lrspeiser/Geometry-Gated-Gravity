@@ -1,6 +1,6 @@
 # Validation Report: Many-Path Gravity Model
 
-Generated: 2025-10-12 23:12:42.003323
+Generated: 2025-10-16 14:04:16.871136
 
 ## 1. Internal Consistency & Invariants
 
@@ -21,7 +21,7 @@ Generated: 2025-10-12 23:12:42.003323
   - Target: < 0.15 dex
   - Status: PASS
 
-- **RAR Scatter**: 0.309
+- **RAR Scatter**: 0.257
   - Target: < 0.13
   - Status: HIGH
 

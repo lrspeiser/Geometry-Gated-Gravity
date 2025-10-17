@@ -1,0 +1,36 @@
+# SigmaGravity paper settings (replication)
+# These settings parameterize the wrappers under projects/SigmaGravity/scripts
+
+meta:
+  name: SigmaGravity replication
+  description: Canonical settings for cluster calibration and validation.
+  code_commit: auto  # aggregator will attach git commit hash at collection time
+
+cosmology:
+  model: flat_LCDM
+  H0: 70.0
+  Om0: 0.3
+
+source_redshift:
+  mode: median     # one of [lognormal, median]
+  median_z: 2.0    # used only when mode=median
+
+clusters:
+  catalog_path: data/clusters/master_catalog.csv
+  tiers_train: [1, 2]
+  tiers_all: [1, 2, 3]
+  holdout: ["A1689", "MACS1149"]
+  exclude: ["MACS0717"]
+
+kernel:
+  norm: local_coherence
+  mass_scaling: true
+  gamma_prior: "Uniform(0,1.5)"
+
+paths:
+  output_root: projects/SigmaGravity/output
+  provenance_dir: projects/SigmaGravity/provenance
+
+notes:
+  - Keep the core code in-place; SigmaGravity only wraps and documents.
+  - P(z_s) flag maps to --pzs in calibration and validation drivers.

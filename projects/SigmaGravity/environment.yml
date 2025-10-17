@@ -1,0 +1,19 @@
+name: sigmagravity
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python>=3.10
+  - numpy
+  - scipy
+  - pandas
+  - numexpr
+  - matplotlib
+  - corner
+  - astropy
+  - pip
+  - pip:
+      - emcee
+      - pyyaml
+      - h5py
+      - scikit-learn

@@ -1,0 +1,10 @@
+Hierarchical Tier-1+2 MCMC Calibration
+======================================================================
+
+Population parameters:
+  mu_A    = 16.351 (15.618, 17.239)
+  sigma_A = 1.281 (0.791, 1.898)
+
+Train χ²/d.o.f. = 2.21
+
+Per-cluster results:\n  MACS0416: A_c=16.56, q_plane=1.020, q_LOS=0.915\n  A2744: A_c=16.38, q_plane=0.949, q_LOS=0.693\n  RXJ1347: A_c=16.44, q_plane=0.930, q_LOS=0.904\n  A370: A_c=16.57, q_plane=0.995, q_LOS=1.021\n  CL0024: A_c=16.43, q_plane=0.958, q_LOS=0.771\n

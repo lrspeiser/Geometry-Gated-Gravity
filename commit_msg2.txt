@@ -1,0 +1,19 @@
+Critical update: Corrected cluster calibration results with BCG+P(z_s)
+
+MAJOR CHANGES - Population parameters corrected after including BCG and source-redshift distributions:
+- μ_A = 4.60 ± 0.37 (was 16.47; normalization fix)
+- σ_A = 1.52 (was 0.81)
+- γ = 0.087 ± 0.10 (was 0.39; NOW CONSISTENT WITH NO MASS-SCALING)
+- Sample: N=6 calibration + 2 blind hold-outs (A1689, MACS1149)
+
+BLIND HOLD-OUT RESULTS:
+- A1689: 47.0″ obs vs 46.6″ pred → +0.12σ **PASS** (was −30% fail)
+- MACS1149: 42.0″ obs vs 34.3″ pred → +3.8σ **FAIL** (still discrepant, needs P(z_s))
+
+INTERPRETATION CHANGE:
+- Previous γ≈0.39 was artifact of missing BCG+P(z_s) physics
+- Better baryon modeling absorbs those effects → γ now consistent with 0
+- γ is falsifiable: γ≈0 = fixed coherence; γ>0 = self-similar growth
+- Need N≈18 + weak lensing for definitive test
+
+Abstract, Theory 2.4, Data, Results 5.3, and Conclusion all updated to reflect corrected calibration and successful A1689 blind test.

@@ -340,7 +340,7 @@ def plot_validation(validation, output_dir='../results'):
                      facecolor='lightgreen' if validation['einstein_check_pass'] else 'lightyellow',
                      alpha=0.3))
     
-    plt.suptitle('MACS0416 Einstein Radius Mass Validation - Σ-Gravity Model',
+    plt.suptitle('MACS0416 Einstein Radius Mass Validation - Sigma-Gravity Model',
                  fontsize=15, fontweight='bold', y=0.995)
     
     plt.tight_layout()
@@ -355,7 +355,7 @@ def plot_validation(validation, output_dir='../results'):
 if __name__ == '__main__':
     print("\n" + "=" * 70)
     print("MACS0416 EINSTEIN MASS VALIDATION")
-    print("Critical sanity check for Σ-Gravity normalization")
+    print("Critical sanity check for Sigma-Gravity normalization")
     print("=" * 70)
     print()
     

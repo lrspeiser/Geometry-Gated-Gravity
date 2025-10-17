@@ -1,0 +1,13 @@
+{
+  "sparc": {
+    "present": false,
+    "master_path": "C:\\Users\\henry\\dev\\GravityCalculator\\external_data\\Rotmod_LTG\\MasterSheet_SPARC.mrt",
+    "master_md5": null,
+    "rotmod_count": 0
+  },
+  "clusters": {
+    "catalog_path": "C:\\Users\\henry\\dev\\GravityCalculator\\data\\clusters\\master_catalog.csv",
+    "catalog_present": true,
+    "catalog_md5": "bbffd137d56f17779d483f5932e0baa1"
+  }
+}

@@ -109,6 +109,80 @@ class LensingCosmology:
         theta_rad = R_kpc / D_A
         theta_arcsec = theta_rad * (180.0 / np.pi) * 3600.0
         return theta_arcsec
+    
+    def effective_critical_density_with_distribution(self, z_lens: float, 
+                                                      z_source_grid: Optional[np.ndarray] = None,
+                                                      P_z_s: Optional[np.ndarray] = None,
+                                                      z_source_single: Optional[float] = None) -> float:
+        """
+        Compute effective critical surface density with source redshift distribution.
+        
+        For multiple sources at different redshifts:
+        Σ_crit_eff = <Σ_crit> = [ ∫ P(z_s) / Σ_crit(z_l, z_s) dz_s ]^(-1)
+        
+        Or equivalently, weight by lensing efficiency:
+        <D_LS/D_S> = ∫ P(z_s) × [D_LS(z_l, z_s) / D_S(z_s)] dz_s
+        
+        Parameters:
+        -----------
+        z_lens : float
+            Lens redshift
+        z_source_grid : array_like, optional
+            Grid of source redshifts for integration
+        P_z_s : array_like, optional
+            P(z_s) probability distribution (will be normalized)
+        z_source_single : float, optional
+            If provided, use single effective source redshift (legacy mode)
+        
+        Returns:
+        --------
+        Sigma_crit_eff : float
+            Effective critical surface density [M_☉/kpc²]
+        """
+        # Legacy mode: single z_source
+        if z_source_single is not None:
+            return self.critical_surface_density(z_lens, z_source_single)
+        
+        # Default: use generic strong-lensing source distribution
+        if z_source_grid is None:
+            z_source_grid = np.linspace(z_lens + 0.5, 6.0, 100)
+        
+        if P_z_s is None:
+            # Generic CLASH/HFF strong-lensing source distribution
+            # Log-normal centered at z_peak ~ 2.5 with width sigma_ln_z ~ 0.4
+            # This matches typical arc redshift distributions (Jullo+2010, Williams+2017)
+            z_peak = 2.5
+            sigma_ln_z = 0.4
+            ln_z = np.log(z_source_grid)
+            ln_z_peak = np.log(z_peak)
+            P_z_s = (1.0 / (z_source_grid * sigma_ln_z * np.sqrt(2*np.pi))) * \
+                    np.exp(-0.5 * ((ln_z - ln_z_peak) / sigma_ln_z)**2)
+            # Zero out sources behind lens
+            P_z_s[z_source_grid <= z_lens] = 0
+        
+        # Normalize
+        P_z_s = np.array(P_z_s)
+        P_z_s /= np.trapz(P_z_s, z_source_grid)
+        
+        # Compute effective Sigma_crit using harmonic mean
+        # < 1/Sigma_crit > = ∫ P(z_s) / Sigma_crit(z_l, z_s) dz_s
+        # Sigma_crit_eff = 1 / < 1/Sigma_crit >
+        
+        inv_sigma_weighted = 0.0
+        for z_s, p_z in zip(z_source_grid, P_z_s):
+            if z_s > z_lens:
+                Sigma_crit_z = self.critical_surface_density(z_lens, z_s)
+                if np.isfinite(Sigma_crit_z) and Sigma_crit_z > 0:
+                    inv_sigma_weighted += p_z / Sigma_crit_z
+        
+        if inv_sigma_weighted > 0:
+            Sigma_crit_eff = 1.0 / inv_sigma_weighted
+        else:
+            # Fallback to median source redshift
+            z_median = z_source_grid[np.argmax(np.cumsum(P_z_s) >= 0.5)]
+            Sigma_crit_eff = self.critical_surface_density(z_lens, z_median)
+        
+        return Sigma_crit_eff
 
 
 class AbelProjection:

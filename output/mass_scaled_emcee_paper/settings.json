@@ -1,0 +1,19 @@
+{
+  "catalog": "C:\\Users\\henry\\dev\\GravityCalculator\\data\\clusters\\master_catalog.csv",
+  "tiers": [
+    1,
+    2
+  ],
+  "exclude": [
+    "MACS0717"
+  ],
+  "holdout": [
+    "A1689",
+    "MACS1149"
+  ],
+  "walkers": 64,
+  "steps": 3000,
+  "burn_in": 1000,
+  "acceptance_fraction_mean": 0.11500520833333333,
+  "seed": 42
+}

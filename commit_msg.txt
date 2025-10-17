@@ -1,0 +1,12 @@
+Surgical edits to paper.md: Updated Σ-Gravity with latest results
+
+- Abstract: A_c=16.5±0.6, σ_A≈0.8, γ=0.39^{+0.28}_{-0.24}, ℓ_{0,⋆}≈200 kpc
+- Introduction: Added 'What is new here' paragraph on cross-scale predictions
+- Theory 2.2: Triaxial Σ-kernel, mass-scaling (γ posteriors), ~60% κ & ~20-30% θ_E geometry sensitivity
+- Theory 2.3: Baryon models updated with f_gas=0.11 (3.2× scale), clumping sign fix (divide by √C), Σ_crit(z_l,z_s)
+- Data (Section 3): Tier-1+2 N=18 clusters, hierarchical inference models (baseline vs mass-scaled)
+- Results 5.2: MACS0416 30.43″ vs 30.0″ (1.4%), ~21.5% geometry spread, A_c≈16.4, ~7× boost
+- Results 5.3: Population μ_A=16.47±0.58, σ_A=0.81, χ²/d.o.f.=2.21; hold-out underpredictions; mass-scaled γ=0.39, ΔBIC≈1.6
+- Discussion: Status bullets (galaxies/clusters/solar system), open items (bias, outliers, γ interpretation, model comparison)
+- Conclusion: Tightened with N=18 CLASH plan, γ≈0.4 falsifiable prediction, ΛCDM/MOND comparison
+- All figures confirmed in output/*.png (corner_mass_scaling, model_comparison, holdout validation, MACS0416 diagnostics)
